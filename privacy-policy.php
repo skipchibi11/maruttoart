@@ -87,10 +87,12 @@ require_once 'includes/gdpr-banner-new.php';
                     <h3>5. 第三者サービスについて</h3>
                     <p>当サイトでは、以下の第三者サービスを利用しています：</p>
                     <ul>
+                        <li><strong>YouTube</strong>: 動画コンテンツの埋め込み表示（同意時のみ）</li>
                         <li><strong>GTranslate</strong>: 自動翻訳機能の提供</li>
                         <li><strong>Bootstrap CDN</strong>: サイトデザインの提供</li>
                     </ul>
                     <p>これらのサービスは、それぞれ独自のプライバシーポリシーに従って運営されています。</p>
+                    <p><strong>YouTube動画について：</strong>Cookieの使用に同意していない場合、YouTube動画は自動的に読み込まれません。同意後、動画が表示されるようになります。</p>
                 </div>
 
                 <div class="policy-section">

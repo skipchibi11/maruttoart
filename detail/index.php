@@ -108,22 +108,35 @@ if (!$material) {
                         <h5 class="mb-0">関連動画</h5>
                     </div>
                     <div class="card-body">
-                        <div class="youtube-container">
-                            <?php
-                            $youtube_url = $material['youtube_url'];
-                            // YouTube URLをembed形式に変換
-                            if (strpos($youtube_url, 'youtube.com/watch?v=') !== false) {
-                                $video_id = substr($youtube_url, strpos($youtube_url, 'v=') + 2);
-                                $embed_url = "https://www.youtube.com/embed/{$video_id}";
-                            } else if (strpos($youtube_url, 'youtu.be/') !== false) {
-                                $video_id = substr($youtube_url, strrpos($youtube_url, '/') + 1);
-                                $embed_url = "https://www.youtube.com/embed/{$video_id}";
-                            } else {
-                                $embed_url = $youtube_url;
-                            }
-                            ?>
-                            <iframe src="<?= h($embed_url) ?>" frameborder="0" allowfullscreen></iframe>
-                        </div>
+                        <?php if (canLoadThirdPartyServices()): ?>
+                            <div class="youtube-container">
+                                <?php
+                                $youtube_url = $material['youtube_url'];
+                                // YouTube URLをembed形式に変換
+                                if (strpos($youtube_url, 'youtube.com/watch?v=') !== false) {
+                                    $video_id = substr($youtube_url, strpos($youtube_url, 'v=') + 2);
+                                    $embed_url = "https://www.youtube.com/embed/{$video_id}";
+                                } else if (strpos($youtube_url, 'youtu.be/') !== false) {
+                                    $video_id = substr($youtube_url, strrpos($youtube_url, '/') + 1);
+                                    $embed_url = "https://www.youtube.com/embed/{$video_id}";
+                                } else {
+                                    $embed_url = $youtube_url;
+                                }
+                                ?>
+                                <iframe src="<?= h($embed_url) ?>" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        <?php else: ?>
+                            <div class="alert alert-info">
+                                <h6>動画を表示するにはCookieに同意してください</h6>
+                                <p class="mb-2">この動画はYouTubeによって提供されています。動画を表示するには、Cookieの使用に同意してください。</p>
+                                <a href="<?= h($material['youtube_url']) ?>" target="_blank" class="btn btn-primary btn-sm">
+                                    YouTubeで直接視聴
+                                </a>
+                                <button onclick="window.location.reload()" class="btn btn-success btn-sm ms-2">
+                                    同意してリロード
+                                </button>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endif; ?>

@@ -111,6 +111,12 @@ function shouldShowGDPRBanner() {
     return !isset($_COOKIE['gdpr_consent']);
 }
 
+// 第三者サービス（YouTube等）の読み込み許可を判定
+function canLoadThirdPartyServices() {
+    // 同意している場合のみ第三者サービスを読み込む
+    return hasGDPRConsent();
+}
+
 // GDPR同意文のテキスト（サーバーサイドでレンダリング用）
 function getGDPRConsentText() {
     return [
