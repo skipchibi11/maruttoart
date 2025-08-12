@@ -1,3 +1,7 @@
+# === WordPress から PHP アプリケーションへの移行設定 ===
+# DirectoryIndex の優先順位を設定（WordPressのindex.phpを回避）
+DirectoryIndex main.php index-new.php test-simple.php
+
 # === security hardening start ===
 <FilesMatch "(?i)^dockerfile$">
   Require all denied
@@ -9,6 +13,15 @@
   Require all denied
 </FilesMatch>
 <FilesMatch "^(?:\.gitignore|\.env|\.htpasswd)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^test-env\.php$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^dbtest\.php$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(test-|debug-|dev-).*\.php$">
   Require all denied
 </FilesMatch>
 RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
@@ -25,6 +38,8 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
     CachePurgeAll on
     # キャッシュを一時的に無効化（移行期間中）
     CacheDisable *
+    # DirectoryIndex を設定してWordPressのindex.phpを無効化
+    DirectoryIndex main.php index-new.php index.php
     # ロリポップ最適化
     <FilesMatch "\.(jpg|jpeg|png|webp|gif|svg|ico)$">
         CacheEnable on
@@ -174,8 +189,8 @@ FileETag MTime Size
 
 RewriteEngine On
 
-# ルートアクセスを明示的にindex.phpにリダイレクト
-RewriteRule ^$ /index.php [QSA,L]
+# ルートアクセスを明示的にmain.phpにリダイレクト（テスト用）
+RewriteRule ^$ /main.php [QSA,L]
 
 # 詳細ページのURL書き換え
 RewriteRule ^detail/([a-zA-Z0-9\-]+)/?$ /detail/index.php?slug=$1 [QSA,L]
