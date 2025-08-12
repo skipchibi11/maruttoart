@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'includes/gdpr-banner-new.php';
+require_once 'includes/gtranslate.php';
 
 $pdo = getDB();
 
@@ -43,8 +44,9 @@ $materials = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>maruttoart - 無料素材ダウンロード</title>
+    <title>maruttoart - 無料素材ダウンロードサイト</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body {
             background-color: #ffffff;
@@ -105,16 +107,24 @@ $materials = $stmt->fetchAll();
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container">
             <a class="navbar-brand header-logo" href="/">maruttoart</a>
-            <div class="navbar-nav ms-auto">
-                <form class="d-flex" method="GET">
-                    <input class="form-control me-2" type="search" name="search" placeholder="素材を検索..." value="<?= h($search) ?>">
-                    <!-- 検索時はページをリセット -->
-                    <input type="hidden" name="page" value="1">
-                    <button class="btn btn-outline-secondary" type="submit">検索</button>
-                </form>
+            <div class="navbar-nav ms-auto d-flex align-items-center">
+                <!-- 言語切り替えメニュー -->
+                <div class="dropdown me-3">
+                    <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-globe"></i> 言語
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+                        <li><a class="dropdown-item" href="http://localhost">🇯🇵 日本語</a></li>
+                        <li><a class="dropdown-item" href="http://en.localhost">🇺🇸 English</a></li>
+                        <li><a class="dropdown-item" href="http://es.localhost">🇪🇸 Español</a></li>
+                        <li><a class="dropdown-item" href="http://fr.localhost">🇫🇷 Français</a></li>
+                        <li><a class="dropdown-item" href="http://nl.localhost">🇳🇱 Nederlands</a></li>
+                    </ul>
+                </div>
+                <a class="nav-link" href="/admin">管理画面</a>
             </div>
         </div>
     </nav>
@@ -260,6 +270,9 @@ $materials = $stmt->fetchAll();
     <?php
     // GDPR バナーを表示
     echo renderGDPRBanner();
+    
+    // GTranslate機能を追加
+    echo renderGTranslate();
     ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
