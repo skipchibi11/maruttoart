@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# 詳細ページのURL書き換え
+RewriteRule ^detail/([a-zA-Z0-9\-]+)/?$ /detail/index.php?slug=$1 [QSA,L]
+
+# 管理画面へのアクセス制御（必要に応じて）
+# RewriteRule ^admin/ - [E=no_access:1]
+
+# 画像ファイルへの直接アクセスを許可
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule \.(png|jpg|jpeg|gif|webp)$ - [L]
+
+# 存在するファイルやディレクトリへの直接アクセスを許可
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# エラーページ（404）
+ErrorDocument 404 /404.php

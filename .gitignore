@@ -1,0 +1,35 @@
+# アップロードファイル
+uploads/
+!uploads/.gitkeep
+
+# ログファイル
+*.log
+
+# 環境設定ファイル
+.env
+.env.local
+.env.production
+
+# OS固有ファイル
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dockerボリューム
+mysql_data/
+
+# エディタ/IDE設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# テスト用ファイル
+test.php
+dbtest.php
+
+# 一時ファイル
+tmp/
+temp/
+cache/
