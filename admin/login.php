@@ -12,6 +12,7 @@ if (isLoggedIn()) {
 
 // ログインページもキャッシュ無効化
 setNoCache();
+header("Cache-Control: no-cache");
 
 $error = '';
 

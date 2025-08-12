@@ -5,6 +5,7 @@ requireLogin();
 
 // 管理画面はキャッシュ無効化
 setNoCache();
+header("Cache-Control: no-cache");
 
 $id = $_GET['id'] ?? '';
 if (empty($id) || !is_numeric($id)) {

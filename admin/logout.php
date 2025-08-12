@@ -3,6 +3,7 @@ require_once '../config.php';
 
 // 管理画面専用セッション開始
 startAdminSession();
+header("Cache-Control: no-cache");
 
 // セッション変数をすべて削除
 $_SESSION = array();
