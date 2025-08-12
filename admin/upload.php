@@ -10,8 +10,7 @@ if ($_POST) {
     $slug = trim($_POST['slug'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $youtube_url = trim($_POST['youtube_url'] ?? '');
-    $search_keywords_en = trim($_POST['search_keywords_en'] ?? '');
-    $search_keywords_jp = trim($_POST['search_keywords_jp'] ?? '');
+    $search_keywords = trim($_POST['search_keywords'] ?? '');
     
     // バリデーション
     if (empty($title) || empty($slug)) {
@@ -31,8 +30,8 @@ if ($_POST) {
             if ($uploadResult) {
                 // データベースに保存
                 $stmt = $pdo->prepare("
-                    INSERT INTO materials (title, slug, description, youtube_url, search_keywords_en, search_keywords_jp, image_path, webp_path, upload_date) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO materials (title, slug, description, youtube_url, search_keywords, image_path, webp_path, upload_date) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 
                 if ($stmt->execute([
@@ -40,8 +39,7 @@ if ($_POST) {
                     $slug,
                     $description,
                     $youtube_url,
-                    $search_keywords_en,
-                    $search_keywords_jp,
+                    $search_keywords,
                     $uploadResult['original'],
                     $uploadResult['webp'],
                     date('Y-m-d')
@@ -149,57 +147,40 @@ if ($_POST) {
                 <div class="card">
                     <div class="card-body">
                         <form method="POST" enctype="multipart/form-data">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="mb-3">
-                                        <label for="title" class="form-label">タイトル *</label>
-                                        <input type="text" class="form-control" id="title" name="title" required value="<?= h($_POST['title'] ?? '') ?>">
-                                    </div>
+                            <div class="mb-3">
+                                <label for="title" class="form-label">タイトル *</label>
+                                <input type="text" class="form-control" id="title" name="title" required value="<?= h($_POST['title'] ?? '') ?>">
+                            </div>
 
-                                    <div class="mb-3">
-                                        <label for="slug" class="form-label">スラッグ *</label>
-                                        <input type="text" class="form-control" id="slug" name="slug" required value="<?= h($_POST['slug'] ?? '') ?>" placeholder="例: peach-illustration">
-                                        <div class="form-text">URLで使用される識別子です。英数字とハイフンのみ使用可能です。</div>
-                                    </div>
+                            <div class="mb-3">
+                                <label for="slug" class="form-label">スラッグ *</label>
+                                <input type="text" class="form-control" id="slug" name="slug" required value="<?= h($_POST['slug'] ?? '') ?>" placeholder="例: peach-illustration">
+                                <div class="form-text">URLで使用される識別子です。英数字とハイフンのみ使用可能です。</div>
+                            </div>
 
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">説明</label>
-                                        <textarea class="form-control" id="description" name="description" rows="4"><?= h($_POST['description'] ?? '') ?></textarea>
-                                    </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">説明</label>
+                                <textarea class="form-control" id="description" name="description" rows="4"><?= h($_POST['description'] ?? '') ?></textarea>
+                            </div>
 
-                                    <div class="mb-3">
-                                        <label for="youtube_url" class="form-label">YouTube URL</label>
-                                        <input type="url" class="form-control" id="youtube_url" name="youtube_url" value="<?= h($_POST['youtube_url'] ?? '') ?>" placeholder="https://www.youtube.com/watch?v=...">
-                                    </div>
+                            <div class="mb-3">
+                                <label for="youtube_url" class="form-label">YouTube URL</label>
+                                <input type="url" class="form-control" id="youtube_url" name="youtube_url" value="<?= h($_POST['youtube_url'] ?? '') ?>" placeholder="https://www.youtube.com/watch?v=...">
+                            </div>
 
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="search_keywords_en" class="form-label">検索キーワード（英語）</label>
-                                                <input type="text" class="form-control" id="search_keywords_en" name="search_keywords_en" value="<?= h($_POST['search_keywords_en'] ?? '') ?>" placeholder="peach,fruit,pink">
-                                                <div class="form-text">カンマで区切って入力</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="search_keywords_jp" class="form-label">検索キーワード（日本語）</label>
-                                                <input type="text" class="form-control" id="search_keywords_jp" name="search_keywords_jp" value="<?= h($_POST['search_keywords_jp'] ?? '') ?>" placeholder="もも,果物,ピンク">
-                                                <div class="form-text">カンマで区切って入力</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="mb-3">
+                                <label for="search_keywords" class="form-label">検索キーワード</label>
+                                <input type="text" class="form-control" id="search_keywords" name="search_keywords" value="<?= h($_POST['search_keywords'] ?? '') ?>" placeholder="もも,桃,peach,果物,fruit,ピンク,pink">
+                                <div class="form-text">日本語・英語問わず、カンマで区切って入力してください</div>
+                            </div>
 
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="image" class="form-label">画像ファイル *</label>
-                                        <input type="file" class="form-control" id="image" name="image" accept="image/*" required onchange="previewImage(this)">
-                                        <div class="form-text">PNG, JPEG, GIF対応。WebPが自動生成されます。</div>
-                                    </div>
-
-                                    <div class="preview-container">
-                                        <img id="imagePreview" class="preview-image" style="display: none;" alt="プレビュー">
-                                    </div>
+                            <div class="mb-3">
+                                <label for="image" class="form-label">画像ファイル *</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*" required onchange="previewImage(this)">
+                                <div class="form-text">PNG, JPEG, GIF対応。WebPが自動生成されます。</div>
+                                
+                                <div class="preview-container">
+                                    <img id="imagePreview" class="preview-image" style="display: none;" alt="プレビュー">
                                 </div>
                             </div>
 

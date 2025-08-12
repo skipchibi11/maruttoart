@@ -15,9 +15,9 @@ $params = [];
 $countParams = [];
 
 if (!empty($search)) {
-    $whereClause .= " AND (title LIKE ? OR description LIKE ? OR search_keywords_en LIKE ? OR search_keywords_jp LIKE ?)";
+    $whereClause .= " AND (title LIKE ? OR description LIKE ? OR search_keywords LIKE ?)";
     $searchTerm = "%{$search}%";
-    $params = [$searchTerm, $searchTerm, $searchTerm, $searchTerm];
+    $params = [$searchTerm, $searchTerm, $searchTerm];
     $countParams = $params;
 }
 
