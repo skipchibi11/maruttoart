@@ -1,3 +1,20 @@
+# === security hardening start ===
+<FilesMatch "(?i)^dockerfile$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "(?i)^docker-compose\.ya?ml$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "\.(env|ya?ml|ini|log|sql|bak|tar|gz|zip)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(?:\.gitignore|\.env|\.htpasswd)$">
+  Require all denied
+</FilesMatch>
+RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
+# === security hardening end ===
+
+
 # Apache Cache Control Settings
 
 # Enable mod_expires
