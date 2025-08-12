@@ -43,11 +43,11 @@ require_once 'includes/gtranslate.php';
                         <i class="bi bi-globe"></i> 言語
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-                        <li><a class="dropdown-item" href="http://localhost">🇯🇵 日本語</a></li>
-                        <li><a class="dropdown-item" href="http://en.localhost">🇺🇸 English</a></li>
-                        <li><a class="dropdown-item" href="http://es.localhost">🇪🇸 Español</a></li>
-                        <li><a class="dropdown-item" href="http://fr.localhost">🇫🇷 Français</a></li>
-                        <li><a class="dropdown-item" href="http://nl.localhost">🇳🇱 Nederlands</a></li>
+                        <li><a class="dropdown-item" href="https://maruttoart.com">🇯🇵 日本語</a></li>
+                        <li><a class="dropdown-item" href="https://en.maruttoart.com">🇺🇸 English</a></li>
+                        <li><a class="dropdown-item" href="https://es.maruttoart.com">🇪🇸 Español</a></li>
+                        <li><a class="dropdown-item" href="https://fr.maruttoart.com">🇫🇷 Français</a></li>
+                        <li><a class="dropdown-item" href="https://nl.maruttoart.com">🇳🇱 Nederlands</a></li>
                     </ul>
                 </div>
                 <a class="nav-link" href="/">ホーム</a>
