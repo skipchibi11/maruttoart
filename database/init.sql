@@ -1,4 +1,9 @@
-CREATE DATABASE IF NOT EXISTS maruttoart;
+-- データベースとユーザーを作成
+CREATE DATABASE IF NOT EXISTS maruttoart CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'maruttoart'@'%' IDENTIFIED BY 'maruttopass';
+GRANT ALL PRIVILEGES ON maruttoart.* TO 'maruttoart'@'%';
+FLUSH PRIVILEGES;
+
 USE maruttoart;
 
 -- 管理者テーブル

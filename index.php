@@ -44,7 +44,7 @@ $materials = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>maruttoart - 無料素材ダウンロードサイト</title>
+    <title>無料のかわいい水彩イラスト素材集｜maruttoart（商用利用OK）</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -124,7 +124,6 @@ $materials = $stmt->fetchAll();
                         <li><a class="dropdown-item" href="http://nl.localhost">🇳🇱 Nederlands</a></li>
                     </ul>
                 </div>
-                <a class="nav-link" href="/admin">管理画面</a>
             </div>
         </div>
     </nav>
@@ -140,7 +139,7 @@ $materials = $stmt->fetchAll();
                         (<?= $page ?>/<?= $totalPages ?>ページ)
                     </p>
                 <?php else: ?>
-                    <h1 class="mb-2">最新の無料素材</h1>
+                    <h1 class="mb-2">無料で使えるかわいい水彩イラスト素材集</h1>
                     <p class="text-muted mb-4">
                         全<?= number_format($totalItems) ?>件中 
                         <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 

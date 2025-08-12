@@ -10,19 +10,18 @@ services:
       - ./uploads:/var/www/html/uploads
     depends_on:
       - db
-    environment:
-      - DB_HOST=db
-      - DB_NAME=maruttoart
-      - DB_USER=root
-      - DB_PASS=password
+    env_file:
+      - .env
 
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: maruttoart
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${DB_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -32,8 +31,10 @@ services:
     ports:
       - "8080:80"
     environment:
-      PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: password
+      PMA_HOST: ${DB_HOST}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - db
 
 volumes:
   mysql_data:

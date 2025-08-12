@@ -1,12 +1,44 @@
 <?php
+// 環境変数を読み込む関数
+function loadEnv($path) {
+    if (!file_exists($path)) {
+        return false;
+    }
+    
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos($line, '#') === 0) {
+            continue; // コメント行をスキップ
+        }
+        
+        if (strpos($line, '=') !== false) {
+            list($name, $value) = explode('=', $line, 2);
+            $name = trim($name);
+            $value = trim($value);
+            
+            // クォートを除去
+            if (preg_match('/^(["\'])(.*)\\1$/', $value, $matches)) {
+                $value = $matches[2];
+            }
+            
+            $_ENV[$name] = $value;
+            putenv("$name=$value");
+        }
+    }
+    return true;
+}
+
+// .envファイルを読み込み
+loadEnv(__DIR__ . '/.env');
+
 // データベース接続設定
 define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
-define('DB_NAME', $_ENV['DB_NAME'] ?? 'maruttoart');
-define('DB_USER', $_ENV['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? 'password');
+define('DB_NAME', $_ENV['DB_DATABASE'] ?? 'maruttoart');
+define('DB_USER', $_ENV['DB_USERNAME'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASSWORD'] ?? 'password');
 
 // サイト設定
-define('SITE_URL', 'http://localhost');
+define('SITE_URL', $_ENV['SITE_URL'] ?? 'http://localhost');
 define('UPLOADS_PATH', 'uploads');
 
 // データベース接続関数
