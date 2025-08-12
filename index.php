@@ -3,18 +3,35 @@ require_once 'config.php';
 
 $pdo = getDB();
 
+// ページネーション設定
+$perPage = 20; // 1ページあたりの表示件数
+$page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
+$offset = ($page - 1) * $perPage;
+
 // 検索処理
 $search = $_GET['search'] ?? '';
-$sql = "SELECT * FROM materials WHERE 1=1";
+$whereClause = "WHERE 1=1";
 $params = [];
+$countParams = [];
 
 if (!empty($search)) {
-    $sql .= " AND (title LIKE ? OR description LIKE ? OR search_keywords_en LIKE ? OR search_keywords_jp LIKE ?)";
+    $whereClause .= " AND (title LIKE ? OR description LIKE ? OR search_keywords_en LIKE ? OR search_keywords_jp LIKE ?)";
     $searchTerm = "%{$search}%";
     $params = [$searchTerm, $searchTerm, $searchTerm, $searchTerm];
+    $countParams = $params;
 }
 
-$sql .= " ORDER BY created_at DESC";
+// 総件数を取得
+$countSql = "SELECT COUNT(*) FROM materials " . $whereClause;
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($countParams);
+$totalItems = $countStmt->fetchColumn();
+$totalPages = ceil($totalItems / $perPage);
+
+// データを取得
+$sql = "SELECT * FROM materials " . $whereClause . " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+$params[] = $perPage;
+$params[] = $offset;
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $materials = $stmt->fetchAll();
@@ -43,6 +60,47 @@ $materials = $stmt->fetchAll();
             font-weight: bold;
             color: #333;
         }
+        .material-image {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* 正方形を維持 */
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        /* スマホ用のレスポンシブ調整 */
+        @media (max-width: 768px) {
+            .material-card {
+                margin-bottom: 1rem;
+            }
+            .material-image {
+                height: auto;
+                min-height: 200px;
+                max-height: 250px;
+            }
+            .header-logo {
+                font-size: 1.5rem;
+            }
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .material-image {
+                min-height: 180px;
+                max-height: 200px;
+            }
+            .card-body {
+                padding: 0.75rem;
+            }
+            .card-title {
+                font-size: 1rem;
+            }
+            .card-text {
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -52,6 +110,8 @@ $materials = $stmt->fetchAll();
             <div class="navbar-nav ms-auto">
                 <form class="d-flex" method="GET">
                     <input class="form-control me-2" type="search" name="search" placeholder="素材を検索..." value="<?= h($search) ?>">
+                    <!-- 検索時はページをリセット -->
+                    <input type="hidden" name="page" value="1">
                     <button class="btn btn-outline-secondary" type="submit">検索</button>
                 </form>
             </div>
@@ -61,15 +121,29 @@ $materials = $stmt->fetchAll();
     <div class="container mt-4">
         <div class="row">
             <div class="col-12">
-                <h1 class="mb-4">無料素材一覧</h1>
+                <?php if (!empty($search)): ?>
+                    <h1 class="mb-2">検索結果: "<?= h($search) ?>"</h1>
+                    <p class="text-muted mb-4">
+                        <?= number_format($totalItems) ?>件中 
+                        <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 
+                        (<?= $page ?>/<?= $totalPages ?>ページ)
+                    </p>
+                <?php else: ?>
+                    <h1 class="mb-2">最新の無料素材</h1>
+                    <p class="text-muted mb-4">
+                        全<?= number_format($totalItems) ?>件中 
+                        <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 
+                        (<?= $page ?>/<?= $totalPages ?>ページ)
+                    </p>
+                <?php endif; ?>
             </div>
         </div>
 
         <div class="row">
             <?php foreach ($materials as $material): ?>
-            <div class="col-md-4 col-lg-3 mb-4">
+            <div class="col-md-4 col-lg-3 col-6 mb-4">
                 <div class="card material-card h-100">
-                    <img src="<?= h($material['webp_path']) ?>" class="card-img-top" alt="<?= h($material['title']) ?>" style="height: 200px; object-fit: cover;">
+                    <img src="<?= h($material['webp_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>">
                     <div class="card-body">
                         <h5 class="card-title"><?= h($material['title']) ?></h5>
                         <p class="card-text"><?= h(substr($material['description'], 0, 100)) ?>...</p>
@@ -80,10 +154,93 @@ $materials = $stmt->fetchAll();
             <?php endforeach; ?>
         </div>
 
+        <!-- ページネーション -->
+        <?php if ($totalPages > 1): ?>
+        <nav aria-label="ページネーション" class="mt-5">
+            <ul class="pagination justify-content-center">
+                <!-- 前のページ -->
+                <?php if ($page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?= $page - 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" aria-label="前のページ">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-label="前のページ">
+                            <span aria-hidden="true">&laquo;</span>
+                        </span>
+                    </li>
+                <?php endif; ?>
+
+                <!-- ページ番号 -->
+                <?php
+                $startPage = max(1, $page - 2);
+                $endPage = min($totalPages, $page + 2);
+                
+                // 最初のページを表示
+                if ($startPage > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>">1</a>
+                    </li>
+                    <?php if ($startPage > 2): ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    <?php endif;
+                endif;
+
+                // 現在のページ周辺を表示
+                for ($i = $startPage; $i <= $endPage; $i++): ?>
+                    <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                        <?php if ($i == $page): ?>
+                            <span class="page-link"><?= $i ?></span>
+                        <?php else: ?>
+                            <a class="page-link" href="?page=<?= $i ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>"><?= $i ?></a>
+                        <?php endif; ?>
+                    </li>
+                <?php endfor;
+
+                // 最後のページを表示
+                if ($endPage < $totalPages): ?>
+                    <?php if ($endPage < $totalPages - 1): ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    <?php endif; ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?= $totalPages ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>"><?= $totalPages ?></a>
+                    </li>
+                <?php endif; ?>
+
+                <!-- 次のページ -->
+                <?php if ($page < $totalPages): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?= $page + 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" aria-label="次のページ">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-label="次のページ">
+                            <span aria-hidden="true">&raquo;</span>
+                        </span>
+                    </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+        <?php endif; ?>
+
         <?php if (empty($materials)): ?>
         <div class="row">
             <div class="col-12 text-center">
-                <p class="text-muted">素材が見つかりませんでした。</p>
+                <p class="text-muted">
+                    <?php if (!empty($search)): ?>
+                        「<?= h($search) ?>」に該当する素材が見つかりませんでした。
+                    <?php else: ?>
+                        素材が見つかりませんでした。
+                    <?php endif; ?>
+                </p>
             </div>
         </div>
         <?php endif; ?>
