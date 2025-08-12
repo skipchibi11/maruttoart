@@ -2,8 +2,8 @@
 require_once 'config.php';
 require_once 'includes/gtranslate.php';
 
-// 静的コンテンツのキャッシュヘッダーを設定（プライバシーポリシーは変更頻度が低い）
-setStaticCacheHeaders();
+// プライバシーポリシーは変更頻度が低いので長期キャッシュ
+setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 ?>
 
 <!DOCTYPE html>

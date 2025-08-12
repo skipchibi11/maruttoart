@@ -2,6 +2,9 @@
 require_once '../config.php';
 require_once '../includes/gtranslate.php';
 
+// 公開ページなのでキャッシュを有効化
+setPublicCache(3600, 7200); // 1時間 / CDN 2時間
+
 $slug = $_GET['slug'] ?? '';
 if (empty($slug)) {
     header('HTTP/1.0 404 Not Found');

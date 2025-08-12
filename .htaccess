@@ -33,51 +33,13 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 # === security hardening end ===
 
 
-# ==== Cache policy (CDN/Browser) ====
-<IfModule mod_headers.c>
-  # 非キャッシュ対象を環境変数でまとめる
-  SetEnvIf Request_URI "^/admin/" nocache=1
-  SetEnvIf Request_URI "^/(cache-test|cdn-test)\.php$" nocache=1
-
-  # 非キャッシュ: 管理・API等
-  Header set Cache-Control "no-store, no-cache, must-revalidate" env=nocache
-  Header unset Pragma env=nocache
-  Header unset Expires env=nocache
-
-  # 静的アセットは長期 & 変更時はファイル名バージョンで対応
-  <FilesMatch "\.(?:webp|png|jpe?g|gif|svg|css|js|woff2?)$">
-    Header set Cache-Control "public, max-age=2592000, immutable"
-    Header unset Pragma
-  </FilesMatch>
-
-  # それ以外（HTML/PHP含む）は短〜中期。CDN優先度を s-maxage で明示
-  <FilesMatch ".*">
-    Header set Cache-Control "public, max-age=3600, s-maxage=7200, stale-while-revalidate=120"
-    Header unset Pragma
-    # LiteSpeedヒント（任意）
-    Header set X-LiteSpeed-Cache-Control "public,max-age=7200"
-  </FilesMatch>
-</IfModule>
-
-<IfModule mod_expires.c>
-  ExpiresActive On
-  ExpiresByType image/webp "access plus 30 days"
-  ExpiresByType image/png  "access plus 30 days"
-  ExpiresByType image/jpeg "access plus 30 days"
-  ExpiresByType image/gif  "access plus 30 days"
-  ExpiresByType image/svg+xml "access plus 30 days"
-  ExpiresByType text/css   "access plus 7 days"
-  ExpiresByType application/javascript "access plus 7 days"
-  ExpiresByType font/woff2 "access plus 30 days"
-</IfModule>
-
 
 RewriteEngine On
 
 # 詳細ページのURL書き換え
 RewriteRule ^detail/([a-zA-Z0-9\-]+)/?$ /detail/index.php?slug=$1 [QSA,L]
 
-# 画像ファイルへの直接アクセスを許可
+# 存在する画像ファイルへの直接アクセスは許可
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule \.(png|jpg|jpeg|gif|webp)$ - [L]
 

@@ -1,3 +1,9 @@
+<?php
+require_once 'config.php';
+
+// 404ページは短期キャッシュ
+setPublicCache(300, 600); // 5分 / CDN 10分
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>

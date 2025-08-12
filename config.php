@@ -197,10 +197,29 @@ function getCurrentBaseUrl() {
     return $protocol . '://' . $host;
 }
 
-// キャッシュ無効化（API用）
+// キャッシュ無効化（管理画面用）
 function setNoCache() {
     header('Cache-Control: no-cache, no-store, must-revalidate, private');
     header('Pragma: no-cache');
     header('Expires: 0');
+}
+
+// 公開ページ用キャッシュ設定
+function setPublicCache($maxAge = 3600, $sMaxAge = 7200) {
+    header('Cache-Control: public, max-age=' . $maxAge . ', s-maxage=' . $sMaxAge . ', stale-while-revalidate=120');
+    header('Pragma: public');
+    // LiteSpeed用ヒント
+    header('X-LiteSpeed-Cache-Control: public,max-age=' . $sMaxAge);
+}
+
+// 静的ファイル用長期キャッシュ設定
+function setLongCache($maxAge = 2592000) {
+    header('Cache-Control: public, max-age=' . $maxAge . ', immutable');
+    header('Pragma: public');
+}
+
+// 画像ファイル用キャッシュ設定
+function setImageCache() {
+    setLongCache(2592000); // 30日
 }
 ?>
