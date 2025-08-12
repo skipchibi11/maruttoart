@@ -1,6 +1,5 @@
 <?php
 require_once 'config.php';
-require_once 'includes/gdpr-banner-new.php';
 require_once 'includes/gtranslate.php';
 
 $pdo = getDB();
@@ -267,90 +266,10 @@ $materials = $stmt->fetchAll();
     </footer>
 
     <?php
-    // GDPR バナーを表示
-    echo renderGDPRBanner();
-    
     // GTranslate機能を追加
     echo renderGTranslate();
     ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // GDPR 同意管理のJavaScript
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('GDPR script loaded');
-            const acceptBtn = document.getElementById('gdpr-accept');
-            const declineBtn = document.getElementById('gdpr-decline');
-            const banner = document.getElementById('gdpr-banner');
-            
-            console.log('Accept button:', acceptBtn);
-            console.log('Decline button:', declineBtn);
-            console.log('Banner:', banner);
-            
-            if (acceptBtn) {
-                acceptBtn.addEventListener('click', function() {
-                    console.log('Accept button clicked');
-                    handleGDPRConsent(true);
-                });
-            }
-            
-            if (declineBtn) {
-                declineBtn.addEventListener('click', function() {
-                    console.log('Decline button clicked');
-                    handleGDPRConsent(false);
-                });
-            }
-        });
-        
-        function handleGDPRConsent(consent) {
-            console.log('handleGDPRConsent called with:', consent);
-            
-            // 現在のドメインでGDPR APIを呼び出し
-            const apiUrl = window.location.protocol + '//' + window.location.host + '/gdpr-consent.php';
-            
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ consent: consent })
-            })
-            .then(response => {
-                console.log('Response received:', response);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (data.status === 'success' && data.cookie) {
-                    // クライアントサイドでCookieを設定
-                    const cookie = data.cookie;
-                    const expires = new Date(cookie.expires * 1000).toUTCString();
-                    let cookieString = `${cookie.name}=${cookie.value}; expires=${expires}; path=${cookie.path}`;
-                    
-                    if (cookie.domain && cookie.domain !== '') {
-                        cookieString += `; domain=${cookie.domain}`;
-                    }
-                    
-                    document.cookie = cookieString;
-                    console.log('Cookie set:', cookieString);
-                    
-                    const banner = document.getElementById('gdpr-banner');
-                    if (banner) {
-                        console.log('Hiding banner');
-                        banner.style.display = 'none';
-                        // body paddingを削除
-                        document.body.classList.remove('gdpr-banner-visible');
-                        // ページをリロードして最新の状態を反映
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 500);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    </script>
 </body>
 </html>
