@@ -21,6 +21,10 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 <IfModule LiteSpeed>
     # LiteSpeed Cache を有効化
     CacheLookup on
+    # WordPressキャッシュをクリア
+    CachePurgeAll on
+    # キャッシュを一時的に無効化（移行期間中）
+    CacheDisable *
     # ロリポップ最適化
     <FilesMatch "\.(jpg|jpeg|png|webp|gif|svg|ico)$">
         CacheEnable on
@@ -72,6 +76,11 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 
 # Cache Control Headers
 <IfModule mod_headers.c>
+    # WordPress関連のヘッダーを削除
+    Header unset Link
+    Header unset X-Pingback
+    Header unset X-Powered-By
+    
     # GDPR API - キャッシュ無効化
     <FilesMatch "^gdpr-consent\.php$">
         Header set Cache-Control "no-cache, no-store, must-revalidate"
