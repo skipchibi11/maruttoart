@@ -62,6 +62,52 @@ if (!$material) {
             width: 100%;
             height: 100%;
         }
+        
+        /* GDPR Cookie Banner のスタイル */
+        #gdpr-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #343a40;
+            color: white;
+            padding: 1rem;
+            z-index: 1050;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+        
+        #gdpr-banner.hidden {
+            display: none;
+        }
+        
+        .gdpr-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .gdpr-buttons {
+            margin-top: 1rem;
+        }
+        
+        .gdpr-buttons .btn {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .gdpr-buttons {
+                margin-top: 0;
+            }
+        }
+        
+        /* YouTube blocked message */
+        .youtube-blocked {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -125,7 +171,7 @@ if (!$material) {
                         <h5 class="mb-0">関連動画</h5>
                     </div>
                     <div class="card-body">
-                        <div class="youtube-container">
+                        <div id="youtube-content" class="youtube-container">
                             <?php
                             $youtube_url = $material['youtube_url'];
                             // YouTube URLをembed形式に変換
@@ -139,7 +185,15 @@ if (!$material) {
                                 $embed_url = $youtube_url;
                             }
                             ?>
-                            <iframe src="<?= h($embed_url) ?>" frameborder="0" allowfullscreen></iframe>
+                            <iframe id="youtube-iframe" src="<?= h($embed_url) ?>" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div id="youtube-blocked" class="youtube-blocked" style="display: none;">
+                            <i class="bi bi-play-circle" style="font-size: 3rem; color: #6c757d;"></i>
+                            <h5 class="mt-3">動画の表示にはCookieの同意が必要です</h5>
+                            <p class="text-muted">
+                                YouTubeの動画を表示するには、Cookieの使用に同意していただく必要があります。<br>
+                                <a href="/" class="text-decoration-none">トップページ</a>で同意いただくと動画をご覧いただけます。
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -158,13 +212,157 @@ if (!$material) {
         </div>
     </footer>
 
+    <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
+    <div id="gdpr-banner" class="hidden">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="gdpr-text">
+                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                        <a href="/privacy-policy.php" class="text-white text-decoration-underline">プライバシーポリシー</a>
+                        をご確認ください。
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="gdpr-buttons text-md-end">
+                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
+                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php
     // GTranslate機能を追加
     echo renderGTranslate();
     ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
     <script>
+    // GDPR Cookie Consent (セッション・Cookie不使用版)
+    (function() {
+        const GDPR_KEY = 'gdpr_consent_v1';
+        const banner = document.getElementById('gdpr-banner');
+        const acceptBtn = document.getElementById('gdpr-accept');
+        const declineBtn = document.getElementById('gdpr-decline');
+        const youtubeContent = document.getElementById('youtube-content');
+        const youtubeBlocked = document.getElementById('youtube-blocked');
+        const youtubeIframe = document.getElementById('youtube-iframe');
+        
+        // localStorage から同意状況をチェック
+        function getGdprConsent() {
+            try {
+                return localStorage.getItem(GDPR_KEY);
+            } catch (e) {
+                return null; // localStorage が使用できない場合
+            }
+        }
+        
+        // 同意状況を保存
+        function setGdprConsent(value) {
+            try {
+                localStorage.setItem(GDPR_KEY, value);
+                return true;
+            } catch (e) {
+                return false; // localStorage が使用できない場合
+            }
+        }
+        
+        // バナーを表示
+        function showBanner() {
+            if (banner) {
+                banner.classList.remove('hidden');
+            }
+        }
+        
+        // バナーを非表示
+        function hideBanner() {
+            if (banner) {
+                banner.classList.add('hidden');
+            }
+        }
+        
+        // YouTube表示制御
+        function updateYouTubeDisplay(consent) {
+            if (!youtubeContent || !youtubeBlocked) return;
+            
+            if (consent === 'accepted') {
+                youtubeContent.style.display = 'block';
+                youtubeBlocked.style.display = 'none';
+                enableAnalytics();
+            } else if (consent === 'declined') {
+                youtubeContent.style.display = 'none';
+                youtubeBlocked.style.display = 'block';
+                disableAnalytics();
+            } else {
+                // 未設定の場合は非表示
+                youtubeContent.style.display = 'none';
+                youtubeBlocked.style.display = 'block';
+            }
+        }
+        
+        // 同意処理
+        function acceptConsent() {
+            setGdprConsent('accepted');
+            hideBanner();
+            updateYouTubeDisplay('accepted');
+        }
+        
+        // 拒否処理
+        function declineConsent() {
+            setGdprConsent('declined');
+            hideBanner();
+            updateYouTubeDisplay('declined');
+        }
+        
+        // アナリティクス有効化（プレースホルダー）
+        function enableAnalytics() {
+            console.log('Analytics enabled (detail page)');
+            // ここに Google Analytics などの初期化コードを追加
+        }
+        
+        // アナリティクス無効化（プレースホルダー）
+        function disableAnalytics() {
+            console.log('Analytics disabled (detail page)');
+            // ここにアナリティクス無効化のコードを追加する
+        }
+        
+        // 初期化
+        function init() {
+            const consent = getGdprConsent();
+            
+            if (consent === null) {
+                // 未設定の場合はバナーを表示
+                showBanner();
+                updateYouTubeDisplay(null);
+            } else if (consent === 'accepted') {
+                // 同意済みの場合はアナリティクスを有効化
+                updateYouTubeDisplay('accepted');
+            } else if (consent === 'declined') {
+                // 拒否済みの場合はアナリティクスを無効化
+                updateYouTubeDisplay('declined');
+            }
+        }
+        
+        // イベントリスナーを設定
+        if (acceptBtn) {
+            acceptBtn.addEventListener('click', acceptConsent);
+        }
+        
+        if (declineBtn) {
+            declineBtn.addEventListener('click', declineConsent);
+        }
+        
+        // DOMContentLoaded で初期化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
     </script>
 </body>
 </html>
