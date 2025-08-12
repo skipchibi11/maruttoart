@@ -25,7 +25,6 @@
             <p class="mb-4">お探しのページは存在しないか、移動された可能性があります。</p>
             <div>
                 <a href="/" class="btn btn-primary me-2">トップページに戻る</a>
-                <a href="/admin/" class="btn btn-outline-secondary">管理画面</a>
             </div>
         </div>
     </div>
