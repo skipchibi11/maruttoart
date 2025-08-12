@@ -1,6 +1,11 @@
 <?php
 require_once 'config.php';
 
+// キャッシュを無効化（GDPR APIはキャッシュしない）
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // CORS対応
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: ' . getCurrentBaseUrl());
@@ -22,9 +27,8 @@ if (!$input || !isset($input['consent'])) {
 }
 
 $consent = $input['consent'];
-$expires = time() + (365 * 24 * 60 * 60); // 1年
 
-// Cookieドメインを設定（サブドメイン間で共有）
+// Cookieドメインを計算（クライアントサイドで使用）
 $cookieDomain = '';
 $host = $_SERVER['HTTP_HOST'];
 if (strpos($host, '.') !== false && $host !== 'localhost') {
@@ -36,18 +40,30 @@ if (strpos($host, '.') !== false && $host !== 'localhost') {
 }
 
 if ($consent === true || $consent === 'true') {
-    // 同意した場合
-    setcookie('gdpr_consent', 'accepted', $expires, '/', $cookieDomain);
+    // 同意した場合 - Cookie設定情報をクライアントに返す
     echo json_encode([
         'status' => 'success', 
-        'message' => 'Consent accepted'
+        'message' => 'Consent accepted',
+        'cookie' => [
+            'name' => 'gdpr_consent',
+            'value' => 'accepted',
+            'expires' => time() + (365 * 24 * 60 * 60), // 1年
+            'domain' => $cookieDomain,
+            'path' => '/'
+        ]
     ]);
 } else {
-    // 拒否した場合
-    setcookie('gdpr_consent', 'rejected', $expires, '/', $cookieDomain);
+    // 拒否した場合 - Cookie設定情報をクライアントに返す
     echo json_encode([
         'status' => 'success', 
-        'message' => 'Consent rejected'
+        'message' => 'Consent rejected',
+        'cookie' => [
+            'name' => 'gdpr_consent',
+            'value' => 'rejected',
+            'expires' => time() + (365 * 24 * 60 * 60), // 1年
+            'domain' => $cookieDomain,
+            'path' => '/'
+        ]
     ]);
 }
 ?>

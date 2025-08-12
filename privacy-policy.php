@@ -202,7 +202,19 @@ setStaticCacheHeaders();
             })
             .then(data => {
                 console.log('Response data:', data);
-                if (data.status === 'success') {
+                if (data.status === 'success' && data.cookie) {
+                    // クライアントサイドでCookieを設定
+                    const cookie = data.cookie;
+                    const expires = new Date(cookie.expires * 1000).toUTCString();
+                    let cookieString = `${cookie.name}=${cookie.value}; expires=${expires}; path=${cookie.path}`;
+                    
+                    if (cookie.domain && cookie.domain !== '') {
+                        cookieString += `; domain=${cookie.domain}`;
+                    }
+                    
+                    document.cookie = cookieString;
+                    console.log('Cookie set:', cookieString);
+                    
                     const banner = document.getElementById('gdpr-banner');
                     if (banner) {
                         console.log('Hiding banner');
@@ -219,6 +231,7 @@ setStaticCacheHeaders();
             .catch(error => {
                 console.error('Error:', error);
             });
+        }
         }
     </script>
 </body>

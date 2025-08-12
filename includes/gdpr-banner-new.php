@@ -17,16 +17,16 @@ function renderGDPRBanner() {
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h5 class="mb-2">Cookieの使用について</h5>
-                    <p class="mb-2">
+                    <h5 class="mb-2" data-translate="gdpr-title">Cookieの使用について</h5>
+                    <p class="mb-2" data-translate="gdpr-message">
                         このサイトでは、より良いユーザーエクスペリエンスを提供するためにCookieを使用しています。
                         翻訳機能やサイトの最適化のためにデータを収集・処理しています。
-                        詳細については<a href="/privacy-policy.php" style="color: #0d6efd;">プライバシーポリシー</a>をご確認ください。
+                        詳細については<a href="/privacy-policy.php" style="color: #0d6efd;" data-translate="privacy-policy-link">プライバシーポリシー</a>をご確認ください。
                     </p>
                 </div>
                 <div class="col-md-4 text-md-end">
-                    <button id="gdpr-accept" class="btn btn-success me-2">同意する</button>
-                    <button id="gdpr-decline" class="btn btn-outline-secondary">拒否する</button>
+                    <button id="gdpr-accept" class="btn btn-success me-2" data-translate="gdpr-accept">同意する</button>
+                    <button id="gdpr-decline" class="btn btn-outline-secondary" data-translate="gdpr-decline">拒否する</button>
                 </div>
             </div>
         </div>
