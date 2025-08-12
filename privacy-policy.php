@@ -2,6 +2,9 @@
 require_once 'config.php';
 require_once 'includes/gdpr-banner-new.php';
 require_once 'includes/gtranslate.php';
+
+// 静的コンテンツのキャッシュヘッダーを設定（プライバシーポリシーは変更頻度が低い）
+setStaticCacheHeaders();
 ?>
 
 <!DOCTYPE html>

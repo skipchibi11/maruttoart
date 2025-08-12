@@ -168,4 +168,44 @@ function getGDPRConsentText() {
         'learn_more' => '詳細はこちら'
     ];
 }
+
+// キャッシュヘッダーを設定する関数
+function setCacheHeaders($maxAge = 3600) {
+    // キャッシュの有効期間を設定（デフォルト1時間）
+    header('Cache-Control: public, max-age=' . $maxAge);
+    header('Pragma: cache');
+    
+    // ETag を設定（ファイルの更新時刻を元に）
+    $etag = md5($_SERVER['REQUEST_URI'] . filemtime(__FILE__));
+    header('ETag: "' . $etag . '"');
+    
+    // Last-Modified ヘッダー
+    header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime(__FILE__)) . ' GMT');
+    
+    // クライアントのキャッシュをチェック
+    $clientEtag = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
+    $clientModified = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '';
+    
+    if ($clientEtag && $clientEtag === '"' . $etag . '"') {
+        // ETagが一致する場合、304を返す
+        http_response_code(304);
+        exit;
+    }
+    
+    if ($clientModified && strtotime($clientModified) >= filemtime(__FILE__)) {
+        // 変更日時が古い場合、304を返す
+        http_response_code(304);
+        exit;
+    }
+}
+
+// 静的リソース用のキャッシュヘッダー（長期間）
+function setStaticCacheHeaders() {
+    setCacheHeaders(86400 * 30); // 30日間
+}
+
+// 動的コンテンツ用のキャッシュヘッダー（短期間）
+function setDynamicCacheHeaders() {
+    setCacheHeaders(3600); // 1時間
+}
 ?>

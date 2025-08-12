@@ -3,6 +3,9 @@ require_once '../config.php';
 require_once '../includes/gdpr-banner-new.php';
 require_once '../includes/gtranslate.php';
 
+// 動的コンテンツのキャッシュヘッダーを設定
+setDynamicCacheHeaders();
+
 $slug = $_GET['slug'] ?? '';
 if (empty($slug)) {
     header('HTTP/1.0 404 Not Found');
