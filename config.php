@@ -185,39 +185,11 @@ function convertToWebP($source, $destination) {
     return false;
 }
 
-// GDPR Cookie同意関連の関数
-function hasGDPRConsent() {
-    return isset($_COOKIE['gdpr_consent']) && $_COOKIE['gdpr_consent'] === 'accepted';
-}
-
-function shouldShowGDPRBanner() {
-    // GDPRクッキーが設定されていない場合のみバナーを表示
-    return !isset($_COOKIE['gdpr_consent']);
-}
-
-// 第三者サービス（YouTube等）の読み込み許可を判定
-function canLoadThirdPartyServices() {
-    // 同意している場合のみ第三者サービスを読み込む
-    return hasGDPRConsent();
-}
-
 // 現在のサイトのベースURLを取得（言語サブドメイン対応）
 function getCurrentBaseUrl() {
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     return $protocol . '://' . $host;
-}
-
-// GDPR同意文のテキスト（サーバーサイドでレンダリング用）
-function getGDPRConsentText() {
-    return [
-        'title' => 'Cookieの使用について',
-        'message' => '当サイトでは、サービスの向上や翻訳機能（GTranslate）の提供のためにCookieを使用しています。引き続きサイトをご利用いただくには、Cookieの使用に同意していただく必要があります。',
-        'accept_button' => 'すべて同意する',
-        'settings_button' => '設定',
-        'reject_button' => '拒否',
-        'privacy_policy' => 'プライバシーポリシー',
-        'learn_more' => '詳細はこちら'
     ];
 }
 

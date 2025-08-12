@@ -37,7 +37,7 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 <IfModule mod_headers.c>
   # 非キャッシュ対象を環境変数でまとめる
   SetEnvIf Request_URI "^/admin/" nocache=1
-  SetEnvIf Request_URI "^/(gdpr-consent|cache-test|cdn-test)\.php$" nocache=1
+  SetEnvIf Request_URI "^/(cache-test|cdn-test)\.php$" nocache=1
 
   # 非キャッシュ: 管理・API等
   Header set Cache-Control "no-store, no-cache, must-revalidate" env=nocache
