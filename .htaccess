@@ -1,4 +1,13 @@
 # === security hardening start ===
+# セキュリティヘッダー
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
 <FilesMatch "(?i)^dockerfile$">
   Require all denied
 </FilesMatch>
@@ -26,170 +35,37 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 
 # Apache Cache Control Settings
 
-# LiteSpeed Cache Settings
-<IfModule LiteSpeed>
-    # LiteSpeed Cache を有効化
-    CacheLookup on
-    # WordPressキャッシュをクリア（移行完了後は削除可能）
-    # CachePurgeAll on
-    # 移行完了：キャッシュを再有効化
-    # CacheDisable *
-    # DirectoryIndex を設定してWordPressのindex.phpを無効化
-    DirectoryIndex main.php index-new.php index.php
-    # ロリポップ最適化
-    <FilesMatch "\.(jpg|jpeg|png|webp|gif|svg|ico)$">
-        CacheEnable on
-        Header set X-LiteSpeed-Cache-Control "public, max-age=31536000, immutable"
-        Header set X-Lolipop-Cache "static"
-    </FilesMatch>
-    # CSS/JSの中期キャッシュ
-    <FilesMatch "\.(css|js)$">
-        CacheEnable on
-        Header set X-LiteSpeed-Cache-Control "public, max-age=604800"
-        Header set X-Lolipop-Cache "static"
-    </FilesMatch>
-    # PHPファイルの短期キャッシュ
-    <FilesMatch "\.(php)$">
-        CacheEnable on
-        Header set X-LiteSpeed-Cache-Control "public, max-age=3600"
-        Header set X-Lolipop-Cache "dynamic"
-    </FilesMatch>
+# シンプルなキャッシュ設定
+<IfModule mod_headers.c>
+    # admin ディレクトリはキャッシュ無効化
+    <If "%{REQUEST_URI} =~ m#^/admin/#">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, private"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </If>
+    # ルート直下のAPI エンドポイントはキャッシュ無効化（admin以外）
+    <ElseIf "%{REQUEST_URI} =~ m#^/(gdpr-consent|cache-test|cdn-test)\.php$#">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </ElseIf>
+    <Else>
+        Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+    </Else>
 </IfModule>
-
-# Enable mod_expires
 <IfModule mod_expires.c>
     ExpiresActive On
-    
-    # Images (30 days)
-    ExpiresByType image/jpg "access plus 30 days"
-    ExpiresByType image/jpeg "access plus 30 days"
-    ExpiresByType image/png "access plus 30 days"
-    ExpiresByType image/webp "access plus 30 days"
-    ExpiresByType image/gif "access plus 30 days"
-    ExpiresByType image/svg+xml "access plus 30 days"
-    ExpiresByType image/x-icon "access plus 30 days"
-    ExpiresByType image/ico "access plus 30 days"
-    
-    # CSS and JavaScript (7 days)
-    ExpiresByType text/css "access plus 7 days"
-    ExpiresByType application/javascript "access plus 7 days"
-    ExpiresByType text/javascript "access plus 7 days"
-    
-    # HTML (1 hour)
-    ExpiresByType text/html "access plus 1 hour"
-    
-    # Fonts (30 days)
-    ExpiresByType font/woff2 "access plus 30 days"
-    ExpiresByType font/woff "access plus 30 days"
-    ExpiresByType application/font-woff "access plus 30 days"
-    ExpiresByType application/font-woff2 "access plus 30 days"
+    # admin ディレクトリとAPIエンドポイントは除外
+    <If "%{REQUEST_URI} !~ m#^/admin/# && %{REQUEST_URI} !~ m#^/(gdpr-consent|cache-test|cdn-test)\.php$#">
+        ExpiresDefault "access plus 30 days"
+    </If>
 </IfModule>
 
-# Cache Control Headers
-<IfModule mod_headers.c>
-    # WordPress関連のヘッダーを削除
-    Header unset Link
-    Header unset X-Pingback
-    Header unset X-Powered-By
-    
-    # GDPR API - キャッシュ無効化
-    <FilesMatch "^gdpr-consent\.php$">
-        Header set Cache-Control "no-cache, no-store, must-revalidate"
-        Header set Pragma "no-cache"
-        Header set Expires "0"
-        # LiteSpeed用
-        Header set X-LiteSpeed-Cache-Control "no-cache"
-    </FilesMatch>
-    
-    # Cache-test API - キャッシュ無効化
-    <FilesMatch "^cache-test\.php$">
-        Header set Cache-Control "no-cache, no-store, must-revalidate"
-        Header set Pragma "no-cache"
-        Header set Expires "0"
-        # LiteSpeed用
-        Header set X-LiteSpeed-Cache-Control "no-cache"
-    </FilesMatch>
-    
-    # CDN診断ツール - キャッシュ無効化
-    <FilesMatch "^cdn-test\.php$">
-        Header set Cache-Control "no-cache, no-store, must-revalidate"
-        Header set Pragma "no-cache"
-        Header set Expires "0"
-        # LiteSpeed用
-        Header set X-LiteSpeed-Cache-Control "no-cache"
-    </FilesMatch>
-    
-    # Images - CDN最適化
-    <FilesMatch "\.(jpg|jpeg|png|webp|gif|svg|ico)$">
-        Header set Cache-Control "public, max-age=31536000, immutable"
-        Header set Pragma "cache"
-        Header always set X-Content-Type-Options "nosniff"
-        # CDN向けのキャッシュヒント
-        Header always set CF-Cache-Tag "images"
-        Header always set Edge-Cache-Tag "static"
-    </FilesMatch>
-    
-    # CSS and JavaScript
-    <FilesMatch "\.(css|js)$">
-        Header set Cache-Control "public, max-age=604800"
-        Header set Pragma "cache"
-    </FilesMatch>
-    
-    # PHP files - CDN最適化
-    <FilesMatch "\.(php)$">
-        Header set Cache-Control "public, max-age=3600, s-maxage=7200"
-        Header set Pragma "cache"
-        Header set Vary "Accept-Encoding"
-        Header always set X-Cache-Control "public"
-        Header always set X-Content-Type-Options "nosniff"
-        # ETag設定を強制
-        Header always set ETag ""
-        Header always set Last-Modified ""
-    </FilesMatch>
-    
-    # Fonts
-    <FilesMatch "\.(woff2|woff|ttf|otf)$">
-        Header set Cache-Control "public, max-age=2592000"
-        Header set Pragma "cache"
-    </FilesMatch>
-</IfModule>
-
-# Compression
-<IfModule mod_deflate.c>
-    # Compress HTML, CSS, JavaScript, Text, XML and fonts
-    AddOutputFilterByType DEFLATE application/javascript
-    AddOutputFilterByType DEFLATE application/rss+xml
-    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
-    AddOutputFilterByType DEFLATE application/x-font
-    AddOutputFilterByType DEFLATE application/x-font-opentype
-    AddOutputFilterByType DEFLATE application/x-font-otf
-    AddOutputFilterByType DEFLATE application/x-font-truetype
-    AddOutputFilterByType DEFLATE application/x-font-ttf
-    AddOutputFilterByType DEFLATE application/x-javascript
-    AddOutputFilterByType DEFLATE application/xhtml+xml
-    AddOutputFilterByType DEFLATE application/xml
-    AddOutputFilterByType DEFLATE font/opentype
-    AddOutputFilterByType DEFLATE font/otf
-    AddOutputFilterByType DEFLATE font/ttf
-    AddOutputFilterByType DEFLATE image/svg+xml
-    AddOutputFilterByType DEFLATE image/x-icon
-    AddOutputFilterByType DEFLATE text/css
-    AddOutputFilterByType DEFLATE text/html
-    AddOutputFilterByType DEFLATE text/javascript
-    AddOutputFilterByType DEFLATE text/plain
-    AddOutputFilterByType DEFLATE text/xml
-</IfModule>
-
-# Enable ETags
-FileETag MTime Size
 
 RewriteEngine On
 
 # 詳細ページのURL書き換え
 RewriteRule ^detail/([a-zA-Z0-9\-]+)/?$ /detail/index.php?slug=$1 [QSA,L]
-
-# 管理画面へのアクセス制御（必要に応じて）
-# RewriteRule ^admin/ - [E=no_access:1]
 
 # 画像ファイルへの直接アクセスを許可
 RewriteCond %{REQUEST_FILENAME} -f

@@ -1,0 +1,20 @@
+# admin ディレクトリの保護
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options DENY
+    Header always set X-Content-Type-Options nosniff
+    # 管理画面はキャッシュ完全無効化
+    Header always set Cache-Control "no-cache, no-store, must-revalidate, private"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+    Header always set Last-Modified ""
+    Header always set ETag ""
+</IfModule>
+
+# ディレクトリリスティングを禁止
+Options -Indexes
+
+# 特定のIPアドレスからのみアクセスを許可（必要に応じて設定）
+# <RequireAll>
+#     Require ip 192.168.1.0/24
+#     Require ip 127.0.0.1
+# </RequireAll>

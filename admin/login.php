@@ -1,6 +1,9 @@
 <?php
 require_once '../config.php';
 
+// ログインページもキャッシュ無効化
+setNoCache();
+
 $error = '';
 $success = '';
 

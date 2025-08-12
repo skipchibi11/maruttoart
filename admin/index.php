@@ -2,6 +2,9 @@
 require_once '../config.php';
 requireLogin();
 
+// 管理画面はキャッシュ無効化
+setNoCache();
+
 $pdo = getDB();
 
 // 素材一覧取得

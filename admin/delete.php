@@ -2,6 +2,9 @@
 require_once '../config.php';
 requireLogin();
 
+// 管理画面はキャッシュ無効化
+setNoCache();
+
 $id = $_GET['id'] ?? '';
 if (empty($id) || !is_numeric($id)) {
     header('Location: /admin/');

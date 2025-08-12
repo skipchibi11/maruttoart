@@ -78,33 +78,85 @@ function requireLogin() {
     }
 }
 
+// CSRF対策
+function generateCSRFToken() {
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function verifyCSRFToken($token) {
+    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+}
+
 // XSS対策
 function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-// ファイルアップロード関数
+// ファイルアップロード関数（セキュリティ強化版）
 function uploadImage($file, $slug) {
-    $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
-    if (!file_exists($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
+    // セキュリティチェック
+    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
+    
+    // ファイルサイズチェック
+    if ($file['size'] > $maxFileSize) {
+        throw new Exception('ファイルサイズが大きすぎます（最大5MB）');
     }
     
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $filename = $slug . '.' . $extension;
+    // MIMEタイプチェック
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($mimeType, $allowedTypes)) {
+        throw new Exception('許可されていないファイル形式です');
+    }
+    
+    // 拡張子チェック
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($extension, $allowedExtensions)) {
+        throw new Exception('許可されていないファイル拡張子です');
+    }
+    
+    // スラッグの安全性チェック
+    if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $slug)) {
+        throw new Exception('スラッグに不正な文字が含まれています');
+    }
+    
+    $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+    if (!file_exists($uploadDir)) {
+        if (!mkdir($uploadDir, 0755, true)) {
+            throw new Exception('アップロードディレクトリの作成に失敗しました');
+        }
+    }
+    
+    // ファイル名を安全に生成
+    $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.' . $extension;
     $filepath = $uploadDir . $filename;
+    
+    // ファイルの重複チェック
+    $counter = 1;
+    while (file_exists($filepath)) {
+        $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '_' . $counter . '.' . $extension;
+        $filepath = $uploadDir . $filename;
+        $counter++;
+    }
     
     if (move_uploaded_file($file['tmp_name'], $filepath)) {
         // WebP変換
-        $webpPath = $uploadDir . $slug . '.webp';
+        $webpPath = $uploadDir . preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.webp';
         convertToWebP($filepath, $webpPath);
         
         return [
             'original' => 'uploads/' . date('Y/m/') . $filename,
-            'webp' => 'uploads/' . date('Y/m/') . $slug . '.webp'
+            'webp' => 'uploads/' . date('Y/m/') . preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.webp'
         ];
     }
-    return false;
+    throw new Exception('ファイルのアップロードに失敗しました');
 }
 
 // WebP変換関数
@@ -169,68 +221,10 @@ function getGDPRConsentText() {
     ];
 }
 
-// キャッシュヘッダーを設定する関数（CDN最適化版）
-function setCacheHeaders($maxAge = 3600, $sMaxAge = null) {
-    // s-maxage はCDN向けのキャッシュ期間（通常はmaxAgeより長め）
-    $sMaxAge = $sMaxAge ?? ($maxAge * 2);
-    
-    // CDN向けの強力なキャッシュヘッダー
-    header('Cache-Control: public, max-age=' . $maxAge . ', s-maxage=' . $sMaxAge . ', stale-while-revalidate=86400');
-    header('Pragma: cache');
-    
-    // LiteSpeed特有のキャッシュヘッダー
-    header('X-LiteSpeed-Cache-Control: public, max-age=' . $maxAge);
-    
-    // ETags と Last-Modified を強化
-    $etag = md5($_SERVER['REQUEST_URI'] . $_SERVER['QUERY_STRING'] . filemtime(__FILE__));
-    header('ETag: "' . $etag . '"');
-    header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime(__FILE__)) . ' GMT');
-    
-    // CDN最適化ヘッダー
-    header('Vary: Accept-Encoding');
-    header('X-Content-Type-Options: nosniff');
-    header('X-Cache-Status: MISS'); // CDNでオーバーライドされる
-    
-    // クライアントのキャッシュ検証
-    checkClientCache($etag);
-}
-
-// クライアントキャッシュの検証を分離
-function checkClientCache($etag) {
-    $clientEtag = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
-    $clientModified = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '';
-    
-    if ($clientEtag && trim($clientEtag, '"') === $etag) {
-        http_response_code(304);
-        header('X-Cache-Result: HIT-CLIENT');
-        exit;
-    }
-    
-    if ($clientModified && strtotime($clientModified) >= filemtime(__FILE__)) {
-        http_response_code(304);
-        header('X-Cache-Result: HIT-CLIENT-MODIFIED');
-        exit;
-    }
-}
-
-// 静的リソース用のキャッシュヘッダー（長期間・CDN最適化）
-function setStaticCacheHeaders() {
-    setCacheHeaders(86400 * 30, 86400 * 60); // 30日間（CDNは60日）
-    header('Cache-Control: public, max-age=2592000, s-maxage=5184000, immutable');
-}
-
-// 動的コンテンツ用のキャッシュヘッダー（短期間・CDN最適化）
-function setDynamicCacheHeaders() {
-    setCacheHeaders(3600, 7200); // 1時間（CDNは2時間）
-}
-
-// APIエンドポイント用（キャッシュ無効）
+// キャッシュ無効化（API用）
 function setNoCache() {
     header('Cache-Control: no-cache, no-store, must-revalidate, private');
     header('Pragma: no-cache');
     header('Expires: 0');
-    header('X-Cache-Control: NOCACHE');
-    // LiteSpeed用
-    header('X-LiteSpeed-Cache-Control: no-cache');
 }
 ?>
