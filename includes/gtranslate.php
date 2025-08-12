@@ -24,7 +24,7 @@ function renderGTranslate() {
             
             // 言語マッピング
             const languageMap = {
-                'maruttoart': 'ja',  // メインドメイン（日本語）
+                'marutto': 'ja',  // メインドメイン（日本語）
                 'en': 'en',
                 'es': 'es', 
                 'fr': 'fr',
@@ -37,7 +37,7 @@ function renderGTranslate() {
             const dropdownItems = document.querySelectorAll('#languageDropdown + .dropdown-menu .dropdown-item');
             dropdownItems.forEach(item => {
                 const href = item.getAttribute('href');
-                if (href.includes(subdomain + '.') || (subdomain === 'maruttoart' && href === 'https://maruttoart.com')) {
+                if (href.includes(subdomain + '.') || (subdomain === 'marutto' && href === 'https://marutto.art')) {
                     item.classList.add('active');
                 }
             });
@@ -78,10 +78,10 @@ function getTranslatedUrl($targetLang) {
         // サブドメインがある場合
         if ($targetLang === 'ja') {
             // 日本語の場合はメインドメイン
-            $newHost = 'maruttoart.com';
+            $newHost = 'marutto.art';
         } else {
             // 他の言語の場合はサブドメイン
-            $newHost = $targetLang . '.maruttoart.com';
+            $newHost = $targetLang . '.marutto.art';
         }
     } else {
         // サブドメインがない場合（localhost等）

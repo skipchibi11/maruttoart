@@ -73,11 +73,11 @@ if (!$material) {
                         <i class="bi bi-globe"></i> 言語
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-                        <li><a class="dropdown-item" href="https://maruttoart.com">🇯🇵 日本語</a></li>
-                        <li><a class="dropdown-item" href="https://en.maruttoart.com">🇺🇸 English</a></li>
-                        <li><a class="dropdown-item" href="https://es.maruttoart.com">🇪🇸 Español</a></li>
-                        <li><a class="dropdown-item" href="https://fr.maruttoart.com">🇫🇷 Français</a></li>
-                        <li><a class="dropdown-item" href="https://nl.maruttoart.com">🇳🇱 Nederlands</a></li>
+                        <li><a class="dropdown-item" href="https://marutto.art">🇯🇵 日本語</a></li>
+                        <li><a class="dropdown-item" href="https://en.marutto.art">🇺🇸 English</a></li>
+                        <li><a class="dropdown-item" href="https://es.marutto.art">🇪🇸 Español</a></li>
+                        <li><a class="dropdown-item" href="https://fr.marutto.art">🇫🇷 Français</a></li>
+                        <li><a class="dropdown-item" href="https://nl.marutto.art">🇳🇱 Nederlands</a></li>
                     </ul>
                 </div>
                 <a class="nav-link" href="/">戻る</a>
