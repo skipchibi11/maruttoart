@@ -178,6 +178,9 @@ function setCacheHeaders($maxAge = 3600, $sMaxAge = null) {
     header('Cache-Control: public, max-age=' . $maxAge . ', s-maxage=' . $sMaxAge . ', stale-while-revalidate=86400');
     header('Pragma: cache');
     
+    // LiteSpeed特有のキャッシュヘッダー
+    header('X-LiteSpeed-Cache-Control: public, max-age=' . $maxAge);
+    
     // ETags と Last-Modified を強化
     $etag = md5($_SERVER['REQUEST_URI'] . $_SERVER['QUERY_STRING'] . filemtime(__FILE__));
     header('ETag: "' . $etag . '"');
@@ -227,5 +230,7 @@ function setNoCache() {
     header('Pragma: no-cache');
     header('Expires: 0');
     header('X-Cache-Control: NOCACHE');
+    // LiteSpeed用
+    header('X-LiteSpeed-Cache-Control: no-cache');
 }
 ?>

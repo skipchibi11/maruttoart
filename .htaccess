@@ -17,6 +17,27 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 
 # Apache Cache Control Settings
 
+# LiteSpeed Cache Settings
+<IfModule LiteSpeed>
+    # LiteSpeed Cache を有効化
+    CacheLookup on
+    # 画像の長期キャッシュ
+    <FilesMatch "\.(jpg|jpeg|png|webp|gif|svg|ico)$">
+        CacheEnable on
+        Header set X-LiteSpeed-Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    # CSS/JSの中期キャッシュ
+    <FilesMatch "\.(css|js)$">
+        CacheEnable on
+        Header set X-LiteSpeed-Cache-Control "public, max-age=604800"
+    </FilesMatch>
+    # PHPファイルの短期キャッシュ
+    <FilesMatch "\.(php)$">
+        CacheEnable on
+        Header set X-LiteSpeed-Cache-Control "public, max-age=3600"
+    </FilesMatch>
+</IfModule>
+
 # Enable mod_expires
 <IfModule mod_expires.c>
     ExpiresActive On
@@ -53,6 +74,8 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
         Header set Cache-Control "no-cache, no-store, must-revalidate"
         Header set Pragma "no-cache"
         Header set Expires "0"
+        # LiteSpeed用
+        Header set X-LiteSpeed-Cache-Control "no-cache"
     </FilesMatch>
     
     # Cache-test API - キャッシュ無効化
@@ -60,6 +83,17 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
         Header set Cache-Control "no-cache, no-store, must-revalidate"
         Header set Pragma "no-cache"
         Header set Expires "0"
+        # LiteSpeed用
+        Header set X-LiteSpeed-Cache-Control "no-cache"
+    </FilesMatch>
+    
+    # CDN診断ツール - キャッシュ無効化
+    <FilesMatch "^cdn-test\.php$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+        # LiteSpeed用
+        Header set X-LiteSpeed-Cache-Control "no-cache"
     </FilesMatch>
     
     # Images - CDN最適化
