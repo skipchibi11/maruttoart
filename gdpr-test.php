@@ -70,7 +70,16 @@ setPublicCache(300, 600); // 5分 / CDN 10分
             <li>このテストページでGDPR機能の動作を確認できます</li>
             <li>セッションやCookieは使用せず、localStorageのみを使用</li>
             <li>CDNキャッシュに影響しません</li>
-            <li>初回訪問時はトップページでバナーが表示されます</li>
+            <li>初回訪問時はすべてのページでバナーが表示されます</li>
+            <li><strong>拒否した場合、YouTube動画が非表示になります</strong></li>
+        </ul>
+        
+        <h2>テスト対象ページ</h2>
+        <ul>
+            <li><a href="/">トップページ</a> - GDPRバナー表示</li>
+            <li><a href="/detail/lemon">詳細ページ</a> - YouTube表示制御テスト</li>
+            <li><a href="/privacy-policy.php">プライバシーポリシー</a> - GDPRバナー表示</li>
+            <li><a href="/404.php">404ページ</a> - GDPRバナー表示</li>
         </ul>
         
         <div style="margin-top: 30px;">
