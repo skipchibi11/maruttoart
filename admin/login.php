@@ -1,11 +1,19 @@
 <?php
 require_once '../config.php';
 
+// 管理画面専用セッション開始
+startAdminSession();
+
+// すでにログインしている場合はダッシュボードにリダイレクト
+if (isLoggedIn()) {
+    header('Location: /admin/');
+    exit;
+}
+
 // ログインページもキャッシュ無効化
 setNoCache();
 
 $error = '';
-$success = '';
 
 if ($_POST) {
     $email = $_POST['email'] ?? '';

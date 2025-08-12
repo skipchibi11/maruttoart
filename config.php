@@ -41,6 +41,13 @@ define('DB_PASS', $_ENV['DB_PASSWORD'] ?? 'password');
 define('SITE_URL', $_ENV['SITE_URL'] ?? 'http://localhost');
 define('UPLOADS_PATH', 'uploads');
 
+// 管理画面専用セッション開始（CDNキャッシュ対策）
+function startAdminSession() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+}
+
 // データベース接続関数
 function getDB() {
     try {
@@ -62,6 +69,7 @@ function getDB() {
 
 // ログイン状態チェック関数
 function isLoggedIn() {
+    startAdminSession(); // セッション開始
     return isset($_SESSION['admin_id']);
 }
 
@@ -75,6 +83,7 @@ function requireLogin() {
 
 // CSRF対策
 function generateCSRFToken() {
+    startAdminSession(); // セッション開始
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -82,6 +91,7 @@ function generateCSRFToken() {
 }
 
 function verifyCSRFToken($token) {
+    startAdminSession(); // セッション開始
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 

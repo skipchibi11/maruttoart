@@ -1,5 +1,6 @@
 <?php
 require_once '../config.php';
+startAdminSession(); // 管理画面専用セッション開始
 requireLogin();
 
 // 管理画面はキャッシュ無効化

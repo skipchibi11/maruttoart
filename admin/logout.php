@@ -1,10 +1,8 @@
 <?php
 require_once '../config.php';
 
-// ログイン状態でなくても安全にログアウト処理を実行
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// 管理画面専用セッション開始
+startAdminSession();
 
 // セッション変数をすべて削除
 $_SESSION = array();
