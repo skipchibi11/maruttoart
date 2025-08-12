@@ -30,9 +30,9 @@ CREATE TABLE materials (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 初期管理者データを挿入
+-- 初期管理者データを挿入（パスワードはハッシュ化済み: example1234）
 INSERT INTO admins (email, password) VALUES 
-('example@example.com', 'example1234');
+('example@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
 
 -- サンプルデータ
 INSERT INTO materials (title, slug, description, youtube_url, search_keywords_en, search_keywords_jp, image_path, webp_path, upload_date) VALUES

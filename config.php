@@ -60,11 +60,6 @@ function getDB() {
     }
 }
 
-// セッション開始
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 // ログイン状態チェック関数
 function isLoggedIn() {
     return isset($_SESSION['admin_id']);
