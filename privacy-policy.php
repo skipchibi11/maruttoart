@@ -204,6 +204,8 @@ require_once 'includes/gtranslate.php';
                     if (banner) {
                         console.log('Hiding banner');
                         banner.style.display = 'none';
+                        // body paddingを削除
+                        document.body.classList.remove('gdpr-banner-visible');
                         // ページをリロードして最新の状態を反映
                         setTimeout(() => {
                             window.location.reload();
