@@ -21,7 +21,7 @@ function renderGDPRBanner() {
                     <p class="mb-2">
                         このサイトでは、より良いユーザーエクスペリエンスを提供するためにCookieを使用しています。
                         翻訳機能やサイトの最適化のためにデータを収集・処理しています。
-                        詳細については<a href="./privacy-policy.php" style="color: #ffc107;">プライバシーポリシー</a>をご確認ください。
+                        詳細については<a href="/privacy-policy.php" style="color: #ffc107;">プライバシーポリシー</a>をご確認ください。
                     </p>
                 </div>
                 <div class="col-md-4 text-md-end">

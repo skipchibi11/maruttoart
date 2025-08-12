@@ -306,7 +306,10 @@ $materials = $stmt->fetchAll();
         function handleGDPRConsent(consent) {
             console.log('handleGDPRConsent called with:', consent);
             
-            fetch('./gdpr-consent.php', {
+            // 現在のドメインでGDPR APIを呼び出し
+            const apiUrl = window.location.protocol + '//' + window.location.host + '/gdpr-consent.php';
+            
+            fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

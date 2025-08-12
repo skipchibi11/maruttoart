@@ -117,6 +117,13 @@ function canLoadThirdPartyServices() {
     return hasGDPRConsent();
 }
 
+// 現在のサイトのベースURLを取得（言語サブドメイン対応）
+function getCurrentBaseUrl() {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    return $protocol . '://' . $host;
+}
+
 // GDPR同意文のテキスト（サーバーサイドでレンダリング用）
 function getGDPRConsentText() {
     return [
