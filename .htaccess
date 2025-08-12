@@ -1,6 +1,6 @@
 # === WordPress から PHP アプリケーションへの移行設定 ===
 # DirectoryIndex の優先順位を設定（WordPressのindex.phpを回避）
-DirectoryIndex main.php index-new.php test-simple.php
+DirectoryIndex home.php main.php index-new.php index.php
 
 # === security hardening start ===
 <FilesMatch "(?i)^dockerfile$">
