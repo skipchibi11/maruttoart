@@ -1,10 +1,8 @@
 <?php
 require_once 'config.php';
 
-// キャッシュを無効化（GDPR APIはキャッシュしない）
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
+// APIエンドポイントのキャッシュ無効化
+setNoCache();
 
 // CORS対応
 header('Content-Type: application/json');

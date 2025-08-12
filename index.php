@@ -47,8 +47,10 @@ $materials = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="public, max-age=3600">
+    <meta http-equiv="Cache-Control" content="public, max-age=3600, s-maxage=7200">
     <meta http-equiv="Pragma" content="cache">
+    <meta name="cache-control" content="public">
+    <meta name="x-cache-status" content="dynamic">
     <title>無料のかわいい水彩イラスト素材集｜maruttoart（商用利用OK）</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">

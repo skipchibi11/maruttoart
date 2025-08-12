@@ -169,43 +169,63 @@ function getGDPRConsentText() {
     ];
 }
 
-// キャッシュヘッダーを設定する関数
-function setCacheHeaders($maxAge = 3600) {
-    // キャッシュの有効期間を設定（デフォルト1時間）
-    header('Cache-Control: public, max-age=' . $maxAge);
+// キャッシュヘッダーを設定する関数（CDN最適化版）
+function setCacheHeaders($maxAge = 3600, $sMaxAge = null) {
+    // s-maxage はCDN向けのキャッシュ期間（通常はmaxAgeより長め）
+    $sMaxAge = $sMaxAge ?? ($maxAge * 2);
+    
+    // CDN向けの強力なキャッシュヘッダー
+    header('Cache-Control: public, max-age=' . $maxAge . ', s-maxage=' . $sMaxAge . ', stale-while-revalidate=86400');
     header('Pragma: cache');
     
-    // ETag を設定（ファイルの更新時刻を元に）
-    $etag = md5($_SERVER['REQUEST_URI'] . filemtime(__FILE__));
+    // ETags と Last-Modified を強化
+    $etag = md5($_SERVER['REQUEST_URI'] . $_SERVER['QUERY_STRING'] . filemtime(__FILE__));
     header('ETag: "' . $etag . '"');
-    
-    // Last-Modified ヘッダー
     header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime(__FILE__)) . ' GMT');
     
-    // クライアントのキャッシュをチェック
+    // CDN最適化ヘッダー
+    header('Vary: Accept-Encoding');
+    header('X-Content-Type-Options: nosniff');
+    header('X-Cache-Status: MISS'); // CDNでオーバーライドされる
+    
+    // クライアントのキャッシュ検証
+    checkClientCache($etag);
+}
+
+// クライアントキャッシュの検証を分離
+function checkClientCache($etag) {
     $clientEtag = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
     $clientModified = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '';
     
-    if ($clientEtag && $clientEtag === '"' . $etag . '"') {
-        // ETagが一致する場合、304を返す
+    if ($clientEtag && trim($clientEtag, '"') === $etag) {
         http_response_code(304);
+        header('X-Cache-Result: HIT-CLIENT');
         exit;
     }
     
     if ($clientModified && strtotime($clientModified) >= filemtime(__FILE__)) {
-        // 変更日時が古い場合、304を返す
         http_response_code(304);
+        header('X-Cache-Result: HIT-CLIENT-MODIFIED');
         exit;
     }
 }
 
-// 静的リソース用のキャッシュヘッダー（長期間）
+// 静的リソース用のキャッシュヘッダー（長期間・CDN最適化）
 function setStaticCacheHeaders() {
-    setCacheHeaders(86400 * 30); // 30日間
+    setCacheHeaders(86400 * 30, 86400 * 60); // 30日間（CDNは60日）
+    header('Cache-Control: public, max-age=2592000, s-maxage=5184000, immutable');
 }
 
-// 動的コンテンツ用のキャッシュヘッダー（短期間）
+// 動的コンテンツ用のキャッシュヘッダー（短期間・CDN最適化）
 function setDynamicCacheHeaders() {
-    setCacheHeaders(3600); // 1時間
+    setCacheHeaders(3600, 7200); // 1時間（CDNは2時間）
+}
+
+// APIエンドポイント用（キャッシュ無効）
+function setNoCache() {
+    header('Cache-Control: no-cache, no-store, must-revalidate, private');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    header('X-Cache-Control: NOCACHE');
 }
 ?>
