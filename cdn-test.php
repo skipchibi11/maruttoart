@@ -1,6 +1,6 @@
 <?php
 // CDNキャッシュ診断ツール
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
@@ -80,7 +80,8 @@ foreach (getallheaders() as $name => $value) {
         $header_lower === 'x-lscache' ||
         $header_lower === 'x-lsadc-cache' ||
         strpos($header_lower, 'lscache') !== false ||
-        $header_lower === 'server' && strpos(strtolower($value), 'litespeed') !== false) {
+        strpos($header_lower, 'lolipop') !== false || // ロリポップ（LiteSpeed使用）
+        ($header_lower === 'server' && strpos(strtolower($value), 'litespeed') !== false)) {
         $diagnostics['cdn_detection']['litespeed']['detected'] = true;
         $diagnostics['cdn_detection']['litespeed']['headers'][$name] = $value;
     }
@@ -94,6 +95,13 @@ foreach (getallheaders() as $name => $value) {
         $diagnostics['cdn_detection']['generic_cdn']['detected'] = true;
         $diagnostics['cdn_detection']['generic_cdn']['headers'][$name] = $value;
     }
+}
+
+// サーバーソフトウェア情報でもLiteSpeed検出
+if (isset($_SERVER['SERVER_SOFTWARE']) && 
+    strpos(strtolower($_SERVER['SERVER_SOFTWARE']), 'litespeed') !== false) {
+    $diagnostics['cdn_detection']['litespeed']['detected'] = true;
+    $diagnostics['cdn_detection']['litespeed']['headers']['SERVER_SOFTWARE'] = $_SERVER['SERVER_SOFTWARE'];
 }
 
 // レスポンスヘッダーを設定し記録（LiteSpeed最適化）

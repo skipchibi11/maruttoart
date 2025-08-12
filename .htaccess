@@ -21,20 +21,23 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 <IfModule LiteSpeed>
     # LiteSpeed Cache を有効化
     CacheLookup on
-    # 画像の長期キャッシュ
+    # ロリポップ最適化
     <FilesMatch "\.(jpg|jpeg|png|webp|gif|svg|ico)$">
         CacheEnable on
         Header set X-LiteSpeed-Cache-Control "public, max-age=31536000, immutable"
+        Header set X-Lolipop-Cache "static"
     </FilesMatch>
     # CSS/JSの中期キャッシュ
     <FilesMatch "\.(css|js)$">
         CacheEnable on
         Header set X-LiteSpeed-Cache-Control "public, max-age=604800"
+        Header set X-Lolipop-Cache "static"
     </FilesMatch>
     # PHPファイルの短期キャッシュ
     <FilesMatch "\.(php)$">
         CacheEnable on
         Header set X-LiteSpeed-Cache-Control "public, max-age=3600"
+        Header set X-Lolipop-Cache "dynamic"
     </FilesMatch>
 </IfModule>
 
