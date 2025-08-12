@@ -30,10 +30,10 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 <IfModule LiteSpeed>
     # LiteSpeed Cache を有効化
     CacheLookup on
-    # WordPressキャッシュをクリア
-    CachePurgeAll on
-    # キャッシュを一時的に無効化（移行期間中）
-    CacheDisable *
+    # WordPressキャッシュをクリア（移行完了後は削除可能）
+    # CachePurgeAll on
+    # 移行完了：キャッシュを再有効化
+    # CacheDisable *
     # DirectoryIndex を設定してWordPressのindex.phpを無効化
     DirectoryIndex main.php index-new.php index.php
     # ロリポップ最適化
