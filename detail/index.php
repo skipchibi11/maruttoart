@@ -1,5 +1,6 @@
 <?php
 require_once '../config.php';
+require_once '../includes/gdpr-banner-new.php';
 
 $slug = $_GET['slug'] ?? '';
 if (empty($slug)) {
@@ -140,6 +141,64 @@ if (!$material) {
         </div>
     </footer>
 
+    <?php
+    // GDPR バナーを表示
+    echo renderGDPRBanner();
+    ?>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // GDPR 同意管理のJavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const acceptBtn = document.getElementById('gdpr-accept');
+            const declineBtn = document.getElementById('gdpr-decline');
+            const banner = document.getElementById('gdpr-banner');
+            
+            if (acceptBtn) {
+                acceptBtn.addEventListener('click', function() {
+                    handleGDPRConsent(true);
+                });
+            }
+            
+            if (declineBtn) {
+                declineBtn.addEventListener('click', function() {
+                    handleGDPRConsent(false);
+                });
+            }
+        });
+        
+        function handleGDPRConsent(consent) {
+            console.log('handleGDPRConsent called with:', consent);
+            
+            fetch('../gdpr-consent.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ consent: consent })
+            })
+            .then(response => {
+                console.log('Response received:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.status === 'success') {
+                    const banner = document.getElementById('gdpr-banner');
+                    if (banner) {
+                        console.log('Hiding banner');
+                        banner.style.display = 'none';
+                        // ページをリロードして最新の状態を反映
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
 </body>
 </html>
