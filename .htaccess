@@ -1,7 +1,3 @@
-# === WordPress から PHP アプリケーションへの移行設定 ===
-# DirectoryIndex の優先順位を設定（WordPressのindex.phpを回避）
-DirectoryIndex home.php main.php index-new.php index.php
-
 # === security hardening start ===
 <FilesMatch "(?i)^dockerfile$">
   Require all denied
@@ -189,14 +185,8 @@ FileETag MTime Size
 
 RewriteEngine On
 
-# ルートアクセスを明示的にmain.phpにリダイレクト（テスト用）
-RewriteRule ^$ /main.php [QSA,L]
-
 # 詳細ページのURL書き換え
 RewriteRule ^detail/([a-zA-Z0-9\-]+)/?$ /detail/index.php?slug=$1 [QSA,L]
-
-# 画像の最適化配信（オプション：image.phpを使用する場合）
-# RewriteRule ^uploads/(.+\.(jpg|jpeg|png|webp|gif))$ /image.php?path=uploads/$1 [QSA,L]
 
 # 管理画面へのアクセス制御（必要に応じて）
 # RewriteRule ^admin/ - [E=no_access:1]
