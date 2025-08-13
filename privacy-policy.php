@@ -1,6 +1,5 @@
 <?php
 require_once 'config.php';
-require_once 'includes/gtranslate.php';
 
 // プライバシーポリシーは変更頻度が低いので長期キャッシュ
 setPublicCache(86400, 172800); // 24時間 / CDN 48時間
@@ -76,19 +75,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         <div class="container">
             <a class="navbar-brand header-logo" href="/">maruttoart</a>
             <div class="navbar-nav ms-auto d-flex align-items-center">
-                <!-- 言語切り替えメニュー -->
-                <div class="dropdown me-3">
-                    <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-globe"></i> 言語
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
-                        <li><a class="dropdown-item" href="https://marutto.art">🇯🇵 日本語</a></li>
-                        <li><a class="dropdown-item" href="https://en.marutto.art">🇺🇸 English</a></li>
-                        <li><a class="dropdown-item" href="https://es.marutto.art">🇪🇸 Español</a></li>
-                        <li><a class="dropdown-item" href="https://fr.marutto.art">🇫🇷 Français</a></li>
-                        <li><a class="dropdown-item" href="https://nl.marutto.art">🇳🇱 Nederlands</a></li>
-                    </ul>
-                </div>
+                <!-- gTranslate言語切り替え -->
+                <div class="gtranslate_wrapper me-3"></div>
                 <a class="nav-link" href="/">ホーム</a>
             </div>
         </div>
@@ -209,10 +197,12 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     </div>
 
     <?php
-    // GTranslate機能を追加
-    echo renderGTranslate();
+    // 既存のGTranslate機能は削除
+    // echo renderGTranslate();
     ?>
 
+    <script>window.gtranslateSettings = {"default_language":"ja","native_language_names":true,"detect_browser_language":true,"url_structure":"sub_domain","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper","alt_flags":{"en":"usa"}}</script>
+    <script src="https://cdn.gtranslate.net/widgets/latest/flags.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
