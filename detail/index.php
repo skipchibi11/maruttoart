@@ -139,7 +139,15 @@ if (!$material) {
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-body text-center">
-                        <img src="/<?= h($material['image_path']) ?>" class="material-image mb-4" alt="<?= h($material['title']) ?>">
+                        <!-- WebPに対応したpicture要素 -->
+                        <picture class="d-block">
+                            <!-- デスクトップ用：300x300のWebP -->
+                            <source media="(min-width: 768px)" srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" type="image/webp">
+                            <!-- モバイル用：180x180のWebP -->
+                            <source media="(max-width: 767px)" srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
+                            <!-- フォールバック：オリジナル画像 -->
+                            <img src="/<?= h($material['image_path']) ?>" class="material-image mb-4" alt="<?= h($material['title']) ?>">
+                        </picture>
                         <a href="/<?= h($material['image_path']) ?>" download class="btn btn-success download-btn">
                             <i class="bi bi-download"></i> ダウンロード
                         </a>

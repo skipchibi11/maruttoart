@@ -194,7 +194,19 @@ $materials = $stmt->fetchAll();
             <?php foreach ($materials as $material): ?>
             <div class="col-md-4 col-lg-3 col-6 mb-4">
                 <div class="card material-card h-100">
-                    <img src="<?= h($material['webp_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>">
+                    <?php
+                    // レスポンシブ画像の設定
+                    $smallImage = $material['webp_small_path'] ?? $material['image_path'];
+                    $mediumImage = $material['webp_medium_path'] ?? $material['image_path'];
+                    ?>
+                    <picture>
+                        <!-- スマホ: 180x180のWebP画像 -->
+                        <source media="(max-width: 768px)" srcset="/<?= h($smallImage) ?>" type="image/webp">
+                        <!-- PC: 300x300のWebP画像 -->
+                        <source media="(min-width: 769px)" srcset="/<?= h($mediumImage) ?>" type="image/webp">
+                        <!-- フォールバック -->
+                        <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>">
+                    </picture>
                     <div class="card-body">
                         <h5 class="card-title"><?= h($material['title']) ?></h5>
                         <p class="card-text"><?= h(substr($material['description'], 0, 100)) ?>...</p>

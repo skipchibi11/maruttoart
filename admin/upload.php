@@ -34,8 +34,8 @@ if ($_POST) {
             if ($uploadResult) {
                 // データベースに保存
                 $stmt = $pdo->prepare("
-                    INSERT INTO materials (title, slug, description, youtube_url, search_keywords, image_path, webp_path, upload_date) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO materials (title, slug, description, youtube_url, search_keywords, image_path, webp_small_path, webp_medium_path, upload_date) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 
                 if ($stmt->execute([
@@ -45,7 +45,8 @@ if ($_POST) {
                     $youtube_url,
                     $search_keywords,
                     $uploadResult['original'],
-                    $uploadResult['webp'],
+                    $uploadResult['webp_small'],
+                    $uploadResult['webp_medium'],
                     date('Y-m-d')
                 ])) {
                     $success = '素材が正常にアップロードされました。';

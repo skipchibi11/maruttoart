@@ -117,7 +117,7 @@ $materials = $stmt->fetchAll();
                                     <?php foreach ($materials as $material): ?>
                                     <tr>
                                         <td>
-                                            <img src="/<?= h($material['webp_path']) ?>" alt="<?= h($material['title']) ?>" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                            <img src="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" alt="<?= h($material['title']) ?>" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
                                         </td>
                                         <td><?= h($material['title']) ?></td>
                                         <td><?= h($material['slug']) ?></td>

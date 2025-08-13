@@ -152,40 +152,94 @@ function uploadImage($file, $slug) {
     }
     
     if (move_uploaded_file($file['tmp_name'], $filepath)) {
-        // WebP変換
-        $webpPath = $uploadDir . preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.webp';
-        convertToWebP($filepath, $webpPath);
+        // WebP変換（2つのサイズを生成）
+        $webpBasePath = $uploadDir . preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
+        $webpResults = convertToWebP($filepath, $webpBasePath);
         
-        return [
-            'original' => 'uploads/' . date('Y/m/') . $filename,
-            'webp' => 'uploads/' . date('Y/m/') . preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.webp'
-        ];
+        if ($webpResults) {
+            return [
+                'original' => 'uploads/' . date('Y/m/') . $filename,
+                'webp_small' => str_replace(__DIR__ . '/', '', $webpResults['_small']),
+                'webp_medium' => str_replace(__DIR__ . '/', '', $webpResults['_medium'])
+            ];
+        } else {
+            return [
+                'original' => 'uploads/' . date('Y/m/') . $filename,
+                'webp_small' => null,
+                'webp_medium' => null
+            ];
+        }
     }
     throw new Exception('ファイルのアップロードに失敗しました');
 }
 
-// WebP変換関数
-function convertToWebP($source, $destination) {
+// WebP変換関数（180x180と300x300の2つのサイズを生成）
+function convertToWebP($source, $basePath) {
     $info = getimagesize($source);
     
     switch ($info['mime']) {
         case 'image/jpeg':
-            $image = imagecreatefromjpeg($source);
+            $sourceImage = imagecreatefromjpeg($source);
             break;
         case 'image/png':
-            $image = imagecreatefrompng($source);
+            $sourceImage = imagecreatefrompng($source);
             break;
         case 'image/gif':
-            $image = imagecreatefromgif($source);
+            $sourceImage = imagecreatefromgif($source);
             break;
         default:
             return false;
     }
     
-    if ($image !== false) {
-        imagewebp($image, $destination, 80);
-        imagedestroy($image);
-        return true;
+    if ($sourceImage !== false) {
+        // 元画像のサイズを取得
+        $originalWidth = imagesx($sourceImage);
+        $originalHeight = imagesy($sourceImage);
+        
+        // 2つのサイズを生成
+        $sizes = [
+            ['width' => 180, 'height' => 180, 'suffix' => '_small'],
+            ['width' => 300, 'height' => 300, 'suffix' => '_medium']
+        ];
+        
+        $results = [];
+        
+        foreach ($sizes as $size) {
+            // 新しい画像を作成
+            $newImage = imagecreatetruecolor($size['width'], $size['height']);
+            
+            // PNG の透明度を保持
+            if ($info['mime'] === 'image/png') {
+                imagealphablending($newImage, false);
+                imagesavealpha($newImage, true);
+                $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
+                imagefill($newImage, 0, 0, $transparent);
+            }
+            
+            // 画像をリサイズしてコピー
+            imagecopyresampled(
+                $newImage, $sourceImage,
+                0, 0, 0, 0,
+                $size['width'], $size['height'], $originalWidth, $originalHeight
+            );
+            
+            // 出力ファイル名を生成
+            $pathInfo = pathinfo($basePath);
+            $destination = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . $size['suffix'] . '.webp';
+            
+            // WebPとして保存
+            if (imagewebp($newImage, $destination, 80)) {
+                $results[$size['suffix']] = $destination;
+            }
+            
+            // メモリを解放
+            imagedestroy($newImage);
+        }
+        
+        // 元画像のメモリを解放
+        imagedestroy($sourceImage);
+        
+        return $results;
     }
     return false;
 }

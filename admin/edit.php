@@ -46,25 +46,31 @@ if ($_POST) {
         } else {
             // 新しい画像がアップロードされた場合
             $imagePath = $material['image_path'];
-            $webpPath = $material['webp_path'];
+            $webpSmallPath = $material['webp_small_path'] ?? null;
+            $webpMediumPath = $material['webp_medium_path'] ?? null;
             
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 // 古い画像ファイルを削除
                 $oldImagePath = __DIR__ . '/../' . $material['image_path'];
-                $oldWebpPath = __DIR__ . '/../' . $material['webp_path'];
+                $oldWebpSmallPath = $material['webp_small_path'] ? __DIR__ . '/../' . $material['webp_small_path'] : null;
+                $oldWebpMediumPath = $material['webp_medium_path'] ? __DIR__ . '/../' . $material['webp_medium_path'] : null;
                 
                 if (file_exists($oldImagePath)) {
                     unlink($oldImagePath);
                 }
-                if (file_exists($oldWebpPath)) {
-                    unlink($oldWebpPath);
+                if ($oldWebpSmallPath && file_exists($oldWebpSmallPath)) {
+                    unlink($oldWebpSmallPath);
+                }
+                if ($oldWebpMediumPath && file_exists($oldWebpMediumPath)) {
+                    unlink($oldWebpMediumPath);
                 }
                 
                 // 新しい画像をアップロード
                 $uploadResult = uploadImage($_FILES['image'], $slug);
                 if ($uploadResult) {
                     $imagePath = $uploadResult['original'];
-                    $webpPath = $uploadResult['webp'];
+                    $webpSmallPath = $uploadResult['webp_small'];
+                    $webpMediumPath = $uploadResult['webp_medium'];
                 } else {
                     $error = '画像のアップロードに失敗しました。';
                 }
@@ -76,14 +82,14 @@ if ($_POST) {
                     UPDATE materials 
                     SET title = ?, slug = ?, description = ?, youtube_url = ?, 
                         search_keywords = ?, 
-                        image_path = ?, webp_path = ?
+                        image_path = ?, webp_small_path = ?, webp_medium_path = ?
                     WHERE id = ?
                 ");
                 
                 if ($stmt->execute([
                     $title, $slug, $description, $youtube_url,
                     $search_keywords,
-                    $imagePath, $webpPath, $id
+                    $imagePath, $webpSmallPath, $webpMediumPath, $id
                 ])) {
                     $success = '素材が正常に更新されました。';
                     // 更新された情報を再取得
@@ -211,14 +217,14 @@ if ($_POST) {
 
                             <div class="mb-3">
                                 <label for="search_keywords" class="form-label">検索キーワード</label>
-                                <input type="text" class="form-control" id="search_keywords" name="search_keywords" value="<?= h($material['search_keywords'] ?? ($material['search_keywords_en'] . ',' . $material['search_keywords_jp'])) ?>" placeholder="もも,桃,peach,果物,fruit,ピンク,pink">
+                                <input type="text" class="form-control" id="search_keywords" name="search_keywords" value="<?= h($material['search_keywords'] ?? '') ?>" placeholder="もも,桃,peach,果物,fruit,ピンク,pink">
                                 <div class="form-text">日本語・英語問わず、カンマで区切って入力してください</div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">現在の画像</label>
                                 <div class="preview-container">
-                                    <img src="/<?= h($material['webp_path']) ?>" class="preview-image" alt="<?= h($material['title']) ?>">
+                                    <img src="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" class="preview-image" alt="<?= h($material['title']) ?>">
                                 </div>
                             </div>
 
