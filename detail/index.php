@@ -70,6 +70,50 @@ if (!$material) {
             height: 100%;
         }
         
+        /* ダウンロードリンクのスタイル */
+        .download-link {
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            display: inline-block;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        
+        .download-link:hover {
+            color: #495057;
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+            text-decoration: none;
+        }
+        
+        /* コンテンツのテキストスタイル */
+        .detail-title {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .detail-description {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .detail-date {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        
+        /* 関連動画ヘッダーのスタイル */
+        .video-header {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
         /* GDPR Cookie Banner のスタイル */
         #gdpr-banner {
             position: fixed;
@@ -135,41 +179,37 @@ if (!$material) {
     </nav>
 
     <div class="container mt-4">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <!-- WebPに対応したpicture要素 -->
-                        <picture class="d-block">
-                            <!-- デスクトップ用：300x300のWebP -->
-                            <source media="(min-width: 768px)" srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" type="image/webp">
-                            <!-- モバイル用：180x180のWebP -->
-                            <source media="(max-width: 767px)" srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
-                            <!-- フォールバック：オリジナル画像 -->
-                            <img src="/<?= h($material['image_path']) ?>" class="material-image mb-4" alt="<?= h($material['title']) ?>">
-                        </picture>
-                        <a href="/<?= h($material['image_path']) ?>" download class="btn btn-success download-btn">
-                            <i class="bi bi-download"></i> ダウンロード
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="text-center">
+                    <!-- WebPに対応したpicture要素 -->
+                    <picture class="d-block">
+                        <!-- デスクトップ用：300x300のWebP -->
+                        <source media="(min-width: 768px)" srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" type="image/webp">
+                        <!-- モバイル用：180x180のWebP -->
+                        <source media="(max-width: 767px)" srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
+                        <!-- フォールバック：オリジナル画像 -->
+                        <img src="/<?= h($material['image_path']) ?>" class="material-image mb-3" alt="<?= h($material['title']) ?>">
+                    </picture>
+                    
+                    <!-- ダウンロードリンクを画像の直下に配置 -->
+                    <div class="mb-4">
+                        <a href="/<?= h($material['image_path']) ?>" download class="download-link">
+                            <?= h($material['title']) ?>をダウンロード
                         </a>
                     </div>
                 </div>
-            </div>
-            
-            <div class="col-lg-4">
+                
                 <div class="card">
-                    <div class="card-body">
-                        <h1 class="card-title"><?= h($material['title']) ?></h1>
-                        <p class="card-text"><?= nl2br(h($material['description'])) ?></p>
+                    <div class="card-body text-center">
+                        <h1 class="detail-title mb-3"><?= h($material['title']) ?></h1>
                         
-                        <?php if (!empty($material['search_keywords_jp'])): ?>
-                        <div class="mb-3">
-                            <strong>キーワード：</strong>
-                            <span class="text-muted"><?= h($material['search_keywords_jp']) ?></span>
-                        </div>
+                        <?php if (!empty($material['description'])): ?>
+                        <p class="detail-description mb-3"><?= nl2br(h($material['description'])) ?></p>
                         <?php endif; ?>
                         
                         <div class="mb-3">
-                            <small class="text-muted">投稿日：<?= date('Y年m月d日', strtotime($material['upload_date'])) ?></small>
+                            <small class="detail-date">投稿日：<?= date('Y年m月d日', strtotime($material['upload_date'])) ?></small>
                         </div>
                     </div>
                 </div>
@@ -177,7 +217,7 @@ if (!$material) {
                 <?php if (!empty($material['youtube_url'])): ?>
                 <div class="card mt-4">
                     <div class="card-header">
-                        <h5 class="mb-0">関連動画</h5>
+                        <h5 class="mb-0 text-center video-header">関連動画</h5>
                     </div>
                     <div class="card-body">
                         <div id="youtube-content" class="youtube-container">
@@ -197,12 +237,14 @@ if (!$material) {
                             <iframe id="youtube-iframe" src="<?= h($embed_url) ?>" frameborder="0" allowfullscreen></iframe>
                         </div>
                         <div id="youtube-blocked" class="youtube-blocked" style="display: none;">
-                            <i class="bi bi-play-circle" style="font-size: 3rem; color: #6c757d;"></i>
-                            <h5 class="mt-3">動画の表示にはCookieの同意が必要です</h5>
-                            <p class="text-muted">
-                                YouTubeの動画を表示するには、Cookieの使用に同意していただく必要があります。<br>
-                                <a href="/" class="text-decoration-none">トップページ</a>で同意いただくと動画をご覧いただけます。
-                            </p>
+                            <div class="text-center">
+                                <i class="bi bi-play-circle" style="font-size: 3rem; color: #6c757d;"></i>
+                                <h5 class="mt-3">動画の表示にはCookieの同意が必要です</h5>
+                                <p class="text-muted">
+                                    YouTubeの動画を表示するには、Cookieの使用に同意していただく必要があります。<br>
+                                    <a href="/" class="text-decoration-none">トップページ</a>で同意いただくと動画をご覧いただけます。
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
