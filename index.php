@@ -189,10 +189,6 @@ $materials = $stmt->fetchAll();
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container">
             <a class="navbar-brand header-logo" href="/">maruttoart</a>
-            <div class="navbar-nav ms-auto d-flex align-items-center">
-                <!-- gTranslate言語切り替え -->
-                <div class="gtranslate_wrapper me-3"></div>
-            </div>
         </div>
     </nav>
 
@@ -357,8 +353,16 @@ $materials = $stmt->fetchAll();
 
     <footer class="bg-light mt-5 py-4">
         <div class="container">
-            <div class="row">
-                <div class="col-12 text-center">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <!-- gTranslate言語切り替え -->
+                    <div class="gtranslate_wrapper"></div>
+                </div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-md-12">
                     <p class="text-muted mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
                 </div>
             </div>
@@ -370,8 +374,8 @@ $materials = $stmt->fetchAll();
     // echo renderGTranslate();
     ?>
 
-    <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_domain","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper","alt_flags":{"en":"usa"}}</script>
-    <script src="https://cdn.gtranslate.net/widgets/latest/flags.js" defer></script>
+    <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_domain","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
+    <script src="https://cdn.gtranslate.net/widgets/latest/lc.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
