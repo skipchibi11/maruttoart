@@ -61,11 +61,38 @@ $materials = $stmt->fetchAll();
             background-color: #ffffff;
         }
         .material-card {
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
         .material-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
+            border-color: #0d6efd;
+        }
+        .material-card:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        .material-card .card-body {
+            padding: 0.75rem 1rem;
+        }
+        .material-card .card-title {
+            color: #666;
+            font-weight: 300;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 0;
+        }
+        .material-card:hover .card-title {
+            color: #0d6efd;
         }
         .header-logo {
             font-size: 2rem;
@@ -193,7 +220,7 @@ $materials = $stmt->fetchAll();
         <div class="row">
             <?php foreach ($materials as $material): ?>
             <div class="col-md-4 col-lg-3 col-6 mb-4">
-                <div class="card material-card h-100">
+                <a href="/detail/<?= h($material['slug']) ?>" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
                     <?php
                     // レスポンシブ画像の設定
                     $smallImage = $material['webp_small_path'] ?? $material['image_path'];
@@ -209,10 +236,8 @@ $materials = $stmt->fetchAll();
                     </picture>
                     <div class="card-body">
                         <h5 class="card-title"><?= h($material['title']) ?></h5>
-                        <p class="card-text"><?= h(substr($material['description'], 0, 100)) ?>...</p>
-                        <a href="/detail/<?= h($material['slug']) ?>" class="btn btn-primary">詳細を見る</a>
                     </div>
-                </div>
+                </a>
             </div>
             <?php endforeach; ?>
         </div>
@@ -451,6 +476,21 @@ $materials = $stmt->fetchAll();
             init();
         }
     })();
+    
+    // カードのキーボードナビゲーション対応
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.material-card');
+        
+        cards.forEach(function(card) {
+            card.addEventListener('keydown', function(e) {
+                // Enterキーまたはスペースキーで詳細ページに遷移
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    window.location.href = card.href;
+                }
+            });
+        });
+    });
     </script>
 </body>
 </html>
