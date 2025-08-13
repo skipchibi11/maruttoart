@@ -8,8 +8,8 @@ setNoCache();
 
 $pdo = getDB();
 
-// 素材一覧取得
-$stmt = $pdo->prepare("SELECT * FROM materials ORDER BY created_at DESC");
+// 最新の素材一覧を取得（カテゴリ情報も含める）
+$stmt = $pdo->prepare("SELECT m.*, c.slug as category_slug FROM materials m LEFT JOIN categories c ON m.category_id = c.id ORDER BY m.created_at DESC");
 $stmt->execute();
 $materials = $stmt->fetchAll();
 ?>
@@ -55,6 +55,16 @@ $materials = $stmt->fetchAll();
                         <li class="nav-item">
                             <a class="nav-link" href="/admin/upload.php">
                                 <i class="bi bi-plus-circle"></i> 素材アップロード
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/categories.php">
+                                <i class="bi bi-folder"></i> カテゴリ管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/tags.php">
+                                <i class="bi bi-tags"></i> タグ管理
                             </a>
                         </li>
                         <li class="nav-item">
@@ -123,7 +133,11 @@ $materials = $stmt->fetchAll();
                                         <td><?= h($material['slug']) ?></td>
                                         <td><?= date('Y/m/d', strtotime($material['upload_date'])) ?></td>
                                         <td>
-                                            <a href="/detail/<?= h($material['slug']) ?>" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <?php if (!empty($material['category_slug'])): ?>
+                                                <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <?php else: ?>
+                                                <a href="/detail/<?= h($material['slug']) ?>" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <?php endif; ?>
                                                 <i class="bi bi-eye"></i> 確認
                                             </a>
                                             <a href="/admin/edit.php?id=<?= $material['id'] ?>" class="btn btn-sm btn-outline-secondary">

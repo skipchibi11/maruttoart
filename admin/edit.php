@@ -14,6 +14,10 @@ if (empty($id) || !is_numeric($id)) {
 
 $pdo = getDB();
 
+// タグデータを取得
+$tags = getAllTags($pdo);
+$categories = getAllCategories($pdo);
+
 // 素材の取得
 $stmt = $pdo->prepare("SELECT * FROM materials WHERE id = ?");
 $stmt->execute([$id]);
@@ -24,6 +28,10 @@ if (!$material) {
     exit;
 }
 
+// 素材に関連付けられたタグを取得
+$materialTags = getMaterialTags($id, $pdo);
+$materialTagIds = array_column($materialTags, 'id');
+
 $error = '';
 $success = '';
 
@@ -33,6 +41,9 @@ if ($_POST) {
     $description = trim($_POST['description'] ?? '');
     $youtube_url = trim($_POST['youtube_url'] ?? '');
     $search_keywords = trim($_POST['search_keywords'] ?? '');
+    $tag_ids = $_POST['tag_ids'] ?? [];
+    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
+    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
     
     // バリデーション
     if (empty($title) || empty($slug)) {
@@ -82,20 +93,27 @@ if ($_POST) {
                     UPDATE materials 
                     SET title = ?, slug = ?, description = ?, youtube_url = ?, 
                         search_keywords = ?, 
-                        image_path = ?, webp_small_path = ?, webp_medium_path = ?
+                        image_path = ?, webp_small_path = ?, webp_medium_path = ?, category_id = ?
                     WHERE id = ?
                 ");
                 
                 if ($stmt->execute([
                     $title, $slug, $description, $youtube_url,
                     $search_keywords,
-                    $imagePath, $webpSmallPath, $webpMediumPath, $id
+                    $imagePath, $webpSmallPath, $webpMediumPath, $category_id, $id
                 ])) {
+                    // タグを更新
+                    addMaterialTags($id, $tag_ids, $pdo);
+                    
                     $success = '素材が正常に更新されました。';
                     // 更新された情報を再取得
                     $stmt = $pdo->prepare("SELECT * FROM materials WHERE id = ?");
                     $stmt->execute([$id]);
                     $material = $stmt->fetch();
+                    
+                    // 更新されたタグ情報も再取得
+                    $materialTags = getMaterialTags($id, $pdo);
+                    $materialTagIds = array_column($materialTags, 'id');
                 } else {
                     $error = 'データベースの更新に失敗しました。';
                 }
@@ -208,6 +226,39 @@ if ($_POST) {
                             <div class="mb-3">
                                 <label for="description" class="form-label">説明</label>
                                 <textarea class="form-control" id="description" name="description" rows="4"><?= h($material['description']) ?></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="category_id" class="form-label">カテゴリ</label>
+                                <select class="form-select" id="category_id" name="category_id">
+                                    <option value="">カテゴリを選択してください</option>
+                                    <?php foreach ($categories as $category): ?>
+                                        <option value="<?= $category['id'] ?>" 
+                                                <?= $material['category_id'] == $category['id'] ? 'selected' : '' ?>>
+                                            <?= h($category['title']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <div class="form-text">素材を分類するカテゴリを1つ選択してください</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">タグ選択</label>
+                                <div class="row">
+                                    <?php foreach ($tags as $tag): ?>
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="tag_ids[]" 
+                                                       id="tag_<?= $tag['id'] ?>" value="<?= $tag['id'] ?>"
+                                                       <?= in_array($tag['id'], $materialTagIds) ? 'checked' : '' ?>>
+                                                <label class="form-check-label" for="tag_<?= $tag['id'] ?>">
+                                                    <?= h($tag['name']) ?>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="form-text">複数のタグを選択できます</div>
                             </div>
 
                             <div class="mb-3">

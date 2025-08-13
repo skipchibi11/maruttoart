@@ -31,8 +31,10 @@ $countStmt->execute($countParams);
 $totalItems = $countStmt->fetchColumn();
 $totalPages = ceil($totalItems / $perPage);
 
-// データを取得
-$sql = "SELECT * FROM materials " . $whereClause . " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+// データを取得（カテゴリ情報も含める）
+$sql = "SELECT m.*, c.slug as category_slug FROM materials m 
+        LEFT JOIN categories c ON m.category_id = c.id " . 
+        $whereClause . " ORDER BY m.created_at DESC LIMIT ? OFFSET ?";
 $params[] = $perPage;
 $params[] = $offset;
 $stmt = $pdo->prepare($sql);
@@ -216,7 +218,11 @@ $materials = $stmt->fetchAll();
         <div class="row">
             <?php foreach ($materials as $material): ?>
             <div class="col-md-4 col-lg-3 col-6 mb-4">
-                <a href="/detail/<?= h($material['slug']) ?>" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
+                <?php if (!empty($material['category_slug'])): ?>
+                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
+                <?php else: ?>
+                    <a href="/detail/<?= h($material['slug']) ?>" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
+                <?php endif; ?>
                     <?php
                     // レスポンシブ画像の設定
                     $smallImage = $material['webp_small_path'] ?? $material['image_path'];

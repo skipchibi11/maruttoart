@@ -36,8 +36,8 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 
 RewriteEngine On
 
-# 詳細ページのURL書き換え
-RewriteRule ^detail/([a-zA-Z0-9\-]+)/?$ /detail/index.php?slug=$1 [QSA,L]
+# 管理画面とAPIは除外（最初に処理）
+RewriteRule ^(admin|api|uploads)/ - [L]
 
 # 存在する画像ファイルへの直接アクセスは許可
 RewriteCond %{REQUEST_FILENAME} -f
@@ -47,6 +47,12 @@ RewriteRule \.(png|jpg|jpeg|gif|webp)$ - [L]
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
+
+# カテゴリページ: /category-slug/ → /category.php?slug=category-slug
+RewriteRule ^([a-z0-9\-]+)/?$ category.php?slug=$1 [L,QSA]
+
+# 素材詳細ページ: /category-slug/material-slug/ → /detail/index.php?category_slug=category-slug&slug=material-slug
+RewriteRule ^([a-z0-9\-]+)/([a-z0-9\-]+)/?$ detail/index.php?category_slug=$1&slug=$2 [L,QSA]
 
 # エラーページ（404）
 ErrorDocument 404 /404.php

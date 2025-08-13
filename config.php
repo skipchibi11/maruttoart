@@ -276,4 +276,340 @@ function setLongCache($maxAge = 2592000) {
 function setImageCache() {
     setLongCache(2592000); // 30日
 }
+
+// タグ関連関数
+
+// 全タグを取得
+function getAllTags($pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT * FROM tags ORDER BY name ASC");
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+// タグIDからタグ情報を取得
+function getTagById($id, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT * FROM tags WHERE id = ?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+// スラッグからタグ情報を取得
+function getTagBySlug($slug, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT * FROM tags WHERE slug = ?");
+    $stmt->execute([$slug]);
+    return $stmt->fetch();
+}
+
+// 素材に関連付けられたタグを取得
+function getMaterialTags($materialId, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT t.* 
+        FROM tags t 
+        JOIN material_tags mt ON t.id = mt.tag_id 
+        WHERE mt.material_id = ? 
+        ORDER BY t.name ASC
+    ");
+    $stmt->execute([$materialId]);
+    return $stmt->fetchAll();
+}
+
+// タグに関連付けられた素材を取得
+function getTagMaterials($tagId, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT m.* 
+        FROM materials m 
+        JOIN material_tags mt ON m.id = mt.material_id 
+        WHERE mt.tag_id = ? 
+        ORDER BY m.created_at DESC
+    ");
+    $stmt->execute([$tagId]);
+    return $stmt->fetchAll();
+}
+
+// タグスラッグの重複チェック
+function isTagSlugUnique($slug, $excludeId = null, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    $sql = "SELECT COUNT(*) FROM tags WHERE slug = ?";
+    $params = [$slug];
+    
+    if ($excludeId) {
+        $sql .= " AND id != ?";
+        $params[] = $excludeId;
+    }
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    
+    return $stmt->fetchColumn() == 0;
+}
+
+// タグ作成
+function createTag($data, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    // 必須項目チェック
+    if (empty($data['name']) || empty($data['slug'])) {
+        throw new Exception('名前とスラッグは必須です');
+    }
+    
+    // スラッグの重複チェック
+    if (!isTagSlugUnique($data['slug'], null, $pdo)) {
+        throw new Exception('このスラッグは既に使用されています');
+    }
+    
+    $sql = "INSERT INTO tags (name, slug) VALUES (?, ?)";
+    $stmt = $pdo->prepare($sql);
+    
+    return $stmt->execute([
+        $data['name'],
+        $data['slug']
+    ]);
+}
+
+// タグ更新
+function updateTag($id, $data, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    // 必須項目チェック
+    if (empty($data['name']) || empty($data['slug'])) {
+        throw new Exception('名前とスラッグは必須です');
+    }
+    
+    // スラッグの重複チェック
+    if (!isTagSlugUnique($data['slug'], $id, $pdo)) {
+        throw new Exception('このスラッグは既に使用されています');
+    }
+    
+    $sql = "UPDATE tags SET name = ?, slug = ? WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+    
+    return $stmt->execute([
+        $data['name'],
+        $data['slug'],
+        $id
+    ]);
+}
+
+// タグ削除
+function deleteTag($id, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    // 関連する素材との関連付けを削除（CASCADE制約で自動削除されるが明示的に実行）
+    $stmt = $pdo->prepare("DELETE FROM material_tags WHERE tag_id = ?");
+    $stmt->execute([$id]);
+    
+    // タグを削除
+    $stmt = $pdo->prepare("DELETE FROM tags WHERE id = ?");
+    return $stmt->execute([$id]);
+}
+
+// 素材にタグを関連付け
+function addMaterialTags($materialId, $tagIds, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    // 既存のタグ関連付けを削除
+    $stmt = $pdo->prepare("DELETE FROM material_tags WHERE material_id = ?");
+    $stmt->execute([$materialId]);
+    
+    // 新しいタグ関連付けを追加
+    if (!empty($tagIds)) {
+        $sql = "INSERT INTO material_tags (material_id, tag_id) VALUES (?, ?)";
+        $stmt = $pdo->prepare($sql);
+        
+        foreach ($tagIds as $tagId) {
+            $stmt->execute([$materialId, $tagId]);
+        }
+    }
+    
+    return true;
+}
+
+// 素材の検索（タグも含む）
+function searchMaterials($searchTerm, $tagIds = [], $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    $sql = "SELECT DISTINCT m.* FROM materials m";
+    $joins = [];
+    $whereConditions = [];
+    $params = [];
+    
+    // タグで絞り込みがある場合
+    if (!empty($tagIds)) {
+        $joins[] = "JOIN material_tags mt ON m.id = mt.material_id";
+        $placeholders = str_repeat('?,', count($tagIds) - 1) . '?';
+        $whereConditions[] = "mt.tag_id IN ($placeholders)";
+        $params = array_merge($params, $tagIds);
+    }
+    
+    // キーワード検索がある場合
+    if (!empty($searchTerm)) {
+        $whereConditions[] = "(m.title LIKE ? OR m.description LIKE ? OR m.search_keywords LIKE ?)";
+        $searchParam = "%{$searchTerm}%";
+        $params = array_merge($params, [$searchParam, $searchParam, $searchParam]);
+    }
+    
+    // クエリ組み立て
+    if (!empty($joins)) {
+        $sql .= " " . implode(" ", $joins);
+    }
+    
+    if (!empty($whereConditions)) {
+        $sql .= " WHERE " . implode(" AND ", $whereConditions);
+    }
+    
+    $sql .= " ORDER BY m.created_at DESC";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    
+    return $stmt->fetchAll();
+}
+
+// カテゴリ関連関数
+
+// 全カテゴリを取得
+function getAllCategories($pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT * FROM categories ORDER BY sort_order ASC, title ASC");
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+// カテゴリIDからカテゴリ情報を取得
+function getCategoryById($id, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT * FROM categories WHERE id = ?");
+    $stmt->execute([$id]);
+    return $stmt->fetch();
+}
+
+// スラッグからカテゴリ情報を取得
+function getCategoryBySlug($slug, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT * FROM categories WHERE slug = ?");
+    $stmt->execute([$slug]);
+    return $stmt->fetch();
+}
+
+// 素材のカテゴリを取得
+function getMaterialCategory($materialId, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT c.* 
+        FROM categories c 
+        JOIN materials m ON c.id = m.category_id 
+        WHERE m.id = ?
+    ");
+    $stmt->execute([$materialId]);
+    return $stmt->fetch();
+}
+
+// カテゴリに属する素材を取得
+function getCategoryMaterials($categoryId, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    $stmt = $pdo->prepare("
+        SELECT m.* 
+        FROM materials m 
+        WHERE m.category_id = ? 
+        ORDER BY m.created_at DESC
+    ");
+    $stmt->execute([$categoryId]);
+    return $stmt->fetchAll();
+}
+
+// カテゴリスラッグの重複チェック
+function isCategorySlugUnique($slug, $excludeId = null, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    $sql = "SELECT COUNT(*) FROM categories WHERE slug = ?";
+    $params = [$slug];
+    
+    if ($excludeId) {
+        $sql .= " AND id != ?";
+        $params[] = $excludeId;
+    }
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    
+    return $stmt->fetchColumn() == 0;
+}
+
+// カテゴリ作成
+function createCategory($data, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    // 必須項目チェック
+    if (empty($data['title']) || empty($data['slug'])) {
+        throw new Exception('タイトルとスラッグは必須です');
+    }
+    
+    // スラッグの重複チェック
+    if (!isCategorySlugUnique($data['slug'], null, $pdo)) {
+        throw new Exception('このスラッグは既に使用されています');
+    }
+    
+    $sql = "INSERT INTO categories (title, slug, sort_order) VALUES (?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    
+    return $stmt->execute([
+        $data['title'],
+        $data['slug'],
+        $data['sort_order'] ?? 0
+    ]);
+}
+
+// カテゴリ更新
+function updateCategory($id, $data, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    // 必須項目チェック
+    if (empty($data['title']) || empty($data['slug'])) {
+        throw new Exception('タイトルとスラッグは必須です');
+    }
+    
+    // スラッグの重複チェック
+    if (!isCategorySlugUnique($data['slug'], $id, $pdo)) {
+        throw new Exception('このスラッグは既に使用されています');
+    }
+    
+    $sql = "UPDATE categories SET title = ?, slug = ?, sort_order = ? WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+    
+    return $stmt->execute([
+        $data['title'],
+        $data['slug'],
+        $data['sort_order'] ?? 0,
+        $id
+    ]);
+}
+
+// カテゴリ削除
+function deleteCategory($id, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    // 素材のカテゴリIDをNULLに設定（外部キー制約によりSET NULLが実行される）
+    $stmt = $pdo->prepare("UPDATE materials SET category_id = NULL WHERE category_id = ?");
+    $stmt->execute([$id]);
+    
+    // カテゴリを削除
+    $stmt = $pdo->prepare("DELETE FROM categories WHERE id = ?");
+    return $stmt->execute([$id]);
+}
+
+// 素材にカテゴリを設定
+function setMaterialCategory($materialId, $categoryId, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    $sql = "UPDATE materials SET category_id = ? WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+    
+    return $stmt->execute([$categoryId, $materialId]);
+}
 ?>

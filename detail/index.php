@@ -5,20 +5,37 @@ require_once '../config.php';
 setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
 $slug = $_GET['slug'] ?? '';
-if (empty($slug)) {
+$category_slug = $_GET['category_slug'] ?? '';
+
+if (empty($slug) || empty($category_slug)) {
     header('HTTP/1.0 404 Not Found');
     exit;
 }
 
 $pdo = getDB();
-$stmt = $pdo->prepare("SELECT * FROM materials WHERE slug = ?");
-$stmt->execute([$slug]);
+
+// カテゴリ情報を取得
+$categoryStmt = $pdo->prepare("SELECT * FROM categories WHERE slug = ?");
+$categoryStmt->execute([$category_slug]);
+$category = $categoryStmt->fetch();
+
+if (!$category) {
+    header('HTTP/1.0 404 Not Found');
+    exit;
+}
+
+// 素材情報を取得（カテゴリも確認）
+$stmt = $pdo->prepare("SELECT * FROM materials WHERE slug = ? AND category_id = ?");
+$stmt->execute([$slug, $category['id']]);
 $material = $stmt->fetch();
 
 if (!$material) {
     header('HTTP/1.0 404 Not Found');
     exit;
 }
+
+// 素材に関連付けられたタグを取得
+$materialTags = getMaterialTags($material['id'], $pdo);
 ?>
 
 <!DOCTYPE html>
@@ -159,6 +176,67 @@ if (!$material) {
             text-align: center;
             border-radius: 8px;
         }
+        
+        /* タグのスタイル */
+        .tag-item {
+            display: inline-block;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            text-decoration: none;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+        
+        .tag-item:hover {
+            background-color: #e9ecef;
+            color: #495057;
+            text-decoration: none;
+            border-color: #dee2e6;
+        }
+        
+        .tags-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .tags-label {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* パンくずリストのスタイル */
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+        }
+        
+        .breadcrumb-item a {
+            color: #6c757d;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #495057;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -174,7 +252,26 @@ if (!$material) {
                 <a class="nav-link" href="/">戻る</a>
             </div>
         </div>
-    </nav>    <div class="container mt-4">
+    </nav>
+    
+    <!-- パンくずリスト -->
+    <div class="container mt-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/">ホーム</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/<?= h($category['slug']) ?>/"><?= h($category['title']) ?></a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <?= h($material['title']) ?>
+                </li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
                 <div class="text-center">
@@ -207,6 +304,19 @@ if (!$material) {
                         <div class="mb-3">
                             <small class="detail-date">投稿日：<?= date('Y年m月d日', strtotime($material['upload_date'])) ?></small>
                         </div>
+                        
+                        <?php if (!empty($materialTags)): ?>
+                        <div class="tags-section">
+                            <div class="tags-label">タグ:</div>
+                            <div>
+                                <?php foreach ($materialTags as $tag): ?>
+                                    <span class="tag-item">
+                                        <?= h($tag['name']) ?>
+                                    </span>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 

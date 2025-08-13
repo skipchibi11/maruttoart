@@ -9,12 +9,19 @@ setNoCache();
 $error = '';
 $success = '';
 
+// タグデータを取得
+$pdo = getDB();
+$tags = getAllTags($pdo);
+$categories = getAllCategories($pdo);
+
 if ($_POST) {
     $title = trim($_POST['title'] ?? '');
     $slug = trim($_POST['slug'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $youtube_url = trim($_POST['youtube_url'] ?? '');
     $search_keywords = trim($_POST['search_keywords'] ?? '');
+    $tag_ids = $_POST['tag_ids'] ?? [];
+    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
     
     // バリデーション
     if (empty($title) || empty($slug)) {
@@ -34,8 +41,8 @@ if ($_POST) {
             if ($uploadResult) {
                 // データベースに保存
                 $stmt = $pdo->prepare("
-                    INSERT INTO materials (title, slug, description, youtube_url, search_keywords, image_path, webp_small_path, webp_medium_path, upload_date) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO materials (title, slug, description, youtube_url, search_keywords, image_path, webp_small_path, webp_medium_path, upload_date, category_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 
                 if ($stmt->execute([
@@ -47,8 +54,17 @@ if ($_POST) {
                     $uploadResult['original'],
                     $uploadResult['webp_small'],
                     $uploadResult['webp_medium'],
-                    date('Y-m-d')
+                    date('Y-m-d'),
+                    $category_id
                 ])) {
+                    // 登録した素材のIDを取得
+                    $materialId = $pdo->lastInsertId();
+                    
+                    // タグを関連付け
+                    if (!empty($tag_ids)) {
+                        addMaterialTags($materialId, $tag_ids, $pdo);
+                    }
+                    
                     $success = '素材が正常にアップロードされました。';
                     // フォームをリセット
                     $_POST = [];
@@ -117,6 +133,16 @@ if ($_POST) {
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/categories.php">
+                                <i class="bi bi-folder"></i> カテゴリ管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/tags.php">
+                                <i class="bi bi-tags"></i> タグ管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/">
                                 <i class="bi bi-globe"></i> 公式サイト
                             </a>
@@ -166,6 +192,39 @@ if ($_POST) {
                             <div class="mb-3">
                                 <label for="description" class="form-label">説明</label>
                                 <textarea class="form-control" id="description" name="description" rows="4"><?= h($_POST['description'] ?? '') ?></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="category_id" class="form-label">カテゴリ</label>
+                                <select class="form-select" id="category_id" name="category_id">
+                                    <option value="">カテゴリを選択してください</option>
+                                    <?php foreach ($categories as $category): ?>
+                                        <option value="<?= $category['id'] ?>" 
+                                                <?= isset($_POST['category_id']) && $_POST['category_id'] == $category['id'] ? 'selected' : '' ?>>
+                                            <?= h($category['title']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <div class="form-text">素材を分類するカテゴリを1つ選択してください</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">タグ選択</label>
+                                <div class="row">
+                                    <?php foreach ($tags as $tag): ?>
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="tag_ids[]" 
+                                                       id="tag_<?= $tag['id'] ?>" value="<?= $tag['id'] ?>"
+                                                       <?= in_array($tag['id'], $_POST['tag_ids'] ?? []) ? 'checked' : '' ?>>
+                                                <label class="form-check-label" for="tag_<?= $tag['id'] ?>">
+                                                    <?= h($tag['name']) ?>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="form-text">複数のタグを選択できます</div>
                             </div>
 
                             <div class="mb-3">
