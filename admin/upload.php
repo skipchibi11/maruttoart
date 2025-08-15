@@ -270,7 +270,7 @@ if ($_POST) {
                             
                             <div class="mb-3">
                                 <label for="youtube_url" class="form-label">YouTube URL</label>
-                                <input type="url" class="form-control" id="youtube_url" name="youtube_url" value="<?= h($_POST['youtube_url'] ?? '') ?>" placeholder="https://www.youtube.com/watch?v=...">
+                                <input type="url" class="form-control" id="youtube_url" name="youtube_url" value="<?= h($_POST['youtube_url'] ?? 'https://www.youtube.com/embed/') ?>" placeholder="https://www.youtube.com/watch?v=...">
                             </div>
 
                             <hr>
