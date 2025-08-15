@@ -177,11 +177,44 @@ if ($_POST) {
 
                 <div class="card">
                     <div class="card-body">
-                        <form method="POST" enctype="multipart/form-data">
+                        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0">基本情報</h5>
+                                <div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="testConnectionBtn">
+                                        <i class="bi bi-wifi"></i> 接続テスト
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" id="autoGenerateBtn">
+                                        <i class="bi bi-magic"></i> 自動設定
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 自動設定の説明 -->
+                            <div class="alert alert-info" id="autoGenerateInfo" style="display: none;">
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                                    <span>OpenAI APIで画像を解析し、フォーム内容を自動設定しています...</span>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="title" class="form-label">タイトル *</label>
                                 <input type="text" class="form-control" id="title" name="title" required value="<?= h($_POST['title'] ?? '') ?>">
+                                <div class="form-text">タイトルと画像を入力後、「自動設定」ボタンで他の項目を自動入力できます</div>
                             </div>
+
+                            <div class="mb-3">
+                                <label for="image" class="form-label">画像ファイル *</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*" required onchange="previewImage(this)">
+                                <div class="form-text">PNG, JPEG, GIF対応。WebPが自動生成されます。</div>
+                                
+                                <div class="preview-container">
+                                    <img id="imagePreview" class="preview-image" style="display: none;" alt="プレビュー">
+                                </div>
+                            </div>
+
+                            <hr>
 
                             <div class="mb-3">
                                 <label for="slug" class="form-label">スラッグ *</label>
@@ -210,7 +243,7 @@ if ($_POST) {
 
                             <div class="mb-3">
                                 <label class="form-label">タグ選択</label>
-                                <div class="row">
+                                <div class="row" id="tagsContainer">
                                     <?php foreach ($tags as $tag): ?>
                                         <div class="col-md-4 col-sm-6">
                                             <div class="form-check">
@@ -228,24 +261,16 @@ if ($_POST) {
                             </div>
 
                             <div class="mb-3">
+                                <label for="search_keywords" class="form-label">検索キーワード</label>
+                                <textarea class="form-control" id="search_keywords" name="search_keywords" rows="4" placeholder='title_en=lemon,title_fr=citron,title_es=limón,title_nl=citroen,description_en=Fresh lemon watercolor illustration,description_fr=Illustration aquarelle de citron frais,fruit,yellow,citrus,水彩,果物,黄色'><?= h($_POST['search_keywords'] ?? '') ?></textarea>
+                                <div class="form-text">
+                                    構造化キーワード（title_en=英語タイトル、description_en=英語説明など）と通常のキーワードを組み合わせて入力してください
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
                                 <label for="youtube_url" class="form-label">YouTube URL</label>
                                 <input type="url" class="form-control" id="youtube_url" name="youtube_url" value="<?= h($_POST['youtube_url'] ?? '') ?>" placeholder="https://www.youtube.com/watch?v=...">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="search_keywords" class="form-label">検索キーワード</label>
-                                <input type="text" class="form-control" id="search_keywords" name="search_keywords" value="<?= h($_POST['search_keywords'] ?? '') ?>" placeholder="もも,桃,peach,果物,fruit,ピンク,pink">
-                                <div class="form-text">日本語・英語問わず、カンマで区切って入力してください</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="image" class="form-label">画像ファイル *</label>
-                                <input type="file" class="form-control" id="image" name="image" accept="image/*" required onchange="previewImage(this)">
-                                <div class="form-text">PNG, JPEG, GIF対応。WebPが自動生成されます。</div>
-                                
-                                <div class="preview-container">
-                                    <img id="imagePreview" class="preview-image" style="display: none;" alt="プレビュー">
-                                </div>
                             </div>
 
                             <hr>
@@ -289,6 +314,253 @@ if ($_POST) {
                 .replace(/^-|-$/g, ''); // 前後のハイフンを除去
             document.getElementById('slug').value = slug;
         });
+
+        // 接続テスト機能
+        document.getElementById('testConnectionBtn').addEventListener('click', function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> テスト中...';
+            
+            fetch('/admin/api/test-connection.php')
+            .then(response => {
+                if (response.status === 401) {
+                    throw new Error('ログインセッションが切れています。再ログインしてください。');
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('autoGenerateInfo').innerHTML = 
+                        '<div class="d-flex align-items-center text-success">' +
+                        '<i class="bi bi-check-circle me-2"></i>' +
+                        '<span>接続テスト成功 - OpenAI: ' + data.openai_key_status + ', cURL: ' + data.curl_available + '</span>' +
+                        '</div>';
+                    document.getElementById('autoGenerateInfo').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('autoGenerateInfo').style.display = 'none';
+                    }, 3000);
+                } else {
+                    throw new Error('接続テスト失敗');
+                }
+            })
+            .catch(error => {
+                console.error('Connection test error:', error);
+                document.getElementById('autoGenerateInfo').innerHTML = 
+                    '<div class="d-flex align-items-center text-danger">' +
+                    '<i class="bi bi-exclamation-triangle me-2"></i>' +
+                    '<span>接続テスト失敗: ' + error.message + '</span>' +
+                    '</div>';
+                document.getElementById('autoGenerateInfo').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('autoGenerateInfo').style.display = 'none';
+                }, 5000);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        });
+
+        // 自動設定機能
+        document.getElementById('autoGenerateBtn').addEventListener('click', function() {
+            const title = document.getElementById('title').value.trim();
+            const imageFile = document.getElementById('image').files[0];
+            
+            if (!title) {
+                alert('タイトルを入力してください。');
+                return;
+            }
+            
+            if (!imageFile) {
+                alert('画像ファイルを選択してください。');
+                return;
+            }
+            
+            // ボタンを無効化し、ローディング表示
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+            
+            // 情報パネルを表示
+            document.getElementById('autoGenerateInfo').style.display = 'block';
+            
+            // FormDataを作成
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('image', imageFile);
+            
+            // OpenAI APIを呼び出し
+            fetch('/admin/api/auto-generate.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                const responseText = await response.text();
+                let responseData;
+                
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    console.error('Response text:', responseText);
+                    throw new Error(`レスポンスの解析に失敗しました。Status: ${response.status}, Content: ${responseText.substring(0, 200)}...`);
+                }
+                
+                if (response.status === 401) {
+                    throw new Error('ログインセッションが切れています。再ログインしてください。');
+                }
+                
+                if (!response.ok) {
+                    // エラーレスポンスでもJSONデータを返す
+                    const error = new Error(`HTTP error! status: ${response.status}`);
+                    error.responseData = responseData;
+                    throw error;
+                }
+                
+                return responseData;
+            })
+            .then(data => {
+                if (data.success) {
+                    // フォームに生成されたデータを設定
+                    if (data.data.slug) {
+                        document.getElementById('slug').value = data.data.slug;
+                    }
+                    
+                    if (data.data.description) {
+                        document.getElementById('description').value = data.data.description;
+                    }
+                    
+                    if (data.data.category_id) {
+                        document.getElementById('category_id').value = data.data.category_id;
+                    }
+                    
+                    if (data.data.search_keywords) {
+                        document.getElementById('search_keywords').value = data.data.search_keywords;
+                    }
+                    
+                    // タグの設定
+                    if (data.data.tag_ids && Array.isArray(data.data.tag_ids)) {
+                        // 既存のタグチェックを全て解除
+                        const tagCheckboxes = document.querySelectorAll('input[name="tag_ids[]"]');
+                        tagCheckboxes.forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                        
+                        // 生成されたタグをチェック
+                        data.data.tag_ids.forEach(tagId => {
+                            const checkbox = document.getElementById('tag_' + tagId);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                            }
+                        });
+                    }
+                    
+                    // 検索キーワードに構造化データを設定
+                    if (data.data.search_keywords) {
+                        let keywords = data.data.search_keywords;
+                        
+                        // 多言語データがある場合は構造化キーワードを追加
+                        if (data.data.multilingual) {
+                            const ml = data.data.multilingual;
+                            const structuredKeywords = [];
+                            
+                            if (ml.en_title) structuredKeywords.push(`title_en=${ml.en_title}`);
+                            if (ml.en_description) structuredKeywords.push(`description_en=${ml.en_description}`);
+                            if (ml.es_title) structuredKeywords.push(`title_es=${ml.es_title}`);
+                            if (ml.es_description) structuredKeywords.push(`description_es=${ml.es_description}`);
+                            if (ml.fr_title) structuredKeywords.push(`title_fr=${ml.fr_title}`);
+                            if (ml.fr_description) structuredKeywords.push(`description_fr=${ml.fr_description}`);
+                            if (ml.nl_title) structuredKeywords.push(`title_nl=${ml.nl_title}`);
+                            if (ml.nl_description) structuredKeywords.push(`description_nl=${ml.nl_description}`);
+                            
+                            if (structuredKeywords.length > 0) {
+                                keywords = structuredKeywords.join(',') + ',' + keywords;
+                            }
+                        }
+                        
+                        document.getElementById('search_keywords').value = keywords;
+                    }
+                    
+                    // 成功メッセージを表示
+                    document.getElementById('autoGenerateInfo').innerHTML = 
+                        '<div class="d-flex align-items-center text-success">' +
+                        '<i class="bi bi-check-circle me-2"></i>' +
+                        '<span>自動設定が完了しました！内容を確認して必要に応じて調整してください。</span>' +
+                        '</div>';
+                    
+                    // 3秒後に情報パネルを非表示
+                    setTimeout(() => {
+                        document.getElementById('autoGenerateInfo').style.display = 'none';
+                    }, 3000);
+                    
+                } else {
+                    // エラーメッセージを表示
+                    let errorMsg = data.error || '不明なエラーが発生しました';
+                    
+                    document.getElementById('autoGenerateInfo').innerHTML = 
+                        '<div class="alert alert-danger">' +
+                        '<div class="d-flex align-items-center">' +
+                        '<i class="bi bi-exclamation-triangle me-2"></i>' +
+                        '<span>エラー: ' + errorMsg + '</span>' +
+                        '</div>' +
+                        (data.debug ? 
+                            '<details class="mt-2"><summary>詳細情報</summary>' +
+                            '<pre style="font-size: 0.8em; margin-top: 10px;">' + JSON.stringify(data.debug, null, 2) + '</pre>' +
+                            '</details>' : '') +
+                        '</div>';
+                        
+                    // 15秒後に情報パネルを非表示
+                    setTimeout(() => {
+                        document.getElementById('autoGenerateInfo').style.display = 'none';
+                    }, 15000);
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                let errorMessage = '通信エラーが発生しました';
+                let debugInfo = {};
+                
+                if (error.responseData) {
+                    // サーバーからエラーレスポンスを受け取った場合
+                    errorMessage = error.responseData.error || 'サーバーエラーが発生しました';
+                    debugInfo = error.responseData.debug || {};
+                } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'ネットワークエラー: サーバーに接続できませんでした';
+                } else if (error.message.includes('HTTP error')) {
+                    errorMessage = 'サーバーエラー: ' + error.message;
+                } else {
+                    errorMessage = 'エラー: ' + error.message;
+                }
+                
+                document.getElementById('autoGenerateInfo').innerHTML = 
+                    '<div class="alert alert-danger">' +
+                    '<div class="d-flex align-items-center">' +
+                    '<i class="bi bi-exclamation-triangle me-2"></i>' +
+                    '<span>' + errorMessage + '</span>' +
+                    '</div>' +
+                    '<details class="mt-2"><summary>詳細情報</summary>' +
+                    '<pre style="font-size: 0.8em; margin-top: 10px;">' + JSON.stringify(debugInfo, null, 2) + '</pre>' +
+                    '</details>' +
+                    '</div>';
+                    
+                // 15秒後に情報パネルを非表示
+                setTimeout(() => {
+                    document.getElementById('autoGenerateInfo').style.display = 'none';
+                }, 15000);
+            })
+            .finally(() => {
+                // ボタンを再度有効化
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        });
     </script>
+</body>
+</html>
 </body>
 </html>

@@ -14,6 +14,7 @@ if (isLoggedIn()) {
 setNoCache();
 
 $error = '';
+$debug_info = '';
 
 if ($_POST) {
     $email = $_POST['email'] ?? '';
@@ -22,18 +23,35 @@ if ($_POST) {
     if (empty($email) || empty($password)) {
         $error = 'メールアドレスとパスワードを入力してください。';
     } else {
-        $pdo = getDB();
-        $stmt = $pdo->prepare("SELECT * FROM admins WHERE email = ?");
-        $stmt->execute([$email]);
-        $admin = $stmt->fetch();
-        
-        if ($admin && password_verify($password, $admin['password'])) {
-            $_SESSION['admin_id'] = $admin['id'];
-            $_SESSION['admin_email'] = $admin['email'];
-            header('Location: /admin/');
-            exit;
-        } else {
+        try {
+            $pdo = getDB();
+            $stmt = $pdo->prepare("SELECT * FROM admins WHERE email = ?");
+            $stmt->execute([$email]);
+            $admin = $stmt->fetch();
+            
+            $debug_info = "デバッグ情報:\n";
+            $debug_info .= "- 入力メール: " . $email . "\n";
+            $debug_info .= "- アカウント検索: " . ($admin ? "成功 (ID: {$admin['id']})" : "失敗") . "\n";
+            
+            if ($admin) {
+                $passwordValid = password_verify($password, $admin['password']);
+                $debug_info .= "- パスワード検証: " . ($passwordValid ? "成功" : "失敗") . "\n";
+                $debug_info .= "- 保存されているハッシュ: " . substr($admin['password'], 0, 30) . "...\n";
+                
+                if ($passwordValid) {
+                    $_SESSION['admin_id'] = $admin['id'];
+                    $_SESSION['admin_email'] = $admin['email'];
+                    $debug_info .= "- セッション設定: 成功\n";
+                    header('Location: /admin/');
+                    exit;
+                }
+            }
+            
             $error = 'メールアドレスまたはパスワードが間違っています。';
+            
+        } catch (Exception $e) {
+            $error = 'ログイン処理中にエラーが発生しました: ' . $e->getMessage();
+            $debug_info = "エラー詳細: " . $e->getTraceAsString();
         }
     }
 }
@@ -75,6 +93,12 @@ if ($_POST) {
                     <?php if ($error): ?>
                     <div class="alert alert-danger" role="alert">
                         <?= h($error) ?>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($debug_info): ?>
+                    <div class="alert alert-info" role="alert">
+                        <small><pre><?= h($debug_info) ?></pre></small>
                     </div>
                     <?php endif; ?>
 

@@ -31,6 +31,11 @@ function loadEnv($path) {
 // .envファイルを読み込み
 loadEnv(__DIR__ . '/.env');
 
+// OpenAI設定ファイルを読み込み（管理画面で使用）
+if (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/') !== false) {
+    require_once __DIR__ . '/includes/openai.php';
+}
+
 // データベース接続設定
 define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
 define('DB_NAME', $_ENV['DB_DATABASE'] ?? 'maruttoart');
