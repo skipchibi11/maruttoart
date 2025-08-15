@@ -116,6 +116,12 @@ if ($_POST) {
                         <button type="submit" class="btn btn-primary w-100">ログイン</button>
                     </form>
 
+                    <div class="text-center mt-3">
+                        <a href="forgot-password.php" class="text-muted text-decoration-none small">
+                            パスワードをお忘れですか？
+                        </a>
+                    </div>
+
                     <div class="text-center mt-4">
                         <a href="/" class="text-decoration-none">← 公式サイトに戻る</a>
                     </div>
