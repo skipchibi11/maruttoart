@@ -326,9 +326,9 @@ $materialTags = getMaterialTags($material['id'], $pdo);
                             <div class="tags-label">タグ:</div>
                             <div>
                                 <?php foreach ($materialTags as $tag): ?>
-                                    <span class="tag-item">
+                                    <a href="/tag/<?= h($tag['slug']) ?>/" class="tag-item">
                                         <?= h($tag['name']) ?>
-                                    </span>
+                                    </a>
                                 <?php endforeach; ?>
                             </div>
                         </div>
