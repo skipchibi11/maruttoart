@@ -71,6 +71,7 @@ $materials = $stmt->fetchAll();
             display: block;
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            position: relative;
         }
         .material-card:hover {
             transform: translateY(-5px);
@@ -180,6 +181,83 @@ $materials = $stmt->fetchAll();
                 margin-top: 0;
             }
         }
+        
+        /* YouTubeアイコンのスタイル */
+        .youtube-icon {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            opacity: 0.8;
+        }
+        
+        .youtube-icon:hover {
+            background: rgba(0, 0, 0, 0.8);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        /* YouTube動画ポップアップのスタイル */
+        .youtube-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .youtube-modal.show {
+            display: flex;
+        }
+        
+        .youtube-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .youtube-modal iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .youtube-modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .youtube-modal-close:hover {
+            color: #ccc;
+        }
     </style>
 </head>
 </head>
@@ -237,6 +315,16 @@ $materials = $stmt->fetchAll();
                         <!-- フォールバック -->
                         <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>">
                     </picture>
+                    
+                    <!-- YouTubeアイコン -->
+                    <?php if (!empty($material['youtube_url'])): ?>
+                        <div class="youtube-icon" 
+                             onclick="openYouTubeModal(event, '<?= h($material['youtube_url']) ?>', '<?= h($material['title']) ?>')"
+                             title="動画を見る">
+                            <i class="bi bi-play-fill"></i>
+                        </div>
+                    <?php endif; ?>
+                    
                     <div class="card-body">
                         <h5 class="card-title"><?= h($material['title']) ?></h5>
                     </div>
@@ -381,11 +469,17 @@ $materials = $stmt->fetchAll();
     // echo renderGTranslate();
     ?>
 
-    <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_domain","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
+    <script>window.gtranslateSettings = {"default_language":"ja","native_language_names":true,"detect_browser_language":true,"url_structure":"sub_domain","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper","alt_flags":{"en":"usa"}}</script>
     <script src="https://cdn.gtranslate.net/widgets/latest/lc.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
+    <!-- YouTubeモーダル -->
+    <div id="youtube-modal" class="youtube-modal">
+        <div class="youtube-modal-content">
+            <button class="youtube-modal-close" onclick="closeYouTubeModal()">&times;</button>
+            <iframe id="youtube-iframe" src="" allowfullscreen></iframe>
+        </div>
+    </div>    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
     <script>
     // GDPR Cookie Consent (セッション・Cookie不使用版)
     (function() {
@@ -502,6 +596,54 @@ $materials = $stmt->fetchAll();
             });
         });
     });
+    
+    // YouTube動画ポップアップ機能
+    function openYouTubeModal(event, youtubeUrl, title) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const modal = document.getElementById('youtube-modal');
+        const iframe = document.getElementById('youtube-iframe');
+        
+        // YouTube URLをembed形式に変換
+        let embedUrl = '';
+        if (youtubeUrl.includes('youtube.com/watch?v=')) {
+            const videoId = youtubeUrl.split('v=')[1].split('&')[0];
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        } else if (youtubeUrl.includes('youtu.be/')) {
+            const videoId = youtubeUrl.split('/').pop().split('?')[0];
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        } else if (youtubeUrl.includes('youtube.com/embed/')) {
+            embedUrl = youtubeUrl + (youtubeUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+        } else {
+            embedUrl = youtubeUrl;
+        }
+        
+        iframe.src = embedUrl;
+        modal.classList.add('show');
+        
+        // Escキーでモーダルを閉じる
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeYouTubeModal();
+            }
+        });
+        
+        // モーダル背景クリックで閉じる
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeYouTubeModal();
+            }
+        });
+    }
+    
+    function closeYouTubeModal() {
+        const modal = document.getElementById('youtube-modal');
+        const iframe = document.getElementById('youtube-iframe');
+        
+        modal.classList.remove('show');
+        iframe.src = '';
+    }
     </script>
 </body>
 </html>
