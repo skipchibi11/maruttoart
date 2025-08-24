@@ -56,7 +56,7 @@ $materials = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>かわいい無料手描き水彩イラスト素材集｜maruttoart（商用利用OK）</title>
-    <meta name="description" content="かわいい無料イラスト素材をダウンロード！手描き水彩風のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。">
+    <meta name="description" content="かわいい無料イラスト素材をダウンロード！手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。">
     <style>
         /* リセットCSS */
         * {

@@ -64,19 +64,19 @@ $materials = $materialsStmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($tag['name']) ?> - タグ別無料イラスト素材一覧｜maruttoart（商用利用OK）</title>
-    <meta name="description" content="<?= h($tag['name']) ?>タグの無料イラスト素材一覧。かわいい手描き水彩風のイラスト素材を商用利用OK。<?= h($tag['name']) ?>に関連する高品質なフリー素材をダウンロードできます。">
+    <meta name="description" content="<?= h($tag['name']) ?>タグの無料イラスト素材一覧。かわいい手描き水彩のイラスト素材を商用利用OK。<?= h($tag['name']) ?>に関連する高品質なフリー素材をダウンロードできます。">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/tag/<?= h($tag['slug']) ?>/">
     <meta property="og:title" content="<?= h($tag['name']) ?> - タグ別無料イラスト素材一覧">
-    <meta property="og:description" content="<?= h($tag['name']) ?>タグの無料イラスト素材。かわいい手描き水彩風で商用利用OK。">
+    <meta property="og:description" content="<?= h($tag['name']) ?>タグの無料イラスト素材。かわいい手描き水彩で商用利用OK。">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/tag/<?= h($tag['slug']) ?>/">
     <meta property="twitter:title" content="<?= h($tag['name']) ?> - タグ別無料イラスト素材一覧">
-    <meta property="twitter:description" content="<?= h($tag['name']) ?>タグの無料イラスト素材。かわいい手描き水彩風で商用利用OK。">
+    <meta property="twitter:description" content="<?= h($tag['name']) ?>タグの無料イラスト素材。かわいい手描き水彩で商用利用OK。">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">

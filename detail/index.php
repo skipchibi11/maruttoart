@@ -52,20 +52,20 @@ $materialTags = getMaterialTags($material['id'], $pdo);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($material['title']) ?>  - かわいい無料手描き水彩イラスト素材集｜maruttoart（商用利用OK）</title>
-    <meta name="description" content="<?= h($material['title']) ?>の無料イラスト素材をダウンロード。かわいい手描き水彩風のイラスト素材で商用利用OK。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
+    <meta name="description" content="<?= h($material['title']) ?>の無料イラスト素材をダウンロード。かわいい手描き水彩のイラスト素材で商用利用OK。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     <meta property="og:title" content="<?= h($material['title']) ?> - 無料イラスト素材">
-    <meta property="og:description" content="<?= h($material['title']) ?>の無料イラスト素材。かわいい手描き水彩風で商用利用OK。">
+    <meta property="og:description" content="<?= h($material['title']) ?>の無料イラスト素材。かわいい手描き水彩で商用利用OK。">
     <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     <meta property="twitter:title" content="<?= h($material['title']) ?> - 無料イラスト素材">
-    <meta property="twitter:description" content="<?= h($material['title']) ?>の無料イラスト素材。かわいい手描き水彩風で商用利用OK。">
+    <meta property="twitter:description" content="<?= h($material['title']) ?>の無料イラスト素材。かわいい手描き水彩で商用利用OK。">
     <meta property="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
