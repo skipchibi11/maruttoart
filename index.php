@@ -849,6 +849,8 @@ $materials = $stmt->fetchAll();
                 <div class="hero-image">
                     <img src="/assets/images/hero.webp" 
                          alt="かわいい水彩イラスト素材のサンプル" 
+                         width="500"
+                         height="500"
                          fetchpriority="high"
                          loading="eager">
                 </div>
