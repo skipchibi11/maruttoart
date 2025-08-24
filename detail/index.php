@@ -349,7 +349,7 @@ $materialTags = getMaterialTags($material['id'], $pdo);
                         <?php endif; ?>
                         
                         <div class="mb-3">
-                            <small class="detail-date">投稿日：<?= date('Y年m月d日', strtotime($material['upload_date'])) ?></small>
+                            <small class="detail-date">投稿日：<?= date('Y-m-d', strtotime($material['upload_date'])) ?></small>
                         </div>
                         
                         <?php if (!empty($materialTags)): ?>

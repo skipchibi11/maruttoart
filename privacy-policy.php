@@ -99,7 +99,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         <div class="row">
             <div class="col-lg-8 mx-auto">
                 <h1 class="mb-4">プライバシーポリシー</h1>
-                <p class="text-muted">最終更新日: <?= date('Y年m月d日') ?></p>
+                <p class="text-muted">最終更新日: <?= date('Y-m-d') ?></p>
 
                 <div class="policy-section">
                     <h3>1. 基本方針</h3>
