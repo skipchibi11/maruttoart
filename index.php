@@ -57,12 +57,221 @@ $materials = $stmt->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>かわいい無料手描き水彩イラスト素材集｜maruttoart（商用利用OK）</title>
     <meta name="description" content="かわいい無料イラスト素材をダウンロード！手描き水彩風のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
+        /* リセットCSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            line-height: 1.5;
+            color: #212529;
         }
+
+        /* コンテナシステム */
+        .container {
+            width: 100%;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /* グリッドシステム */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        /* 基本カラム設定 */
+        [class*="col-"] {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .col-12 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .col-6 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .col-md-4 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .col-lg-3 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .col-xl-2 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .col-xxl-2 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /* レスポンシブブレークポイント */
+        /* ~576px: 2列表示 (col-6: 50%) */
+        /* 768px~: 3列表示 (col-md-4: 33.33%) */
+        /* 992px~: 4列表示 (col-lg-3: 25%) */
+        /* 1200px~: 6列表示 (col-xl-2: 16.67%) */
+        /* 1400px~: 6列表示維持 (col-xxl-2: 16.67%) */
+        
+        @media (min-width: 768px) {
+            .col-md-4 {
+                flex: 0 0 33.333333% !important;
+                max-width: 33.333333% !important;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .col-lg-3 {
+                flex: 0 0 25% !important;
+                max-width: 25% !important;
+            }
+        }
+
+        /* 1200px以上: 6列表示 (16.666%) */
+        @media (min-width: 1200px) {
+            .col-xl-2 {
+                flex: 0 0 16.666667% !important;
+                max-width: 16.666667% !important;
+            }
+        }
+
+        /* 1400px以上: 6列表示を維持 */
+        @media (min-width: 1400px) {
+            .col-xxl-2 {
+                flex: 0 0 16.666667% !important;
+                max-width: 16.666667% !important;
+            }
+            
+            /* コンテナの最大幅を拡張 */
+            .container {
+                max-width: 1320px;
+            }
+        }
+
+        /* 1600px以上: さらに大きな画面向け調整 */
+        @media (min-width: 1600px) {
+            .container {
+                max-width: 1500px;
+            }
+            
+            /* 大型画面で確実に6列表示 */
+            .col-6, .col-md-4, .col-lg-3, .col-xl-2, .col-xxl-2 {
+                flex: 0 0 16.666667% !important;
+                max-width: 16.666667% !important;
+            }
+        }
+
+        /* 1800px以上: 超大型画面向け調整 */
+        @media (min-width: 1800px) {
+            .container {
+                max-width: 1680px;
+            }
+            
+            /* 大型画面でも確実に6列表示 */
+            .col-6, .col-md-4, .col-lg-3, .col-xl-2, .col-xxl-2 {
+                flex: 0 0 16.666667% !important;
+                max-width: 16.666667% !important;
+            }
+        }
+
+        /* 2000px以上: 4K画面等の超大型画面 */
+        @media (min-width: 2000px) {
+            .container {
+                max-width: 1860px;
+            }
+            
+            /* 超大型画面でも確実に6列表示 */
+            .col-6, .col-md-4, .col-lg-3, .col-xl-2, .col-xxl-2 {
+                flex: 0 0 16.666667% !important;
+                max-width: 16.666667% !important;
+            }
+        }
+
+        /* ナビゲーション */
+        .navbar {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            background-color: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+
+        .navbar-brand {
+            display: inline-block;
+            padding-top: 0.3125rem;
+            padding-bottom: 0.3125rem;
+            margin-right: 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .navbar-brand:hover {
+            color: #333;
+            text-decoration: none;
+        }
+
+        /* カードコンポーネント */
+        .card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            background-color: #fff;
+            background-clip: border-box;
+            border: 1px solid rgba(0,0,0,.125);
+            border-radius: 0.25rem;
+        }
+
         .material-card {
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
@@ -72,7 +281,11 @@ $materials = $stmt->fetchAll();
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             position: relative;
+            border-radius: 0.25rem;
+            background-color: #fff;
+            margin-bottom: 1.5rem;
         }
+
         .material-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
@@ -80,55 +293,233 @@ $materials = $stmt->fetchAll();
             text-decoration: none;
             border-color: #0d6efd;
         }
+
         .material-card:focus {
             outline: none;
             border-color: #0d6efd;
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
         }
-        .material-card .card-body {
+
+        .card-body {
+            flex: 1 1 auto;
             padding: 0.75rem 1rem;
         }
-        .material-card .card-title {
+
+        .card-title {
             color: #666;
             font-weight: 300;
             font-size: 0.9rem;
             text-align: center;
             margin-bottom: 0;
         }
+
         .material-card:hover .card-title {
             color: #0d6efd;
         }
-        .header-logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-        }
+
         .material-image {
             width: 100%;
-            aspect-ratio: 1 / 1; /* 正方形を維持 */
+            aspect-ratio: 1 / 1;
             object-fit: cover;
-            border-radius: 8px 8px 0 0;
+            border-radius: 0.25rem 0.25rem 0 0;
         }
-        
-        /* スマホ用のレスポンシブ調整 */
-        @media (max-width: 768px) {
-            .material-card {
-                margin-bottom: 1rem;
+
+        /* ユーティリティクラス */
+        .mt-4 { margin-top: 1.5rem !important; }
+        .mt-5 { margin-top: 3rem !important; }
+        .mb-2 { margin-bottom: 0.5rem !important; }
+        .mb-4 { margin-bottom: 1.5rem !important; }
+        .mb-0 { margin-bottom: 0 !important; }
+        .text-muted { color: #6c757d !important; }
+        .text-center { text-align: center !important; }
+        .text-white { color: #fff !important; }
+        .text-decoration-underline { text-decoration: underline !important; }
+        .bg-light { background-color: #f8f9fa !important; }
+        .py-4 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+        .h-100 { height: 100% !important; }
+
+        /* ページネーション */
+        .pagination {
+            display: flex;
+            padding-left: 0;
+            list-style: none;
+            border-radius: 0.25rem;
+        }
+
+        .justify-content-center {
+            justify-content: center !important;
+        }
+
+        .page-item {
+            position: relative;
+            display: block;
+        }
+
+        .page-item:first-child .page-link {
+            margin-left: 0;
+            border-top-left-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .page-item:last-child .page-link {
+            border-top-right-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .page-item.active .page-link {
+            z-index: 3;
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+
+        .page-link {
+            position: relative;
+            display: block;
+            padding: 0.5rem 0.75rem;
+            margin-left: -1px;
+            line-height: 1.25;
+            color: #0d6efd;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+        }
+
+        .page-link:hover {
+            z-index: 2;
+            color: #0a58ca;
+            text-decoration: none;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .page-link:focus {
+            z-index: 3;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* ボタン */
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            color: #212529;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .btn:hover {
+            color: #212529;
+            text-decoration: none;
+        }
+
+        .btn:focus {
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-success {
+            color: #fff;
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .btn-success:hover {
+            color: #fff;
+            background-color: #157347;
+            border-color: #146c43;
+        }
+
+        .btn-outline-light {
+            color: #f8f9fa;
+            border-color: #f8f9fa;
+        }
+
+        .btn-outline-light:hover {
+            color: #000;
+            background-color: #f8f9fa;
+            border-color: #f8f9fa;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            border-radius: 0.2rem;
+        }
+
+        /* フッター */
+        .align-items-center {
+            align-items: center !important;
+        }
+
+        .col-md-8, .col-md-4, .col-md-12 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .col-md-8 {
+                flex: 0 0 66.666667%;
+                max-width: 66.666667%;
             }
+            .col-md-4 {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
+            }
+            .col-md-12 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            .text-md-end {
+                text-align: right !important;
+            }
+        }
+
+        /* レスポンシブ調整 */
+        @media (max-width: 768px) {
             .material-image {
                 height: auto;
                 min-height: 200px;
                 max-height: 250px;
             }
-            .header-logo {
+            .navbar-brand {
                 font-size: 1.5rem;
             }
             .container {
                 padding-left: 15px;
                 padding-right: 15px;
             }
+            /* スマホでのカラムパディング調整 */
+            .col-6, .col-md-4, .col-lg-3, .col-xl-2, .col-xxl-2 {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .row {
+                margin-left: -10px;
+                margin-right: -10px;
+            }
         }
-        
+
         @media (max-width: 576px) {
             .material-image {
                 min-height: 180px;
@@ -140,11 +531,25 @@ $materials = $stmt->fetchAll();
             .card-title {
                 font-size: 1rem;
             }
-            .card-text {
-                font-size: 0.875rem;
+            .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+            /* より小さなスマホでのカラムパディング調整 */
+            .col-6, .col-md-4, .col-lg-3, .col-xl-2, .col-xxl-2 {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+            .row {
+                margin-left: -8px;
+                margin-right: -8px;
             }
         }
-        
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+
         /* GDPR Cookie Banner のスタイル */
         #gdpr-banner {
             position: fixed;
@@ -208,6 +613,11 @@ $materials = $stmt->fetchAll();
             opacity: 1;
             transform: scale(1.05);
         }
+
+        .youtube-icon::before {
+            content: '▶';
+            font-size: 10px;
+        }
         
         /* YouTube動画ポップアップのスタイル */
         .youtube-modal {
@@ -258,8 +668,44 @@ $materials = $stmt->fetchAll();
         .youtube-modal-close:hover {
             color: #ccc;
         }
+
+        /* GDPR Cookie Banner のスタイル */
+        #gdpr-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #343a40;
+            color: white;
+            padding: 1rem;
+            z-index: 1050;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+        
+        #gdpr-banner.hidden {
+            display: none;
+        }
+        
+        .gdpr-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .gdpr-buttons {
+            margin-top: 1rem;
+        }
+        
+        .gdpr-buttons .btn {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .gdpr-buttons {
+                margin-top: 0;
+            }
+        }
     </style>
-</head>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -267,9 +713,9 @@ $materials = $stmt->fetchAll();
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <nav class="navbar">
         <div class="container">
-            <a class="navbar-brand header-logo" href="/">maruttoart</a>
+            <a class="navbar-brand" href="/">maruttoart</a>
         </div>
     </nav>
 
@@ -296,7 +742,7 @@ $materials = $stmt->fetchAll();
 
         <div class="row">
             <?php foreach ($materials as $material): ?>
-            <div class="col-md-4 col-lg-3 col-6 mb-4">
+            <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
                 <?php if (!empty($material['category_slug'])): ?>
                     <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
                 <?php else: ?>
@@ -321,7 +767,6 @@ $materials = $stmt->fetchAll();
                         <div class="youtube-icon" 
                              onclick="openYouTubeModal(event, '<?= h($material['youtube_url']) ?>', '<?= h($material['title']) ?>')"
                              title="動画を見る">
-                            <i class="bi bi-play-fill"></i>
                         </div>
                     <?php endif; ?>
                     
@@ -471,7 +916,6 @@ $materials = $stmt->fetchAll();
 
     <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_directory","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
     <script src="https://cdn.gtranslate.net/widgets/latest/lc.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- YouTubeモーダル -->
     <div id="youtube-modal" class="youtube-modal">
