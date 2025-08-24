@@ -48,6 +48,13 @@ $materials = $materialsStmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($category['title']) ?> - 無料のかわいい水彩イラスト素材｜maruttoart（商用利用OK）</title>
+    
+    <!-- Site Icons -->
+    <link rel="icon" type="image/png" href="/assets/icons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/icons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/assets/icons/site.webmanifest" />
     <meta name="description" content="<?= h($category['title']) ?>の無料イラスト素材一覧。かわいい手描き水彩のイラスト素材を商用利用OK。高品質なフリー素材をダウンロードして、デザイン制作にお役立てください。">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -95,7 +102,6 @@ $materials = $materialsStmt->fetchAll();
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
             cursor: pointer;
             z-index: 10;
             transition: all 0.2s ease;
@@ -107,6 +113,17 @@ $materials = $materialsStmt->fetchAll();
             background: rgba(0, 0, 0, 0.8);
             opacity: 1;
             transform: scale(1.05);
+        }
+        
+        .youtube-icon::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            background-image: url('/assets/icons/youtube.svg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: brightness(0) invert(1);
         }
         
         /* YouTube動画ポップアップのスタイル */
@@ -255,7 +272,6 @@ $materials = $materialsStmt->fetchAll();
                                     <div class="youtube-icon" 
                                          onclick="openYouTubeModal(event, '<?= h($material['youtube_url']) ?>', '<?= h($material['title']) ?>')"
                                          title="動画を見る">
-                                        <i class="bi bi-play-fill"></i>
                                     </div>
                                 <?php endif; ?>
                                 
