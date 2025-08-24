@@ -389,7 +389,7 @@ $materials = $stmt->fetchAll();
         }
 
         .material-card {
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
             text-decoration: none;
             color: inherit;
@@ -398,6 +398,8 @@ $materials = $stmt->fetchAll();
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             position: relative;
             border-radius: 0.25rem;
+            will-change: transform, box-shadow;
+        }
             background-color: #fff;
             margin-bottom: 1.5rem;
         }
@@ -719,9 +721,10 @@ $materials = $stmt->fetchAll();
             font-size: 12px;
             cursor: pointer;
             z-index: 10;
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
             box-shadow: 0 1px 4px rgba(0,0,0,0.2);
             opacity: 0.8;
+            will-change: transform, opacity, background-color;
         }
         
         .youtube-icon:hover {
@@ -1093,14 +1096,18 @@ $materials = $stmt->fetchAll();
         // バナーを表示
         function showBanner() {
             if (banner) {
-                banner.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    banner.classList.remove('hidden');
+                });
             }
         }
         
         // バナーを非表示
         function hideBanner() {
             if (banner) {
-                banner.classList.add('hidden');
+                requestAnimationFrame(() => {
+                    banner.classList.add('hidden');
+                });
             }
         }
         
@@ -1202,19 +1209,24 @@ $materials = $stmt->fetchAll();
             embedUrl = youtubeUrl;
         }
         
-        iframe.src = embedUrl;
-        modal.classList.add('show');
+        // リフロー最適化: 全ての変更をバッチ処理
+        requestAnimationFrame(() => {
+            iframe.src = embedUrl;
+            modal.classList.add('show');
+        });
         
         // Escキーでモーダルを閉じる
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function escKeyHandler(e) {
             if (e.key === 'Escape') {
+                document.removeEventListener('keydown', escKeyHandler);
                 closeYouTubeModal();
             }
         });
         
         // モーダル背景クリックで閉じる
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function modalClickHandler(e) {
             if (e.target === modal) {
+                modal.removeEventListener('click', modalClickHandler);
                 closeYouTubeModal();
             }
         });
@@ -1224,8 +1236,11 @@ $materials = $stmt->fetchAll();
         const modal = document.getElementById('youtube-modal');
         const iframe = document.getElementById('youtube-iframe');
         
-        modal.classList.remove('show');
-        iframe.src = '';
+        // リフロー最適化: 全ての変更をバッチ処理
+        requestAnimationFrame(() => {
+            modal.classList.remove('show');
+            iframe.src = '';
+        });
     }
     </script>
 </body>
