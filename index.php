@@ -862,14 +862,14 @@ $materials = $stmt->fetchAll();
         <div class="row">
             <div class="col-12">
                 <?php if (!empty($search)): ?>
-                    <h1 class="mb-2">検索結果: "<?= h($search) ?>"</h1>
+                    <h2 class="mb-2">検索結果: "<?= h($search) ?>"</h2>
                     <p class="text-muted mb-4">
                         <?= number_format($totalItems) ?>件中 
                         <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 
                         (<?= $page ?>/<?= $totalPages ?>ページ)
                     </p>
                 <?php else: ?>
-                    <h1 class="mb-2">無料で使えるかわいい水彩イラスト素材集</h1>
+                    <h2 class="mb-2">無料で使えるかわいい水彩イラスト素材集</h2>
                     <p class="text-muted mb-4">
                         全<?= number_format($totalItems) ?>件中 
                         <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 
