@@ -307,6 +307,30 @@ $materials = $materialsStmt->fetchAll();
         .youtube-modal-close:hover {
             color: #ccc;
         }
+
+        /* フッターのスタイル */
+        .footer-custom {
+            background-color: #fef9e7 !important;
+        }
+
+        /* gTranslate言語切り替えのスタイル統一 */
+        .gtranslate_wrapper select,
+        .gtranslate_wrapper a,
+        .gtranslate_wrapper span {
+            color: #5d4037 !important;
+            background-color: transparent !important;
+        }
+
+        .gtranslate_wrapper select {
+            border: 1px solid #5d4037;
+            border-radius: 4px;
+            padding: 5px 10px;
+        }
+
+        .gtranslate_wrapper a:hover {
+            color: #3e2723 !important;
+            text-decoration: none !important;
+        }
     </style>
 </head>
 <body>
@@ -434,7 +458,7 @@ $materials = $materialsStmt->fetchAll();
         <?php endif; ?>
     </div>
 
-    <footer class="bg-light mt-5 py-4">
+    <footer class="footer-custom mt-5 py-4">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
