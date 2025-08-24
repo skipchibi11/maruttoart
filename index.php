@@ -237,6 +237,116 @@ $materials = $stmt->fetchAll();
             }
         }
 
+        /* ヒーローセクション */
+        .hero-section {
+            background: #fef9e7;
+            color: #5d4037;
+            padding: 80px 0 60px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            min-height: 400px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-text {
+            flex: 1;
+            padding-right: 40px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .hero-cta {
+            display: inline-block;
+            background: rgba(93, 64, 55, 0.1);
+            color: #5d4037;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(93, 64, 55, 0.3);
+        }
+
+        .hero-cta:hover {
+            background: rgba(93, 64, 55, 0.2);
+            transform: translateY(-2px);
+            color: #5d4037;
+            text-decoration: none;
+        }
+
+        .hero-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 50%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+
+        /* ヒーローセクション - レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 0 40px;
+            }
+
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+                min-height: auto;
+            }
+
+            .hero-text {
+                padding-right: 0;
+                margin-bottom: 30px;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-description {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .hero-section {
+                padding: 40px 0 30px;
+            }
+        }
+
         /* ナビゲーション */
         .navbar {
             position: relative;
@@ -725,7 +835,28 @@ $materials = $stmt->fetchAll();
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <!-- ヒーローセクション -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">かわいい無料イラスト素材</h1>
+                    <p class="hero-description">
+                        手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。
+                    </p>
+                    <a href="#materials" class="hero-cta">素材を見る</a>
+                </div>
+                <div class="hero-image">
+                    <img src="/assets/images/hero.webp" 
+                         alt="かわいい水彩イラスト素材のサンプル" 
+                         fetchpriority="high"
+                         loading="eager">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container mt-4" id="materials">
         <div class="row">
             <div class="col-12">
                 <?php if (!empty($search)): ?>
