@@ -279,7 +279,7 @@ function setLongCache($maxAge = 2592000) {
 
 // 画像ファイル用キャッシュ設定
 function setImageCache() {
-    setLongCache(2592000); // 30日
+    setLongCache(604800); // 7日
 }
 
 // タグ関連関数
