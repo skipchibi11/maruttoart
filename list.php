@@ -6,12 +6,39 @@ setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
 $pdo = getDB();
 
-// トップページは新着6件のみ表示
+// ページネーション設定
+$perPage = 20; // 1ページあたりの表示件数
+$page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
+$offset = ($page - 1) * $perPage;
+
+// 検索処理
+$search = $_GET['search'] ?? '';
+$whereClause = "WHERE 1=1";
+$params = [];
+$countParams = [];
+
+if (!empty($search)) {
+    $whereClause .= " AND (title LIKE ? OR description LIKE ? OR search_keywords LIKE ?)";
+    $searchTerm = "%{$search}%";
+    $params = [$searchTerm, $searchTerm, $searchTerm];
+    $countParams = $params;
+}
+
+// 総件数を取得
+$countSql = "SELECT COUNT(*) FROM materials " . $whereClause;
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($countParams);
+$totalItems = $countStmt->fetchColumn();
+$totalPages = ceil($totalItems / $perPage);
+
+// データを取得（カテゴリ情報も含める）
 $sql = "SELECT m.*, c.slug as category_slug FROM materials m 
-        LEFT JOIN categories c ON m.category_id = c.id 
-        ORDER BY m.created_at DESC LIMIT 6";
+        LEFT JOIN categories c ON m.category_id = c.id " . 
+        $whereClause . " ORDER BY m.created_at DESC LIMIT ? OFFSET ?";
+$params[] = $perPage;
+$params[] = $offset;
 $stmt = $pdo->prepare($sql);
-$stmt->execute();
+$stmt->execute($params);
 $materials = $stmt->fetchAll();
 ?>
 
@@ -61,17 +88,14 @@ $materials = $stmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>かわいい無料手描き水彩イラスト素材集｜maruttoart（商用利用OK）</title>
-    <meta name="description" content="かわいい無料イラスト素材をダウンロード！手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。">
+    <title>イラスト素材一覧｜maruttoart（商用利用OK）</title>
+    <meta name="description" content="かわいい無料イラスト素材の一覧ページ。手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。">
     <link rel="icon" type="image/png" href="/assets/icons/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
     <link rel="shortcut icon" href="/assets/icons/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="maruttoart" />
-    <link rel="manifest" href="/assets/icons/site.webmanifest" />
-    
-    <!-- ヒーロー画像のpreload -->
-    <link rel="preload" as="image" href="/assets/images/hero.webp" fetchpriority="high" />
+    <link rel="manifest" href="/site.webmanifest" />
     
     <style>
         /* リセットCSS */
@@ -247,116 +271,6 @@ $materials = $stmt->fetchAll();
             }
         }
 
-        /* ヒーローセクション */
-        .hero-section {
-            background: #fef9e7;
-            color: #5d4037;
-            padding: 80px 0 60px;
-            margin-bottom: 40px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-content {
-            display: flex;
-            align-items: center;
-            min-height: 400px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero-text {
-            flex: 1;
-            padding-right: 40px;
-        }
-
-        .hero-title {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-
-        .hero-description {
-            font-size: 1.25rem;
-            margin-bottom: 30px;
-            line-height: 1.6;
-            opacity: 0.95;
-        }
-
-        .hero-cta {
-            display: inline-block;
-            background: rgba(93, 64, 55, 0.1);
-            color: #5d4037;
-            padding: 12px 30px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(93, 64, 55, 0.3);
-        }
-
-        .hero-cta:hover {
-            background: rgba(93, 64, 55, 0.2);
-            transform: translateY(-2px);
-            color: #5d4037;
-            text-decoration: none;
-        }
-
-        .hero-image {
-            flex: 1;
-            text-align: center;
-        }
-
-        .hero-image img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 50%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-        }
-
-        /* ヒーローセクション - レスポンシブ対応 */
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: 60px 0 40px;
-            }
-
-            .hero-content {
-                flex-direction: column;
-                text-align: center;
-                min-height: auto;
-            }
-
-            .hero-text {
-                padding-right: 0;
-                margin-bottom: 30px;
-            }
-
-            .hero-title {
-                font-size: 2.5rem;
-            }
-
-            .hero-description {
-                font-size: 1.1rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .hero-title {
-                font-size: 2rem;
-            }
-
-            .hero-description {
-                font-size: 1rem;
-            }
-
-            .hero-section {
-                padding: 40px 0 30px;
-            }
-        }
-
         /* ナビゲーション */
         .navbar {
             position: relative;
@@ -409,7 +323,6 @@ $materials = $stmt->fetchAll();
             position: relative;
             border-radius: 0.25rem;
             will-change: transform, box-shadow;
-        }
             background-color: #fff;
             margin-bottom: 1.5rem;
         }
@@ -592,50 +505,6 @@ $materials = $stmt->fetchAll();
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
         }
 
-        .btn-primary {
-            color: #fff;
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-        }
-
-        .btn-primary:hover {
-            color: #fff;
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-        }
-
-        .btn-primary:focus {
-            color: #fff;
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-            box-shadow: 0 0 0 0.2rem rgba(49, 132, 253, 0.5);
-        }
-
-        .btn-lg {
-            padding: 0.5rem 1rem;
-            font-size: 1.25rem;
-            line-height: 1.5;
-            border-radius: 0.3rem;
-        }
-
-        /* Load More Button */
-        .load-more-button button {
-            background-color: #ffffff;
-            color: #444;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            padding: 0.75em 2em;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .load-more-button button:hover {
-            background-color: #f5f5f5;
-            border-color: #999;
-        }
-
         .btn-success {
             color: #fff;
             background-color: #198754;
@@ -745,10 +614,6 @@ $materials = $stmt->fetchAll();
             .row {
                 margin-left: -8px;
                 margin-right: -8px;
-            }
-        }
-                padding-left: 15px;
-                padding-right: 15px;
             }
         }
 
@@ -963,36 +828,24 @@ $materials = $stmt->fetchAll();
         </div>
     </nav>
 
-    <!-- ヒーローセクション -->
-    <section class="hero-section">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1 class="hero-title">かわいい無料イラスト素材</h1>
-                    <p class="hero-description">
-                        手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。
-                    </p>
-                    <a href="#materials" class="hero-cta">素材を見る</a>
-                </div>
-                <div class="hero-image">
-                    <img src="/assets/images/hero.webp" 
-                         alt="かわいい水彩イラスト素材のサンプル" 
-                         width="500"
-                         height="500"
-                         fetchpriority="high"
-                         loading="eager">
-                </div>
-            </div>
-        </div>
-    </section>
-
     <div class="container mt-4" id="materials">
         <div class="row">
             <div class="col-12">
-                <h2 class="mb-2">新着イラスト素材</h2>
-                <p class="text-muted mb-4">
-                    最新のかわいい水彩イラスト素材をご紹介
-                </p>
+                <?php if (!empty($search)): ?>
+                    <h1 class="mb-2">検索結果: "<?= h($search) ?>"</h1>
+                    <p class="text-muted mb-4">
+                        <?= number_format($totalItems) ?>件中 
+                        <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 
+                        (<?= $page ?>/<?= $totalPages ?>ページ)
+                    </p>
+                <?php else: ?>
+                    <h1 class="mb-2">無料で使えるかわいい水彩イラスト素材集</h1>
+                    <p class="text-muted mb-4">
+                        全<?= number_format($totalItems) ?>件中 
+                        <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 
+                        (<?= $page ?>/<?= $totalPages ?>ページ)
+                    </p>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -1038,20 +891,92 @@ $materials = $stmt->fetchAll();
             <?php endforeach; ?>
         </div>
 
-        <!-- もっと見るボタン -->
-        <div class="row mt-5">
-            <div class="col-12 text-center load-more-button">
-                <button onclick="window.location.href='/list.php'">
-                    もっと見る
-                </button>
-            </div>
-        </div>
+        <!-- ページネーション -->
+        <?php if ($totalPages > 1): ?>
+        <nav aria-label="ページネーション" class="mt-5">
+            <ul class="pagination justify-content-center">
+                <!-- 前のページ -->
+                <?php if ($page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?= $page - 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" aria-label="前のページ">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-label="前のページ">
+                            <span aria-hidden="true">&laquo;</span>
+                        </span>
+                    </li>
+                <?php endif; ?>
+
+                <!-- ページ番号 -->
+                <?php
+                $startPage = max(1, $page - 2);
+                $endPage = min($totalPages, $page + 2);
+                
+                // 最初のページを表示
+                if ($startPage > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>">1</a>
+                    </li>
+                    <?php if ($startPage > 2): ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    <?php endif;
+                endif;
+
+                // 現在のページ周辺を表示
+                for ($i = $startPage; $i <= $endPage; $i++): ?>
+                    <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                        <?php if ($i == $page): ?>
+                            <span class="page-link"><?= $i ?></span>
+                        <?php else: ?>
+                            <a class="page-link" href="?page=<?= $i ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>"><?= $i ?></a>
+                        <?php endif; ?>
+                    </li>
+                <?php endfor;
+
+                // 最後のページを表示
+                if ($endPage < $totalPages): ?>
+                    <?php if ($endPage < $totalPages - 1): ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    <?php endif; ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?= $totalPages ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>"><?= $totalPages ?></a>
+                    </li>
+                <?php endif; ?>
+
+                <!-- 次のページ -->
+                <?php if ($page < $totalPages): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?= $page + 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" aria-label="次のページ">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-label="次のページ">
+                            <span aria-hidden="true">&raquo;</span>
+                        </span>
+                    </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+        <?php endif; ?>
 
         <?php if (empty($materials)): ?>
         <div class="row">
             <div class="col-12 text-center">
                 <p class="text-muted">
-                    素材が見つかりませんでした。
+                    <?php if (!empty($search)): ?>
+                        「<?= h($search) ?>」に該当する素材が見つかりませんでした。
+                    <?php else: ?>
+                        素材が見つかりませんでした。
+                    <?php endif; ?>
                 </p>
             </div>
         </div>
@@ -1081,7 +1006,12 @@ $materials = $stmt->fetchAll();
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
-            
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                </div>
+                <div class="col-md-4 text-md-end">
+                </div>
+            </div>
             <div class="row align-items-center">
                 <div class="col-md-12">
                     <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
