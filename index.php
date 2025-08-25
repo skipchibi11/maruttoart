@@ -13,6 +13,12 @@ $sql = "SELECT m.*, c.slug as category_slug FROM materials m
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $materials = $stmt->fetchAll();
+
+// 全素材件数を取得（JSON-LD用）
+$totalCountSql = "SELECT COUNT(*) FROM materials";
+$totalCountStmt = $pdo->prepare($totalCountSql);
+$totalCountStmt->execute();
+$totalMaterialsCount = $totalCountStmt->fetchColumn();
 ?>
 
 <!DOCTYPE html>
@@ -77,14 +83,72 @@ $materials = $stmt->fetchAll();
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "maruttoart",
-        "url": "https://marutto.art/",
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://marutto.art/list.php?search={search_term_string}",
-            "query-input": "required name=search_term_string"
-        }
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "name": "maruttoart",
+                "alternateName": "まるっとあーと",
+                "url": "https://marutto.art/",
+                "description": "かわいい無料イラスト素材をダウンロード！手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。",
+                "image": {
+                    "@type": "ImageObject",
+                    "url": "https://marutto.art/assets/images/hero.webp",
+                    "width": 1200,
+                    "height": 630,
+                    "caption": "maruttoart - かわいい無料手描き水彩イラスト素材集"
+                },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "maruttoart",
+                    "url": "https://marutto.art/",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://marutto.art/assets/icons/apple-touch-icon.png",
+                        "width": 180,
+                        "height": 180
+                    }
+                },
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https://marutto.art/list.php?search={search_term_string}"
+                    },
+                    "query-input": "required name=search_term_string"
+                }
+            },
+            {
+                "@type": "ItemList",
+                "name": "最新の無料イラスト素材",
+                "description": "新着のかわいい手描き水彩イラスト素材",
+                "numberOfItems": <?= $totalMaterialsCount ?>,
+                "itemListElement": [
+                    <?php foreach (array_slice($materials, 0, 3) as $index => $material): ?>
+                    {
+                        "@type": "Product",
+                        "position": <?= $index + 1 ?>,
+                        "name": "<?= addslashes(h($material['title'])) ?>",
+                        "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'の手描き水彩イラスト素材です。商用利用可能で個人・法人問わずご利用いただけます。')) ?>",
+                        "image": "https://marutto.art/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
+                        "url": "https://marutto.art/<?= !empty($material['category_slug']) ? h($material['category_slug']) . '/' . h($material['slug']) . '/' : 'detail/' . h($material['slug']) ?>",
+                        "sku": "<?= h($material['slug']) ?>-<?= date('Ymd', strtotime($material['created_at'])) ?>",
+                        "brand": {
+                            "@type": "Organization",
+                            "name": "maruttoart"
+                        },
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0",
+                            "priceCurrency": "JPY",
+                            "availability": "https://schema.org/InStock"
+                        },
+                        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+                        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 手描き, 水彩, 商用利用OK"
+                    }<?= $index < min(2, count($materials) - 1) ? ',' : '' ?>
+                    <?php endforeach; ?>
+                ]
+            }
+        ]
     }
     </script>
     
