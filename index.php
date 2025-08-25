@@ -670,38 +670,86 @@ $materials = $stmt->fetchAll();
 
         /* GDPR Cookie Banner のスタイル */
         #gdpr-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #343a40;
-            color: white;
-            padding: 1rem;
-            z-index: 1050;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            padding: 1rem !important;
+            z-index: 1050 !important;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
         }
         
-        #gdpr-banner.hidden {
-            display: none;
+        #gdpr-banner.hidden,
+        .gdpr-cookie-banner.hidden {
+            display: none !important;
         }
         
         .gdpr-text {
-            font-size: 0.9rem;
-            line-height: 1.4;
+            font-size: 0.9rem !important;
+            line-height: 1.4 !important;
+            color: #ffffff !important;
+        }
+        
+        .gdpr-text a {
+            color: #ffffff !important;
+            text-decoration: underline !important;
+        }
+        
+        .gdpr-text a:hover {
+            color: #e9ecef !important;
         }
         
         .gdpr-buttons {
-            margin-top: 1rem;
+            margin-top: 1rem !important;
+            display: flex !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap !important;
         }
         
         .gdpr-buttons .btn {
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
+            flex: 0 0 auto !important;
+            white-space: nowrap !important;
+        }
+        
+        /* GDPR専用のボタンスタイル（より強力な優先度） */
+        #gdpr-banner .btn-outline-light {
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+            background-color: transparent !important;
+            border-width: 1px !important;
+            border-style: solid !important;
+        }
+
+        #gdpr-banner .btn-outline-light:hover {
+            color: #212529 !important;
+            background-color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+
+        #gdpr-banner .btn-success {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+
+        #gdpr-banner .btn-success:hover {
+            color: #000000 !important;
+            background-color: #f8f9fa !important;
+            border-color: #f8f9fa !important;
         }
         
         @media (min-width: 768px) {
             .gdpr-buttons {
-                margin-top: 0;
+                margin-top: 0 !important;
+                justify-content: flex-end !important;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .gdpr-buttons {
+                justify-content: center !important;
             }
         }
         
@@ -786,43 +834,6 @@ $materials = $stmt->fetchAll();
         
         .youtube-modal-close:hover {
             color: #ccc;
-        }
-
-        /* GDPR Cookie Banner のスタイル */
-        #gdpr-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #343a40;
-            color: white;
-            padding: 1rem;
-            z-index: 1050;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-        }
-        
-        #gdpr-banner.hidden {
-            display: none;
-        }
-        
-        .gdpr-text {
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-        
-        .gdpr-buttons {
-            margin-top: 1rem;
-        }
-        
-        .gdpr-buttons .btn {
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        @media (min-width: 768px) {
-            .gdpr-buttons {
-                margin-top: 0;
-            }
         }
 
         /* フッターのスタイル */
@@ -1037,20 +1048,20 @@ $materials = $stmt->fetchAll();
     </div>
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
-    <div id="gdpr-banner" class="hidden">
+    <div id="gdpr-banner" class="gdpr-cookie-banner hidden" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #212529; color: #ffffff; padding: 1rem; z-index: 1050; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-8">
-                    <div class="gdpr-text">
+                <div class="col-12 col-md-8">
+                    <div class="gdpr-text" style="color: #ffffff;">
                         当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                        <a href="/privacy-policy.php" class="text-white text-decoration-underline">プライバシーポリシー</a>
+                        <a href="/privacy-policy.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
                         をご確認ください。
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="gdpr-buttons text-md-end">
-                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
-                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
+                <div class="col-12 col-md-4">
+                    <div class="gdpr-buttons text-md-end" style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button id="gdpr-accept" class="btn btn-success btn-sm" style="color: #000000; background-color: #ffffff; border-color: #ffffff;">同意する</button>
+                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm" style="color: #ffffff; border-color: #ffffff; background-color: transparent;">拒否する</button>
                     </div>
                 </div>
             </div>
@@ -1089,111 +1100,147 @@ $materials = $stmt->fetchAll();
             <button class="youtube-modal-close" onclick="closeYouTubeModal()">&times;</button>
             <iframe id="youtube-iframe" src="" allowfullscreen></iframe>
         </div>
-    </div>    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
+    </div>
+
+    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
     <script>
     // GDPR Cookie Consent (セッション・Cookie不使用版)
     (function() {
         const GDPR_KEY = 'gdpr_consent_v1';
-        const banner = document.getElementById('gdpr-banner');
-        const acceptBtn = document.getElementById('gdpr-accept');
-        const declineBtn = document.getElementById('gdpr-decline');
+        let isInitialized = false;
         
-        // localStorage から同意状況をチェック
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem(GDPR_KEY);
-            } catch (e) {
-                return null; // localStorage が使用できない場合
+        // 初期化関数
+        function initGDPR() {
+            if (isInitialized) return;
+            isInitialized = true;
+            
+            const banner = document.getElementById('gdpr-banner');
+            const acceptBtn = document.getElementById('gdpr-accept');
+            const declineBtn = document.getElementById('gdpr-decline');
+            
+            console.log('GDPR initialization started');
+            console.log('Banner element:', banner);
+            console.log('Accept button:', acceptBtn);
+            console.log('Decline button:', declineBtn);
+            
+            if (!banner || !acceptBtn || !declineBtn) {
+                console.error('GDPR elements not found');
+                return;
             }
-        }
-        
-        // 同意状況を保存
-        function setGdprConsent(value) {
-            try {
-                localStorage.setItem(GDPR_KEY, value);
-                return true;
-            } catch (e) {
-                return false; // localStorage が使用できない場合
+            
+            // localStorage から同意状況をチェック
+            function getGdprConsent() {
+                try {
+                    return localStorage.getItem(GDPR_KEY);
+                } catch (e) {
+                    console.warn('localStorage not available:', e);
+                    return null;
+                }
             }
-        }
-        
-        // バナーを表示
-        function showBanner() {
-            if (banner) {
-                requestAnimationFrame(() => {
+            
+            // 同意状況を保存
+            function setGdprConsent(value) {
+                try {
+                    localStorage.setItem(GDPR_KEY, value);
+                    console.log('GDPR consent saved:', value);
+                    return true;
+                } catch (e) {
+                    console.warn('localStorage save failed:', e);
+                    return false;
+                }
+            }
+            
+            // バナーを表示
+            function showBanner() {
+                if (banner) {
                     banner.classList.remove('hidden');
-                });
+                    console.log('GDPR banner shown');
+                }
             }
-        }
-        
-        // バナーを非表示
-        function hideBanner() {
-            if (banner) {
-                requestAnimationFrame(() => {
+            
+            // バナーを非表示
+            function hideBanner() {
+                if (banner) {
                     banner.classList.add('hidden');
-                });
+                    console.log('GDPR banner hidden');
+                }
             }
-        }
-        
-        // 同意処理
-        function acceptConsent() {
-            setGdprConsent('accepted');
-            hideBanner();
-            // 必要に応じて Google Analytics などを有効化
-            enableAnalytics();
-        }
-        
-        // 拒否処理
-        function declineConsent() {
-            setGdprConsent('declined');
-            hideBanner();
-            // アナリティクスを無効化
-            disableAnalytics();
-        }
-        
-        // アナリティクス有効化（プレースホルダー）
-        function enableAnalytics() {
-            console.log('Analytics enabled (placeholder)');
-            // ここに Google Analytics などの初期化コードを追加
-        }
-        
-        // アナリティクス無効化（プレースホルダー）
-        function disableAnalytics() {
-            console.log('Analytics disabled (placeholder)');
-            // ここにアナリティクス無効化のコードを追加
-        }
-        
-        // 初期化
-        function init() {
+            
+            // 同意処理
+            function acceptConsent() {
+                console.log('Accept consent clicked');
+                setGdprConsent('accepted');
+                hideBanner();
+                enableAnalytics();
+            }
+            
+            // 拒否処理
+            function declineConsent() {
+                console.log('Decline consent clicked');
+                setGdprConsent('declined');
+                hideBanner();
+                disableAnalytics();
+            }
+            
+            // アナリティクス有効化（プレースホルダー）
+            function enableAnalytics() {
+                console.log('Analytics enabled');
+                // Google Analytics などの初期化コードをここに追加
+            }
+            
+            // アナリティクス無効化（プレースホルダー）
+            function disableAnalytics() {
+                console.log('Analytics disabled');
+                // アナリティクス無効化のコードをここに追加
+            }
+            
+            // イベントリスナーを設定
+            acceptBtn.addEventListener('click', acceptConsent);
+            declineBtn.addEventListener('click', declineConsent);
+            console.log('GDPR event listeners attached');
+            
+            // 同意状況をチェックして初期化
             const consent = getGdprConsent();
+            console.log('Current GDPR consent:', consent);
             
             if (consent === null) {
                 // 未設定の場合はバナーを表示
+                console.log('No consent found, showing banner');
                 showBanner();
             } else if (consent === 'accepted') {
                 // 同意済みの場合はアナリティクスを有効化
+                console.log('Consent already accepted');
+                hideBanner();
                 enableAnalytics();
             } else if (consent === 'declined') {
                 // 拒否済みの場合はアナリティクスを無効化
+                console.log('Consent declined');
+                hideBanner();
                 disableAnalytics();
             }
         }
         
-        // イベントリスナーを設定
-        if (acceptBtn) {
-            acceptBtn.addEventListener('click', acceptConsent);
+        // 複数の初期化方法を試行
+        function tryInit() {
+            console.log('Document ready state:', document.readyState);
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initGDPR);
+            } else {
+                // DOMが既に読み込まれている場合は即座に実行
+                setTimeout(initGDPR, 0);
+            }
+            
+            // フォールバック: window.onloadでも試行
+            window.addEventListener('load', function() {
+                if (!isInitialized) {
+                    console.log('Fallback initialization on window load');
+                    initGDPR();
+                }
+            });
         }
         
-        if (declineBtn) {
-            declineBtn.addEventListener('click', declineConsent);
-        }
-        
-        // DOMContentLoaded で初期化
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+        tryInit();
     })();
     
     // カードのキーボードナビゲーション対応

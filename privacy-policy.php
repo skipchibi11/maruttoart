@@ -9,13 +9,13 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 <html lang="ja">
 <head>
     <!-- Google Tag Manager -->
-    <script>(function(w,    <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_directory","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
-    <script src="https://cdn.gtranslate.net/widgets/latest/lc.js" defer></script>s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-579HN546');</script>
     <!-- End Google Tag Manager -->
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>プライバシーポリシー - maruttoart</title>
@@ -46,8 +46,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #343a40;
-            color: white;
+            background-color: #212529;
+            color: #ffffff;
             padding: 1rem;
             z-index: 1050;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
@@ -60,20 +60,50 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         .gdpr-text {
             font-size: 0.9rem;
             line-height: 1.4;
+            color: #ffffff;
         }
         
         .gdpr-buttons {
             margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
         
         .gdpr-buttons .btn {
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+        
+        /* GDPR専用のボタンスタイル */
+        #gdpr-banner .btn-outline-light {
+            color: #ffffff;
+            border-color: #ffffff;
+            background-color: transparent;
+        }
+
+        #gdpr-banner .btn-outline-light:hover {
+            color: #212529;
+            background-color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        #gdpr-banner .btn-success {
+            color: #000000;
+            background-color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        #gdpr-banner .btn-success:hover {
+            color: #000000;
+            background-color: #f8f9fa;
+            border-color: #f8f9fa;
         }
         
         @media (min-width: 768px) {
             .gdpr-buttons {
                 margin-top: 0;
+                justify-content: flex-end;
             }
         }
     </style>
@@ -192,14 +222,14 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <div id="gdpr-banner" class="hidden">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-8">
+                <div class="col-12 col-md-8">
                     <div class="gdpr-text">
                         当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
                         <a href="/privacy-policy.php" class="text-white text-decoration-underline">プライバシーポリシー</a>
                         をご確認ください。
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <div class="gdpr-buttons text-md-end">
                         <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
                         <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
@@ -319,5 +349,9 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         }
     })();
     </script>
+
+    <!-- gTranslate Scripts -->
+    <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_directory","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
+    <script src="https://cdn.gtranslate.net/widgets/latest/lc.js" defer></script>
 </body>
 </html>
