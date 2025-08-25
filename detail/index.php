@@ -101,14 +101,7 @@ $materialTags = getMaterialTags($material['id'], $pdo);
         },
         "license": "https://creativecommons.org/publicdomain/zero/1.0/",
         "category": "<?= addslashes(h($category['name'])) ?>",
-        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 手描き, 水彩, 商用利用OK"<?php if (!empty($material['youtube_url'])): ?>,
-        "video": {
-            "@type": "VideoObject",
-            "name": "<?= addslashes(h($material['title'])) ?>の動画",
-            "description": "<?= addslashes(h($material['title'])) ?>に関する動画コンテンツ",
-            "embedUrl": "<?= h($material['youtube_url']) ?>",
-            "thumbnailUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>"
-        }<?php endif; ?>
+        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 手描き, 水彩, 商用利用OK"
     }
     </script>
     
