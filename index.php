@@ -62,7 +62,11 @@ $materials = $stmt->fetchAll();
     <link rel="shortcut icon" href="/assets/icons/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="maruttoart" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="manifest" href="/assets/icons/site.webmanifest" />
+    
+    <!-- ヒーロー画像のpreload -->
+    <link rel="preload" as="image" href="/assets/images/hero.webp" fetchpriority="high" />
+    
     <style>
         /* リセットCSS */
         * {
