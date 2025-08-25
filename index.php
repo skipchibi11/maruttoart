@@ -115,6 +115,14 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                         "urlTemplate": "https://marutto.art/list.php?search={search_term_string}"
                     },
                     "query-input": "required name=search_term_string"
+                },
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https://marutto.art/list.php?search={search_term_string}"
+                    },
+                    "query-input": "required name=search_term_string"
                 }
             },
             {
