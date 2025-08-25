@@ -925,7 +925,7 @@ $materials = $stmt->fetchAll();
                         <!-- PC: 300x300のWebP画像 -->
                         <source media="(min-width: 769px)" srcset="/<?= h($mediumImage) ?>" type="image/webp">
                         <!-- フォールバック -->
-                        <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>">
+                        <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>のイラスト">
                     </picture>
                     
                     <!-- YouTubeアイコン -->

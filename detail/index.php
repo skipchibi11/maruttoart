@@ -329,7 +329,7 @@ $materialTags = getMaterialTags($material['id'], $pdo);
                         <!-- モバイル用：180x180のWebP -->
                         <source media="(max-width: 767px)" srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
                         <!-- フォールバック：オリジナル画像 -->
-                        <img src="/<?= h($material['image_path']) ?>" class="material-image mb-3" alt="<?= h($material['title']) ?>">
+                        <img src="/<?= h($material['image_path']) ?>" class="material-image mb-3" alt="<?= h($material['title']) ?>のイラスト">
                     </picture>
                     
                     <!-- ダウンロードリンクを画像の直下に配置 -->

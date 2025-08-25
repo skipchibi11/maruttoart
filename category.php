@@ -287,7 +287,7 @@ $materials = $materialsStmt->fetchAll();
                                     <!-- フォールバック：オリジナル画像 -->
                                     <img src="/<?= h($material['image_path']) ?>" 
                                          class="card-img-top material-image" 
-                                         alt="<?= h($material['title']) ?>" 
+                                         alt="<?= h($material['title']) ?>のイラスト" 
                                          loading="lazy">
                                 </picture>
                                 

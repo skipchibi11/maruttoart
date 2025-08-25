@@ -387,7 +387,7 @@ $materials = $materialsStmt->fetchAll();
                                 <!-- WebP対応 -->
                                 <source srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
                                 <!-- フォールバック -->
-                                <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>">
+                                <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>のイラスト">
                             </picture>
                             
                             <!-- YouTubeアイコン -->
