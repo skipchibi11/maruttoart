@@ -18,14 +18,14 @@ $params = [];
 $countParams = [];
 
 if (!empty($search)) {
-    $whereClause .= " AND (title LIKE ? OR description LIKE ? OR search_keywords LIKE ?)";
+    $whereClause .= " AND (m.title LIKE ? OR m.description LIKE ? OR m.search_keywords LIKE ?)";
     $searchTerm = "%{$search}%";
     $params = [$searchTerm, $searchTerm, $searchTerm];
     $countParams = $params;
 }
 
 // 総件数を取得
-$countSql = "SELECT COUNT(*) FROM materials " . $whereClause;
+$countSql = "SELECT COUNT(*) FROM materials m " . $whereClause;
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute($countParams);
 $totalItems = $countStmt->fetchColumn();
@@ -401,6 +401,8 @@ $materials = $stmt->fetchAll();
         .mb-2 { margin-bottom: 0.5rem !important; }
         .mb-4 { margin-bottom: 1.5rem !important; }
         .mb-0 { margin-bottom: 0 !important; }
+        .me-2 { margin-right: 0.5rem !important; }
+        .ms-2 { margin-left: 0.5rem !important; }
         .text-muted { color: #6c757d !important; }
         .text-center { text-align: center !important; }
         .text-white { color: #fff !important; }
@@ -408,6 +410,29 @@ $materials = $stmt->fetchAll();
         .bg-light { background-color: #f8f9fa !important; }
         .py-4 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
         .h-100 { height: 100% !important; }
+        .d-flex { display: flex !important; }
+        .align-items-center { align-items: center !important; }
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus {
+            color: #212529;
+            background-color: #fff;
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
 
         /* ページネーション */
         .pagination {
@@ -515,6 +540,29 @@ $materials = $stmt->fetchAll();
             color: #fff;
             background-color: #157347;
             border-color: #146c43;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
         }
 
         .btn-outline-light {
@@ -785,6 +833,57 @@ $materials = $stmt->fetchAll();
             color: #ccc;
         }
 
+        /* 検索フォームのスタイル */
+        .search-form {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .search-form form {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .search-input:focus {
+            border-color: #0d6efd;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .search-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 576px) {
+            .search-form form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                margin-bottom: 0.5rem;
+            }
+            
+            .search-button {
+                width: 100%;
+            }
+        }
+
         /* フッターのスタイル */
         .footer-custom {
             background-color: #fef9e7 !important;
@@ -846,6 +945,25 @@ $materials = $stmt->fetchAll();
                         (<?= $page ?>/<?= $totalPages ?>ページ)
                     </p>
                 <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- 検索フォーム -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="search-form">
+                    <form method="GET" action="/list.php" class="d-flex align-items-center">
+                        <input type="text" 
+                               name="search" 
+                               value="<?= h($search) ?>" 
+                               placeholder="素材を検索（例：猫、花、食べ物など）" 
+                               class="search-input form-control me-2">
+                        <button type="submit" class="search-button btn btn-primary">検索</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="/list.php" class="btn btn-outline-secondary ms-2">クリア</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
             </div>
         </div>
 

@@ -19,9 +19,7 @@ $categoryStmt = $pdo->prepare("SELECT * FROM categories WHERE slug = ?");
 $categoryStmt->execute([$category_slug]);
 $category = $categoryStmt->fetch();
 
-if     </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>y) {
+if (!$category) {
     header('HTTP/1.0 404 Not Found');
     exit;
 }

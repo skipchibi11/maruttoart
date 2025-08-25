@@ -79,60 +79,11 @@ $materials = $stmt->fetchAll();
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "maruttoart",
-        "alternateName": "まるっとアート",
         "url": "https://marutto.art/",
-        "description": "かわいい無料イラスト素材をダウンロード！手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。",
-        "image": {
-            "@type": "ImageObject",
-            "url": "https://marutto.art/assets/images/hero.webp",
-            "width": 1200,
-            "height": 630,
-            "caption": "maruttoart - かわいい無料手描き水彩イラスト素材集"
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "maruttoart",
-            "url": "https://marutto.art/",
-            "logo": {
-                "@type": "ImageObject",
-                "url": "https://marutto.art/assets/icons/apple-touch-icon.png",
-                "width": 180,
-                "height": 180
-            }
-        },
         "potentialAction": {
             "@type": "SearchAction",
-            "target": {
-                "@type": "EntryPoint",
-                "urlTemplate": "https://marutto.art/list.php?search={search_term_string}"
-            },
+            "target": "https://marutto.art/list.php?search={search_term_string}",
             "query-input": "required name=search_term_string"
-        },
-        "mainEntity": {
-            "@type": "ItemList",
-            "name": "無料イラスト素材一覧",
-            "description": "手描き水彩のやさしいタッチで描かれたかわいい無料イラスト素材",
-            "numberOfItems": "<?= count($materials) ?>",
-            "itemListElement": [
-                <?php foreach ($materials as $index => $material): ?>
-                {
-                    "@type": "CreativeWork",
-                    "position": <?= $index + 1 ?>,
-                    "name": "<?= addslashes(h($material['title'])) ?>",
-                    "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'の手描き水彩イラスト素材')) ?>",
-                    "image": "https://marutto.art/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
-                    "url": "https://marutto.art/<?= !empty($material['category_slug']) ? h($material['category_slug']) . '/' . h($material['slug']) . '/' : 'detail/' . h($material['slug']) ?>",
-                    "dateCreated": "<?= date('c', strtotime($material['created_at'])) ?>",
-                    "license": "https://creativecommons.org/publicdomain/zero/1.0/",
-                    "usageInfo": "商用利用可能、著作権フリー、クレジット表記不要",
-                    "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>",
-                    "creator": {
-                        "@type": "Organization",
-                        "name": "maruttoart"
-                    }
-                }<?= $index < count($materials) - 1 ? ',' : '' ?>
-                <?php endforeach; ?>
-            ]
         }
     }
     </script>
