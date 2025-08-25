@@ -296,22 +296,31 @@ $materialTags = getMaterialTags($material['id'], $pdo);
             background-color: #fef9e7 !important;
         }
 
+        /* フッター文字色の改善（コントラスト対応） */
+        .footer-custom .footer-text {
+            color: #2c3e50 !important;
+        }
+
+        .footer-custom .footer-text:hover {
+            color: #1a252f !important;
+        }
+
         /* gTranslate言語切り替えのスタイル統一 */
         .gtranslate_wrapper select,
         .gtranslate_wrapper a,
         .gtranslate_wrapper span {
-            color: #5d4037 !important;
+            color: #1a1a1a !important;
             background-color: transparent !important;
         }
 
         .gtranslate_wrapper select {
-            border: 1px solid #5d4037;
+            border: 1px solid #1a1a1a;
             border-radius: 4px;
             padding: 5px 10px;
         }
 
         .gtranslate_wrapper a:hover {
-            color: #3e2723 !important;
+            color: #000000 !important;
             text-decoration: none !important;
         }
     </style>
@@ -448,7 +457,7 @@ $materialTags = getMaterialTags($material['id'], $pdo);
             </div>
             <div class="row align-items-center">
                 <div class="col-md-12">
-                    <p class="text-muted mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
+                    <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
                 </div>
             </div>
         </div>

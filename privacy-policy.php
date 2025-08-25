@@ -106,6 +106,25 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 justify-content: flex-end;
             }
         }
+        
+        /* gTranslate言語切り替えのスタイル統一 */
+        .gtranslate_wrapper select,
+        .gtranslate_wrapper a,
+        .gtranslate_wrapper span {
+            color: #1a1a1a !important;
+            background-color: transparent !important;
+        }
+
+        .gtranslate_wrapper select {
+            border: 1px solid #1a1a1a;
+            border-radius: 4px;
+            padding: 5px 10px;
+        }
+
+        .gtranslate_wrapper a:hover {
+            color: #000000 !important;
+            text-decoration: none !important;
+        }
     </style>
 </head>
 <body>
