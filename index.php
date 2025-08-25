@@ -440,6 +440,25 @@ $materials = $stmt->fetchAll();
             aspect-ratio: 1 / 1;
             object-fit: cover;
             border-radius: 0.25rem 0.25rem 0 0;
+            transition: opacity 0.3s ease-in-out;
+            background-color: #f8f9fa;
+        }
+
+        /* Lazyload用のスタイル */
+        .material-image[loading="lazy"] {
+            opacity: 0;
+        }
+
+        .material-image[loading="lazy"].loaded {
+            opacity: 1;
+        }
+
+        /* 読み込み中のプレースホルダー */
+        .material-image:not(.loaded) {
+            background-image: linear-gradient(45deg, #f8f9fa 25%, transparent 25%, transparent 75%, #f8f9fa 75%, #f8f9fa),
+                              linear-gradient(45deg, #f8f9fa 25%, transparent 25%, transparent 75%, #f8f9fa 75%, #f8f9fa);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
         }
 
         /* ユーティリティクラス */
@@ -945,7 +964,11 @@ $materials = $stmt->fetchAll();
                         <!-- PC: 300x300のWebP画像 -->
                         <source media="(min-width: 769px)" srcset="/<?= h($mediumImage) ?>" type="image/webp">
                         <!-- フォールバック -->
-                        <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>のイラスト">
+                        <img src="/<?= h($material['image_path']) ?>" 
+                             class="material-image" 
+                             alt="<?= h($material['title']) ?>のイラスト"
+                             loading="lazy"
+                             decoding="async">
                     </picture>
                     
                     <!-- YouTubeアイコン -->
@@ -1322,6 +1345,28 @@ $materials = $stmt->fetchAll();
             iframe.src = '';
         });
     }
+
+    // Lazyload画像の読み込み完了処理
+    document.addEventListener('DOMContentLoaded', function() {
+        const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+        
+        lazyImages.forEach(img => {
+            // 画像が既に読み込まれている場合
+            if (img.complete && img.naturalHeight !== 0) {
+                img.classList.add('loaded');
+            } else {
+                // 画像の読み込み完了を待機
+                img.addEventListener('load', function() {
+                    this.classList.add('loaded');
+                });
+                
+                // 読み込みエラーの場合
+                img.addEventListener('error', function() {
+                    this.classList.add('loaded'); // エラーでも表示状態にする
+                });
+            }
+        });
+    });
     </script>
 </body>
 </html>
