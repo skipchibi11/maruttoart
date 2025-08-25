@@ -431,7 +431,18 @@ $materials = $stmt->fetchAll();
             margin-bottom: 0;
         }
 
-        .material-card:hover .card-title {
+        /* h3のcard-titleで既存のh5と同じ見た目を維持 */
+        h3.card-title {
+            color: #666;
+            font-weight: 300;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 0;
+            margin-top: 0;
+        }
+
+        .material-card:hover .card-title,
+        .material-card:hover h3.card-title {
             color: #0d6efd;
         }
 
@@ -980,7 +991,7 @@ $materials = $stmt->fetchAll();
                     <?php endif; ?>
                     
                     <div class="card-body">
-                        <h5 class="card-title"><?= h($material['title']) ?></h5>
+                        <h3 class="card-title"><?= h($material['title']) ?></h3>
                     </div>
                 </a>
             </div>
