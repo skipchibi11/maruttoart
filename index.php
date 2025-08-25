@@ -916,25 +916,6 @@ $materials = $stmt->fetchAll();
         .footer-custom .footer-text:hover {
             color: #000000 !important;
         }
-
-        /* gTranslate言語切り替えのスタイル統一 */
-        .gtranslate_wrapper select,
-        .gtranslate_wrapper a,
-        .gtranslate_wrapper span {
-            color: #1a1a1a !important;
-            background-color: transparent !important;
-        }
-
-        .gtranslate_wrapper select {
-            border: 1px solid #1a1a1a;
-            border-radius: 4px;
-            padding: 5px 10px;
-        }
-
-        .gtranslate_wrapper a:hover {
-            color: #000000 !important;
-            text-decoration: none !important;
-        }
     </style>
 </head>
 <body>
@@ -1166,14 +1147,7 @@ $materials = $stmt->fetchAll();
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <!-- gTranslate言語切り替え -->
-                    <div class="gtranslate_wrapper"></div>
-                </div>
-            </div>
+            
             <div class="row align-items-center">
                 <div class="col-md-12">
                     <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
@@ -1182,14 +1156,6 @@ $materials = $stmt->fetchAll();
         </div>
     </footer>
 
-    <?php
-    // 既存のGTranslate機能は削除
-    // echo renderGTranslate();
-    ?>
-
-    <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_directory","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
-    <script src="https://cdn.gtranslate.net/widgets/latest/lc.js" defer></script>
-    
     <!-- YouTubeモーダル -->
     <div id="youtube-modal" class="youtube-modal">
         <div class="youtube-modal-content">

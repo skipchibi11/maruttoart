@@ -106,25 +106,6 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 justify-content: flex-end;
             }
         }
-        
-        /* gTranslate言語切り替えのスタイル統一 */
-        .gtranslate_wrapper select,
-        .gtranslate_wrapper a,
-        .gtranslate_wrapper span {
-            color: #1a1a1a !important;
-            background-color: transparent !important;
-        }
-
-        .gtranslate_wrapper select {
-            border: 1px solid #1a1a1a;
-            border-radius: 4px;
-            padding: 5px 10px;
-        }
-
-        .gtranslate_wrapper a:hover {
-            color: #000000 !important;
-            text-decoration: none !important;
-        }
     </style>
 </head>
 <body>
@@ -136,11 +117,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container">
             <a class="navbar-brand header-logo" href="/">maruttoart</a>
-            <div class="navbar-nav ms-auto d-flex align-items-center">
-                <!-- gTranslate言語切り替え -->
-                <div class="gtranslate_wrapper me-3"></div>
-                <a class="nav-link" href="/">ホーム</a>
-            </div>
+            
         </div>
     </nav>
 
@@ -258,13 +235,6 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         </div>
     </div>
 
-    <?php
-    // 既存のGTranslate機能は削除
-    // echo renderGTranslate();
-    ?>
-
-    <script>window.gtranslateSettings = {"default_language":"ja","native_language_names":true,"detect_browser_language":true,"url_structure":"sub_domain","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper","alt_flags":{"en":"usa"}}</script>
-    <script src="https://cdn.gtranslate.net/widgets/latest/flags.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
@@ -368,9 +338,5 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         }
     })();
     </script>
-
-    <!-- gTranslate Scripts -->
-    <script>window.gtranslateSettings = {"default_language":"ja","url_structure":"sub_directory","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
-    <script src="https://cdn.gtranslate.net/widgets/latest/lc.js" defer></script>
 </body>
 </html>
