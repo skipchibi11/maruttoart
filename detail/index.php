@@ -75,6 +75,43 @@ $materialTags = getMaterialTags($material['id'], $pdo);
     <meta property="twitter:description" content="<?= h($material['title']) ?>の無料イラスト素材。かわいい手描き水彩で商用利用OK。">
     <meta property="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "<?= addslashes(h($material['title'])) ?>",
+        "image": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
+        "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'の手描き水彩イラスト素材です。商用利用可能で個人・法人問わずご利用いただけます。')) ?>",
+        "sku": "<?= h($material['slug']) ?>-<?= date('Ymd', strtotime($material['created_at'])) ?>",
+        "brand": {
+            "@type": "Organization",
+            "name": "maruttoart"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "JPY",
+            "availability": "https://schema.org/InStock",
+            "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/",
+            "seller": {
+                "@type": "Organization",
+                "name": "maruttoart"
+            }
+        },
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "category": "<?= addslashes(h($category['name'])) ?>",
+        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 手描き, 水彩, 商用利用OK"<?php if (!empty($material['youtube_url'])): ?>,
+        "video": {
+            "@type": "VideoObject",
+            "name": "<?= addslashes(h($material['title'])) ?>の動画",
+            "description": "<?= addslashes(h($material['title'])) ?>に関する動画コンテンツ",
+            "embedUrl": "<?= h($material['youtube_url']) ?>",
+            "thumbnailUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>"
+        }<?php endif; ?>
+    }
+    </script>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
