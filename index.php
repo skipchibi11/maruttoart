@@ -939,6 +939,18 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             transform: scale(1.05);
         }
 
+        /* GDPR未承認時のYouTubeアイコンスタイル */
+        .youtube-icon.blocked {
+            background: rgba(150, 150, 150, 0.6);
+            opacity: 0.6;
+        }
+        
+        .youtube-icon.blocked:hover {
+            background: rgba(150, 150, 150, 0.7);
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+
         .youtube-icon::before {
             content: '▶';
             font-size: 10px;
@@ -1007,11 +1019,30 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
         .footer-custom .footer-text:hover {
             color: #000000 !important;
         }
+
+        /* プライバシーポリシーリンクのスタイル */
+        .footer-custom a.footer-text {
+            transition: color 0.2s ease;
+        }
+
+        .footer-custom a.footer-text:hover {
+            color: #0d6efd !important;
+            text-decoration: underline !important;
+        }
     </style>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) - GDPR対応 -->
     <script>
+    // グローバルGDPR同意チェック関数
+    window.getGdprConsent = function() {
+        try {
+            return localStorage.getItem('gdpr_consent_v1');
+        } catch (e) {
+            return null;
+        }
+    };
+    
     // GDPR同意状況をチェックしてnoscript GTMを条件付き表示
     (function() {
         function getGdprConsent() {
@@ -1155,9 +1186,11 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
-            
-            <div class="row align-items-center">
-                <div class="col-md-12">
+            <div class="text-center">
+                <div class="mb-2">
+                    <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
+                </div>
+                <div>
                     <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
                 </div>
             </div>
@@ -1239,13 +1272,16 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             // 同意処理
             function acceptConsent() {
                 console.log('Accept consent clicked');
-                setGdprConsent('accepted');
+                const success = setGdprConsent('accepted');
+                console.log('Consent saved successfully:', success);
+                console.log('Current consent value:', getGdprConsent());
                 hideBanner();
                 enableAnalytics();
                 
                 // GTM読み込みイベントを発火
                 const event = new CustomEvent('gdpr-consent-accepted');
                 window.dispatchEvent(event);
+                console.log('gdpr-consent-accepted event dispatched');
             }
             
             // 拒否処理
@@ -1254,6 +1290,10 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                 setGdprConsent('declined');
                 hideBanner();
                 disableAnalytics();
+                
+                // 拒否イベントを発火
+                const event = new CustomEvent('gdpr-consent-declined');
+                window.dispatchEvent(event);
             }
             
             // アナリティクス有効化（プレースホルダー）
@@ -1342,8 +1382,20 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
         event.preventDefault();
         event.stopPropagation();
         
+        // GDPR同意状況をチェック
+        const consent = window.getGdprConsent();
+        console.log('YouTube modal - GDPR consent:', consent);
+        if (!consent || consent === 'declined') {
+            // GDPR未承認または拒否の場合は代替メッセージを表示
+            showYouTubeBlockedMessage(title);
+            return;
+        }
+        
         const modal = document.getElementById('youtube-modal');
         const iframe = document.getElementById('youtube-iframe');
+        
+        console.log('YouTube modal elements:', { modal, iframe });
+        console.log('Original YouTube URL:', youtubeUrl);
         
         // YouTube URLをembed形式に変換
         let embedUrl = '';
@@ -1359,10 +1411,13 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             embedUrl = youtubeUrl;
         }
         
+        console.log('Converted embed URL:', embedUrl);
+        
         // リフロー最適化: 全ての変更をバッチ処理
         requestAnimationFrame(() => {
             iframe.src = embedUrl;
             modal.classList.add('show');
+            console.log('YouTube modal opened with URL:', embedUrl);
         });
         
         // Escキーでモーダルを閉じる
@@ -1380,6 +1435,12 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                 closeYouTubeModal();
             }
         });
+    }
+    
+    // GDPR拒否時のYouTube動画ブロックメッセージ表示
+    function showYouTubeBlockedMessage(title) {
+        const message = `動画を視聴するには、Cookieの使用に同意が必要です。\n\nページ下部のバナーから「同意する」をクリックしてください。`;
+        alert(message);
     }
     
     function closeYouTubeModal() {
@@ -1413,7 +1474,31 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                 });
             }
         });
+        
+        // GDPR状態に基づいてYouTubeアイコンの表示を更新
+        updateYouTubeIconsGdprState();
     });
+    
+    // YouTubeアイコンのGDPR状態を更新
+    function updateYouTubeIconsGdprState() {
+        const youtubeIcons = document.querySelectorAll('.youtube-icon');
+        const consent = window.getGdprConsent();
+        console.log('Updating YouTube icons - GDPR consent:', consent);
+        
+        youtubeIcons.forEach(icon => {
+            if (!consent || consent === 'declined') {
+                icon.classList.add('blocked');
+                icon.title = 'Cookieの使用に同意が必要です';
+            } else {
+                icon.classList.remove('blocked');
+                icon.title = '動画を再生';
+            }
+        });
+    }
+    
+    // GDPR同意状態変更時にYouTubeアイコンを更新
+    window.addEventListener('gdpr-consent-accepted', updateYouTubeIconsGdprState);
+    window.addEventListener('gdpr-consent-declined', updateYouTubeIconsGdprState);
     </script>
 </body>
 </html>

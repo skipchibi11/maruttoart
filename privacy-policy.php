@@ -136,45 +136,119 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <div class="policy-section">
                     <h3>2. 収集する情報</h3>
                     <p>当サイトでは、以下の情報を収集する場合があります：</p>
+                    
+                    <h4>自動的に収集される情報</h4>
                     <ul>
-                        <li>Cookieおよび類似技術による情報</li>
-                        <li>アクセスログ情報（IPアドレス、ブラウザ情報、アクセス日時等）</li>
-                        <li>サイト利用状況に関する情報</li>
+                        <li><strong>アクセスログ情報</strong>: IPアドレス、ブラウザ情報、アクセス日時、参照元URL等</li>
+                        <li><strong>利用状況情報</strong>: ページビュー、セッション時間、クリック行動、スクロール状況等</li>
+                        <li><strong>デバイス情報</strong>: 画面解像度、OS、ブラウザの種類・バージョン等</li>
+                        <li><strong>地理的情報</strong>: 国、地域レベルの位置情報（IPアドレスベース）</li>
                     </ul>
+                    
+                    <h4>Cookieおよび類似技術による情報</h4>
+                    <ul>
+                        <li><strong>Google Analytics Cookie</strong>: _ga, _ga_*, _gid等（同意した場合のみ）</li>
+                        <li><strong>YouTube Cookie</strong>: 動画視聴に関する設定・履歴（動画閲覧時のみ）</li>
+                        <li><strong>同意管理Cookie</strong>: GDPR同意状況の記録（localStorage使用）</li>
+                    </ul>
+                    
+                    <h4>検索エンジン経由の情報</h4>
+                    <ul>
+                        <li><strong>検索クエリ</strong>: Google Search Console経由の検索キーワード（集計データ）</li>
+                        <li><strong>検索パフォーマンス</strong>: 表示回数、クリック数、平均掲載順位等</li>
+                    </ul>
+                    
+                    <p><strong>注意：</strong>当サイトは直接的に個人を特定できる情報（氏名、メールアドレス等）は収集しません。</p>
                 </div>
 
                 <div class="policy-section">
                     <h3>3. 情報の利用目的</h3>
                     <p>収集した情報は、以下の目的で利用します：</p>
                     <ul>
-                        <li>サービスの提供・改善</li>
-                        <li>サイトの利用状況分析</li>
-                        <li>翻訳機能（GTranslate）の提供</li>
-                        <li>セキュリティの維持・向上</li>
+                        <li><strong>サービスの提供・改善</strong>: ウェブサイトの基本機能、コンテンツ配信</li>
+                        <li><strong>サイトの利用状況分析</strong>: Google Analytics 4を使用したアクセス解析、ユーザー行動分析</li>
+                        <li><strong>検索エンジン最適化</strong>: Google Search Consoleを使用した検索パフォーマンス分析</li>
+                        <li><strong>マーケティング・改善施策</strong>: Google Tag Managerを使用したデータ収集と分析</li>
+                        <li><strong>セキュリティの維持・向上</strong>: 不正アクセスの検知・防止</li>
+                        <li><strong>法的要件への対応</strong>: 法令に基づく情報開示等</li>
                     </ul>
+                    <p><strong>データの処理根拠：</strong>当サイトは、正当な利益（サイト運営・改善）およびユーザーの同意に基づいて情報を処理します。</p>
                 </div>
 
                 <div class="policy-section">
                     <h3>4. Cookieについて</h3>
                     <p>当サイトでは、以下の種類のCookieを使用します：</p>
+                    
+                    <h4>必須Cookie</h4>
                     <ul>
-                        <li><strong>必須Cookie</strong>: サイトの基本機能に必要なCookie</li>
-                        <li><strong>機能性Cookie</strong>: 翻訳機能などのサービス提供に使用</li>
-                        <li><strong>分析Cookie</strong>: サイトの利用状況分析に使用</li>
+                        <li>サイトの基本機能（ナビゲーション、セキュリティ等）に必要</li>
+                        <li>これらのCookieは無効にできません</li>
                     </ul>
-                    <p>Cookieの設定は、ブラウザの設定で管理できます。ただし、必須Cookieを無効にした場合、サイトが正常に機能しない可能性があります。</p>
+                    
+                    <h4>分析Cookie（同意が必要）</h4>
+                    <ul>
+                        <li><strong>Google Analytics 4</strong>: サイトの利用状況分析、改善のためのデータ収集</li>
+                        <li><strong>Google Tag Manager</strong>: 各種分析ツールの管理・配信</li>
+                        <li>これらは匿名化されたデータを収集し、個人を特定することはありません</li>
+                        <li>Cookie同意バナーで拒否することができます</li>
+                    </ul>
+                    
+                    <h4>機能性Cookie（同意が必要）</h4>
+                    <ul>
+                        <li><strong>YouTube</strong>: 動画の再生、ユーザー設定の保存</li>
+                        <li>Cookie使用に同意していない場合、これらの機能は制限されます</li>
+                    </ul>
+                    
+                    <p><strong>Cookieの管理：</strong></p>
+                    <ul>
+                        <li>ブラウザの設定でCookieを管理できます</li>
+                        <li>当サイトのCookie同意バナーで選択を変更できます（localStorage に保存）</li>
+                        <li>必須Cookie以外は、同意しない限り設置されません</li>
+                        <li>同意を撤回したい場合は、ブラウザのデータを削除するか、当サイトにお問い合わせください</li>
+                    </ul>
                 </div>
 
                 <div class="policy-section">
                     <h3>5. 第三者サービスについて</h3>
                     <p>当サイトでは、以下の第三者サービスを利用しています：</p>
+                    
+                    <h4>Google Tag Manager（GTM）・Google Analytics 4（GA4）</h4>
                     <ul>
-                        <li><strong>YouTube</strong>: 動画コンテンツの埋め込み表示（同意時のみ）</li>
-                        <li><strong>GTranslate</strong>: 自動翻訳機能の提供</li>
-                        <li><strong>Bootstrap CDN</strong>: サイトデザインの提供</li>
+                        <li><strong>提供会社</strong>: Google LLC</li>
+                        <li><strong>利用目的</strong>: ウェブサイトのアクセス解析、ユーザー行動の分析、サイト改善のためのデータ収集</li>
+                        <li><strong>収集される情報</strong>: 
+                            <ul>
+                                <li>ページビュー、セッション情報</li>
+                                <li>リファラー情報（どのサイトから訪問したか）</li>
+                                <li>デバイス情報（ブラウザ、OS、画面解像度等）</li>
+                                <li>地理的位置情報（国、地域レベル）</li>
+                                <li>サイト内での行動データ（クリック、スクロール等）</li>
+                            </ul>
+                        </li>
+                        <li><strong>データ保持期間</strong>: 14ヶ月（Google Analytics 4の設定による）</li>
+                        <li><strong>制御方法</strong>: 当サイトのCookie設定で無効にできます。また、<a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics オプトアウト アドオン</a>でブラウザレベルで無効化可能です</li>
                     </ul>
-                    <p>これらのサービスは、それぞれ独自のプライバシーポリシーに従って運営されています。</p>
-                    <p><strong>YouTube動画について：</strong>Cookieの使用に同意していない場合、YouTube動画は自動的に読み込まれません。同意後、動画が表示されるようになります。</p>
+                    
+                    <h4>Google Search Console</h4>
+                    <ul>
+                        <li><strong>提供会社</strong>: Google LLC</li>
+                        <li><strong>利用目的</strong>: サイトの検索パフォーマンス分析、検索エンジンでの表示改善</li>
+                        <li><strong>収集される情報</strong>: 検索クエリ、クリック数、表示回数、検索順位等</li>
+                        <li><strong>データの性質</strong>: 個人を特定しない集計データのみを使用</li>
+                    </ul>
+                    
+                    <h4>その他のサービス</h4>
+                    <ul>
+                        <li><strong>YouTube</strong>: 動画コンテンツの埋め込み表示（Cookieに同意した場合のみ）</li>
+                    </ul>
+                    
+                    <p><strong>重要な注意事項：</strong></p>
+                    <ul>
+                        <li>これらのサービスは、それぞれ独自のプライバシーポリシーに従って運営されています</li>
+                        <li>詳細については<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googleプライバシーポリシー</a>をご確認ください</li>
+                        <li>Google Analytics および Google Tag Manager は、Cookieの使用に同意した場合のみ動作します</li>
+                        <li>YouTube動画は、Cookieの使用に同意していない場合は自動的に読み込まれません</li>
+                    </ul>
                 </div>
 
                 <div class="policy-section">
@@ -185,6 +259,22 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <div class="policy-section">
                     <h3>7. 個人情報の第三者提供</h3>
                     <p>当サイトは、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供することはありません。</p>
+                    
+                    <h4>Google サービスでのデータ処理</h4>
+                    <p>ユーザーがCookieの使用に同意した場合、以下のGoogleサービスで情報が処理されます：</p>
+                    <ul>
+                        <li><strong>Google Analytics</strong>: 匿名化されたアクセス解析データ</li>
+                        <li><strong>Google Tag Manager</strong>: タグ管理・配信のためのデータ</li>
+                        <li><strong>Google Search Console</strong>: 検索パフォーマンスの集計データ</li>
+                        <li><strong>YouTube</strong>: 動画視聴データ（動画閲覧時のみ）</li>
+                    </ul>
+                    
+                    <p><strong>データ転送について：</strong></p>
+                    <ul>
+                        <li>これらのサービスでは、日本国外（主に米国）でデータが処理される場合があります</li>
+                        <li>Googleは適切なデータ保護措置を講じており、<a href="https://policies.google.com/privacy/frameworks" target="_blank" rel="noopener">プライバシーフレームワーク</a>に準拠しています</li>
+                        <li>データは匿名化され、個人を特定することはできません</li>
+                    </ul>
                 </div>
 
                 <div class="policy-section">
@@ -195,7 +285,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <div class="policy-section">
                     <h3>9. お問い合わせ</h3>
                     <p>プライバシーポリシーに関するお問い合わせは、下記までご連絡ください：</p>
-                    <p>Email: privacy@maruttoart.com</p>
+                    <p>Email: contact@maruttoart.art</p>
                 </div>
 
                 <div class="text-center mt-5">
