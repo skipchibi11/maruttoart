@@ -55,11 +55,7 @@ $materialTags = getMaterialTags($material['id'], $pdo);
     <meta name="description" content="<?= h($material['title']) ?>の無料イラスト素材をダウンロード。かわいい手描き水彩のイラスト素材で商用利用OK。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
     
     <!-- Site Icons -->
-    <link rel="icon" type="image/png" href="/assets/icons/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
-    <link rel="shortcut icon" href="/assets/icons/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
-    <link rel="manifest" href="/assets/icons/site.webmanifest" />
+    <link rel="icon" href="/favicon.ico">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
