@@ -62,8 +62,8 @@ $materialArtMaterials = $stmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($material['title']) ?>  - 手描きの無料イラスト素材（商用OK・水彩/パステル）｜maruttoart</title>
-    <meta name="description" content="<?= h($material['title']) ?>の無料手描きイラスト素材（商用OK・水彩/パステル）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
+    <title><?= h($material['title']) ?>  - 手描きイラスト素材（無料・商用OK・水彩・パステル）｜maruttoart</title>
+    <meta name="description" content="<?= h($material['title']) ?>の手描きイラスト素材（無料・商用OK・水彩・パステル）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
     
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -71,15 +71,15 @@ $materialArtMaterials = $stmt->fetchAll();
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="og:title" content="<?= h($material['title']) ?> - 無料・手描きイラスト素材（商用OK・水彩/パステル）">
-    <meta property="og:description" content="<?= h($material['title']) ?>の無料手描きイラスト素材（商用OK・水彩/パステル）。">
+    <meta property="og:title" content="<?= h($material['title']) ?> - 手描きイラスト素材（無料・商用OK・水彩・パステル）">
+    <meta property="og:description" content="<?= h($material['title']) ?>の手描きイラスト素材（無料・商用OK・水彩・パステル）。">
     <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="twitter:title" content="<?= h($material['title']) ?> - 無料・手描きイラスト素材（商用OK・水彩/パステル）">
-    <meta property="twitter:description" content="<?= h($material['title']) ?>の無料手描きイラスト素材（商用OK・水彩/パステル）。">
+    <meta property="twitter:title" content="<?= h($material['title']) ?> - 手描きイラスト素材（無料・商用OK・水彩・パステル）">
+    <meta property="twitter:description" content="<?= h($material['title']) ?>の手描きイラスト素材（無料・商用OK・水彩・パステル）。">
     <meta property="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- JSON-LD structured data -->
