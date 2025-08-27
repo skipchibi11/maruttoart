@@ -236,9 +236,13 @@ $materialArtMaterials = $stmt->fetchAll();
         /* 画像のスタイル */
         .material-image {
             max-width: 100%;
+            width: 100%;
             height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #f8f9fa;
         }
         
         /* YouTube動画コンテナ */
@@ -469,6 +473,10 @@ $materialArtMaterials = $stmt->fetchAll();
             .navbar-brand {
                 font-size: 1.5rem;
             }
+            /* モバイル向け画像サイズ調整 */
+            .material-image {
+                max-width: 250px;
+            }
         }
 
         @media (max-width: 576px) {
@@ -478,6 +486,10 @@ $materialArtMaterials = $stmt->fetchAll();
             }
             .card-body {
                 padding: 1rem;
+            }
+            /* 小型スマホ向け画像サイズ調整 */
+            .material-image {
+                max-width: 200px;
             }
         }
         
@@ -738,13 +750,20 @@ $materialArtMaterials = $stmt->fetchAll();
             <div class="col-lg-6" style="margin: 0 auto;">
                 <div class="text-center">
                     <!-- WebPに対応したpicture要素 -->
-                    <picture style="display: block;">
+                    <picture style="display: block; max-width: 400px; margin: 0 auto;">
                         <!-- デスクトップ用：300x300のWebP -->
                         <source media="(min-width: 768px)" srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" type="image/webp">
                         <!-- モバイル用：180x180のWebP -->
                         <source media="(max-width: 767px)" srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
                         <!-- フォールバック：オリジナル画像 -->
-                        <img src="/<?= h($material['image_path']) ?>" class="material-image mb-3" alt="<?= h($material['title']) ?>のイラスト">
+                        <img src="/<?= h($material['image_path']) ?>" 
+                             class="material-image mb-3" 
+                             alt="<?= h($material['title']) ?>のイラスト"
+                             width="300"
+                             height="300"
+                             loading="eager"
+                             decoding="async"
+                             fetchpriority="high">
                     </picture>
                     
                     <!-- ダウンロードリンクを画像の直下に配置 -->
