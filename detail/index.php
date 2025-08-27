@@ -157,7 +157,7 @@ $materialArtMaterials = $stmt->fetchAll();
             background-color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
             line-height: 1.5;
-            color: #212529;
+            color: #222;
         }
 
         /* コンテナシステム */
@@ -300,7 +300,7 @@ $materialArtMaterials = $stmt->fetchAll();
         }
         
         .tags-label {
-            color: #6c757d;
+            color: #222;
             font-size: 0.875rem;
             margin-bottom: 0.5rem;
             font-weight: 500;
@@ -309,7 +309,7 @@ $materialArtMaterials = $stmt->fetchAll();
         .tag-item {
             display: inline-block;
             background-color: #e9ecef;
-            color: #495057;
+            color: #222 !important;
             padding: 0.25rem 0.5rem;
             margin: 0.125rem;
             border-radius: 0.25rem;
@@ -320,7 +320,7 @@ $materialArtMaterials = $stmt->fetchAll();
         
         .tag-item:hover {
             background-color: #dee2e6;
-            color: #495057;
+            color: #222 !important;
             text-decoration: none;
         }
         
@@ -331,7 +331,7 @@ $materialArtMaterials = $stmt->fetchAll();
         
         .art-material-item {
             background-color: #f8f9fa;
-            color: #495057;
+            color: #222 !important;
             padding: 0.25rem 0.5rem;
             border-radius: 0.25rem;
             font-size: 0.875rem;
@@ -400,11 +400,11 @@ $materialArtMaterials = $stmt->fetchAll();
         /* フッターのスタイル */
         .footer-custom {
             background-color: #fef9e7 !important;
-            color: #1a1a1a;
+            color: #222;
         }
 
         .footer-custom .footer-text {
-            color: #1a1a1a !important;
+            color: #222 !important;
         }
 
         .footer-custom .footer-text:hover {
@@ -528,7 +528,7 @@ $materialArtMaterials = $stmt->fetchAll();
         
         /* ダウンロードリンクのスタイル */
         .download-link {
-            color: #6c757d;
+            color: #222;
             text-decoration: none;
             font-size: 0.95rem;
             padding: 0.5rem 1rem;
@@ -539,7 +539,7 @@ $materialArtMaterials = $stmt->fetchAll();
         }
         
         .download-link:hover {
-            color: #495057;
+            color: #222;
             background-color: #f8f9fa;
             border-color: #adb5bd;
             text-decoration: none;
@@ -547,25 +547,25 @@ $materialArtMaterials = $stmt->fetchAll();
         
         /* コンテンツのテキストスタイル */
         .detail-title {
-            color: #6c757d;
+            color: #222;
             font-size: 1rem;
             font-weight: 400;
         }
         
         .detail-description {
-            color: #6c757d;
+            color: #222;
             font-size: 1rem;
             line-height: 1.6;
         }
         
         .detail-date {
-            color: #6c757d;
+            color: #222;
             font-size: 0.875rem;
         }
         
         /* 関連動画ヘッダーのスタイル */
         .video-header {
-            color: #6c757d;
+            color: #222;
             font-size: 1rem;
             font-weight: 400;
         }
@@ -646,28 +646,6 @@ $materialArtMaterials = $stmt->fetchAll();
             border-radius: 8px;
         }
         
-        /* タグのスタイル */
-        .tag-item {
-            display: inline-block;
-            background-color: #f8f9fa;
-            color: #6c757d;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            margin-right: 0.25rem;
-            margin-bottom: 0.25rem;
-            text-decoration: none;
-            border: 1px solid #e9ecef;
-            transition: all 0.2s ease;
-        }
-        
-        .tag-item:hover {
-            background-color: #e9ecef;
-            color: #495057;
-            text-decoration: none;
-            border-color: #dee2e6;
-        }
-        
         .tags-section {
             margin-top: 1rem;
             padding-top: 1rem;
@@ -680,15 +658,6 @@ $materialArtMaterials = $stmt->fetchAll();
             border-top: 1px solid #f0f0f0;
         }
         
-        .art-material-item {
-            background-color: #f8f9fa;
-            color: #495057;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.875rem;
-            border: 1px solid #e9ecef;
-        }
-        
         .art-material-color {
             width: 8px;
             height: 8px;
@@ -697,7 +666,7 @@ $materialArtMaterials = $stmt->fetchAll();
         }
         
         .tags-label {
-            color: #6c757d;
+            color: #222;
             font-size: 0.875rem;
             margin-bottom: 0.5rem;
         }
@@ -712,21 +681,21 @@ $materialArtMaterials = $stmt->fetchAll();
         
         .breadcrumb-item + .breadcrumb-item::before {
             content: ">";
-            color: #6c757d;
+            color: #222;
         }
         
         .breadcrumb-item a {
-            color: #6c757d;
+            color: #222;
             text-decoration: none;
         }
         
         .breadcrumb-item a:hover {
-            color: #495057;
+            color: #0d6efd;
             text-decoration: underline;
         }
         
         .breadcrumb-item.active {
-            color: #6c757d;
+            color: #222;
         }
 
         /* フッターのスタイル */
@@ -779,7 +748,7 @@ $materialArtMaterials = $stmt->fetchAll();
         <div class="container">
             <a class="navbar-brand" href="/">maruttoart</a>
             <div style="margin-left: auto; display: flex; align-items: center;">
-                <a href="/" style="color: #333; text-decoration: none; padding: 0.5rem;">戻る</a>
+                <a href="/" style="color: #222; text-decoration: none; padding: 0.5rem;">戻る</a>
             </div>
         </div>
     </nav>
@@ -789,14 +758,14 @@ $materialArtMaterials = $stmt->fetchAll();
         <nav aria-label="breadcrumb">
             <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap;">
                 <li style="margin-right: 0.5rem;">
-                    <a href="/" style="color: #6c757d; text-decoration: none;">ホーム</a>
-                    <span style="margin-left: 0.5rem; color: #6c757d;"> &gt; </span>
+                    <a href="/" style="color: #222; text-decoration: none;">ホーム</a>
+                    <span style="margin-left: 0.5rem; color: #222;"> &gt; </span>
                 </li>
                 <li style="margin-right: 0.5rem;">
-                    <a href="/<?= h($category['slug']) ?>/" style="color: #6c757d; text-decoration: none;"><?= h($category['title']) ?></a>
-                    <span style="margin-left: 0.5rem; color: #6c757d;"> &gt; </span>
+                    <a href="/<?= h($category['slug']) ?>/" style="color: #222; text-decoration: none;"><?= h($category['title']) ?></a>
+                    <span style="margin-left: 0.5rem; color: #222;"> &gt; </span>
                 </li>
-                <li style="color: #6c757d;">
+                <li style="color: #222;">
                     <?= h($material['title']) ?>
                 </li>
             </ol>
