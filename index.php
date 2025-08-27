@@ -693,7 +693,7 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
         }
 
         /* Load More Button */
-        .load-more-button button {
+        .load-more-button a {
             background-color: #ffffff;
             color: #444;
             border: 2px solid #ccc;
@@ -701,13 +701,16 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             padding: 0.75em 2em;
             font-size: 1rem;
             font-weight: bold;
-            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
             transition: all 0.2s ease-in-out;
         }
 
-        .load-more-button button:hover {
+        .load-more-button a:hover {
             background-color: #f5f5f5;
             border-color: #999;
+            color: #444;
+            text-decoration: none;
         }
 
         .btn-success {
@@ -1146,9 +1149,9 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
         <!-- もっと見るボタン -->
         <div class="row mt-5">
             <div class="col-12 text-center load-more-button">
-                <button onclick="window.location.href='/list.php'">
+                <a href="/list.php" class="btn btn-outline-primary btn-lg">
                     もっと見る
-                </button>
+                </a>
             </div>
         </div>
 

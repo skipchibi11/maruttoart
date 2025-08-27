@@ -68,6 +68,11 @@ $materials = $stmt->fetchAll();
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/art-materials.php">
+                                <i class="bi bi-palette"></i> 画材管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/">
                                 <i class="bi bi-globe"></i> 公式サイト
                             </a>

@@ -18,6 +18,11 @@ $pdo = getDB();
 $tags = getAllTags($pdo);
 $categories = getAllCategories($pdo);
 
+// 画材データを取得
+$stmt = $pdo->prepare("SELECT * FROM art_materials WHERE is_active = 1 ORDER BY sort_order, name");
+$stmt->execute();
+$art_materials = $stmt->fetchAll();
+
 // 素材の取得
 $stmt = $pdo->prepare("SELECT * FROM materials WHERE id = ?");
 $stmt->execute([$id]);
@@ -32,6 +37,12 @@ if (!$material) {
 $materialTags = getMaterialTags($id, $pdo);
 $materialTagIds = array_column($materialTags, 'id');
 
+// 素材に関連付けられた画材を取得
+$stmt = $pdo->prepare("SELECT art_material_id FROM material_art_materials WHERE material_id = ?");
+$stmt->execute([$id]);
+$materialArtMaterials = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$materialArtMaterialIds = $materialArtMaterials;
+
 $error = '';
 $success = '';
 
@@ -42,7 +53,7 @@ if ($_POST) {
     $youtube_url = trim($_POST['youtube_url'] ?? '');
     $search_keywords = trim($_POST['search_keywords'] ?? '');
     $tag_ids = $_POST['tag_ids'] ?? [];
-    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
+    $art_material_ids = $_POST['art_material_ids'] ?? [];
     $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
     
     // バリデーション
@@ -105,6 +116,19 @@ if ($_POST) {
                     // タグを更新
                     addMaterialTags($id, $tag_ids, $pdo);
                     
+                    // 画材を更新
+                    // 既存の画材関連付けを削除
+                    $stmt = $pdo->prepare("DELETE FROM material_art_materials WHERE material_id = ?");
+                    $stmt->execute([$id]);
+                    
+                    // 新しい画材を関連付け
+                    if (!empty($art_material_ids)) {
+                        foreach ($art_material_ids as $art_material_id) {
+                            $stmt = $pdo->prepare("INSERT INTO material_art_materials (material_id, art_material_id) VALUES (?, ?)");
+                            $stmt->execute([$id, $art_material_id]);
+                        }
+                    }
+                    
                     $success = '素材が正常に更新されました。';
                     // 更新された情報を再取得
                     $stmt = $pdo->prepare("SELECT * FROM materials WHERE id = ?");
@@ -114,6 +138,11 @@ if ($_POST) {
                     // 更新されたタグ情報も再取得
                     $materialTags = getMaterialTags($id, $pdo);
                     $materialTagIds = array_column($materialTags, 'id');
+                    
+                    // 更新された画材情報も再取得
+                    $stmt = $pdo->prepare("SELECT art_material_id FROM material_art_materials WHERE material_id = ?");
+                    $stmt->execute([$id]);
+                    $materialArtMaterialIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 } else {
                     $error = 'データベースの更新に失敗しました。';
                 }
@@ -259,6 +288,28 @@ if ($_POST) {
                                     <?php endforeach; ?>
                                 </div>
                                 <div class="form-text">複数のタグを選択できます</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">画材選択</label>
+                                <div class="row" id="artMaterialsContainer">
+                                    <?php foreach ($art_materials as $material_item): ?>
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="art_material_ids[]" 
+                                                       id="art_material_<?= $material_item['id'] ?>" value="<?= $material_item['id'] ?>"
+                                                       <?= in_array($material_item['id'], $materialArtMaterialIds) ? 'checked' : '' ?>>
+                                                <label class="form-check-label d-flex align-items-center" for="art_material_<?= $material_item['id'] ?>">
+                                                    <?php if ($material_item['color_code']): ?>
+                                                        <span class="badge me-2" style="background-color: <?= h($material_item['color_code']) ?>; width: 12px; height: 12px; border-radius: 50%;"></span>
+                                                    <?php endif; ?>
+                                                    <?= h($material_item['name']) ?>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="form-text">使用した画材を複数選択できます（水彩、パステルなど）</div>
                             </div>
 
                             <div class="mb-3">

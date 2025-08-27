@@ -18,7 +18,7 @@ function getOpenAIConfig() {
 /**
  * OpenAI Vision APIを使用して画像とタイトルから素材情報を自動生成
  */
-function generateMaterialInfo($title, $imagePath) {
+function generateMaterialInfo($title, $imagePath, $artMaterials = []) {
     $config = getOpenAIConfig();
     
     if (empty($config['api_key'])) {
@@ -39,14 +39,25 @@ function generateMaterialInfo($title, $imagePath) {
     $imageData = base64_encode(file_get_contents($imagePath));
     $mimeType = mime_content_type($imagePath);
     
-    // プロンプトの作成
-    $prompt = "あなたは水彩イラスト素材サイトのコンテンツ管理アシスタントです。
+    // 画材情報の処理
+    $artMaterialsText = '';
+    $artMaterialsGuideline = '';
+    if (!empty($artMaterials)) {
+        $materialNames = array_map(function($material) {
+            return $material['name'];
+        }, $artMaterials);
+        $artMaterialsText = "\n使用した画材: " . implode(', ', $materialNames);
+        $artMaterialsGuideline = "\n重要: 説明文では「" . implode('、', $materialNames) . "」のみを使用し、他の画材は記載しないでください。";
+    }
 
-与えられた画像とタイトル「{$title}」から、以下のJSONフォーマットで素材情報を生成してください：
+    // プロンプトの作成
+    $prompt = "あなたはイラスト素材サイトのコンテンツ管理アシスタントです。
+
+与えられた画像とタイトル「{$title}」{$artMaterialsText}から、以下のJSONフォーマットで素材情報を生成してください：{$artMaterialsGuideline}
 
 {
   \"slug\": \"英数字とハイフンのみのURL用文字列（英語ベース）\",
-  \"description\": \"日本語の簡潔な説明文（50-100文字程度）\",
+  \"description\": \"日本語の簡潔な説明文（150-200文字程度）\",
   \"category_slug\": \"最適なカテゴリのスラッグ（fruits, nature, animals, vehicles, space, weather, buildings, plants, food, drinks, tools, furniture, sports, music, fashion, seasons, festivals のいずれか）\",
   \"tags\": [
     {
@@ -76,7 +87,9 @@ function generateMaterialInfo($title, $imagePath) {
 - タグのスラッグは descriptive な英語（例：watercolor, cute, pastel-color など）
 - カテゴリスラッグは提供されたリストから最適なものを選択
 - 各言語の説明文は自然で分かりやすく
-- 水彩イラスト素材として適切な内容に";
+- 使用した画材が指定されている場合は、指定された画材のみを説明文に記載し、その画材の特徴を正確に反映する
+- 指定されていない画材（例：パステルを選択した場合に水彩と記載）は含めない
+- イラスト素材として適切な内容に";
 
     $data = [
         'model' => $config['model'],

@@ -14,6 +14,11 @@ $pdo = getDB();
 $tags = getAllTags($pdo);
 $categories = getAllCategories($pdo);
 
+// 画材データを取得
+$stmt = $pdo->prepare("SELECT * FROM art_materials WHERE is_active = 1 ORDER BY sort_order, name");
+$stmt->execute();
+$art_materials = $stmt->fetchAll();
+
 if ($_POST) {
     $title = trim($_POST['title'] ?? '');
     $slug = trim($_POST['slug'] ?? '');
@@ -21,6 +26,7 @@ if ($_POST) {
     $youtube_url = trim($_POST['youtube_url'] ?? '');
     $search_keywords = trim($_POST['search_keywords'] ?? '');
     $tag_ids = $_POST['tag_ids'] ?? [];
+    $art_material_ids = $_POST['art_material_ids'] ?? [];
     $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
     
     // バリデーション
@@ -63,6 +69,14 @@ if ($_POST) {
                     // タグを関連付け
                     if (!empty($tag_ids)) {
                         addMaterialTags($materialId, $tag_ids, $pdo);
+                    }
+                    
+                    // 画材を関連付け
+                    if (!empty($art_material_ids)) {
+                        foreach ($art_material_ids as $art_material_id) {
+                            $stmt = $pdo->prepare("INSERT INTO material_art_materials (material_id, art_material_id) VALUES (?, ?)");
+                            $stmt->execute([$materialId, $art_material_id]);
+                        }
                     }
                     
                     $success = '素材が正常にアップロードされました。';
@@ -212,6 +226,30 @@ if ($_POST) {
                                 <div class="preview-container">
                                     <img id="imagePreview" class="preview-image" style="display: none;" alt="プレビュー">
                                 </div>
+                            </div>
+
+                            <hr>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">使用画材 <span class="text-danger">*</span></label>
+                                <div class="row" id="artMaterialsContainer">
+                                    <?php foreach ($art_materials as $material): ?>
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="art_material_ids[]" 
+                                                       id="art_material_<?= $material['id'] ?>" value="<?= $material['id'] ?>"
+                                                       <?= in_array($material['id'], $_POST['art_material_ids'] ?? []) ? 'checked' : '' ?>>
+                                                <label class="form-check-label d-flex align-items-center" for="art_material_<?= $material['id'] ?>">
+                                                    <?php if ($material['color_code']): ?>
+                                                        <span class="badge me-2" style="background-color: <?= h($material['color_code']) ?>; width: 12px; height: 12px; border-radius: 50%;"></span>
+                                                    <?php endif; ?>
+                                                    <?= h($material['name']) ?>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="form-text">使用した画材を選択してください。自動設定時の説明文生成に使用されます。</div>
                             </div>
 
                             <hr>
@@ -394,6 +432,17 @@ if ($_POST) {
             const formData = new FormData();
             formData.append('title', title);
             formData.append('image', imageFile);
+            
+            // 選択された画材情報を追加
+            const selectedArtMaterials = [];
+            const artMaterialCheckboxes = document.querySelectorAll('input[name="art_material_ids[]"]:checked');
+            artMaterialCheckboxes.forEach(checkbox => {
+                selectedArtMaterials.push({
+                    id: checkbox.value,
+                    name: checkbox.nextElementSibling.textContent.trim()
+                });
+            });
+            formData.append('art_materials', JSON.stringify(selectedArtMaterials));
             
             // OpenAI APIを呼び出し
             fetch('/admin/api/auto-generate.php', {

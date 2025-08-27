@@ -36,6 +36,17 @@ if (!$material) {
 
 // 素材に関連付けられたタグを取得
 $materialTags = getMaterialTags($material['id'], $pdo);
+
+// 素材に関連付けられた画材を取得
+$stmt = $pdo->prepare("
+    SELECT am.* 
+    FROM art_materials am
+    INNER JOIN material_art_materials mam ON am.id = mam.art_material_id
+    WHERE mam.material_id = ? AND am.is_active = 1
+    ORDER BY am.sort_order, am.name
+");
+$stmt->execute([$material['id']]);
+$materialArtMaterials = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -284,6 +295,28 @@ $materialTags = getMaterialTags($material['id'], $pdo);
             border-top: 1px solid #f0f0f0;
         }
         
+        .art-materials-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .art-material-item {
+            background-color: #f8f9fa;
+            color: #495057;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid #e9ecef;
+        }
+        
+        .art-material-color {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
         .tags-label {
             color: #6c757d;
             font-size: 0.875rem;
@@ -406,6 +439,22 @@ $materialTags = getMaterialTags($material['id'], $pdo);
                                     <a href="/tag/<?= h($tag['slug']) ?>/" class="tag-item">
                                         <?= h($tag['name']) ?>
                                     </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($materialArtMaterials)): ?>
+                        <div class="art-materials-section">
+                            <div class="tags-label">使用画材:</div>
+                            <div>
+                                <?php foreach ($materialArtMaterials as $artMaterial): ?>
+                                    <span class="art-material-item d-inline-flex align-items-center me-2 mb-1">
+                                        <?php if ($artMaterial['color_code']): ?>
+                                            <span class="art-material-color me-1" style="background-color: <?= h($artMaterial['color_code']) ?>"></span>
+                                        <?php endif; ?>
+                                        <?= h($artMaterial['name']) ?>
+                                    </span>
                                 <?php endforeach; ?>
                             </div>
                         </div>
