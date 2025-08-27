@@ -747,9 +747,6 @@ $materialArtMaterials = $stmt->fetchAll();
     <nav class="navbar">
         <div class="container">
             <a class="navbar-brand" href="/">maruttoart</a>
-            <div style="margin-left: auto; display: flex; align-items: center;">
-                <a href="/" style="color: #222; text-decoration: none; padding: 0.5rem;">戻る</a>
-            </div>
         </div>
     </nav>
     
