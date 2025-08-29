@@ -51,6 +51,7 @@ if ($_POST) {
     $slug = trim($_POST['slug'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $youtube_url = trim($_POST['youtube_url'] ?? '');
+    $video_publish_date = trim($_POST['video_publish_date'] ?? '');
     $search_keywords = trim($_POST['search_keywords'] ?? '');
     $tag_ids = $_POST['tag_ids'] ?? [];
     $art_material_ids = $_POST['art_material_ids'] ?? [];
@@ -102,14 +103,20 @@ if ($_POST) {
                 // データベースを更新
                 $stmt = $pdo->prepare("
                     UPDATE materials 
-                    SET title = ?, slug = ?, description = ?, youtube_url = ?, 
+                    SET title = ?, slug = ?, description = ?, youtube_url = ?, video_publish_date = ?,
                         search_keywords = ?, 
                         image_path = ?, webp_small_path = ?, webp_medium_path = ?, category_id = ?
                     WHERE id = ?
                 ");
                 
+                // video_publish_dateの処理
+                $formatted_video_publish_date = null;
+                if (!empty($video_publish_date)) {
+                    $formatted_video_publish_date = date('Y-m-d H:i:s', strtotime($video_publish_date));
+                }
+                
                 if ($stmt->execute([
-                    $title, $slug, $description, $youtube_url,
+                    $title, $slug, $description, $youtube_url, $formatted_video_publish_date,
                     $search_keywords,
                     $imagePath, $webpSmallPath, $webpMediumPath, $category_id, $id
                 ])) {
@@ -315,6 +322,21 @@ if ($_POST) {
                             <div class="mb-3">
                                 <label for="youtube_url" class="form-label">YouTube URL</label>
                                 <input type="url" class="form-control" id="youtube_url" name="youtube_url" value="<?= h($material['youtube_url']) ?>" placeholder="https://www.youtube.com/watch?v=...">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="video_publish_date" class="form-label">動画公開日時</label>
+                                <?php 
+                                $video_publish_value = '';
+                                if (!empty($material['video_publish_date'])) {
+                                    $video_publish_value = date('Y-m-d\TH:i', strtotime($material['video_publish_date']));
+                                }
+                                ?>
+                                <input type="datetime-local" class="form-control" id="video_publish_date" name="video_publish_date" value="<?= h($video_publish_value) ?>">
+                                <div class="form-text">
+                                    指定された日時になると、カード一覧に動画アイコンが表示され、詳細ページでも動画が表示されます。<br>
+                                    空の場合は即座に動画が表示されます。
+                                </div>
                             </div>
 
                             <div class="mb-3">

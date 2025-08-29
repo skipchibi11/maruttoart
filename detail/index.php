@@ -847,7 +847,17 @@ $materialArtMaterials = $stmt->fetchAll();
                     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                 </div>
 
-                <?php if (!empty($material['youtube_url'])): ?>
+                <?php 
+                // 動画が公開されているかチェック
+                $showVideo = !empty($material['youtube_url']);
+                if (!empty($material['video_publish_date'])) {
+                    $publishDateTime = new DateTime($material['video_publish_date']);
+                    $now = new DateTime();
+                    $showVideo = $showVideo && ($now >= $publishDateTime);
+                }
+                // video_publish_dateが空の場合は、youtube_urlがあれば表示
+                ?>
+                <?php if ($showVideo): ?>
                 <div class="card mt-4">
                     <div class="card-header">
                         <h5 class="mb-0 text-center video-header">関連動画</h5>

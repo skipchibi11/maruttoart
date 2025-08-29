@@ -1131,7 +1131,17 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                     </picture>
                     
                     <!-- YouTubeアイコン -->
-                    <?php if (!empty($material['youtube_url'])): ?>
+                    <?php 
+                    // 動画が公開されているかチェック
+                    $showVideo = !empty($material['youtube_url']);
+                    if (!empty($material['video_publish_date'])) {
+                        $publishDateTime = new DateTime($material['video_publish_date']);
+                        $now = new DateTime();
+                        $showVideo = $showVideo && ($now >= $publishDateTime);
+                    }
+                    // video_publish_dateが空の場合は、youtube_urlがあれば表示
+                    ?>
+                    <?php if ($showVideo): ?>
                         <div class="youtube-icon" 
                              onclick="openYouTubeModal(event, '<?= h($material['youtube_url']) ?>', '<?= h($material['title']) ?>')"
                              title="動画を見る">
