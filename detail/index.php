@@ -119,29 +119,27 @@ $materialArtMaterials = $stmt->fetchAll();
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "Product",
+        "@type": "ImageObject",
         "name": "<?= addslashes(h($material['title'])) ?>",
-        "image": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
+        "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
+        "contentUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>",
         "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'の無料手描きイラスト（商用OK・水彩/パステル）。')) ?>",
-        "sku": "<?= h($material['slug']) ?>-<?= date('Ymd', strtotime($material['created_at'])) ?>",
-        "brand": {
+        "creator": {
             "@type": "Organization",
             "name": "maruttoart"
         },
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "JPY",
-            "availability": "https://schema.org/InStock",
-            "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/",
-            "seller": {
-                "@type": "Organization",
-                "name": "maruttoart"
-            }
+        "publisher": {
+            "@type": "Organization",
+            "name": "maruttoart"
         },
-        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "datePublished": "<?= date('c', strtotime($material['created_at'])) ?>",
         "category": "<?= addslashes(h($category['name'])) ?>",
-        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 手描き, 水彩, パステル, 商用利用OK"
+        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 手描き, 水彩, パステル, 商用利用OK",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/"
+        }
     }
     </script>
     
