@@ -527,7 +527,8 @@ $materials = $stmt->fetchAll();
             display: flex;
             padding-left: 0;
             list-style: none;
-            border-radius: 0.25rem;
+            border-radius: 0;
+            gap: 5px;
         }
 
         .justify-content-center {
@@ -539,55 +540,60 @@ $materials = $stmt->fetchAll();
             display: block;
         }
 
-        .page-item:first-child .page-link {
-            margin-left: 0;
-            border-top-left-radius: 0.25rem;
-            border-bottom-left-radius: 0.25rem;
-        }
-
+        .page-item:first-child .page-link,
         .page-item:last-child .page-link {
-            border-top-right-radius: 0.25rem;
-            border-bottom-right-radius: 0.25rem;
+            border-radius: 8px;
         }
 
         .page-item.active .page-link {
             z-index: 3;
             color: #fff;
-            background-color: #0d6efd;
-            border-color: #0d6efd;
+            background-color: #daa520;
+            border: 2px solid #daa520;
         }
 
         .page-item.disabled .page-link {
-            color: #6c757d;
+            color: #adb5bd;
             pointer-events: none;
-            background-color: #fff;
-            border-color: #dee2e6;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
         }
 
         .page-link {
             position: relative;
             display: block;
-            padding: 0.5rem 0.75rem;
-            margin-left: -1px;
-            line-height: 1.25;
-            color: #0d6efd;
+            padding: 0.75rem 1rem;
+            margin: 0;
+            line-height: 1.2;
+            color: #6c757d;
             text-decoration: none;
             background-color: #fff;
-            border: 1px solid #dee2e6;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-weight: 500;
+            min-width: 44px;
+            text-align: center;
+            transition: all 0.2s ease;
         }
 
         .page-link:hover {
             z-index: 2;
-            color: #0a58ca;
+            color: #b8860b;
             text-decoration: none;
-            background-color: #e9ecef;
-            border-color: #dee2e6;
+            background-color: #fef9e7;
+            border-color: #daa520;
         }
 
         .page-link:focus {
             z-index: 3;
             outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
+        }
+
+        /* ページネーション全体のコンテナ */
+        nav[aria-label="ページネーション"] {
+            margin-top: 3rem;
+            margin-bottom: 2rem;
         }
 
         /* ボタン */
@@ -923,51 +929,100 @@ $materials = $stmt->fetchAll();
 
         /* 検索フォームのスタイル */
         .search-form {
-            background-color: #f8f9fa;
+            background-color: #fef9e7;
             padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            border: 1px solid #f0e68c;
+            margin-bottom: 2rem;
         }
 
         .search-form form {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .search-input {
             flex: 1;
             padding: 0.75rem 1rem;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
+            border: 2px solid #f0e68c;
+            border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            background-color: #fff;
+            transition: all 0.2s ease;
         }
 
         .search-input:focus {
-            border-color: #0d6efd;
+            border-color: #daa520;
             outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #adb5bd;
         }
 
         .search-button {
             padding: 0.75rem 1.5rem;
-            font-weight: 500;
+            font-weight: 600;
             white-space: nowrap;
+            background-color: #daa520;
+            border: 2px solid #daa520;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-button:hover {
+            background-color: #b8860b;
+            border-color: #b8860b;
+            color: #fff;
+        }
+
+        .search-button:focus {
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
+        }
+
+        /* クリアボタンのスタイル */
+        .search-form .btn-secondary {
+            background-color: #6c757d;
+            border: 2px solid #6c757d;
+            border-radius: 8px;
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .search-form .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #5a6268;
+            color: #fff;
         }
 
         /* レスポンシブ対応 */
         @media (max-width: 576px) {
+            .search-form {
+                padding: 1.25rem;
+                border-radius: 10px;
+            }
+            
             .search-form form {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 0.75rem;
             }
             
             .search-input {
-                margin-bottom: 0.5rem;
+                margin-bottom: 0;
             }
             
-            .search-button {
+            .search-button,
+            .search-form .btn-secondary {
                 width: 100%;
             }
         }
