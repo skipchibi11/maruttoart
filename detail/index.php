@@ -95,7 +95,7 @@ $materialArtMaterials = $stmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($material['title']) ?>  - 手描きイラスト素材（無料・商用OK・水彩・パステル）｜maruttoart</title>
+    <title><?= h($material['title']) ?>  - 手描きイラスト素材（無料・商用OK・水彩・パステル）｜marutto.art</title>
     <meta name="description" content="<?= h($material['title']) ?>の手描きイラスト素材（無料・商用OK・水彩・パステル）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
     
     <!-- Site Icons -->

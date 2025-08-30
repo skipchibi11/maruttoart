@@ -67,8 +67,8 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>かわいい無料手描き水彩イラスト素材集｜maruttoart（商用利用OK）</title>
-    <meta name="description" content="かわいい無料イラスト素材をダウンロード！手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。">
+    <title>手描きイラスト素材集｜marutto.art（無料・商用利用OK、水彩・パステル）</title>
+    <meta name="description" content="手描きイラスト素材をダウンロード！手描きのやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- ヒーロー画像のpreload -->
@@ -1096,7 +1096,7 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                 </div>
                 <div class="hero-image">
                     <img src="/assets/images/hero.webp" 
-                         alt="かわいい水彩イラスト素材のサンプル" 
+                         alt="手描きイラスト素材のサンプル" 
                          width="500"
                          height="500"
                          fetchpriority="high"
@@ -1111,7 +1111,7 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             <div class="col-12">
                 <h2 class="mb-2">新着イラスト素材</h2>
                 <p class="text-muted mb-4">
-                    最新のかわいい水彩イラスト素材をご紹介
+                    最新の手描きイラスト素材をご紹介
                 </p>
             </div>
         </div>
