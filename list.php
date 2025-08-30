@@ -415,6 +415,14 @@ $materials = $stmt->fetchAll();
             margin-bottom: 1.5rem;
         }
 
+        /* 画像のペールトーン背景色のバリエーション */
+        .material-image.img-bg-pale-1 { background-color: #fef9e7; } /* 薄い黄色 */
+        .material-image.img-bg-pale-2 { background-color: #f0f8ff; } /* 薄い青 */
+        .material-image.img-bg-pale-3 { background-color: #f5fffa; } /* 薄い緑 */
+        .material-image.img-bg-pale-4 { background-color: #fff5ee; } /* 薄いオレンジ */
+        .material-image.img-bg-pale-5 { background-color: #f8f8ff; } /* 薄い紫 */
+        .material-image.img-bg-pale-6 { background-color: #fff0f5; } /* 薄いピンク */
+
         .material-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
@@ -1112,6 +1120,14 @@ $materials = $stmt->fetchAll();
 
         <div class="row">
             <?php foreach ($materials as $material): ?>
+            <?php 
+            // 20%の確率で画像背景にペールトーンを適用
+            $imgBgClass = '';
+            if (rand(1, 100) <= 20) {
+                $paleImgColors = ['img-bg-pale-1', 'img-bg-pale-2', 'img-bg-pale-3', 'img-bg-pale-4', 'img-bg-pale-5', 'img-bg-pale-6'];
+                $imgBgClass = ' ' . $paleImgColors[array_rand($paleImgColors)];
+            }
+            ?>
             <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
                 <?php if (!empty($material['category_slug'])): ?>
                     <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
@@ -1130,7 +1146,7 @@ $materials = $stmt->fetchAll();
                         <source media="(min-width: 769px)" srcset="/<?= h($mediumImage) ?>" type="image/webp">
                         <!-- フォールバック -->
                         <img src="/<?= h($material['image_path']) ?>" 
-                             class="material-image" 
+                             class="material-image<?= $imgBgClass ?>" 
                              alt="<?= h($material['title']) ?>のイラスト"
                              loading="lazy"
                              decoding="async">
