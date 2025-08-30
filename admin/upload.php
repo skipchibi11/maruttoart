@@ -512,6 +512,23 @@ if ($_POST) {
                     
                     // タグの設定
                     if (data.data.tag_ids && Array.isArray(data.data.tag_ids)) {
+                        // 新しく作成されたタグがある場合、フォームに追加
+                        if (data.data.new_tags && Array.isArray(data.data.new_tags)) {
+                            const tagContainer = document.getElementById('tagsContainer');
+                            data.data.new_tags.forEach(newTag => {
+                                // 新しいタグのチェックボックスを作成
+                                const tagDiv = document.createElement('div');
+                                tagDiv.className = 'col-md-4 col-sm-6';
+                                tagDiv.innerHTML = `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="tag_${newTag.id}" name="tag_ids[]" value="${newTag.id}" checked>
+                                        <label class="form-check-label" for="tag_${newTag.id}">${newTag.name}</label>
+                                    </div>
+                                `;
+                                tagContainer.appendChild(tagDiv);
+                            });
+                        }
+                        
                         // 既存のタグチェックを全て解除
                         const tagCheckboxes = document.querySelectorAll('input[name="tag_ids[]"]');
                         tagCheckboxes.forEach(checkbox => {

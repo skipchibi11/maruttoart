@@ -75,6 +75,7 @@ try {
     
     // タグIDを取得または作成
     $tagIds = [];
+    $newTags = []; // 新しく作成されたタグの情報
     if (!empty($materialInfo['tags']) && is_array($materialInfo['tags'])) {
         foreach ($materialInfo['tags'] as $tagData) {
             // 新しい形式（name + slug オブジェクト）と旧形式（文字列）の両方に対応
@@ -121,7 +122,14 @@ try {
                 
                 $stmt = $pdo->prepare("INSERT INTO tags (name, slug) VALUES (?, ?)");
                 if ($stmt->execute([$tagName, $tagSlug])) {
-                    $tagIds[] = $pdo->lastInsertId();
+                    $newTagId = $pdo->lastInsertId();
+                    $tagIds[] = $newTagId;
+                    // 新しく作成されたタグ情報を保存
+                    $newTags[] = [
+                        'id' => $newTagId,
+                        'name' => $tagName,
+                        'slug' => $tagSlug
+                    ];
                 }
             }
         }
@@ -173,6 +181,7 @@ try {
             'description' => $materialInfo['description'] ?? '',
             'category_id' => $categoryId,
             'tag_ids' => $tagIds,
+            'new_tags' => $newTags, // 新しく作成されたタグ情報
             'search_keywords' => $combinedKeywords,
             'multilingual' => [
                 'en_title' => $materialInfo['en_title'] ?? '',
