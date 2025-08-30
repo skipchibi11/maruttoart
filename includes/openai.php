@@ -56,7 +56,7 @@ function generateMaterialInfo($title, $imagePath, $artMaterials = []) {
 与えられた画像とタイトル「{$title}」{$artMaterialsText}から、以下のJSONフォーマットで素材情報を生成してください：{$artMaterialsGuideline}
 
 {
-  \"slug\": \"英数字とハイフンのみのURL用文字列（英語ベース）\",
+  \"slug\": \"英数字とハイフンのみのURL用文字列（適切な英語翻訳ベース）\",
   \"description\": \"日本語の簡潔な説明文（150-200文字程度）\",
   \"category_slug\": \"最適なカテゴリのスラッグ（fruits, nature, animals, vehicles, space, weather, buildings, plants, food, drinks, tools, furniture, sports, music, fashion, seasons, festivals のいずれか）\",
   \"tags\": [
@@ -81,10 +81,20 @@ function generateMaterialInfo($title, $imagePath, $artMaterials = []) {
 }
 }
 
+重要なslug生成ルール：
+- slugは日本語を適切な英語に翻訳してから作成（ローマ字読みは禁止）
+- 例：「さやえんどう」→「snow-pea」（sayaendoは不適切）
+- 例：「りんご」→「apple」（ringoは不適切）  
+- 例：「ねこ」→「cat」（nekoは不適切）
+- 例：「桜」→「cherry-blossom」（sakuraは不適切）
+- 食べ物、動物、植物などは必ず適切な英語名を使用
+- 複数の単語はハイフンで繋ぐ
+- 小文字のみ使用
+
 ガイドライン：
-- slugは小文字の英数字とハイフンのみ使用（英語ベース）
+- slugは適切な英語翻訳を使用（ローマ字読みではなく、実際の英語名）
 - タグは3-5個程度を選択し、日本語名と英語スラッグの両方を提供
-- タグのスラッグは descriptive な英語（例：watercolor, cute, pastel-color など）
+- タグのスラッグも適切な英語翻訳を使用（例：watercolor, cute, pastel-color など）
 - カテゴリスラッグは提供されたリストから最適なものを選択
 - 各言語の説明文は自然で分かりやすく
 - 使用した画材が指定されている場合は、指定された画材のみを説明文に記載し、その画材の特徴を正確に反映する
