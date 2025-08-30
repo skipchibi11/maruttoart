@@ -1088,9 +1088,9 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="hero-title">かわいい無料イラスト素材</h1>
+                    <h1 class="hero-title">手描きイラスト素材</h1>
                     <p class="hero-description">
-                        手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。
+                        手描きのやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。
                     </p>
                     <a href="#materials" class="hero-cta">素材を見る</a>
                 </div>
