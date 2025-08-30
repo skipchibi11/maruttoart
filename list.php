@@ -89,8 +89,26 @@ $materials = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>イラスト素材一覧｜maruttoart（商用利用OK）</title>
-    <meta name="description" content="かわいい無料イラスト素材の一覧ページ。手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける高品質なフリー素材集です。">
+    <meta name="description" content="手描きイラスト素材の一覧ページ！手描きのやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
+    
+    <!-- カノニカルタグ -->
+    <?php
+    $canonicalUrl = ($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . '/list.php';
+    if (!empty($search)) {
+        // 検索がある場合は検索クエリを含める
+        $canonicalUrl .= '?search=' . urlencode($search);
+        if ($page > 1) {
+            $canonicalUrl .= '&page=' . $page;
+        }
+    } else {
+        // 検索がない場合はページのみ
+        if ($page > 1) {
+            $canonicalUrl .= '?page=' . $page;
+        }
+    }
+    ?>
+    <link rel="canonical" href="<?= h($canonicalUrl) ?>">
     
     <!-- JSON-LD structured data -->
     <script type="application/ld+json">
