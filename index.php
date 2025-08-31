@@ -1092,7 +1092,7 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                     <p class="hero-description">
                         手描きのやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。
                     </p>
-                    <a href="#materials" class="hero-cta">素材を見る</a>
+                    <a href="/list.php" class="hero-cta">素材を見る</a>
                 </div>
                 <div class="hero-image">
                     <img src="/assets/images/hero.webp" 
