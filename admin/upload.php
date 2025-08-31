@@ -6,6 +6,169 @@ requireLogin();
 // 管理画面はキャッシュ無効化
 setNoCache();
 
+/**
+ * 重複しないslugを生成する関数
+ * @param PDO $pdo データベース接続
+ * @param string $baseSlug ベースとなるslug
+ * @param array $artMaterialIds 選択された画材ID
+ * @param string $description 説明文
+ * @return string 重複しないslug
+ */
+function generateUniqueSlug($pdo, $baseSlug, $artMaterialIds = [], $description = '') {
+    // 最初にベースslugをチェック
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM materials WHERE slug = ?");
+    $stmt->execute([$baseSlug]);
+    if ($stmt->fetchColumn() == 0) {
+        return $baseSlug; // 重複がなければそのまま返す
+    }
+    
+    // 重複がある場合は、画材名を取得して追加候補を作成
+    $suffixes = [];
+    
+    // 1. 画材名を取得
+    if (!empty($artMaterialIds)) {
+        $placeholders = str_repeat('?,', count($artMaterialIds) - 1) . '?';
+        $stmt = $pdo->prepare("SELECT name FROM art_materials WHERE id IN ($placeholders) ORDER BY sort_order, name");
+        $stmt->execute($artMaterialIds);
+        $materials = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        foreach ($materials as $material) {
+            // 画材名を英語風に変換（簡易版）
+            $materialSlug = convertToSlug($material);
+            if (!empty($materialSlug)) {
+                $suffixes[] = $materialSlug;
+            }
+        }
+    }
+    
+    // 2. 説明文からキーワードを抽出
+    if (!empty($description)) {
+        // 説明文から特徴的な単語を抽出（例：色、形、特徴など）
+        $keywords = extractKeywordsFromDescription($description);
+        $suffixes = array_merge($suffixes, $keywords);
+    }
+    
+    // 3. 画材名やキーワードを組み合わせて試行
+    foreach ($suffixes as $suffix) {
+        $candidateSlug = $baseSlug . '-' . $suffix;
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM materials WHERE slug = ?");
+        $stmt->execute([$candidateSlug]);
+        if ($stmt->fetchColumn() == 0) {
+            return $candidateSlug;
+        }
+    }
+    
+    // 4. 複数の組み合わせを試行
+    if (count($suffixes) > 1) {
+        for ($i = 0; $i < min(3, count($suffixes)); $i++) {
+            for ($j = $i + 1; $j < min(3, count($suffixes)); $j++) {
+                $candidateSlug = $baseSlug . '-' . $suffixes[$i] . '-' . $suffixes[$j];
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM materials WHERE slug = ?");
+                $stmt->execute([$candidateSlug]);
+                if ($stmt->fetchColumn() == 0) {
+                    return $candidateSlug;
+                }
+            }
+        }
+    }
+    
+    // 5. 最終手段：連番を追加
+    for ($i = 2; $i <= 100; $i++) {
+        $candidateSlug = $baseSlug . '-' . $i;
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM materials WHERE slug = ?");
+        $stmt->execute([$candidateSlug]);
+        if ($stmt->fetchColumn() == 0) {
+            return $candidateSlug;
+        }
+    }
+    
+    // それでも重複する場合はタイムスタンプを追加
+    return $baseSlug . '-' . time();
+}
+
+/**
+ * 日本語を英語風slugに変換する関数
+ * @param string $text 日本語テキスト
+ * @return string 英語風slug
+ */
+function convertToSlug($text) {
+    // 基本的な日本語→英語変換マップ
+    $conversionMap = [
+        '水彩' => 'watercolor',
+        '色鉛筆' => 'colored-pencil',
+        'アクリル' => 'acrylic',
+        'パステル' => 'pastel',
+        'クレヨン' => 'crayon',
+        '鉛筆' => 'pencil',
+        'ペン' => 'pen',
+        'マーカー' => 'marker',
+        'デジタル' => 'digital',
+        '油彩' => 'oil-paint',
+        'インク' => 'ink',
+        'チョーク' => 'chalk',
+        '赤' => 'red',
+        '青' => 'blue',
+        '緑' => 'green',
+        '黄' => 'yellow',
+        '紫' => 'purple',
+        'ピンク' => 'pink',
+        '橙' => 'orange',
+        '茶' => 'brown',
+        '黒' => 'black',
+        '白' => 'white',
+        '灰' => 'gray'
+    ];
+    
+    foreach ($conversionMap as $japanese => $english) {
+        if (strpos($text, $japanese) !== false) {
+            return $english;
+        }
+    }
+    
+    return '';
+}
+
+/**
+ * 説明文からキーワードを抽出する関数
+ * @param string $description 説明文
+ * @return array キーワード配列
+ */
+function extractKeywordsFromDescription($description) {
+    $keywords = [];
+    
+    // 色に関するキーワード
+    $colorKeywords = [
+        '赤い' => 'red', '赤色' => 'red',
+        '青い' => 'blue', '青色' => 'blue',
+        '緑の' => 'green', '緑色' => 'green',
+        '黄色い' => 'yellow', '黄色' => 'yellow',
+        'ピンクの' => 'pink', 'ピンク色' => 'pink',
+        '紫の' => 'purple', '紫色' => 'purple',
+        'オレンジの' => 'orange', 'オレンジ色' => 'orange',
+        '茶色い' => 'brown', '茶色' => 'brown'
+    ];
+    
+    // 形状・特徴に関するキーワード
+    $shapeKeywords = [
+        '丸い' => 'round', '丸型' => 'round',
+        '四角い' => 'square', '四角' => 'square',
+        '細い' => 'thin', '太い' => 'thick',
+        '大きい' => 'large', '小さい' => 'small',
+        'かわいい' => 'cute', 'きれい' => 'pretty',
+        'シンプル' => 'simple', '複雑' => 'complex'
+    ];
+    
+    $allKeywords = array_merge($colorKeywords, $shapeKeywords);
+    
+    foreach ($allKeywords as $japanese => $english) {
+        if (strpos($description, $japanese) !== false) {
+            $keywords[] = $english;
+        }
+    }
+    
+    return array_unique($keywords);
+}
+
 $error = '';
 $success = '';
 
@@ -36,13 +199,17 @@ if ($_POST) {
     } elseif (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
         $error = '画像ファイルをアップロードしてください。';
     } else {
-        // スラッグの重複チェック
+        // スラッグの重複チェックと自動調整
         $pdo = getDB();
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM materials WHERE slug = ?");
-        $stmt->execute([$slug]);
-        if ($stmt->fetchColumn() > 0) {
-            $error = 'そのスラッグは既に使用されています。';
-        } else {
+        $original_slug = $slug;
+        $slug = generateUniqueSlug($pdo, $slug, $art_material_ids, $description);
+        
+        if ($slug !== $original_slug) {
+            // スラッグが調整された場合は通知
+            $success = "スラッグが重複していたため、「{$slug}」に調整されました。";
+        }
+        
+        {
             // 画像アップロード
             $uploadResult = uploadImage($_FILES['image'], $slug);
             if ($uploadResult) {
@@ -87,7 +254,7 @@ if ($_POST) {
                         }
                     }
                     
-                    $success = '素材が正常にアップロードされました。';
+                    $success = '素材が正常にアップロードされました。' . (!empty($success) ? ' ' . $success : '');
                     // フォームをリセット
                     $_POST = [];
                 } else {
@@ -644,7 +811,5 @@ if ($_POST) {
             });
         });
     </script>
-</body>
-</html>
 </body>
 </html>
