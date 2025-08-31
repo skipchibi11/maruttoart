@@ -547,9 +547,10 @@ $materials = $stmt->fetchAll();
 
         .page-item.active .page-link {
             z-index: 3;
-            color: #fff;
-            background-color: #daa520;
-            border: 2px solid #daa520;
+            background-color: #f5f5f5;
+            color: #444;
+            border: 2px solid #999;
+            font-weight: bold;
         }
 
         .page-item.disabled .page-link {
@@ -562,32 +563,33 @@ $materials = $stmt->fetchAll();
         .page-link {
             position: relative;
             display: block;
-            padding: 0.75rem 1rem;
+            padding: 0.75em 1em;
             margin: 0;
             line-height: 1.2;
-            color: #6c757d;
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            font-weight: bold;
             text-decoration: none;
-            background-color: #fff;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-weight: 500;
             min-width: 44px;
             text-align: center;
-            transition: all 0.2s ease;
+            transition: all 0.2s ease-in-out;
         }
 
         .page-link:hover {
             z-index: 2;
-            color: #b8860b;
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
             text-decoration: none;
-            background-color: #fef9e7;
-            border-color: #daa520;
         }
 
         .page-link:focus {
             z-index: 3;
             outline: 0;
-            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
+        }
         }
 
         /* ページネーション全体のコンテナ */
@@ -929,10 +931,10 @@ $materials = $stmt->fetchAll();
 
         /* 検索フォームのスタイル */
         .search-form {
-            background-color: #fef9e7;
+            background-color: #ffffff;
             padding: 1.5rem;
             border-radius: 12px;
-            border: 1px solid #f0e68c;
+            border: 1px solid #e9ecef;
             margin-bottom: 2rem;
         }
 
@@ -947,7 +949,7 @@ $materials = $stmt->fetchAll();
         .search-input {
             flex: 1;
             padding: 0.75rem 1rem;
-            border: 2px solid #f0e68c;
+            border: 2px solid #e9ecef;
             border-radius: 8px;
             font-size: 1rem;
             background-color: #fff;
@@ -955,9 +957,9 @@ $materials = $stmt->fetchAll();
         }
 
         .search-input:focus {
-            border-color: #daa520;
+            border-color: #0d6efd;
             outline: 0;
-            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.1);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
         }
 
         .search-input::placeholder {
@@ -965,43 +967,46 @@ $materials = $stmt->fetchAll();
         }
 
         .search-button {
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            white-space: nowrap;
-            background-color: #daa520;
-            border: 2px solid #daa520;
-            border-radius: 8px;
-            color: #fff;
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 2em;
             font-size: 1rem;
-            transition: all 0.2s ease;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
         }
 
         .search-button:hover {
-            background-color: #b8860b;
-            border-color: #b8860b;
-            color: #fff;
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
         }
 
         .search-button:focus {
             outline: 0;
-            box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.2);
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
         }
 
         /* クリアボタンのスタイル */
         .search-form .btn-secondary {
-            background-color: #6c757d;
-            border: 2px solid #6c757d;
-            border-radius: 8px;
-            color: #fff;
-            padding: 0.75rem 1.25rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 1.25em;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
         }
 
         .search-form .btn-secondary:hover {
-            background-color: #5a6268;
-            border-color: #5a6268;
-            color: #fff;
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
         }
 
         /* レスポンシブ対応 */
