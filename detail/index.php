@@ -50,6 +50,26 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$material['id']]);
 $materialArtMaterials = $stmt->fetchAll();
+
+// ツイート用テキストを生成
+function createTweetText($materialArtMaterials, $title) {
+    // 画材名を取得（複数の場合は最初のものを使用）
+    $artMaterialName = '';
+    if (!empty($materialArtMaterials)) {
+        $artMaterialName = $materialArtMaterials[0]['name'];
+    } else {
+        // 画材が登録されていない場合のデフォルト
+        $artMaterialName = '水彩絵の具';
+    }
+    
+    // ツイート用テキストを構築
+    $tweetText = $artMaterialName . 'で描いた無料素材：' . $title . 'のイラスト' . "\n";
+    $tweetText .= '#フリー素材 #無料素材 #水彩イラスト #clipart';
+    
+    return $tweetText;
+}
+
+$tweetText = createTweetText($materialArtMaterials, $material['title']);
 ?>
 
 <!DOCTYPE html>
@@ -895,8 +915,12 @@ $materialArtMaterials = $stmt->fetchAll();
                 </div>
 
                 <!-- ツイートボタン（カード外に配置） -->
+                                <!-- ツイートボタン（カード外に配置） -->
                 <div class="text-center mt-3">
-                    <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a>
+                    <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" 
+                       class="twitter-share-button" 
+                       data-text="<?= h($tweetText) ?>"
+                       data-show-count="false">Tweet</a>
                     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                 </div>
 
