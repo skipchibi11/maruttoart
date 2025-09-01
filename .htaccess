@@ -8,6 +8,11 @@
     Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
 
+# エラーページの設定（最初に定義）
+ErrorDocument 404 /404.php
+ErrorDocument 500 /404.php
+ErrorDocument 403 /404.php
+
 # 画像ファイルのキャッシュ設定（1年間）
 <IfModule mod_expires.c>
     ExpiresActive On
@@ -78,6 +83,3 @@ RewriteRule ^tag/([a-z0-9\-]+)/?$ tag.php?slug=$1 [L,QSA]
 
 # 素材詳細ページ: /category-slug/material-slug/ → /detail/index.php?category_slug=category-slug&slug=material-slug
 RewriteRule ^([a-z0-9\-]+)/([a-z0-9\-]+)/?$ detail/index.php?category_slug=$1&slug=$2 [L,QSA]
-
-# エラーページ（404）
-ErrorDocument 404 /404.php

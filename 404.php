@@ -1,6 +1,9 @@
 <?php
 require_once 'config.php';
 
+// 404ステータスコードを明示的に設定
+http_response_code(404);
+
 // 404ページは短期キャッシュ
 setPublicCache(300, 600); // 5分 / CDN 10分
 ?>
