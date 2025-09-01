@@ -8,7 +8,8 @@ $slug = $_GET['slug'] ?? '';
 $category_slug = $_GET['category_slug'] ?? '';
 
 if (empty($slug) || empty($category_slug)) {
-    header('HTTP/1.0 404 Not Found');
+    http_response_code(404);
+    header('Location: /404.php');
     exit;
 }
 
@@ -20,7 +21,8 @@ $categoryStmt->execute([$category_slug]);
 $category = $categoryStmt->fetch();
 
 if (!$category) {
-    header('HTTP/1.0 404 Not Found');
+    http_response_code(404);
+    header('Location: /404.php');
     exit;
 }
 
@@ -30,7 +32,8 @@ $stmt->execute([$slug, $category['id']]);
 $material = $stmt->fetch();
 
 if (!$material) {
-    header('HTTP/1.0 404 Not Found');
+    http_response_code(404);
+    header('Location: /404.php');
     exit;
 }
 

@@ -83,3 +83,6 @@ RewriteRule ^tag/([a-z0-9\-]+)/?$ tag.php?slug=$1 [L,QSA]
 
 # 素材詳細ページ: /category-slug/material-slug/ → /detail/index.php?category_slug=category-slug&slug=material-slug
 RewriteRule ^([a-z0-9\-]+)/([a-z0-9\-]+)/?$ detail/index.php?category_slug=$1&slug=$2 [L,QSA]
+
+# 上記のルールに一致しない場合は404ページを表示
+RewriteRule ^.+$ 404.php [L]
