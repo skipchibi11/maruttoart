@@ -413,6 +413,58 @@ $materialArtMaterials = $stmt->fetchAll();
             text-decoration: underline !important;
         }
 
+        /* プライバシーポリシーリンクのスタイル */
+        .footer-custom a.footer-text {
+            transition: color 0.2s ease;
+        }
+
+        /* 言語切替のスタイル */
+        .language-switcher {
+            margin-top: 10px;
+        }
+
+        .language-switcher .language-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .language-switcher .language-link {
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        .language-switcher .language-link:hover {
+            color: #0d6efd;
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+
+        .language-switcher .language-link.current {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+        .language-switcher .separator {
+            color: #dee2e6;
+            margin: 0 2px;
+        }
+
+        @media (max-width: 576px) {
+            .language-switcher .language-links {
+                gap: 6px;
+            }
+            
+            .language-switcher .language-link {
+                font-size: 0.85rem;
+            }
+        }
+
         /* GDPR Cookie Banner のスタイル */
         #gdpr-banner {
             position: fixed !important;
@@ -900,7 +952,25 @@ $materialArtMaterials = $stmt->fetchAll();
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
             <div class="text-center">
-                <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
+                <div class="mb-2">
+                    <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
+                </div>
+                <div class="language-switcher mb-2">
+                    <div class="language-links">
+                        <a href="/" class="language-link current" title="日本語">日本語</a>
+                        <span class="separator">|</span>
+                        <a href="https://marutto.art/en/" class="language-link" title="English">English</a>
+                        <span class="separator">|</span>
+                        <a href="https://marutto.art/es/" class="language-link" title="Español">Español</a>
+                        <span class="separator">|</span>
+                        <a href="https://marutto.art/fr/" class="language-link" title="Français">Français</a>
+                        <span class="separator">|</span>
+                        <a href="https://marutto.art/nl/" class="language-link" title="Nederlands">Nederlands</a>
+                    </div>
+                </div>
+                <div>
+                    <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
+                </div>
             </div>
         </div>
     </footer>
