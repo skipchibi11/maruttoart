@@ -59,7 +59,7 @@ function createTweetText($materialArtMaterials, $title) {
         $artMaterialName = $materialArtMaterials[0]['name'];
     } else {
         // 画材が登録されていない場合のデフォルト
-        $artMaterialName = '水彩絵の具';
+        $artMaterialName = '水彩';
     }
     
     // ツイート用テキストを構築
