@@ -89,7 +89,7 @@ $materials = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>イラスト素材一覧｜maruttoart（商用利用OK）</title>
-    <meta name="description" content="手描きイラスト素材の一覧ページ！手描きのやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
+    <meta name="description" content="やさしいイラスト素材の一覧ページ！やさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- カノニカルタグ -->
@@ -132,7 +132,7 @@ $materials = $stmt->fetchAll();
                 "@type": "WebPage",
                 "url": "https://marutto.art/list.php<?= !empty($search) ? '?search=' . urlencode($search) : '' ?>",
                 "name": "<?php if (!empty($search)): ?>検索結果: <?= h($search) ?> - <?php endif; ?>イラスト素材一覧｜maruttoart",
-                "description": "<?php if (!empty($search)): ?><?= h($search) ?>に関する無料イラスト素材の検索結果。<?php else: ?>かわいい無料イラスト素材の一覧ページ。<?php endif; ?>手描き水彩のやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。",
+                "description": "<?php if (!empty($search)): ?><?= h($search) ?>に関する無料イラスト素材の検索結果。<?php else: ?>やさしいイラスト素材の一覧ページ。<?php endif; ?>やさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。",
                 "isPartOf": {
                     "@type": "WebSite",
                     "name": "maruttoart",
@@ -152,7 +152,7 @@ $materials = $stmt->fetchAll();
             {
                 "@type": "ItemList",
                 "name": "<?php if (!empty($search)): ?><?= h($search) ?>の検索結果<?php else: ?>無料イラスト素材一覧<?php endif; ?>",
-                "description": "<?php if (!empty($search)): ?><?= h($search) ?>に関連する手描き水彩イラスト素材<?php else: ?>手描き水彩のやさしいタッチで描かれたかわいい無料イラスト素材<?php endif; ?>",
+                "description": "<?php if (!empty($search)): ?><?= h($search) ?>に関連するやさしいイラスト素材<?php else: ?>やさしいタッチで描かれたかわいい無料イラスト素材<?php endif; ?>",
                 "numberOfItems": <?= $totalItems ?>,
                 "url": "https://marutto.art/list.php<?= !empty($search) ? '?search=' . urlencode($search) : '' ?>",
                 "itemListElement": [
@@ -161,7 +161,7 @@ $materials = $stmt->fetchAll();
                         "@type": "Product",
                         "position": <?= ($page - 1) * $perPage + $index + 1 ?>,
                         "name": "<?= addslashes(h($material['title'])) ?>",
-                        "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'の手描き水彩イラスト素材です。商用利用可能で個人・法人問わずご利用いただけます。')) ?>",
+                        "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'のやさしいイラスト素材です。商用利用可能で個人・法人問わずご利用いただけます。')) ?>",
                         "image": "https://marutto.art/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
                         "url": "https://marutto.art/<?= !empty($material['category_slug']) ? h($material['category_slug']) . '/' . h($material['slug']) . '/' : 'detail/' . h($material['slug']) ?>",
                         "sku": "<?= h($material['slug']) ?>-<?= date('Ymd', strtotime($material['created_at'])) ?>",
@@ -176,7 +176,7 @@ $materials = $stmt->fetchAll();
                             "availability": "https://schema.org/InStock"
                         },
                         "license": "https://creativecommons.org/publicdomain/zero/1.0/",
-                        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 手描き, 水彩, 商用利用OK"
+                        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 商用利用OK"
                     }<?= $index < min(2, count(array_slice($materials, 0, 3)) - 1) ? ',' : '' ?>
                     <?php endforeach; ?>
                 ]
@@ -1086,7 +1086,7 @@ $materials = $stmt->fetchAll();
                         (<?= $page ?>/<?= $totalPages ?>ページ)
                     </p>
                 <?php else: ?>
-                    <h1 class="mb-2">無料で使えるかわいい水彩イラスト素材集</h1>
+                    <h1 class="mb-2">無料で使えるやさしいイラスト素材集</h1>
                     <p class="text-muted mb-4">
                         全<?= number_format($totalItems) ?>件中 
                         <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 

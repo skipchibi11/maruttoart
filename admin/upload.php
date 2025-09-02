@@ -475,9 +475,9 @@ if ($_POST) {
 
                             <div class="mb-3">
                                 <label for="search_keywords" class="form-label">検索キーワード・SEO設定</label>
-                                <textarea class="form-control" id="search_keywords" name="search_keywords" rows="4" placeholder='title_en=lemon,title_fr=citron,title_es=limón,title_nl=citroen,description_en=Fresh lemon watercolor illustration,description_fr=Illustration aquarelle de citron frais,fruit,yellow,citrus,水彩,果物,黄色,無料,素材,かわいい,手描き,イラスト,商用利用OK'><?= h($_POST['search_keywords'] ?? '') ?></textarea>
+                                <textarea class="form-control" id="search_keywords" name="search_keywords" rows="4" placeholder='title_en=lemon,title_fr=citron,title_es=limón,title_nl=citroen,description_en=Fresh lemon watercolor illustration,description_fr=Illustration aquarelle de citron frais,fruit,yellow,citrus,水彩,果物,黄色,無料,素材,かわいい,イラスト,商用利用OK'><?= h($_POST['search_keywords'] ?? '') ?></textarea>
                                 <div class="form-text">
-                                    <strong>SEO推奨キーワード:</strong> 無料、素材、かわいい、手描き、水彩、イラスト、商用利用OK<br>
+                                    <strong>SEO推奨キーワード:</strong> 無料、素材、やさしい、水彩、イラスト、商用利用OK<br>
                                     構造化キーワード（title_en=英語タイトル、description_en=英語説明など）と通常のキーワードをカンマ区切りで入力
                                 </div>
                             </div>

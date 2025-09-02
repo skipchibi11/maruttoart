@@ -244,7 +244,6 @@ function createSlug($text) {
         'シンプル' => 'simple',
         'カラフル' => 'colorful',
         'パステル' => 'pastel',
-        '手描き風' => 'hand-drawn',
         '水彩' => 'watercolor',
         'ポップ' => 'pop',
         'ナチュラル' => 'natural',

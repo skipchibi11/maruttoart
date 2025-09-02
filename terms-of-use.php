@@ -51,8 +51,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>利用規約 - 手描きイラスト素材（無料・商用OK・水彩・パステル）｜maruttoart</title>
-    <meta name="description" content="maruttoartの手描きイラスト素材の利用規約。無料・商用利用可能な素材の使用条件、禁止事項、著作権について詳しく説明しています。">
+    <title>利用規約 - やさしいイラスト素材（無料・商用OK）｜maruttoart</title>
+    <meta name="description" content="maruttoartのやさしいイラスト素材の利用規約。無料・商用利用可能な素材の使用条件、禁止事項、著作権について詳しく説明しています。">
     
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -61,13 +61,13 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php">
     <meta property="og:title" content="利用規約 - maruttoart">
-    <meta property="og:description" content="maruttoartの手描きイラスト素材の利用規約。無料・商用利用可能な素材の使用条件について説明しています。">
+    <meta property="og:description" content="maruttoartのやさしいイラスト素材の利用規約。無料・商用利用可能な素材の使用条件について説明しています。">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php">
     <meta property="twitter:title" content="利用規約 - maruttoart">
-    <meta property="twitter:description" content="maruttoartの手描きイラスト素材の利用規約。無料・商用利用可能な素材の使用条件について説明しています。">
+    <meta property="twitter:description" content="maruttoartのやさしいイラスト素材の利用規約。無料・商用利用可能な素材の使用条件について説明しています。">
     
     <style>
         /* リセットCSS */
@@ -481,13 +481,13 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 
                 <div class="text-important">
                     <p><strong>最終更新日：2025年8月29日</strong></p>
-                    <p>本利用規約は、maruttoart（以下「当サイト」）が提供する手描きイラスト素材の利用に関する条件を定めたものです。素材をダウンロード・利用される前に必ずお読みください。</p>
+                    <p>本利用規約は、maruttoart（以下「当サイト」）が提供するやさしいイラスト素材の利用に関する条件を定めたものです。素材をダウンロード・利用される前に必ずお読みください。</p>
                 </div>
 
                 <h2>1. 基本的な利用条件</h2>
                 
                 <h3>1.1 無料利用</h3>
-                <p>当サイトで提供するすべての手描きイラスト素材は、個人・法人問わず無料でご利用いただけます。</p>
+                <p>当サイトで提供するすべてのやさしいイラスト素材は、個人・法人問わず無料でご利用いただけます。</p>
 
                 <h3>1.2 商用利用</h3>
                 <p>商用利用が可能です。以下のような用途でご利用いただけます：</p>

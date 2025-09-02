@@ -67,8 +67,8 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>手描きイラスト素材集｜marutto.art（無料・商用利用OK、水彩・パステル）</title>
-    <meta name="description" content="手描きイラスト素材をダウンロード！手描きのやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
+    <title>やさしいイラスト素材集｜marutto.art（無料・商用利用OK）</title>
+    <meta name="description" content="やさしいイラスト素材をダウンロード！やさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- ヒーロー画像のpreload -->
@@ -1135,15 +1135,15 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="hero-title">手描きイラスト素材</h1>
+                    <h1 class="hero-title">やさしいイラスト素材</h1>
                     <p class="hero-description">
-                        手描きのやさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。
+                        やさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。
                     </p>
                     <a href="/list.php" class="hero-cta">素材を見る</a>
                 </div>
                 <div class="hero-image">
                     <img src="/assets/images/hero.webp" 
-                         alt="手描きイラスト素材のサンプル" 
+                         alt="やさしいイラスト素材のサンプル" 
                          width="500"
                          height="500"
                          fetchpriority="high"
@@ -1158,7 +1158,7 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             <div class="col-12">
                 <h2 class="mb-2">新着イラスト素材</h2>
                 <p class="text-muted mb-4">
-                    最新の手描きイラスト素材をご紹介
+                    最新のやさしいイラスト素材をご紹介
                 </p>
             </div>
         </div>

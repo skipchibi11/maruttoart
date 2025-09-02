@@ -48,7 +48,7 @@ http_response_code(404);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - ページが見つかりません｜maruttoart</title>
-    <meta name="description" content="お探しのページが見つかりませんでした。トップページから手描きイラスト素材をお探しください。">
+    <meta name="description" content="お探しのページが見つかりませんでした。トップページからやさしいイラスト素材をお探しください。">
     <link rel="icon" href="/favicon.ico">
     
     <style>
