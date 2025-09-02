@@ -52,24 +52,16 @@ $stmt->execute([$material['id']]);
 $materialArtMaterials = $stmt->fetchAll();
 
 // ツイート用テキストを生成
-function createTweetText($materialArtMaterials, $title) {
-    // 画材名を取得（複数の場合は最初のものを使用）
-    $artMaterialName = '';
-    if (!empty($materialArtMaterials)) {
-        $artMaterialName = $materialArtMaterials[0]['name'];
-    } else {
-        // 画材が登録されていない場合のデフォルト
-        $artMaterialName = '水彩';
-    }
+function createTweetText($title) {
     
     // ツイート用テキストを構築
-    $tweetText = $artMaterialName . 'で描いた無料素材：' . $title . 'のイラスト' . "\n";
-    $tweetText .= '#フリー素材 #無料素材 #水彩イラスト #clipart';
+    $tweetText = $title . 'のイラスト' . "\n";
+    $tweetText .= '#フリー素材 #無料素材 #イラスト #clipart';
     
     return $tweetText;
 }
 
-$tweetText = createTweetText($materialArtMaterials, $material['title']);
+$tweetText = createTweetText($material['title']);
 
 // 関連イラストを取得（カテゴリ一致5点、タグ一致1点、高い順で上位6点）
 $stmt = $pdo->prepare("
