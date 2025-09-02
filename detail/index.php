@@ -1241,17 +1241,9 @@ $relatedMaterials = $stmt->fetchAll();
                     <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
                 </div>
                 <div class="language-switcher mb-2">
-                    <div class="language-links">
-                        <a href="/" class="language-link current" title="日本語">日本語</a>
-                        <span class="separator">|</span>
-                        <a href="https://marutto.art/en/" class="language-link" title="English">English</a>
-                        <span class="separator">|</span>
-                        <a href="https://marutto.art/es/" class="language-link" title="Español">Español</a>
-                        <span class="separator">|</span>
-                        <a href="https://marutto.art/fr/" class="language-link" title="Français">Français</a>
-                        <span class="separator">|</span>
-                        <a href="https://marutto.art/nl/" class="language-link" title="Nederlands">Nederlands</a>
-                    </div>
+                    <div class="gtranslate_wrapper"></div>
+                    <script>window.gtranslateSettings = {"default_language":"ja","native_language_names":true,"url_structure":"sub_directory","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
+                    <script src="https://cdn.gtranslate.net/widgets/latest/ln.js" defer></script>
                 </div>
                 <div>
                     <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
