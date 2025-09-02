@@ -70,6 +70,30 @@ function createTweetText($materialArtMaterials, $title) {
 }
 
 $tweetText = createTweetText($materialArtMaterials, $material['title']);
+
+// 関連イラストを取得（カテゴリ一致5点、タグ一致1点、高い順で上位6点）
+$stmt = $pdo->prepare("
+    SELECT DISTINCT m.*, c.title as category_name, c.slug as category_slug,
+           -- スコア計算: カテゴリ一致は5点、タグ一致は1点
+           (CASE WHEN m.category_id = ? THEN 5 ELSE 0 END +
+            CASE WHEN EXISTS (
+                SELECT 1 FROM material_tags mt1 
+                INNER JOIN material_tags mt2 ON mt1.tag_id = mt2.tag_id 
+                WHERE mt1.material_id = m.id AND mt2.material_id = ?
+            ) THEN 1 ELSE 0 END) as relevance_score
+    FROM materials m
+    LEFT JOIN categories c ON m.category_id = c.id
+    WHERE m.id != ? 
+      AND (m.category_id = ? OR EXISTS (
+          SELECT 1 FROM material_tags mt1 
+          INNER JOIN material_tags mt2 ON mt1.tag_id = mt2.tag_id 
+          WHERE mt1.material_id = m.id AND mt2.material_id = ?
+      ))
+    ORDER BY relevance_score DESC, m.created_at DESC
+    LIMIT 6
+");
+$stmt->execute([$material['category_id'], $material['id'], $material['id'], $material['category_id'], $material['id']]);
+$relatedMaterials = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -194,6 +218,55 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
         .row {
             display: flex;
             flex-wrap: wrap;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        /* カラムクラスの基本設定 */
+        .col-6,
+        .col-md-4,
+        .col-lg-3,
+        .col-xl-2,
+        .col-xxl-2 {
+            position: relative;
+            width: 100%;
+            min-height: 1px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .col-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        @media (min-width: 768px) {
+            .col-md-4 {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .col-lg-3 {
+                flex: 0 0 25%;
+                max-width: 25%;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .col-xl-2 {
+                flex: 0 0 16.666667%;
+                max-width: 16.666667%;
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .col-xxl-2 {
+                flex: 0 0 16.666667%;
+                max-width: 16.666667%;
+            }
+        }
             margin-left: -15px;
             margin-right: -15px;
         }
@@ -483,6 +556,155 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
             .language-switcher .language-link {
                 font-size: 0.85rem;
             }
+        }
+
+        /* 関連イラストのスタイル */
+        .related-materials-section {
+            margin-top: 3rem;
+        }
+
+        .related-materials-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #5d4037;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #fef9e7;
+        }
+
+        .material-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            position: relative;
+            border-radius: 0.25rem;
+            will-change: transform, box-shadow;
+            background-color: #fff;
+            margin-bottom: 1.5rem;
+        }
+
+        .material-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
+            border-color: #0d6efd;
+        }
+
+        .material-card:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .material-card .card-title {
+            color: #666;
+            font-weight: 300;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        .material-card:hover .card-title {
+            color: #0d6efd;
+        }
+
+        .material-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            background-color: #F9F5E9;
+            border-radius: 0.25rem 0.25rem 0 0;
+        }
+
+        .video-icon-overlay {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            opacity: 0.8;
+            will-change: transform, opacity, background-color;
+        }
+
+        .video-icon-overlay::before {
+            content: '▶';
+            font-size: 10px;
+        }
+
+        /* YouTube動画モーダルのスタイル */
+        .youtube-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .youtube-modal.show {
+            display: flex;
+        }
+        
+        .youtube-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
+            background: black;
+        }
+        
+        .youtube-modal-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        .youtube-modal-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 1;
+        }
+        
+        .youtube-modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .youtube-modal-close:hover {
+            color: #ccc;
         }
 
         /* GDPR Cookie Banner のスタイル */
@@ -954,7 +1176,7 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
                                 $embed_url = $youtube_url;
                             }
                             ?>
-                            <iframe id="youtube-iframe" src="<?= h($embed_url) ?>" frameborder="0" allowfullscreen></iframe>
+                            <iframe id="main-youtube-iframe" src="<?= h($embed_url) ?>" frameborder="0" allowfullscreen></iframe>
                         </div>
                         <div id="youtube-blocked" class="youtube-blocked" style="display: none;">
                             <div class="text-center">
@@ -972,6 +1194,53 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
             </div>
         </div>
     </div>
+
+    <!-- 関連イラスト -->
+    <?php if (!empty($relatedMaterials)): ?>
+    <div class="related-materials-section">
+        <div class="container">
+            <h3 class="related-materials-title">関連イラスト</h3>
+            <div class="row">
+                <?php foreach ($relatedMaterials as $relMaterial): ?>
+                <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
+                    <a href="/<?= h($relMaterial['category_slug']) ?>/<?= h($relMaterial['slug']) ?>/" 
+                       class="material-card text-decoration-none">
+                        <div class="position-relative">
+                            <!-- WebPに対応したpicture要素 -->
+                            <picture>
+                                <source srcset="/<?= h($relMaterial['webp_small_path'] ?? $relMaterial['image_path']) ?>" type="image/webp">
+                                <img src="/<?= h($relMaterial['image_path']) ?>" 
+                                     alt="<?= h($relMaterial['title']) ?>" 
+                                     class="material-image"
+                                     loading="lazy">
+                            </picture>
+                            
+                            <?php 
+                            // 動画アイコンの表示判定
+                            $showVideoIcon = !empty($relMaterial['youtube_url']);
+                            if (!empty($relMaterial['video_publish_date'])) {
+                                $videoPublishDateTime = new DateTime($relMaterial['video_publish_date']);
+                                $now = new DateTime();
+                                $showVideoIcon = $showVideoIcon && ($now >= $videoPublishDateTime);
+                            }
+                            ?>
+                            <?php if ($showVideoIcon): ?>
+                            <div class="video-icon-overlay" 
+                                 onclick="openYouTubeModal(event, '<?= h($relMaterial['youtube_url']) ?>', '<?= h($relMaterial['title']) ?>')"
+                                 title="動画を見る">
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title"><?= h($relMaterial['title']) ?></h3>
+                        </div>
+                    </a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
@@ -998,6 +1267,21 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
             </div>
         </div>
     </footer>
+
+    <!-- YouTube動画モーダル -->
+    <div id="youtube-modal" class="youtube-modal">
+        <div class="youtube-modal-content">
+            <button class="youtube-modal-close" onclick="closeYouTubeModal()">&times;</button>
+            <div class="youtube-modal-loading">動画を読み込み中...</div>
+            <iframe id="youtube-modal-iframe" 
+                    src="" 
+                    allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    frameborder="0"
+                    onload="hideLoading()"
+                    style="display: none;"></iframe>
+        </div>
+    </div>
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
     <div id="gdpr-banner" class="hidden">
@@ -1093,7 +1377,6 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
             // GTM読み込みイベントを発火
             const event = new CustomEvent('gdpr-consent-accepted');
             window.dispatchEvent(event);
-            console.log('gdpr-consent-accepted event dispatched');
         }
         
         // 拒否処理
@@ -1109,13 +1392,11 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
         
         // アナリティクス有効化（プレースホルダー）
         function enableAnalytics() {
-            console.log('Analytics enabled (detail page)');
             // ここに Google Analytics などの初期化コードを追加
         }
         
         // アナリティクス無効化（プレースホルダー）
         function disableAnalytics() {
-            console.log('Analytics disabled (detail page)');
             // ここにアナリティクス無効化のコードを追加する
         }
         
@@ -1153,5 +1434,98 @@ $tweetText = createTweetText($materialArtMaterials, $material['title']);
         }
     })();
     </script>
+
+    <!-- YouTube動画モーダル用JavaScript -->
+    <script>
+    function openYouTubeModal(event, url, title) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // GDPR同意状況をチェック
+        const consent = getGdprConsent();
+        if (consent !== 'accepted') {
+            alert('動画を視聴するにはCookieの同意が必要です。ページ下部のバナーで同意してください。');
+            return;
+        }
+        
+        const modal = document.getElementById('youtube-modal');
+        const iframe = document.getElementById('youtube-modal-iframe'); // モーダル専用iframe
+        const loading = document.querySelector('.youtube-modal-loading');
+        
+        // ローディング表示をリセット
+        if (loading) loading.style.display = 'block';
+        iframe.style.display = 'none';
+        
+        // YouTube URLをembed形式に変換
+        let embedUrl = '';
+        if (url.includes('youtube.com/watch?v=')) {
+            const videoId = url.split('v=')[1].split('&')[0];
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+        } else if (url.includes('youtu.be/')) {
+            const videoId = url.split('/').pop().split('?')[0];
+            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+        } else if (url.includes('youtube.com/embed/')) {
+            embedUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1&rel=0&modestbranding=1';
+        } else {
+            // 既にembed形式の場合はパラメータを追加
+            embedUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1&rel=0&modestbranding=1';
+        }
+        
+        iframe.src = embedUrl;
+        modal.classList.add('show');
+        
+        // iframeが読み込まれたらローディングを隠す
+        iframe.onload = function() {
+            hideLoading();
+        };
+        
+        // ESCキーでモーダルを閉じる
+        document.addEventListener('keydown', handleEscKey);
+    }
+    
+    function hideLoading() {
+        const iframe = document.getElementById('youtube-modal-iframe'); // モーダル専用iframe
+        const loading = document.querySelector('.youtube-modal-loading');
+        
+        if (loading) loading.style.display = 'none';
+        iframe.style.display = 'block';
+    }
+    
+    function closeYouTubeModal() {
+        const modal = document.getElementById('youtube-modal');
+        const iframe = document.getElementById('youtube-modal-iframe'); // モーダル専用iframe
+        
+        modal.classList.remove('show');
+        iframe.src = '';
+        iframe.style.display = 'none';
+        
+        // ESCキーイベントリスナーを削除
+        document.removeEventListener('keydown', handleEscKey);
+    }
+    
+    function handleEscKey(event) {
+        if (event.key === 'Escape') {
+            closeYouTubeModal();
+        }
+    }
+    
+    // モーダル背景クリックで閉じる
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('youtube-modal');
+        if (event.target === modal) {
+            closeYouTubeModal();
+        }
+    });
+    
+    // GDPR同意状況取得関数（既存の関数を再利用）
+    function getGdprConsent() {
+        try {
+            return localStorage.getItem('gdpr_consent_v1');
+        } catch (e) {
+            return null;
+        }
+    }
+    </script>
+
 </body>
 </html>

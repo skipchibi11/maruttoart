@@ -22,7 +22,6 @@ function generateMaterialInfo($title, $imagePath, $artMaterials = []) {
     $config = getOpenAIConfig();
     
     if (empty($config['api_key'])) {
-        error_log("OpenAI API Key not found. ENV vars: " . print_r($_ENV, true));
         throw new Exception('OpenAI APIキーが設定されていません');
     }
     
