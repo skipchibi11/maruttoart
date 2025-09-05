@@ -57,6 +57,14 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 
 RewriteEngine On
 
+# wwwありのドメインをwwwなしにリダイレクト（最初に処理）
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# HTTPS対応版（本番環境では以下を使用し、上記をコメントアウト）
+# RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+# RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
 # 管理画面とAPIは除外（最初に処理）
 RewriteRule ^(admin|api|uploads)/ - [L]
 
