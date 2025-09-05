@@ -18,7 +18,7 @@ function getOpenAIConfig() {
 /**
  * OpenAI Vision APIを使用して画像とタイトルから素材情報を自動生成
  */
-function generateMaterialInfo($title, $imagePath, $artMaterials = []) {
+function generateMaterialInfo($title, $imagePath) {
     $config = getOpenAIConfig();
     
     if (empty($config['api_key'])) {
@@ -37,22 +37,11 @@ function generateMaterialInfo($title, $imagePath, $artMaterials = []) {
     
     $imageData = base64_encode(file_get_contents($imagePath));
     $mimeType = mime_content_type($imagePath);
-    
-    // 画材情報の処理
-    $artMaterialsText = '';
-    $artMaterialsGuideline = '';
-    if (!empty($artMaterials)) {
-        $materialNames = array_map(function($material) {
-            return $material['name'];
-        }, $artMaterials);
-        $artMaterialsText = "\n使用した画材: " . implode(', ', $materialNames);
-        $artMaterialsGuideline = "\n重要: 説明文では「" . implode('、', $materialNames) . "」のみを使用し、他の画材は記載しないでください。";
-    }
 
     // プロンプトの作成
     $prompt = "あなたはイラスト素材サイトのコンテンツ管理アシスタントです。
 
-与えられた画像とタイトル「{$title}」{$artMaterialsText}から、以下のJSONフォーマットで素材情報を生成してください：{$artMaterialsGuideline}
+与えられた画像とタイトル「{$title}」から、以下のJSONフォーマットで素材情報を生成してください：
 
 {
   \"slug\": \"英数字とハイフンのみのURL用文字列（適切な英語翻訳ベース）\",
@@ -93,11 +82,9 @@ function generateMaterialInfo($title, $imagePath, $artMaterials = []) {
 ガイドライン：
 - slugは適切な英語翻訳を使用（ローマ字読みではなく、実際の英語名）
 - タグは3-5個程度を選択し、日本語名と英語スラッグの両方を提供
-- タグのスラッグも適切な英語翻訳を使用（例：watercolor, cute, pastel-color など）
+- タグのスラッグも適切な英語翻訳を使用（例：cute, colorful, simple など）
 - カテゴリスラッグは提供されたリストから最適なものを選択
 - 各言語の説明文は自然で分かりやすく
-- 使用した画材が指定されている場合は、指定された画材のみを説明文に記載し、その画材の特徴を正確に反映する
-- 指定されていない画材（例：パステルを選択した場合に水彩と記載）は含めない
 - イラスト素材として適切な内容に";
 
     $data = [

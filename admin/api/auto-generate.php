@@ -37,15 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 try {
     // 入力データの取得
     $title = trim($_POST['title'] ?? '');
-    $artMaterials = [];
-    
-    // 画材情報の取得
-    if (!empty($_POST['art_materials'])) {
-        $artMaterialsData = json_decode($_POST['art_materials'], true);
-        if (is_array($artMaterialsData)) {
-            $artMaterials = $artMaterialsData;
-        }
-    }
     
     if (empty($title)) {
         throw new Exception('タイトルが入力されていません');
@@ -59,7 +50,7 @@ try {
     $tempImagePath = $_FILES['image']['tmp_name'];
     
     // OpenAI APIで素材情報を生成
-    $materialInfo = generateMaterialInfo($title, $tempImagePath, $artMaterials);
+    $materialInfo = generateMaterialInfo($title, $tempImagePath);
     
     // カテゴリIDを取得
     $pdo = getDB();
@@ -244,7 +235,6 @@ function createSlug($text) {
         'シンプル' => 'simple',
         'カラフル' => 'colorful',
         'パステル' => 'pastel',
-        '水彩' => 'watercolor',
         'ポップ' => 'pop',
         'ナチュラル' => 'natural',
         'きれい' => 'beautiful',

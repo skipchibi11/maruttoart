@@ -10,7 +10,6 @@ setNoCache();
  * 重複しないslugを生成する関数
  * @param PDO $pdo データベース接続
  * @param string $baseSlug ベースとなるslug
- * @param array $artMaterialIds 選択された画材ID
  * @param string $description 説明文
  * @return string 重複しないslug
  */
@@ -22,33 +21,17 @@ function generateUniqueSlug($pdo, $baseSlug, $artMaterialIds = [], $description 
         return $baseSlug; // 重複がなければそのまま返す
     }
     
-    // 重複がある場合は、画材名を取得して追加候補を作成
+    // 重複がある場合は、説明文からキーワードを追加候補を作成
     $suffixes = [];
     
-    // 1. 画材名を取得
-    if (!empty($artMaterialIds)) {
-        $placeholders = str_repeat('?,', count($artMaterialIds) - 1) . '?';
-        $stmt = $pdo->prepare("SELECT name FROM art_materials WHERE id IN ($placeholders) ORDER BY sort_order, name");
-        $stmt->execute($artMaterialIds);
-        $materials = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        foreach ($materials as $material) {
-            // 画材名を英語風に変換（簡易版）
-            $materialSlug = convertToSlug($material);
-            if (!empty($materialSlug)) {
-                $suffixes[] = $materialSlug;
-            }
-        }
-    }
-    
-    // 2. 説明文からキーワードを抽出
+    // 説明文からキーワードを抽出
     if (!empty($description)) {
         // 説明文から特徴的な単語を抽出（例：色、形、特徴など）
         $keywords = extractKeywordsFromDescription($description);
         $suffixes = array_merge($suffixes, $keywords);
     }
     
-    // 3. 画材名やキーワードを組み合わせて試行
+    // 関連キーワードを組み合わせて試行
     foreach ($suffixes as $suffix) {
         $candidateSlug = $baseSlug . '-' . $suffix;
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM materials WHERE slug = ?");
@@ -177,11 +160,6 @@ $pdo = getDB();
 $tags = getAllTags($pdo);
 $categories = getAllCategories($pdo);
 
-// 画材データを取得
-$stmt = $pdo->prepare("SELECT * FROM art_materials WHERE is_active = 1 ORDER BY sort_order, name");
-$stmt->execute();
-$art_materials = $stmt->fetchAll();
-
 if ($_POST) {
     $title = trim($_POST['title'] ?? '');
     $slug = trim($_POST['slug'] ?? '');
@@ -190,19 +168,20 @@ if ($_POST) {
     $video_publish_date = trim($_POST['video_publish_date'] ?? '');
     $search_keywords = trim($_POST['search_keywords'] ?? '');
     $tag_ids = $_POST['tag_ids'] ?? [];
-    $art_material_ids = $_POST['art_material_ids'] ?? [];
     $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
     
     // バリデーション
     if (empty($title) || empty($slug)) {
         $error = 'タイトルとスラッグは必須です。';
+    } elseif (empty($category_id)) {
+        $error = 'カテゴリは必須です。';
     } elseif (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
         $error = '画像ファイルをアップロードしてください。';
     } else {
         // スラッグの重複チェックと自動調整
         $pdo = getDB();
         $original_slug = $slug;
-        $slug = generateUniqueSlug($pdo, $slug, $art_material_ids, $description);
+        $slug = generateUniqueSlug($pdo, $slug, [], $description);
         
         if ($slug !== $original_slug) {
             // スラッグが調整された場合は通知
@@ -244,14 +223,6 @@ if ($_POST) {
                     // タグを関連付け
                     if (!empty($tag_ids)) {
                         addMaterialTags($materialId, $tag_ids, $pdo);
-                    }
-                    
-                    // 画材を関連付け
-                    if (!empty($art_material_ids)) {
-                        foreach ($art_material_ids as $art_material_id) {
-                            $stmt = $pdo->prepare("INSERT INTO material_art_materials (material_id, art_material_id) VALUES (?, ?)");
-                            $stmt->execute([$materialId, $art_material_id]);
-                        }
                     }
                     
                     $success = '素材が正常にアップロードされました。' . (!empty($success) ? ' ' . $success : '');
@@ -404,30 +375,6 @@ if ($_POST) {
                             </div>
 
                             <hr>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">使用画材 <span class="text-danger">*</span></label>
-                                <div class="row" id="artMaterialsContainer">
-                                    <?php foreach ($art_materials as $material): ?>
-                                        <div class="col-md-4 col-sm-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="art_material_ids[]" 
-                                                       id="art_material_<?= $material['id'] ?>" value="<?= $material['id'] ?>"
-                                                       <?= in_array($material['id'], $_POST['art_material_ids'] ?? []) ? 'checked' : '' ?>>
-                                                <label class="form-check-label d-flex align-items-center" for="art_material_<?= $material['id'] ?>">
-                                                    <?php if ($material['color_code']): ?>
-                                                        <span class="badge me-2" style="background-color: <?= h($material['color_code']) ?>; width: 12px; height: 12px; border-radius: 50%;"></span>
-                                                    <?php endif; ?>
-                                                    <?= h($material['name']) ?>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <div class="form-text">使用した画材を選択してください。自動設定時の説明文生成に使用されます。</div>
-                            </div>
-
-                            <hr>
 
                             <div class="mb-3">
                                 <label for="slug" class="form-label">スラッグ *</label>
@@ -441,8 +388,8 @@ if ($_POST) {
                             </div>
 
                             <div class="mb-3">
-                                <label for="category_id" class="form-label">カテゴリ</label>
-                                <select class="form-select" id="category_id" name="category_id">
+                                <label for="category_id" class="form-label">カテゴリ <span class="text-danger">*</span></label>
+                                <select class="form-select" id="category_id" name="category_id" required>
                                     <option value="">カテゴリを選択してください</option>
                                     <?php foreach ($categories as $category): ?>
                                         <option value="<?= $category['id'] ?>" 
@@ -451,7 +398,7 @@ if ($_POST) {
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <div class="form-text">素材を分類するカテゴリを1つ選択してください</div>
+                                <div class="form-text">素材を分類するカテゴリを1つ選択してください（必須）</div>
                             </div>
 
                             <div class="mb-3">
@@ -616,17 +563,6 @@ if ($_POST) {
             const formData = new FormData();
             formData.append('title', title);
             formData.append('image', imageFile);
-            
-            // 選択された画材情報を追加
-            const selectedArtMaterials = [];
-            const artMaterialCheckboxes = document.querySelectorAll('input[name="art_material_ids[]"]:checked');
-            artMaterialCheckboxes.forEach(checkbox => {
-                selectedArtMaterials.push({
-                    id: checkbox.value,
-                    name: checkbox.nextElementSibling.textContent.trim()
-                });
-            });
-            formData.append('art_materials', JSON.stringify(selectedArtMaterials));
             
             // OpenAI APIを呼び出し
             fetch('/admin/api/auto-generate.php', {

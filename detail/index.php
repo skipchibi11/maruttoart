@@ -40,17 +40,6 @@ if (!$material) {
 // 素材に関連付けられたタグを取得
 $materialTags = getMaterialTags($material['id'], $pdo);
 
-// 素材に関連付けられた画材を取得
-$stmt = $pdo->prepare("
-    SELECT am.* 
-    FROM art_materials am
-    INNER JOIN material_art_materials mam ON am.id = mam.art_material_id
-    WHERE mam.material_id = ? AND am.is_active = 1
-    ORDER BY am.sort_order, am.name
-");
-$stmt->execute([$material['id']]);
-$materialArtMaterials = $stmt->fetchAll();
-
 // ツイート用テキストを生成
 function createTweetText($title) {
     
@@ -1105,22 +1094,6 @@ $relatedMaterials = $stmt->fetchAll();
                                     <a href="/tag/<?= h($tag['slug']) ?>/" class="tag-item">
                                         <?= h($tag['name']) ?>
                                     </a>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <?php if (!empty($materialArtMaterials)): ?>
-                        <div class="art-materials-section">
-                            <div class="tags-label">使用画材:</div>
-                            <div>
-                                <?php foreach ($materialArtMaterials as $artMaterial): ?>
-                                    <span class="art-material-item d-inline-flex align-items-center me-2 mb-1">
-                                        <?php if ($artMaterial['color_code']): ?>
-                                            <span class="art-material-color me-1" style="background-color: <?= h($artMaterial['color_code']) ?>"></span>
-                                        <?php endif; ?>
-                                        <?= h($artMaterial['name']) ?>
-                                    </span>
                                 <?php endforeach; ?>
                             </div>
                         </div>
