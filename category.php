@@ -52,40 +52,199 @@ $materials = $materialsStmt->fetchAll();
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
     <meta name="description" content="<?= h($category['title']) ?>の無料イラスト素材一覧。やさしいイラスト素材を商用利用OK。高品質なフリー素材をダウンロードして、デザイン制作にお役立てください。">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
+        /* リセット */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
             background-color: #ffffff;
         }
+
+        /* コンテナ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ヘッダー */
+        .header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .header-logo {
             font-size: 2rem;
             font-weight: bold;
             color: #333;
+            text-decoration: none;
         }
+
+        .header-logo:hover {
+            color: #333;
+        }
+
+        .header-nav a {
+            color: #666;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .header-nav a:hover {
+            color: #333;
+        }
+
+        /* パンくずリスト */
+        .breadcrumb {
+            padding: 15px 0;
+            font-size: 0.875rem;
+        }
+
+        .breadcrumb-list {
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumb-item:not(:last-child)::after {
+            content: ">";
+            margin: 0 8px;
+            color: #6c757d;
+        }
+
+        .breadcrumb-item a {
+            color: #6c757d;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #495057;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+
+        /* カテゴリヘッダー */
+        .category-header {
+            text-align: center;
+            color: #6c757d;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 1rem;
+            margin: 2rem 0;
+        }
+
+        .category-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* グリッドレイアウト */
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 2rem 0;
+        }
+
+        /* マテリアルカード */
         .material-card {
-            border: none;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
             position: relative;
+            display: block;
         }
+
         .material-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
         }
+
         .material-image {
             width: 100%;
             aspect-ratio: 1;
             object-fit: cover;
+            display: block;
         }
-        .category-header {
+
+        .material-card-body {
+            padding: 12px;
+        }
+
+        .material-title {
+            font-size: 0.875rem;
+            color: #666;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* 空の状態 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
             color: #6c757d;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
-        
-        /* YouTubeアイコンのスタイル */
+
+        .empty-state h4 {
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: transparent;
+            color: #0d6efd;
+            border: 1px solid #0d6efd;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #0d6efd;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* YouTubeアイコン */
         .youtube-icon {
             position: absolute;
             bottom: 8px;
@@ -104,13 +263,13 @@ $materials = $materialsStmt->fetchAll();
             box-shadow: 0 1px 4px rgba(0,0,0,0.2);
             opacity: 0.8;
         }
-        
+
         .youtube-icon:hover {
             background: rgba(0, 0, 0, 0.8);
             opacity: 1;
             transform: scale(1.05);
         }
-        
+
         .youtube-icon::before {
             content: '';
             width: 16px;
@@ -121,8 +280,8 @@ $materials = $materialsStmt->fetchAll();
             background-position: center;
             filter: brightness(0) invert(1);
         }
-        
-        /* YouTube動画ポップアップのスタイル */
+
+        /* YouTube動画モーダル */
         .youtube-modal {
             display: none;
             position: fixed;
@@ -135,11 +294,11 @@ $materials = $materialsStmt->fetchAll();
             align-items: center;
             justify-content: center;
         }
-        
+
         .youtube-modal.show {
             display: flex;
         }
-        
+
         .youtube-modal-content {
             position: relative;
             width: 90%;
@@ -149,13 +308,13 @@ $materials = $materialsStmt->fetchAll();
             border-radius: 8px;
             overflow: hidden;
         }
-        
+
         .youtube-modal iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
-        
+
         .youtube-modal-close {
             position: absolute;
             top: -40px;
@@ -167,49 +326,60 @@ $materials = $materialsStmt->fetchAll();
             cursor: pointer;
             padding: 5px;
         }
-        
+
         .youtube-modal-close:hover {
             color: #ccc;
         }
-        /* パンくずリストのスタイル */
-        .breadcrumb {
-            background: transparent;
-            padding: 0;
+
+        /* フッター */
+        .footer {
+            background-color: #fef9e7;
+            padding: 30px 0;
+            margin-top: 60px;
+        }
+
+        .footer-text {
+            color: #2c3e50;
+            text-align: center;
             margin: 0;
-            font-size: 0.875rem;
-        }
-        
-        .breadcrumb-item + .breadcrumb-item::before {
-            content: ">";
-            color: #6c757d;
-        }
-        
-        .breadcrumb-item a {
-            color: #6c757d;
-            text-decoration: none;
-        }
-        
-        .breadcrumb-item a:hover {
-            color: #495057;
-            text-decoration: underline;
-        }
-        
-        .breadcrumb-item.active {
-            color: #6c757d;
         }
 
-        /* フッターのスタイル */
-        .footer-custom {
-            background-color: #fef9e7 !important;
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .header-logo {
+                font-size: 1.5rem;
+            }
+
+            .materials-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .category-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .empty-state {
+                padding: 40px 20px;
+            }
         }
 
-        /* フッター文字色の改善（コントラスト対応） */
-        .footer-custom .footer-text {
-            color: #2c3e50 !important;
-        }
+        @media (max-width: 480px) {
+            .materials-grid {
+                gap: 10px;
+            }
 
-        .footer-custom .footer-text:hover {
-            color: #1a252f !important;
+            .material-card-body {
+                padding: 8px;
+            }
+
+            .material-title {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -219,19 +389,18 @@ $materials = $materialsStmt->fetchAll();
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <header class="header">
         <div class="container">
-            <a class="navbar-brand header-logo" href="/">maruttoart</a>
-            <div class="navbar-nav ms-auto d-flex align-items-center">
-                <a class="nav-link" href="/">ホーム</a>
+            <div class="header-content">
+                <a class="header-logo" href="/">maruttoart</a>
             </div>
         </div>
-    </nav>
+    </header>
     
     <!-- パンくずリスト -->
-    <div class="container mt-3">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
+    <div class="container">
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <ol class="breadcrumb-list">
                 <li class="breadcrumb-item">
                     <a href="/">ホーム</a>
                 </li>
@@ -242,84 +411,73 @@ $materials = $materialsStmt->fetchAll();
         </nav>
     </div>
     
-    <div class="container mt-4">
-        <div class="category-header text-center">
+    <div class="container">
+        <div class="category-header">
             <h1><?= h($category['title']) ?></h1>
-            <p class="mb-0"><?= count($materials) ?>個の素材があります</p>
+            <p><?= count($materials) ?>個の素材があります</p>
         </div>
         
         <?php if (empty($materials)): ?>
-            <div class="text-center py-5">
-                <i class="bi bi-images" style="font-size: 3rem; color: #6c757d;"></i>
-                <h4 class="mt-3 text-muted">まだ素材がありません</h4>
-                <p class="text-muted">このカテゴリには素材がまだ投稿されていません。</p>
-                <a href="/" class="btn btn-outline-primary">ホームに戻る</a>
+            <div class="empty-state">
+                <div class="icon">🖼️</div>
+                <h4>まだ素材がありません</h4>
+                <p>このカテゴリには素材がまだ投稿されていません。</p>
+                <a href="/" class="btn">ホームに戻る</a>
             </div>
         <?php else: ?>
-            <div class="row">
+            <div class="materials-grid">
                 <?php foreach ($materials as $material): ?>
-                    <div class="col-6 col-md-4 col-lg-3 mb-4">
-                        <div class="card material-card h-100">
-                            <a href="/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" class="text-decoration-none">
-                                <picture>
-                                    <!-- デスクトップ用：300x300のWebP -->
-                                    <source media="(min-width: 768px)" 
-                                            srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" 
-                                            type="image/webp">
-                                    <!-- モバイル用：180x180のWebP -->
-                                    <source media="(max-width: 767px)" 
-                                            srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" 
-                                            type="image/webp">
-                                    <!-- フォールバック：オリジナル画像 -->
-                                    <img src="/<?= h($material['image_path']) ?>" 
-                                         class="card-img-top material-image" 
-                                         alt="<?= h($material['title']) ?>のイラスト" 
-                                         loading="lazy">
-                                </picture>
-                                
-                                <!-- YouTubeアイコン -->
-                                <?php 
-                                // 動画表示の判定
-                                $showVideo = !empty($material['youtube_url']);
-                                if (!empty($material['video_publish_date'])) {
-                                    $publishDateTime = new DateTime($material['video_publish_date']);
-                                    $now = new DateTime();
-                                    $showVideo = $showVideo && ($now >= $publishDateTime);
-                                }
-                                
-                                if ($showVideo): ?>
-                                    <div class="youtube-icon" 
-                                         onclick="openYouTubeModal(event, '<?= h($material['youtube_url']) ?>', '<?= h($material['title']) ?>')"
-                                         title="動画を見る">
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <div class="card-body p-2">
-                                    <p class="card-text text-muted small text-center mb-0">
-                                        <?= h($material['title']) ?>
-                                    </p>
-                                </div>
-                            </a>
+                    <a href="/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" class="material-card">
+                        <picture>
+                            <!-- デスクトップ用：300x300のWebP -->
+                            <source media="(min-width: 768px)" 
+                                    srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" 
+                                    type="image/webp">
+                            <!-- モバイル用：180x180のWebP -->
+                            <source media="(max-width: 767px)" 
+                                    srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" 
+                                    type="image/webp">
+                            <!-- フォールバック：オリジナル画像 -->
+                            <img src="/<?= h($material['image_path']) ?>" 
+                                 class="material-image" 
+                                 alt="<?= h($material['title']) ?>のイラスト" 
+                                 loading="lazy">
+                        </picture>
+                        
+                        <!-- YouTubeアイコン -->
+                        <?php 
+                        // 動画表示の判定
+                        $showVideo = !empty($material['youtube_url']);
+                        if (!empty($material['video_publish_date'])) {
+                            $publishDateTime = new DateTime($material['video_publish_date']);
+                            $now = new DateTime();
+                            $showVideo = $showVideo && ($now >= $publishDateTime);
+                        }
+                        
+                        if ($showVideo): ?>
+                            <div class="youtube-icon" 
+                                 onclick="openYouTubeModal(event, '<?= h($material['youtube_url']) ?>', '<?= h($material['title']) ?>')"
+                                 title="動画を見る">
+                            </div>
+                        <?php endif; ?>
+                        
+                        <div class="material-card-body">
+                            <p class="material-title">
+                                <?= h($material['title']) ?>
+                            </p>
                         </div>
-                    </div>
+                    </a>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
 
-    <footer class="footer-custom mt-5 py-4">
+    <footer class="footer">
         <div class="container">
-            
-            <div class="row align-items-center">
-                <div class="col-md-12">
-                    <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
-                </div>
-            </div>
+            <p class="footer-text">&copy; 2024 maruttoart. All rights reserved.</p>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <!-- YouTubeモーダル -->
     <div id="youtube-modal" class="youtube-modal">
         <div class="youtube-modal-content">
