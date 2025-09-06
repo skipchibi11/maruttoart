@@ -308,7 +308,7 @@ function getTagBySlug($slug, $pdo = null) {
     return $stmt->fetch();
 }
 
-// 素材に関連付けられたタグを取得
+// 素材に関連付けられたタグを取得（5つ以上の素材を持つタグのみ）
 function getMaterialTags($materialId, $pdo = null) {
     if (!$pdo) $pdo = getDB();
     $stmt = $pdo->prepare("
@@ -316,6 +316,11 @@ function getMaterialTags($materialId, $pdo = null) {
         FROM tags t 
         JOIN material_tags mt ON t.id = mt.tag_id 
         WHERE mt.material_id = ? 
+        AND (
+            SELECT COUNT(DISTINCT mt2.material_id) 
+            FROM material_tags mt2 
+            WHERE mt2.tag_id = t.id
+        ) >= 5
         ORDER BY t.name ASC
     ");
     $stmt->execute([$materialId]);

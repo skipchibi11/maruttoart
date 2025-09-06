@@ -36,6 +36,14 @@ $countSql = "SELECT COUNT(DISTINCT m.id) FROM materials m
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute([$tag['id']]);
 $totalItems = $countStmt->fetchColumn();
+
+// 5つ以上の素材がない場合は404ページに遷移
+if ($totalItems < 5) {
+    header('HTTP/1.0 404 Not Found');
+    include '404.php';
+    exit;
+}
+
 $totalPages = ceil($totalItems / $perPage);
 
 $materialsSql = "SELECT DISTINCT m.*, c.slug as category_slug 
