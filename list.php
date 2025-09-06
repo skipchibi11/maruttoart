@@ -412,7 +412,7 @@ $materials = $stmt->fetchAll();
             border-radius: 8px;
             will-change: transform, box-shadow;
             background-color: #F9F5E9;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
             padding: 20px;
             overflow: hidden;
         }
@@ -434,7 +434,7 @@ $materials = $stmt->fetchAll();
 
         .card-body {
             flex: 1 1 auto;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 1rem 0.1rem 1rem;
         }
 
         .card-title {
@@ -744,7 +744,7 @@ $materials = $stmt->fetchAll();
                 max-height: 200px;
             }
             .card-body {
-                padding: 0.75rem;
+                padding: 0.5rem 0.75rem 0.1rem 0.75rem;
             }
             .card-title {
                 font-size: 1rem;
@@ -849,89 +849,6 @@ $materials = $stmt->fetchAll();
             }
         }
         
-        /* YouTubeアイコンのスタイル */
-        .youtube-icon {
-            position: absolute;
-            bottom: 28px;
-            right: 28px;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            cursor: pointer;
-            z-index: 10;
-            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-            opacity: 0.8;
-            will-change: transform, opacity, background-color;
-        }
-        
-        .youtube-icon:hover {
-            background: rgba(0, 0, 0, 0.8);
-            opacity: 1;
-            transform: scale(1.05);
-        }
-
-        .youtube-icon::before {
-            content: '▶';
-            font-size: 10px;
-        }
-        
-        /* YouTube動画ポップアップのスタイル */
-        .youtube-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .youtube-modal.show {
-            display: flex;
-        }
-        
-        .youtube-modal-content {
-            position: relative;
-            width: 90%;
-            max-width: 800px;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .youtube-modal iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        .youtube-modal-close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px;
-        }
-        
-        .youtube-modal-close:hover {
-            color: #ccc;
-        }
-
         /* 検索フォームのスタイル */
         .search-form {
             background-color: #ffffff;
@@ -1144,24 +1061,6 @@ $materials = $stmt->fetchAll();
                              decoding="async">
                     </picture>
                     
-                    <!-- YouTubeアイコン -->
-                    <?php 
-                    // 動画が公開されているかチェック
-                    $showVideo = !empty($material['youtube_url']);
-                    if (!empty($material['video_publish_date'])) {
-                        $publishDateTime = new DateTime($material['video_publish_date']);
-                        $now = new DateTime();
-                        $showVideo = $showVideo && ($now >= $publishDateTime);
-                    }
-                    // video_publish_dateが空の場合は、youtube_urlがあれば表示
-                    ?>
-                    <?php if ($showVideo): ?>
-                        <div class="youtube-icon" 
-                             onclick="openYouTubeModal(event, '<?= h($material['youtube_url']) ?>', '<?= h($material['title']) ?>')"
-                             title="動画を見る">
-                        </div>
-                    <?php endif; ?>
-                    
                     <div class="card-body">
                         <h3 class="card-title"><?= h($material['title']) ?></h3>
                     </div>
@@ -1298,15 +1197,6 @@ $materials = $stmt->fetchAll();
             </div>
         </div>
     </footer>
-
-    <!-- YouTubeモーダル -->
-    <div id="youtube-modal" class="youtube-modal">
-        <div class="youtube-modal-content">
-            <button class="youtube-modal-close" onclick="closeYouTubeModal()">&times;</button>
-            <iframe id="youtube-iframe" src="" allowfullscreen></iframe>
-        </div>
-    </div>
-
     <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
     <script>
     // GDPR Cookie Consent (セッション・Cookie不使用版)
@@ -1471,62 +1361,6 @@ $materials = $stmt->fetchAll();
             });
         });
     });
-    
-    // YouTube動画ポップアップ機能
-    function openYouTubeModal(event, youtubeUrl, title) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        const modal = document.getElementById('youtube-modal');
-        const iframe = document.getElementById('youtube-iframe');
-        
-        // YouTube URLをembed形式に変換
-        let embedUrl = '';
-        if (youtubeUrl.includes('youtube.com/watch?v=')) {
-            const videoId = youtubeUrl.split('v=')[1].split('&')[0];
-            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        } else if (youtubeUrl.includes('youtu.be/')) {
-            const videoId = youtubeUrl.split('/').pop().split('?')[0];
-            embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        } else if (youtubeUrl.includes('youtube.com/embed/')) {
-            embedUrl = youtubeUrl + (youtubeUrl.includes('?') ? '&' : '?') + 'autoplay=1';
-        } else {
-            embedUrl = youtubeUrl;
-        }
-        
-        // リフロー最適化: 全ての変更をバッチ処理
-        requestAnimationFrame(() => {
-            iframe.src = embedUrl;
-            modal.classList.add('show');
-        });
-        
-        // Escキーでモーダルを閉じる
-        document.addEventListener('keydown', function escKeyHandler(e) {
-            if (e.key === 'Escape') {
-                document.removeEventListener('keydown', escKeyHandler);
-                closeYouTubeModal();
-            }
-        });
-        
-        // モーダル背景クリックで閉じる
-        modal.addEventListener('click', function modalClickHandler(e) {
-            if (e.target === modal) {
-                modal.removeEventListener('click', modalClickHandler);
-                closeYouTubeModal();
-            }
-        });
-    }
-    
-    function closeYouTubeModal() {
-        const modal = document.getElementById('youtube-modal');
-        const iframe = document.getElementById('youtube-iframe');
-        
-        // リフロー最適化: 全ての変更をバッチ処理
-        requestAnimationFrame(() => {
-            modal.classList.remove('show');
-            iframe.src = '';
-        });
-    }
 
     // Lazyload画像の読み込み完了処理
     document.addEventListener('DOMContentLoaded', function() {
