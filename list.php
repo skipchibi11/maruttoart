@@ -409,24 +409,27 @@ $materials = $stmt->fetchAll();
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             position: relative;
-            border-radius: 0.25rem;
+            border-radius: 8px;
             will-change: transform, box-shadow;
-            background-color: #fff;
+            background-color: #F9F5E9;
             margin-bottom: 1.5rem;
+            padding: 20px;
+            overflow: hidden;
         }
 
         .material-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             color: inherit;
             text-decoration: none;
-            border-color: #0d6efd;
         }
 
         .material-card:focus {
             outline: none;
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
         }
 
         .card-body {
@@ -461,7 +464,7 @@ $materials = $stmt->fetchAll();
             width: 100%;
             aspect-ratio: 1 / 1;
             object-fit: contain;
-            border-radius: 0.25rem 0.25rem 0 0;
+            border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
             background-color: #F9F5E9;
         }
@@ -849,8 +852,8 @@ $materials = $stmt->fetchAll();
         /* YouTubeアイコンのスタイル */
         .youtube-icon {
             position: absolute;
-            bottom: 8px;
-            right: 8px;
+            bottom: 28px;
+            right: 28px;
             background: rgba(0, 0, 0, 0.6);
             color: white;
             border-radius: 50%;

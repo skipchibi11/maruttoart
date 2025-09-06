@@ -220,6 +220,14 @@ $materials = $materialsStmt->fetchAll();
             text-decoration: none;
         }
 
+        .material-card:focus {
+            outline: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
+        }
+
         .material-image {
             width: 100%;
             aspect-ratio: 1;
