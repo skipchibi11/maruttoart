@@ -164,8 +164,6 @@ if ($_POST) {
     $title = trim($_POST['title'] ?? '');
     $slug = trim($_POST['slug'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $youtube_url = trim($_POST['youtube_url'] ?? '');
-    $video_publish_date = trim($_POST['video_publish_date'] ?? '');
     $search_keywords = trim($_POST['search_keywords'] ?? '');
     $tag_ids = $_POST['tag_ids'] ?? [];
     $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
@@ -194,22 +192,14 @@ if ($_POST) {
             if ($uploadResult) {
                 // データベースに保存
                 $stmt = $pdo->prepare("
-                    INSERT INTO materials (title, slug, description, youtube_url, video_publish_date, search_keywords, image_path, webp_small_path, webp_medium_path, upload_date, category_id) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO materials (title, slug, description, search_keywords, image_path, webp_small_path, webp_medium_path, upload_date, category_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
-                
-                // video_publish_dateの処理
-                $formatted_video_publish_date = null;
-                if (!empty($video_publish_date)) {
-                    $formatted_video_publish_date = date('Y-m-d H:i:s', strtotime($video_publish_date));
-                }
                 
                 if ($stmt->execute([
                     $title,
                     $slug,
                     $description,
-                    $youtube_url,
-                    $formatted_video_publish_date,
                     $search_keywords,
                     $uploadResult['original'],
                     $uploadResult['webp_small'],
@@ -429,20 +419,6 @@ if ($_POST) {
                                 </div>
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="youtube_url" class="form-label">YouTube URL</label>
-                                <input type="url" class="form-control" id="youtube_url" name="youtube_url" value="<?= h($_POST['youtube_url'] ?? 'https://www.youtube.com/embed/') ?>" placeholder="https://www.youtube.com/watch?v=...">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="video_publish_date" class="form-label">動画公開日時</label>
-                                <input type="datetime-local" class="form-control" id="video_publish_date" name="video_publish_date" value="<?= h($_POST['video_publish_date'] ?? '') ?>">
-                                <div class="form-text">
-                                    指定された日時になると、カード一覧に動画アイコンが表示され、詳細ページでも動画が表示されます。<br>
-                                    空の場合は即座に動画が表示されます。
-                                </div>
-                            </div>
-
                             <hr>
 
                             <div class="d-flex justify-content-between">
