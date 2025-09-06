@@ -8,8 +8,21 @@ setNoCache();
 
 $pdo = getDB();
 
-// 最新の素材一覧を取得（カテゴリ情報も含める）
-$stmt = $pdo->prepare("SELECT m.*, c.slug as category_slug FROM materials m LEFT JOIN categories c ON m.category_id = c.id ORDER BY m.created_at DESC");
+// ページング設定
+$items_per_page = isset($_GET['per_page']) ? max(10, min(100, intval($_GET['per_page']))) : 20; // 1ページあたりの表示件数（10-100の範囲）
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+// 総素材数を取得
+$count_stmt = $pdo->prepare("SELECT COUNT(*) as total FROM materials");
+$count_stmt->execute();
+$total_count = $count_stmt->fetchColumn();
+$total_pages = ceil($total_count / $items_per_page);
+
+// ページング対応の素材一覧を取得（カテゴリ情報も含める）
+$stmt = $pdo->prepare("SELECT m.*, c.slug as category_slug FROM materials m LEFT JOIN categories c ON m.category_id = c.id ORDER BY m.created_at DESC LIMIT :limit OFFSET :offset");
+$stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $materials = $stmt->fetchAll();
 ?>
@@ -100,7 +113,7 @@ $materials = $stmt->fetchAll();
                         <div class="card text-center">
                             <div class="card-body">
                                 <h5 class="card-title">総素材数</h5>
-                                <h3 class="text-primary"><?= count($materials) ?></h3>
+                                <h3 class="text-primary"><?= $total_count ?></h3>
                             </div>
                         </div>
                     </div>
@@ -108,8 +121,24 @@ $materials = $stmt->fetchAll();
 
                 <!-- 素材一覧 -->
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">登録素材一覧</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <small class="text-muted">
+                                <?php if ($total_count > 0): ?>
+                                    <?= (($current_page - 1) * $items_per_page + 1) ?>-<?= min($current_page * $items_per_page, $total_count) ?> / <?= $total_count ?> 件
+                                <?php endif; ?>
+                            </small>
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="per_page" class="form-label mb-0 small">表示件数:</label>
+                                <select id="per_page" class="form-select form-select-sm" style="width: auto;" onchange="changePerPage(this.value)">
+                                    <option value="10" <?= $items_per_page == 10 ? 'selected' : '' ?>>10件</option>
+                                    <option value="20" <?= $items_per_page == 20 ? 'selected' : '' ?>>20件</option>
+                                    <option value="50" <?= $items_per_page == 50 ? 'selected' : '' ?>>50件</option>
+                                    <option value="100" <?= $items_per_page == 100 ? 'selected' : '' ?>>100件</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -156,6 +185,82 @@ $materials = $stmt->fetchAll();
                             <p class="text-center text-muted">登録されている素材がありません。</p>
                             <?php endif; ?>
                         </div>
+                        
+                        <!-- ページング -->
+                        <?php if ($total_pages > 1): ?>
+                        <div class="d-flex justify-content-center mt-3">
+                            <nav aria-label="素材一覧ページング">
+                                <ul class="pagination">
+                                    <!-- 最初のページ -->
+                                    <?php if ($current_page > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1&per_page=<?= $items_per_page ?>" aria-label="最初のページ">
+                                            <i class="bi bi-chevron-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<?= $current_page - 1 ?>&per_page=<?= $items_per_page ?>" aria-label="前のページ">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-double-left"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                                    </li>
+                                    <?php endif; ?>
+
+                                    <!-- ページ番号 -->
+                                    <?php
+                                    $start_page = max(1, $current_page - 2);
+                                    $end_page = min($total_pages, $current_page + 2);
+                                    
+                                    if ($start_page > 1): ?>
+                                    <li class="page-item"><a class="page-link" href="?page=1&per_page=<?= $items_per_page ?>">1</a></li>
+                                    <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <?php endif; ?>
+                                    <?php endif; ?>
+
+                                    <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                    <li class="page-item <?= $i == $current_page ? 'active' : '' ?>">
+                                        <a class="page-link" href="?page=<?= $i ?>&per_page=<?= $items_per_page ?>"><?= $i ?></a>
+                                    </li>
+                                    <?php endfor; ?>
+
+                                    <?php if ($end_page < $total_pages): ?>
+                                    <?php if ($end_page < $total_pages - 1): ?>
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <?php endif; ?>
+                                    <li class="page-item"><a class="page-link" href="?page=<?= $total_pages ?>&per_page=<?= $items_per_page ?>"><?= $total_pages ?></a></li>
+                                    <?php endif; ?>
+
+                                    <!-- 最後のページ -->
+                                    <?php if ($current_page < $total_pages): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<?= $current_page + 1 ?>&per_page=<?= $items_per_page ?>" aria-label="次のページ">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<?= $total_pages ?>&per_page=<?= $items_per_page ?>" aria-label="最後のページ">
+                                            <i class="bi bi-chevron-double-right"></i>
+                                        </a>
+                                    </li>
+                                    <?php else: ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-double-right"></i></span>
+                                    </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </nav>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </main>
@@ -168,6 +273,13 @@ $materials = $stmt->fetchAll();
             if (confirm(`「${title}」を削除しますか？この操作は取り消せません。`)) {
                 window.location.href = `/admin/delete.php?id=${id}`;
             }
+        }
+        
+        function changePerPage(perPage) {
+            const url = new URL(window.location);
+            url.searchParams.set('per_page', perPage);
+            url.searchParams.set('page', '1'); // ページ数変更時は1ページ目に戻る
+            window.location.href = url.toString();
         }
     </script>
 </body>
