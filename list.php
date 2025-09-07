@@ -1168,6 +1168,7 @@ $materials = $stmt->fetchAll();
                 <div class="col-12 col-md-8">
                     <div class="gdpr-text" style="color: #ffffff;">
                         当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                        <a href="/terms-of-use.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">利用規約</a>・
                         <a href="/privacy-policy.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
                         をご確認ください。
                     </div>
@@ -1184,14 +1185,12 @@ $materials = $stmt->fetchAll();
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
+            <div class="text-center">
+                <div class="mb-2">
+                    <a href="/terms-of-use.php" class="footer-text text-decoration-none me-3">利用規約</a>
+                    <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
                 </div>
-                <div class="col-md-4 text-md-end">
-                </div>
-            </div>
-            <div class="row align-items-center">
-                <div class="col-md-12">
+                <div>
                     <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
                 </div>
             </div>

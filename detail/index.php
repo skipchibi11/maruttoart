@@ -1066,6 +1066,7 @@ $relatedMaterials = $stmt->fetchAll();
         <div class="container">
             <div class="text-center">
                 <div class="mb-2">
+                    <a href="/terms-of-use.php" class="footer-text text-decoration-none me-3">利用規約</a>
                     <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
                 </div>
                 <div class="language-switcher mb-2">
@@ -1087,6 +1088,7 @@ $relatedMaterials = $stmt->fetchAll();
                 <div style="flex: 1; min-width: 300px;">
                     <div class="gdpr-text">
                         当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                        <a href="/terms-of-use.php" style="color: #ffffff; text-decoration: underline;">利用規約</a>・
                         <a href="/privacy-policy.php" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
                         をご確認ください。
                     </div>

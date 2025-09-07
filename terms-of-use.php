@@ -625,6 +625,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <p>本利用規約に関するご質問、素材の利用に関するお問い合わせは、以下の方法でご連絡ください：</p>
                 <ul>
                     <li>ウェブサイト：<a href="/">maruttoart</a></li>
+                    <li>メールアドレス：<a href="mailto:contact@marutto.art">contact@marutto.art</a></li>
                     <li>利用に関する不明点がございましたら、お気軽にお問い合わせください</li>
                 </ul>
 

@@ -285,7 +285,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <div class="policy-section">
                     <h3>9. お問い合わせ</h3>
                     <p>プライバシーポリシーに関するお問い合わせは、下記までご連絡ください：</p>
-                    <p>Email: contact@maruttoart.art</p>
+                    <p>Email: <a href="mailto:contact@marutto.art">contact@marutto.art</a></p>
                 </div>
 
                 <div class="text-center mt-5">

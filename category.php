@@ -526,7 +526,13 @@ $materials = $materialsStmt->fetchAll();
 
     <footer class="footer">
         <div class="container">
-            <p class="footer-text">&copy; 2024 maruttoart. All rights reserved.</p>
+            <div class="text-center">
+                <div class="mb-2">
+                    <a href="/terms-of-use.php" class="text-decoration-none me-3" style="color: inherit;">利用規約</a>
+                    <a href="/privacy-policy.php" class="text-decoration-none" style="color: inherit;">プライバシーポリシー</a>
+                </div>
+                <p class="footer-text">&copy; 2024 maruttoart. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
@@ -535,6 +541,7 @@ $materials = $materialsStmt->fetchAll();
         <div class="gdpr-content">
             <div class="gdpr-text">
                 当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                <a href="/terms-of-use.php">利用規約</a>・
                 <a href="/privacy-policy.php">プライバシーポリシー</a>
                 をご確認ください。
             </div>
