@@ -67,12 +67,12 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>やさしいイラスト素材集｜marutto.art（無料・商用利用OK）</title>
-    <meta name="description" content="やさしいイラスト素材をダウンロード！やさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
+    <title>ソフトでミニマルなイラスト素材集｜marutto.art（無料・商用利用OK）</title>
+    <meta name="description" content="やさしいイラスト素材をダウンロード！ソフトでミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- ヒーロー画像のpreload -->
-    <link rel="preload" as="image" href="/assets/images/hero.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/assets/images/.webp" fetchpriority="high" />
     
     <style>
         /* リセットCSS */
@@ -313,7 +313,6 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             max-width: 100%;
             height: auto;
             border-radius: 50%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             aspect-ratio: 1 / 1;
             object-fit: cover;
         }
@@ -466,30 +465,32 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             position: relative;
-            border-radius: 0.25rem;
+            border-radius: 8px;
             will-change: transform, box-shadow;
-        }
-            background-color: #fff;
-            margin-bottom: 1.5rem;
+            background-color: #F9F5E9;
+            margin-bottom: 0.5rem;
+            padding: 20px;
+            overflow: hidden;
         }
 
         .material-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             color: inherit;
             text-decoration: none;
-            border-color: #0d6efd;
         }
 
         .material-card:focus {
             outline: none;
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
         }
 
         .card-body {
             flex: 1 1 auto;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 1rem 0.1rem 1rem;
         }
 
         .card-title {
@@ -518,10 +519,10 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
         .material-image {
             width: 100%;
             aspect-ratio: 1 / 1;
-            object-fit: cover;
-            border-radius: 0.25rem 0.25rem 0 0;
+            object-fit: contain;
+            border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
-            background-color: #f8f9fa;
+            background-color: #F9F5E9;
         }
 
         /* Lazyload用のスタイル */
@@ -1042,12 +1043,12 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
                 <div class="hero-text">
                     <h1 class="hero-title">やさしいイラスト素材</h1>
                     <p class="hero-description">
-                        やさしいタッチで描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。
+                        まるく、やさしく、シンプルに。動物や植物、食べ物などのイラスト素材を、商用・個人問わずご利用いただけます。
                     </p>
                     <a href="/list.php" class="hero-cta">素材を見る</a>
                 </div>
                 <div class="hero-image">
-                    <img src="/assets/images/hero.webp" 
+                    <img src="/assets/images/simple-apple-red.webp" 
                          alt="やさしいイラスト素材のサンプル" 
                          width="500"
                          height="500"
