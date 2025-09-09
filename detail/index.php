@@ -123,9 +123,9 @@ $relatedMaterials = $stmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($material['title']) ?>  - やさしいイラスト素材（無料・商用OK）｜marutto.art</title>
-    <meta name="description" content="<?= h($material['title']) ?>のやさしいイラスト素材（無料・商用OK）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
-    
+    <title><?= h($material['title']) ?>  - ソフトでミニマルなイラスト素材（無料・商用OK）｜marutto.art</title>
+    <meta name="description" content="<?= h($material['title']) ?>のソフトでミニマルなイラスト素材（無料・商用OK）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
+
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
     
@@ -312,7 +312,7 @@ $relatedMaterials = $stmt->fetchAll();
 
         .card-body {
             flex: 1 1 auto;
-            padding: 1.25rem;
+            padding: 0.5rem 1rem 0.1rem 1rem;
         }
 
         .card-header {
@@ -341,16 +341,26 @@ $relatedMaterials = $stmt->fetchAll();
         .me-1 { margin-right: 0.25rem !important; }
         .me-2 { margin-right: 0.5rem !important; }
 
-        /* 画像のスタイル */
-        .material-image {
-            max-width: 100%;
-            width: 100%;
+        /* メイン画像のスタイル */
+        .detail-main-image {
+            max-width: 400px;
+            width: auto;
             height: auto;
             aspect-ratio: 1 / 1;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            background-color: #f8f9fa;
+            background-color: #F9F5E9;
+            padding: 40px;
+        }
+
+        /* カード内画像のスタイル（関連素材用） */
+        .material-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            border-radius: 4px;
+            transition: opacity 0.3s ease-in-out;
+            background-color: #F9F5E9;
         }
         
         /* タグのスタイル */
@@ -547,27 +557,30 @@ $relatedMaterials = $stmt->fetchAll();
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             position: relative;
-            border-radius: 0.25rem;
+            border-radius: 8px;
             will-change: transform, box-shadow;
-            background-color: #fff;
-            margin-bottom: 1.5rem;
+            background-color: #F9F5E9;
+            margin-bottom: 0.5rem;
+            padding: 20px;
+            overflow: hidden;
         }
 
         .material-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             color: inherit;
             text-decoration: none;
-            border-color: #0d6efd;
         }
 
         .material-card:focus {
             outline: none;
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
         }
 
-        .material-card .card-title {
+        .card-title {
             color: #666;
             font-weight: 300;
             font-size: 0.9rem;
@@ -575,16 +588,19 @@ $relatedMaterials = $stmt->fetchAll();
             margin-bottom: 0;
         }
 
-        .material-card:hover .card-title {
-            color: #0d6efd;
+        /* h3のcard-titleで既存のh5と同じ見た目を維持 */
+        h3.card-title {
+            color: #666;
+            font-weight: 300;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 0;
+            margin-top: 0;
         }
 
-        .material-image {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: contain;
-            background-color: #F9F5E9;
-            border-radius: 0.25rem 0.25rem 0 0;
+        .material-card:hover .card-title,
+        .material-card:hover h3.card-title {
+            color: #0d6efd;
         }
 
         .video-icon-overlay {
@@ -707,9 +723,9 @@ $relatedMaterials = $stmt->fetchAll();
             .navbar-brand {
                 font-size: 1.5rem;
             }
-            /* モバイル向け画像サイズ調整 */
-            .material-image {
-                max-width: 250px;
+            /* モバイル向けメイン画像サイズ調整 */
+            .detail-main-image {
+                padding: 25px;
             }
         }
 
@@ -719,11 +735,11 @@ $relatedMaterials = $stmt->fetchAll();
                 padding-right: 12px;
             }
             .card-body {
-                padding: 1rem;
+                padding: 0.5rem 0.75rem 0.1rem 0.75rem;
             }
-            /* 小型スマホ向け画像サイズ調整 */
-            .material-image {
-                max-width: 200px;
+            /* 小型スマホ向けメイン画像サイズ調整 */
+            .detail-main-image {
+                padding: 20px;
             }
         }
         
@@ -973,7 +989,7 @@ $relatedMaterials = $stmt->fetchAll();
                         <source media="(max-width: 767px)" srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
                         <!-- フォールバック：オリジナル画像 -->
                         <img src="/<?= h($material['image_path']) ?>" 
-                             class="material-image mb-3" 
+                             class="detail-main-image mb-3" 
                              alt="<?= h($material['title']) ?>のイラスト"
                              width="300"
                              height="300"
