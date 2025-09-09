@@ -565,14 +565,27 @@ function createCategory($data, $pdo = null) {
         throw new Exception('このスラッグは既に使用されています');
     }
     
-    $sql = "INSERT INTO categories (title, slug, sort_order) VALUES (?, ?, ?)";
-    $stmt = $pdo->prepare($sql);
-    
-    return $stmt->execute([
-        $data['title'],
-        $data['slug'],
-        $data['sort_order'] ?? 0
-    ]);
+    // カテゴリ画像パスが含まれている場合
+    if (isset($data['category_image_path'])) {
+        $sql = "INSERT INTO categories (title, slug, sort_order, category_image_path) VALUES (?, ?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        
+        return $stmt->execute([
+            $data['title'],
+            $data['slug'],
+            $data['sort_order'] ?? 0,
+            $data['category_image_path']
+        ]);
+    } else {
+        $sql = "INSERT INTO categories (title, slug, sort_order) VALUES (?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        
+        return $stmt->execute([
+            $data['title'],
+            $data['slug'],
+            $data['sort_order'] ?? 0
+        ]);
+    }
 }
 
 // カテゴリ更新
@@ -589,15 +602,29 @@ function updateCategory($id, $data, $pdo = null) {
         throw new Exception('このスラッグは既に使用されています');
     }
     
-    $sql = "UPDATE categories SET title = ?, slug = ?, sort_order = ? WHERE id = ?";
-    $stmt = $pdo->prepare($sql);
-    
-    return $stmt->execute([
-        $data['title'],
-        $data['slug'],
-        $data['sort_order'] ?? 0,
-        $id
-    ]);
+    // カテゴリ画像パスが含まれている場合
+    if (isset($data['category_image_path'])) {
+        $sql = "UPDATE categories SET title = ?, slug = ?, sort_order = ?, category_image_path = ? WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        
+        return $stmt->execute([
+            $data['title'],
+            $data['slug'],
+            $data['sort_order'] ?? 0,
+            $data['category_image_path'],
+            $id
+        ]);
+    } else {
+        $sql = "UPDATE categories SET title = ?, slug = ?, sort_order = ? WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        
+        return $stmt->execute([
+            $data['title'],
+            $data['slug'],
+            $data['sort_order'] ?? 0,
+            $id
+        ]);
+    }
 }
 
 // カテゴリ削除

@@ -26,18 +26,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'sort_order' => (int)($_POST['sort_order'] ?? 0)
         ];
         
-        try {
-            if ($isEdit) {
-                updateCategory($category['id'], $data, $pdo);
-                header('Location: categories.php?success=updated');
-                exit;
-            } else {
-                createCategory($data, $pdo);
-                header('Location: categories.php?success=created');
-                exit;
+        // 画像アップロード処理
+        $uploadedImagePath = null;
+        if (isset($_FILES['category_image']) && $_FILES['category_image']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $uploadDir = '../uploads/categories/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                $fileInfo = pathinfo($_FILES['category_image']['name']);
+                $extension = strtolower($fileInfo['extension']);
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                
+                if (!in_array($extension, $allowedExtensions)) {
+                    throw new Exception('画像ファイル（JPG、PNG、GIF、WebP）のみアップロード可能です。');
+                }
+                
+                // ファイル名を生成（カテゴリスラッグ + タイムスタンプ）
+                $fileName = $data['slug'] . '_' . time() . '.' . $extension;
+                $filePath = $uploadDir . $fileName;
+                
+                if (move_uploaded_file($_FILES['category_image']['tmp_name'], $filePath)) {
+                    $uploadedImagePath = 'uploads/categories/' . $fileName;
+                } else {
+                    throw new Exception('ファイルのアップロードに失敗しました。');
+                }
+            } catch (Exception $e) {
+                $error = $e->getMessage();
             }
-        } catch (Exception $e) {
-            $error = $e->getMessage();
+        }
+        
+        // 既存画像を保持するかチェック
+        if ($isEdit && !$uploadedImagePath && isset($_POST['keep_current_image'])) {
+            $uploadedImagePath = $category['category_image_path'];
+        }
+        
+        if ($uploadedImagePath) {
+            $data['category_image_path'] = $uploadedImagePath;
+        }
+        
+        if (!isset($error)) {
+            try {
+                if ($isEdit) {
+                    updateCategory($category['id'], $data, $pdo);
+                    header('Location: categories.php?success=updated');
+                    exit;
+                } else {
+                    createCategory($data, $pdo);
+                    header('Location: categories.php?success=created');
+                    exit;
+                }
+            } catch (Exception $e) {
+                $error = $e->getMessage();
+            }
         }
     }
 }
@@ -93,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST">
+                        <form method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
                             
                             <div class="row">
@@ -133,6 +175,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                value="<?= h($_POST['sort_order'] ?? $category['sort_order'] ?? 0) ?>" 
                                                min="0" step="1">
                                         <div class="form-text">数字が小さいほど上位に表示されます。</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="category_image" class="form-label">カテゴリ画像</label>
+                                        <input type="file" class="form-control" id="category_image" name="category_image" 
+                                               accept="image/jpeg,image/png,image/gif,image/webp">
+                                        <div class="form-text">JPG、PNG、GIF、WebP形式の画像ファイル（推奨サイズ: 200x200px）</div>
+                                        
+                                        <?php if ($isEdit && !empty($category['category_image_path'])): ?>
+                                        <div class="mt-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="keep_current_image" name="keep_current_image" checked>
+                                                <label class="form-check-label" for="keep_current_image">
+                                                    現在の画像を保持する
+                                                </label>
+                                            </div>
+                                            <div class="current-image mt-2">
+                                                <img src="/<?= h($category['category_image_path']) ?>" 
+                                                     alt="現在のカテゴリ画像" 
+                                                     style="max-width: 100px; height: auto; border-radius: 8px; border: 1px solid #ddd;">
+                                            </div>
+                                        </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
