@@ -457,7 +457,7 @@ $materials = $stmt->fetchAll();
 
         .material-card:hover .card-title,
         .material-card:hover h3.card-title {
-            color: #0d6efd;
+            color: #666;
         }
 
         .material-image {

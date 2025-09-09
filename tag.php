@@ -128,7 +128,7 @@ $materials = $materialsStmt->fetchAll();
             margin-bottom: 0;
         }
         .material-card:hover .card-title {
-            color: #0d6efd;
+            color: #666;
         }
         .material-image {
             width: 100%;

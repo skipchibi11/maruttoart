@@ -72,8 +72,8 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
     <link rel="icon" href="/favicon.ico">
     
     <!-- ヒーロー画像のpreload -->
-    <link rel="preload" as="image" href="/assets/images/.webp" fetchpriority="high" />
-    
+    <link rel="preload" as="image" href="/assets/images/simple-apple-red.webp" fetchpriority="high" />
+
     <style>
         /* リセットCSS */
         * {
@@ -513,7 +513,7 @@ $totalMaterialsCount = $totalCountStmt->fetchColumn();
 
         .material-card:hover .card-title,
         .material-card:hover h3.card-title {
-            color: #0d6efd;
+            color: #666;
         }
 
         .material-image {
