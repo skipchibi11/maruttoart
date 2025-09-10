@@ -25,7 +25,7 @@ if (!$tag) {
 }
 
 // ページネーション設定
-$perPage = 20; // 1ページあたりの表示件数
+$perPage = 2; // 1ページあたりの表示件数
 $page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
 $offset = ($page - 1) * $perPage;
 
@@ -99,7 +99,17 @@ $materials = $materialsStmt->fetchAll();
     <meta property="twitter:description" content="<?= h($tag['name']) ?>タグの無料イラスト素材。">
     
     <style>
+        /* リセット */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
             background-color: #ffffff;
         }
 
@@ -215,7 +225,6 @@ $materials = $materialsStmt->fetchAll();
         }
 
         nav[aria-label="ページネーション"] {
-            margin-top: 3rem;
             display: flex;
             justify-content: center;
             width: 100%;
@@ -275,11 +284,6 @@ $materials = $materialsStmt->fetchAll();
             z-index: 3;
             outline: 0;
             box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
-        }
-
-        /* マージンユーティリティクラス */
-        .mt-5 {
-            margin-top: 3rem !important;
         }
 
         /* グリッドレイアウト */
@@ -486,7 +490,8 @@ $materials = $materialsStmt->fetchAll();
 
             <!-- ページネーション -->
             <?php if ($totalPages > 1): ?>
-                <nav aria-label="ページネーション" class="mt-5">
+            <div style="display: flex; justify-content: center; width: 100%; margin-top: 3rem;">
+                <nav aria-label="ページネーション">
                     <ul class="pagination justify-content-center">
                         <?php if ($page > 1): ?>
                             <li class="page-item">
@@ -532,6 +537,7 @@ $materials = $materialsStmt->fetchAll();
                         <?php endif; ?>
                     </ul>
                 </nav>
+            </div>
             <?php endif; ?>
         <?php endif; ?>
     </div>
