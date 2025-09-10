@@ -25,7 +25,7 @@ if (!$tag) {
 }
 
 // ページネーション設定
-$perPage = 2; // 1ページあたりの表示件数
+$perPage = 20; // 1ページあたりの表示件数
 $page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
 $offset = ($page - 1) * $perPage;
 
