@@ -277,6 +277,11 @@ $materials = $materialsStmt->fetchAll();
             box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
         }
 
+        /* マージンユーティリティクラス */
+        .mt-5 {
+            margin-top: 3rem !important;
+        }
+
         /* グリッドレイアウト */
         .materials-grid {
             display: grid;
@@ -403,75 +408,6 @@ $materials = $materialsStmt->fetchAll();
 
         .footer-custom .footer-text:hover {
             color: #1a252f !important;
-        }
-
-        /* ページネーション */
-        .pagination {
-            display: flex;
-            padding-left: 0;
-            list-style: none;
-            border-radius: 0;
-            gap: 5px;
-        }
-
-        .justify-content-center {
-            justify-content: center !important;
-        }
-
-        .page-item {
-            position: relative;
-            display: block;
-        }
-
-        .page-item:first-child .page-link,
-        .page-item:last-child .page-link {
-            border-radius: 8px;
-        }
-
-        .page-item.active .page-link {
-            z-index: 3;
-            background-color: #f5f5f5;
-            color: #444;
-            border: 2px solid #999;
-            font-weight: bold;
-        }
-
-        .page-item.disabled .page-link {
-            color: #adb5bd;
-            pointer-events: none;
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
-        }
-
-        .page-link {
-            position: relative;
-            display: block;
-            padding: 0.75em 1em;
-            margin: 0;
-            line-height: 1.2;
-            background-color: #ffffff;
-            color: #444;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            font-weight: bold;
-            text-decoration: none;
-            min-width: 44px;
-            text-align: center;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .page-link:hover {
-            z-index: 2;
-            background-color: #f5f5f5;
-            border-color: #999;
-            color: #444;
-            text-decoration: none;
-        }
-
-        .page-link:focus {
-            z-index: 3;
-            outline: 0;
-            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
         }
     </style>
 </head>
