@@ -173,18 +173,15 @@ http_response_code(404);
             max-width: 600px;
         }
 
-        .error-title {
-            font-size: 8rem;
-            font-weight: bold;
-            color: #f0f0f0;
-            margin-bottom: 1rem;
-            line-height: 1;
+        .error-image {
+            margin-bottom: 2rem;
         }
 
-        .error-heading {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 1rem;
+        .not-found-image {
+            max-width: 400px;
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
         }
 
         .error-message {
@@ -283,12 +280,8 @@ http_response_code(404);
                 height: 18px;
             }
             
-            .error-title {
-                font-size: 5rem;
-            }
-            
-            .error-heading {
-                font-size: 1.5rem;
+            .not-found-image {
+                max-width: 300px;
             }
             
             .error-actions {
@@ -600,11 +593,15 @@ http_response_code(404);
     <section class="error-section">
         <div class="container">
             <div class="error-content">
-                <div class="error-title">404</div>
-                <h1 class="error-heading">ページが見つかりません</h1>
+                <div class="error-image">
+                    <img src="/assets/images/not-found.webp" 
+                         alt="ページが見つかりません" 
+                         class="not-found-image"
+                         loading="eager"
+                         decoding="async">
+                </div>
                 <p class="error-message">
-                    お探しのページは存在しないか、移動された可能性があります。<br>
-                    以下の検索フォームから目的の素材をお探しいただくか、リンクからページをお探しください。
+                    ただいま素材の棚を整理中か、ページがどこかにお出かけしているかもしれません。下の検索フォームから探してみてくださいね。
                 </p>
                 
                 <!-- 検索フォーム -->
