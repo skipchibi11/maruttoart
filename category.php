@@ -13,6 +13,11 @@ if (empty($slug)) {
 
 $pdo = getDB();
 
+// ページング設定
+$perPage = 20; // 1ページあたりの表示件数
+$page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
+$offset = ($page - 1) * $perPage;
+
 // カテゴリ情報を取得
 $categoryStmt = $pdo->prepare("SELECT * FROM categories WHERE slug = ?");
 $categoryStmt->execute([$slug]);
@@ -24,13 +29,20 @@ if (!$category) {
     exit;
 }
 
-// そのカテゴリの素材を取得
+// 総件数を取得
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM materials WHERE category_id = ?");
+$countStmt->execute([$category['id']]);
+$totalItems = $countStmt->fetchColumn();
+$totalPages = ceil($totalItems / $perPage);
+
+// そのカテゴリの素材を取得（ページング付き）
 $materialsStmt = $pdo->prepare("
     SELECT m.* FROM materials m 
     WHERE m.category_id = ? 
-    ORDER BY m.upload_date DESC
+    ORDER BY m.upload_date DESC 
+    LIMIT ? OFFSET ?
 ");
-$materialsStmt->execute([$category['id']]);
+$materialsStmt->execute([$category['id'], $perPage, $offset]);
 $materials = $materialsStmt->fetchAll();
 ?>
 
@@ -85,6 +97,15 @@ $materials = $materialsStmt->fetchAll();
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
     <meta name="description" content="<?= h($category['title']) ?>の無料イラスト素材一覧。やさしいイラスト素材を商用利用OK。高品質なフリー素材をダウンロードして、デザイン制作にお役立てください。">
+    
+    <!-- カノニカルタグ -->
+    <?php
+    $canonicalUrl = ($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . '/' . $slug . '/';
+    if ($page > 1) {
+        $canonicalUrl .= '?page=' . $page;
+    }
+    ?>
+    <link rel="canonical" href="<?= h($canonicalUrl) ?>">
     <style>
         /* リセット */
         * {
@@ -195,22 +216,48 @@ $materials = $materialsStmt->fetchAll();
         /* グリッドレイアウト */
         .materials-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             margin: 2rem 0;
+        }
+        
+        /* 768px以上: 3列表示 (list.phpのcol-md-4と同等) */
+        @media (min-width: 768px) {
+            .materials-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* 992px以上: 4列表示 (list.phpのcol-lg-3と同等) */
+        @media (min-width: 992px) {
+            .materials-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* 1200px以上: 6列表示 (list.phpのcol-xl-2と同等) */
+        @media (min-width: 1200px) {
+            .materials-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
         }
 
         /* マテリアルカード */
         .material-card {
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
             text-decoration: none;
             color: inherit;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: relative;
             display: block;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            position: relative;
+            border-radius: 8px;
+            will-change: transform, box-shadow;
+            background-color: #F9F5E9;
+            margin-bottom: 0.5rem;
+            padding: 20px;
+            overflow: hidden;
         }
 
         .material-card:hover {
@@ -230,20 +277,24 @@ $materials = $materialsStmt->fetchAll();
 
         .material-image {
             width: 100%;
-            aspect-ratio: 1;
-            object-fit: cover;
-            display: block;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            border-radius: 4px;
+            transition: opacity 0.3s ease-in-out;
+            background-color: #F9F5E9;
         }
 
         .material-card-body {
-            padding: 12px;
+            flex: 1 1 auto;
+            padding: 0.5rem 1rem 0.1rem 1rem;
         }
 
         .material-title {
-            font-size: 0.875rem;
             color: #666;
+            font-weight: 300;
+            font-size: 0.9rem;
             text-align: center;
-            margin: 0;
+            margin-bottom: 0;
         }
 
         /* 空の状態 */
@@ -398,11 +449,6 @@ $materials = $materialsStmt->fetchAll();
                 font-size: 1.5rem;
             }
 
-            .materials-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
-
             .category-header h1 {
                 font-size: 1.5rem;
             }
@@ -424,6 +470,69 @@ $materials = $materialsStmt->fetchAll();
             .material-title {
                 font-size: 0.8rem;
             }
+        }
+        
+        /* ページネーション */
+        .pagination {
+            display: flex;
+            padding-left: 0;
+            list-style: none;
+            margin-bottom: 0;
+        }
+
+        .page-item {
+            margin: 0 2px;
+        }
+
+        .page-item:first-child .page-link,
+        .page-item:last-child .page-link {
+            border-radius: 6px;
+        }
+
+        .page-item.active .page-link {
+            z-index: 3;
+            color: #fff;
+            background-color: #81A263;
+            border-color: #81A263;
+            font-weight: 600;
+        }
+
+        .page-item.disabled .page-link {
+            color: #999;
+            pointer-events: none;
+            cursor: default;
+            background-color: #f8f9fa;
+            border-color: #ddd;
+        }
+
+        .page-link {
+            position: relative;
+            display: block;
+            padding: 8px 12px;
+            margin-left: -1px;
+            line-height: 1.25;
+            color: #81A263;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: all 0.15s ease-in-out;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .page-link:hover {
+            z-index: 2;
+            color: #fff;
+            background-color: #81A263;
+            border-color: #81A263;
+            box-shadow: 0 2px 4px rgba(129, 162, 99, 0.2);
+        }
+
+        .page-link:focus {
+            z-index: 3;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(129, 162, 99, 0.25);
         }
     </style>
 </head>
@@ -483,7 +592,9 @@ $materials = $materialsStmt->fetchAll();
     <div class="container">
         <div class="category-header">
             <h1><?= h($category['title']) ?></h1>
-            <p><?= count($materials) ?>個の素材があります</p>
+            <p><?= $totalItems ?>個の素材があります<?php if ($totalPages > 1): ?>
+                        (<?= $page ?>/<?= $totalPages ?>ページ)
+                    <?php endif; ?></p>
         </div>
         
         <?php if (empty($materials)): ?>
@@ -521,6 +632,83 @@ $materials = $materialsStmt->fetchAll();
                     </a>
                 <?php endforeach; ?>
             </div>
+            
+            <!-- ページネーション -->
+            <?php if ($totalPages > 1): ?>
+            <nav aria-label="ページネーション" class="mt-5" style="margin-top: 3rem;">
+                <ul class="pagination justify-content-center">
+                    <!-- 前のページ -->
+                    <?php if ($page > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="前のページ">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <?php else: ?>
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-label="前のページ">
+                                <span aria-hidden="true">&laquo;</span>
+                            </span>
+                        </li>
+                    <?php endif; ?>
+
+                    <!-- ページ番号 -->
+                    <?php
+                    $startPage = max(1, $page - 2);
+                    $endPage = min($totalPages, $page + 2);
+                    
+                    // 最初のページを表示
+                    if ($startPage > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">1</a>
+                        </li>
+                        <?php if ($startPage > 2): ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        <?php endif;
+                    endif;
+
+                    // 現在のページ周辺を表示
+                    for ($i = $startPage; $i <= $endPage; $i++): ?>
+                        <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                            <?php if ($i == $page): ?>
+                                <span class="page-link"><?= $i ?></span>
+                            <?php else: ?>
+                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                            <?php endif; ?>
+                        </li>
+                    <?php endfor;
+
+                    // 最後のページを表示
+                    if ($endPage < $totalPages): ?>
+                        <?php if ($endPage < $totalPages - 1): ?>
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        <?php endif; ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $totalPages ?>"><?= $totalPages ?></a>
+                        </li>
+                    <?php endif; ?>
+
+                    <!-- 次のページ -->
+                    <?php if ($page < $totalPages): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page + 1 ?>" aria-label="次のページ">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <?php else: ?>
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-label="次のページ">
+                                <span aria-hidden="true">&raquo;</span>
+                            </span>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 

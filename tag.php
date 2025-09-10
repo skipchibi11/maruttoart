@@ -77,6 +77,15 @@ $materials = $materialsStmt->fetchAll();
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
     
+    <!-- カノニカルタグ -->
+    <?php
+    $canonicalUrl = ($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . '/tag/' . $tag['slug'] . '/';
+    if ($page > 1) {
+        $canonicalUrl .= '?page=' . $page;
+    }
+    ?>
+    <link rel="canonical" href="<?= h($canonicalUrl) ?>">
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/tag/<?= h($tag['slug']) ?>/">
@@ -96,7 +105,7 @@ $materials = $materialsStmt->fetchAll();
             background-color: #ffffff;
         }
         .material-card {
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
             text-decoration: none;
             color: inherit;
@@ -104,21 +113,29 @@ $materials = $materialsStmt->fetchAll();
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             position: relative;
+            border-radius: 8px;
+            will-change: transform, box-shadow;
+            background-color: #F9F5E9;
+            margin-bottom: 0.5rem;
+            padding: 20px;
+            overflow: hidden;
         }
         .material-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             color: inherit;
             text-decoration: none;
-            border-color: #0d6efd;
         }
         .material-card:focus {
             outline: none;
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: inherit;
+            text-decoration: none;
         }
         .material-card .card-body {
-            padding: 0.75rem 1rem;
+            flex: 1 1 auto;
+            padding: 0.5rem 1rem 0.1rem 1rem;
         }
         .material-card .card-title {
             color: #666;
@@ -132,9 +149,11 @@ $materials = $materialsStmt->fetchAll();
         }
         .material-image {
             width: 100%;
-            aspect-ratio: 1 / 1; /* 正方形を維持 */
-            object-fit: cover;
-            border-radius: 8px 8px 0 0;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            border-radius: 4px;
+            transition: opacity 0.3s ease-in-out;
+            background-color: #F9F5E9;
         }
         .material-title {
             color: #666;
@@ -238,7 +257,7 @@ $materials = $materialsStmt->fetchAll();
             <!-- 素材一覧 -->
             <div class="row g-4">
                 <?php foreach ($materials as $material): ?>
-                    <div class="col-6 col-md-4 col-lg-3">
+                    <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2">
                         <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-card card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
                             <picture>
                                 <!-- WebP対応 -->
