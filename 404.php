@@ -1,5 +1,14 @@
 <?php
 http_response_code(404);
+require_once 'config.php';
+
+$pdo = getDB();
+
+// カテゴリ一覧を取得（カテゴリ画像も含める）
+$categorySql = "SELECT id, title, slug, category_image_path FROM categories ORDER BY sort_order ASC, title ASC";
+$categoryStmt = $pdo->prepare($categorySql);
+$categoryStmt->execute();
+$categories = $categoryStmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -199,15 +208,15 @@ http_response_code(404);
         }
 
         .btn {
-            display: inline-block;
-            padding: 0.75rem 2rem;
             background-color: #ffffff;
             color: #444;
             border: 2px solid #ccc;
             border-radius: 12px;
+            padding: 0.75em 2em;
             font-size: 1rem;
             font-weight: bold;
             text-decoration: none;
+            display: inline-block;
             transition: all 0.2s ease-in-out;
         }
 
@@ -219,15 +228,15 @@ http_response_code(404);
         }
 
         .btn-primary {
-            background-color: #007bff;
-            color: #fff;
-            border-color: #007bff;
+            background-color: #ffffff;
+            color: #444;
+            border-color: #ccc;
         }
 
         .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-            color: #fff;
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
         }
 
         /* フッター */
@@ -259,6 +268,84 @@ http_response_code(404);
         .py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
         .mb-2 { margin-bottom: 0.5rem; }
         .mb-0 { margin-bottom: 0; }
+        .mb-4 { margin-bottom: 1.5rem; }
+
+        /* グリッドシステム */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        .col-12, .col-6, .col-md-4, .col-lg-3 {
+            position: relative;
+            width: 100%;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .col-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .col-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+
+        .justify-content-center {
+            justify-content: center;
+        }
+
+        .text-muted {
+            color: #6c757d;
+        }
+
+        /* Medium screens and up (768px+) */
+        @media (min-width: 768px) {
+            .col-md-4 {
+                flex: 0 0 33.333333%;
+                max-width: 33.333333%;
+            }
+        }
+
+        /* Large screens and up (992px+) */
+        @media (min-width: 992px) {
+            .col-lg-3 {
+                flex: 0 0 25%;
+                max-width: 25%;
+            }
+        }
+
+        /* カテゴリカードのレスポンシブ対応 */
+        @media (max-width: 768px) {
+            .category-card {
+                min-height: 180px;
+                padding: 20px 15px;
+            }
+
+            .category-image-wrapper {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 12px;
+            }
+
+            .category-image {
+                width: 60px;
+                height: 60px;
+            }
+
+            .category-default-icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .category-title {
+                font-size: 1.1rem;
+            }
+        }
 
         /* レスポンシブ */
         @media (max-width: 768px) {
@@ -287,6 +374,77 @@ http_response_code(404);
             .error-actions {
                 flex-direction: column;
             }
+        }
+
+        /* カテゴリカードのスタイル */
+        .category-card-link {
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .category-card-link:hover {
+            transform: translateY(-5px);
+        }
+
+        .category-card {
+            background-color: #f8f9fa;
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .category-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .category-image-wrapper {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255,255,255,0.8);
+            overflow: hidden;
+        }
+
+        .category-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .category-default-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+            color: #333;
+            line-height: 1.3;
         }
 
         /* 検索フォームのスタイル */
@@ -327,9 +485,9 @@ http_response_code(404);
         }
 
         .search-button {
-            background-color: #007bff;
-            color: #fff;
-            border: 2px solid #007bff;
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
             border-radius: 12px;
             padding: 0.75em 2em;
             font-size: 1rem;
@@ -342,14 +500,14 @@ http_response_code(404);
         }
 
         .search-button:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-            color: #fff;
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
         }
 
         .search-button:focus {
             outline: 0;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
         }
 
         /* レスポンシブ対応 */
@@ -623,6 +781,62 @@ http_response_code(404);
             </div>
         </div>
     </section>
+
+    <!-- カテゴリから探すセクション -->
+    <div class="container mt-5" id="categories">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-2 text-center">カテゴリから探す</h2>
+                <p class="text-muted mb-4 text-center">
+                    素材をカテゴリごとにまとめました
+                </p>
+            </div>
+        </div>
+
+        <?php if (!empty($categories)): ?>
+        <div class="row justify-content-center">
+            <?php foreach ($categories as $category): ?>
+            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                <a href="/<?= h($category['slug']) ?>/" class="category-card-link text-decoration-none">
+                    <div class="category-card">
+                        <div class="category-image-wrapper">
+                            <?php if (!empty($category['category_image_path'])): ?>
+                                <img src="/<?= h($category['category_image_path']) ?>" 
+                                     class="category-image" 
+                                     alt="<?= h($category['title']) ?>カテゴリのイラスト"
+                                     loading="lazy"
+                                     decoding="async">
+                            <?php else: ?>
+                                <!-- デフォルトアイコン -->
+                                <div class="category-default-icon">
+                                    <svg width="40" height="40" fill="currentColor" viewBox="0 0 16 16" style="color: #6c757d;">
+                                        <path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.825a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31L2.61 2a2 2 0 0 1 1.538-.725h3.678a2 2 0 0 1 1.414.586l.828.828ZM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19Z"/>
+                                        <path d="M8.5 5.5a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V9.5a.5.5 0 0 0 1 0V8H10a.5.5 0 0 0 0-1H8.5V5.5Z"/>
+                                    </svg>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="category-content">
+                            <h3 class="category-title">
+                                <?= h($category['title']) ?>
+                            </h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="text-muted">
+                    カテゴリが登録されていません。
+                </p>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
