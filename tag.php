@@ -207,10 +207,18 @@ $materials = $materialsStmt->fetchAll();
             border-radius: 0;
             gap: 5px;
             justify-content: center;
+            align-items: center;
         }
 
         .justify-content-center {
             justify-content: center !important;
+        }
+
+        nav[aria-label="ページネーション"] {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
 
         .page-item {
