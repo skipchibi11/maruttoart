@@ -477,62 +477,77 @@ $materials = $materialsStmt->fetchAll();
             display: flex;
             padding-left: 0;
             list-style: none;
-            margin-bottom: 0;
+            border-radius: 0;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .justify-content-center {
+            justify-content: center !important;
+        }
+
+        nav[aria-label="ページネーション"] {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
 
         .page-item {
-            margin: 0 2px;
+            position: relative;
+            display: block;
         }
 
         .page-item:first-child .page-link,
         .page-item:last-child .page-link {
-            border-radius: 6px;
+            border-radius: 8px;
         }
 
         .page-item.active .page-link {
             z-index: 3;
-            color: #fff;
-            background-color: #81A263;
-            border-color: #81A263;
-            font-weight: 600;
+            background-color: #f5f5f5;
+            color: #444;
+            border: 2px solid #999;
+            font-weight: bold;
         }
 
         .page-item.disabled .page-link {
-            color: #999;
+            color: #adb5bd;
             pointer-events: none;
-            cursor: default;
             background-color: #f8f9fa;
-            border-color: #ddd;
+            border: 2px solid #e9ecef;
         }
 
         .page-link {
             position: relative;
             display: block;
-            padding: 8px 12px;
-            margin-left: -1px;
-            line-height: 1.25;
-            color: #81A263;
+            padding: 0.75em 1em;
+            margin: 0;
+            line-height: 1.2;
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            font-weight: bold;
             text-decoration: none;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            transition: all 0.15s ease-in-out;
-            font-size: 0.875rem;
-            font-weight: 500;
+            min-width: 44px;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
         }
 
         .page-link:hover {
             z-index: 2;
-            color: #fff;
-            background-color: #81A263;
-            border-color: #81A263;
-            box-shadow: 0 2px 4px rgba(129, 162, 99, 0.2);
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
         }
 
         .page-link:focus {
             z-index: 3;
             outline: 0;
-            box-shadow: 0 0 0 3px rgba(129, 162, 99, 0.25);
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
         }
     </style>
 </head>
@@ -635,15 +650,16 @@ $materials = $materialsStmt->fetchAll();
             
             <!-- ページネーション -->
             <?php if ($totalPages > 1): ?>
-            <nav aria-label="ページネーション" class="mt-5" style="margin-top: 3rem;">
-                <ul class="pagination justify-content-center">
-                    <!-- 前のページ -->
-                    <?php if ($page > 1): ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="前のページ">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
+            <div style="display: flex; justify-content: center; width: 100%; margin-top: 3rem;">
+                <nav aria-label="ページネーション">
+                    <ul class="pagination justify-content-center">
+                        <!-- 前のページ -->
+                        <?php if ($page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="前のページ">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
                     <?php else: ?>
                         <li class="page-item disabled">
                             <span class="page-link" aria-label="前のページ">
@@ -706,8 +722,9 @@ $materials = $materialsStmt->fetchAll();
                             </span>
                         </li>
                     <?php endif; ?>
-                </ul>
-            </nav>
+                    </ul>
+                </nav>
+            </div>
             <?php endif; ?>
         <?php endif; ?>
     </div>

@@ -91,7 +91,7 @@ $materials = $materialsStmt->fetchAll();
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/tag/<?= h($tag['slug']) ?>/">
     <meta property="og:title" content="<?= h($tag['name']) ?> - タグ別無料イラスト素材一覧">
     <meta property="og:description" content="<?= h($tag['name']) ?>タグの無料イラスト素材。">
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/tag/<?= h($tag['slug']) ?>/">
@@ -103,7 +103,20 @@ $materials = $materialsStmt->fetchAll();
     <style>
         body {
             background-color: #ffffff;
-        }
+
+        .mt-3 { margin-top: 1rem; }
+        .mt-4 { margin-top: 1.5rem; }
+        .mt-5 { margin-top: 3rem; }
+        .py-4 { padding: 1.5rem 0; }
+        .py-5 { padding: 3rem 0; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .me-3 { margin-right: 1rem; }
+
+        .text-center { text-align: center; }
+        .text-muted { color: #6c757d; }
+        .text-decoration-none { text-decoration: none; }
+
         .material-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
@@ -206,6 +219,75 @@ $materials = $materialsStmt->fetchAll();
 
         .footer-custom .footer-text:hover {
             color: #1a252f !important;
+        }
+
+        /* ページネーション */
+        .pagination {
+            display: flex;
+            padding-left: 0;
+            list-style: none;
+            border-radius: 0;
+            gap: 5px;
+        }
+
+        .justify-content-center {
+            justify-content: center !important;
+        }
+
+        .page-item {
+            position: relative;
+            display: block;
+        }
+
+        .page-item:first-child .page-link,
+        .page-item:last-child .page-link {
+            border-radius: 8px;
+        }
+
+        .page-item.active .page-link {
+            z-index: 3;
+            background-color: #f5f5f5;
+            color: #444;
+            border: 2px solid #999;
+            font-weight: bold;
+        }
+
+        .page-item.disabled .page-link {
+            color: #adb5bd;
+            pointer-events: none;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .page-link {
+            position: relative;
+            display: block;
+            padding: 0.75em 1em;
+            margin: 0;
+            line-height: 1.2;
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            font-weight: bold;
+            text-decoration: none;
+            min-width: 44px;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .page-link:hover {
+            z-index: 2;
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
+        }
+
+        .page-link:focus {
+            z-index: 3;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
         }
     </style>
 </head>
@@ -341,7 +423,6 @@ $materials = $materialsStmt->fetchAll();
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
