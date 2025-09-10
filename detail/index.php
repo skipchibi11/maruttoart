@@ -132,15 +132,15 @@ $relatedMaterials = $stmt->fetchAll();
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="og:title" content="<?= h($material['title']) ?> - やさしいイラスト素材（無料・商用OK）">
-    <meta property="og:description" content="<?= h($material['title']) ?>のやさしいイラスト素材（無料・商用OK）。">
+    <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなイラスト素材（無料・商用OK）">
+    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなイラスト素材（無料・商用OK）。">
     <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="twitter:title" content="<?= h($material['title']) ?> - やさしいイラスト素材（無料・商用OK）">
-    <meta property="twitter:description" content="<?= h($material['title']) ?>のやさしいイラスト素材（無料・商用OK）。">
+    <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなイラスト素材（無料・商用OK）">
+    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなイラスト素材（無料・商用OK）。">
     <meta property="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- JSON-LD structured data -->
@@ -151,7 +151,7 @@ $relatedMaterials = $stmt->fetchAll();
         "name": "<?= addslashes(h($material['title'])) ?>",
         "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
         "contentUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>",
-        "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'のやさしいイラスト（商用OK）。')) ?>",
+        "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'のミニマルなイラスト（商用OK）。')) ?>",
         "creator": {
             "@type": "Organization",
             "name": "maruttoart"
