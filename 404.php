@@ -296,6 +296,88 @@ http_response_code(404);
             }
         }
 
+        /* 検索フォームのスタイル */
+        .search-form {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            margin: 2rem 0;
+        }
+
+        .search-form form {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #007bff;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #6c757d;
+        }
+
+        .search-button {
+            background-color: #007bff;
+            color: #fff;
+            border: 2px solid #007bff;
+            border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: #fff;
+        }
+
+        .search-button:focus {
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 576px) {
+            .search-form {
+                padding: 1.25rem;
+                margin: 1.5rem 0;
+            }
+            
+            .search-form form {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            
+            .search-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
         /* GDPR Cookie Banner のスタイル */
         #gdprBanner {
             position: fixed !important;
@@ -522,8 +604,21 @@ http_response_code(404);
                 <h1 class="error-heading">ページが見つかりません</h1>
                 <p class="error-message">
                     お探しのページは存在しないか、移動された可能性があります。<br>
-                    以下のリンクから目的のページをお探しください。
+                    以下の検索フォームから目的の素材をお探しいただくか、リンクからページをお探しください。
                 </p>
+                
+                <!-- 検索フォーム -->
+                <div class="search-form">
+                    <form method="GET" action="/list.php">
+                        <input type="text" 
+                               name="search" 
+                               placeholder="素材を検索（例：猫、花、食べ物など）" 
+                               class="search-input"
+                               autocomplete="off">
+                        <button type="submit" class="search-button">検索</button>
+                    </form>
+                </div>
+                
                 <div class="error-actions">
                     <a href="/" class="btn btn-primary">トップページに戻る</a>
                     <a href="/list.php" class="btn">素材一覧を見る</a>
@@ -642,10 +737,6 @@ http_response_code(404);
             const consent = getGdprConsent();
             console.log('Current consent status:', consent);
             
-            // テスト用：常にバナーを表示
-            showGdprBanner();
-            
-            /* 通常の処理（テスト後に有効化）
             if (!consent) {
                 // 同意状況が不明な場合はバナーを表示
                 showGdprBanner();
@@ -653,7 +744,6 @@ http_response_code(404);
                 // 同意済みの場合はGTMを読み込み
                 loadGoogleTagManager();
             }
-            */
             
             // ボタンのイベントリスナー
             const acceptBtn = document.getElementById('gdprAccept');
