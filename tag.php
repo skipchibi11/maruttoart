@@ -98,11 +98,19 @@ $materials = $materialsStmt->fetchAll();
     <meta property="twitter:title" content="<?= h($tag['name']) ?> - タグ別無料イラスト素材一覧">
     <meta property="twitter:description" content="<?= h($tag['name']) ?>タグの無料イラスト素材。">
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body {
             background-color: #ffffff;
+        }
+
+        /* Bootstrapクラスの代替 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ユーティリティクラス */
 
         .mt-3 { margin-top: 1rem; }
         .mt-4 { margin-top: 1.5rem; }
@@ -111,12 +119,186 @@ $materials = $materialsStmt->fetchAll();
         .py-5 { padding: 3rem 0; }
         .mb-0 { margin-bottom: 0; }
         .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
         .me-3 { margin-right: 1rem; }
 
         .text-center { text-align: center; }
         .text-muted { color: #6c757d; }
         .text-decoration-none { text-decoration: none; }
 
+        /* ヘッダー・ナビゲーション */
+        .navbar {
+            padding: 1rem 0;
+            background-color: #fff !important;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #333 !important;
+            text-decoration: none;
+        }
+
+        .navbar-brand:hover {
+            color: #555 !important;
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #6c757d !important;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+        }
+
+        .nav-link:hover {
+            color: #495057 !important;
+        }
+
+        /* パンくずリスト */
+        .breadcrumb {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            margin: 0 0.5rem;
+            color: #6c757d;
+        }
+
+        .breadcrumb-item a {
+            color: #6c757d;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #495057;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+
+        /* ページネーション */
+        .pagination {
+            display: flex;
+            padding-left: 0;
+            list-style: none;
+            border-radius: 0;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .justify-content-center {
+            justify-content: center !important;
+        }
+
+        .page-item {
+            position: relative;
+            display: block;
+        }
+
+        .page-item:first-child .page-link,
+        .page-item:last-child .page-link {
+            border-radius: 8px;
+        }
+
+        .page-item.active .page-link {
+            z-index: 3;
+            background-color: #f5f5f5;
+            color: #444;
+            border: 2px solid #999;
+            font-weight: bold;
+        }
+
+        .page-item.disabled .page-link {
+            color: #adb5bd;
+            pointer-events: none;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .page-link {
+            position: relative;
+            display: block;
+            padding: 0.75em 1em;
+            margin: 0;
+            line-height: 1.2;
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            font-weight: bold;
+            text-decoration: none;
+            min-width: 44px;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .page-link:hover {
+            z-index: 2;
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
+        }
+
+        .page-link:focus {
+            z-index: 3;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
+        }
+
+        /* グリッドレイアウト */
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 2rem 0;
+        }
+        
+        /* 768px以上: 3列表示 (list.phpのcol-md-4と同等) */
+        @media (min-width: 768px) {
+            .materials-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* 992px以上: 4列表示 (list.phpのcol-lg-3と同等) */
+        @media (min-width: 992px) {
+            .materials-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* 1200px以上: 6列表示 (list.phpのcol-xl-2と同等) */
+        @media (min-width: 1200px) {
+            .materials-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        /* マテリアルカード */
         .material-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
@@ -133,12 +315,14 @@ $materials = $materialsStmt->fetchAll();
             padding: 20px;
             overflow: hidden;
         }
+
         .material-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             color: inherit;
             text-decoration: none;
         }
+
         .material-card:focus {
             outline: none;
             transform: translateY(-2px);
@@ -146,27 +330,27 @@ $materials = $materialsStmt->fetchAll();
             color: inherit;
             text-decoration: none;
         }
-        .material-card .card-body {
+
+        .material-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            border-radius: 4px;
+            background-color: #F9F5E9;
+        }
+
+        .material-card-body {
             flex: 1 1 auto;
             padding: 0.5rem 1rem 0.1rem 1rem;
         }
-        .material-card .card-title {
+
+        .material-title {
             color: #666;
             font-weight: 300;
             font-size: 0.9rem;
             text-align: center;
             margin-bottom: 0;
         }
-        .material-card:hover .card-title {
-            color: #666;
-        }
-        .material-image {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: contain;
-            border-radius: 4px;
-            transition: opacity 0.3s ease-in-out;
-            background-color: #F9F5E9;
         }
         .material-title {
             color: #666;
@@ -175,15 +359,7 @@ $materials = $materialsStmt->fetchAll();
             text-align: center;
             margin-bottom: 0;
         }
-        .header-logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-        }
-        .header-logo:hover {
-            color: #333;
-        }
+        
         .page-title {
             color: #6c757d;
             font-size: 1.5rem;
@@ -297,23 +473,23 @@ $materials = $materialsStmt->fetchAll();
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <header class="navbar">
         <div class="container">
-            <a class="navbar-brand header-logo" href="/">maruttoart</a>
-            <div class="navbar-nav ms-auto d-flex align-items-center">
+            <a class="navbar-brand" href="/">maruttoart</a>
+            <div class="navbar-nav">
                 <a class="nav-link" href="/">戻る</a>
             </div>
         </div>
-    </nav>
+    </header>
     
     <!-- パンくずリスト -->
     <div class="container mt-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="/" style="color: #6c757d; text-decoration: none;">ホーム</a>
+                    <a href="/">ホーム</a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page" style="color: #6c757d;">
+                <li class="breadcrumb-item active" aria-current="page">
                     <?= h($tag['name']) ?>
                 </li>
             </ol>
@@ -330,30 +506,37 @@ $materials = $materialsStmt->fetchAll();
         <?php if (empty($materials)): ?>
             <div class="text-center py-5">
                 <p class="text-muted">このタグに関連する素材はまだありません。</p>
-                <a href="/" class="btn btn-outline-primary">
-                    <i class="bi bi-house"></i>
+                <a href="/" style="display: inline-block; padding: 0.5rem 1rem; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.375rem; text-decoration: none; color: #495057;">
                     ホームに戻る
                 </a>
             </div>
         <?php else: ?>
             <!-- 素材一覧 -->
-            <div class="row g-4">
+            <div class="materials-grid">
                 <?php foreach ($materials as $material): ?>
-                    <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2">
-                        <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-card card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
-                            <picture>
-                                <!-- WebP対応 -->
-                                <source srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
-                                <!-- フォールバック -->
-                                <img src="/<?= h($material['image_path']) ?>" class="material-image" alt="<?= h($material['title']) ?>のイラスト">
-                            </picture>
-                            
-                            
-                            <div class="card-body">
-                                <h5 class="card-title"><?= h($material['title']) ?></h5>
-                            </div>
-                        </a>
-                    </div>
+                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-card">
+                        <picture>
+                            <!-- デスクトップ用：300x300のWebP -->
+                            <source media="(min-width: 768px)" 
+                                    srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" 
+                                    type="image/webp">
+                            <!-- モバイル用：180x180のWebP -->
+                            <source media="(max-width: 767px)" 
+                                    srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" 
+                                    type="image/webp">
+                            <!-- フォールバック：オリジナル画像 -->
+                            <img src="/<?= h($material['image_path']) ?>" 
+                                 class="material-image" 
+                                 alt="<?= h($material['title']) ?>のイラスト" 
+                                 loading="lazy">
+                        </picture>
+                        
+                        <div class="material-card-body">
+                            <p class="material-title">
+                                <?= h($material['title']) ?>
+                            </p>
+                        </div>
+                    </a>
                 <?php endforeach; ?>
             </div>
 
@@ -423,8 +606,6 @@ $materials = $materialsStmt->fetchAll();
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
     // カードのキーボードナビゲーション対応
     document.addEventListener('DOMContentLoaded', function() {
