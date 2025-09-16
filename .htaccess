@@ -47,6 +47,9 @@ ErrorDocument 403 /404.php
 <FilesMatch "^dbtest\.php$">
   Require all denied
 </FilesMatch>
+<FilesMatch "^config\.php$">
+  Require all denied
+</FilesMatch>
 <FilesMatch "^(test-|debug-|dev-).*\.php$">
   Require all denied
 </FilesMatch>
@@ -57,13 +60,14 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 
 RewriteEngine On
 
-# wwwありのドメインをwwwなしにリダイレクト（最初に処理）
+# HTTPからHTTPSへのリダイレクト（最優先で処理）
+# ローカル環境では無効化
+# RewriteCond %{HTTPS} !=on
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# wwwありのドメインをwwwなしにリダイレクト
 RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
 RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
-
-# HTTPS対応版（本番環境では以下を使用し、上記をコメントアウト）
-# RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
-# RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
 # 管理画面とAPIは除外（最初に処理）
 RewriteRule ^(admin|api|uploads)/ - [L]
