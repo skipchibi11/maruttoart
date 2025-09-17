@@ -123,8 +123,8 @@ $relatedMaterials = $stmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($material['title']) ?>  - ソフトでミニマルなイラスト素材（無料・商用OK）｜marutto.art</title>
-    <meta name="description" content="<?= h($material['title']) ?>のソフトでミニマルなイラスト素材（無料・商用OK）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
+    <title><?= h($material['title']) ?>  - ミニマルなイラスト素材（無料・商用OK）｜marutto.art</title>
+    <meta name="description" content="<?= h($material['title']) ?>のミニマルなイラスト素材（無料・商用OK）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -138,7 +138,7 @@ $relatedMaterials = $stmt->fetchAll();
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
-    <link rel="alternate" hreflang="x-default" href="https://marutto.art/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />>
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">

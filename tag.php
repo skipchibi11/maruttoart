@@ -92,7 +92,7 @@ $materials = $materialsStmt->fetchAll();
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/tag/<?= h($tag['slug']) ?>/" />
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/tag/<?= h($tag['slug']) ?>/" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/tag/<?= h($tag['slug']) ?>/" />
-    <link rel="alternate" hreflang="x-default" href="https://marutto.art/tag/<?= h($tag['slug']) ?>/" />>
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/tag/<?= h($tag['slug']) ?>/" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
