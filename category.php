@@ -106,6 +106,14 @@ $materials = $materialsStmt->fetchAll();
     }
     ?>
     <link rel="canonical" href="<?= h($canonicalUrl) ?>">
+    
+    <!-- Alternate language tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/<?= h($slug) ?>/" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/<?= h($slug) ?>/" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/<?= h($slug) ?>/" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/<?= h($slug) ?>/" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/<?= h($slug) ?>/" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/<?= h($slug) ?>/" />>
     <style>
         /* リセット */
         * {

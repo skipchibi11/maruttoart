@@ -20,6 +20,18 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>プライバシーポリシー - maruttoart</title>
     <link rel="icon" href="/favicon.ico">
+    
+    <!-- Canonical tag -->
+    <link rel="canonical" href="https://marutto.art/privacy-policy.php">
+    
+    <!-- Alternate language tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/privacy-policy.php" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/privacy-policy.php" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/privacy-policy.php" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/privacy-policy.php" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/privacy-policy.php" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/privacy-policy.php" />
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>

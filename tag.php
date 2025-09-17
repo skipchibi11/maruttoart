@@ -86,6 +86,14 @@ $materials = $materialsStmt->fetchAll();
     ?>
     <link rel="canonical" href="<?= h($canonicalUrl) ?>">
     
+    <!-- Alternate language tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/tag/<?= h($tag['slug']) ?>/" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/tag/<?= h($tag['slug']) ?>/" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/tag/<?= h($tag['slug']) ?>/" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/tag/<?= h($tag['slug']) ?>/" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/tag/<?= h($tag['slug']) ?>/" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/tag/<?= h($tag['slug']) ?>/" />>
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/tag/<?= h($tag['slug']) ?>/">

@@ -57,6 +57,17 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
     
+    <!-- Canonical tag -->
+    <link rel="canonical" href="https://marutto.art/terms-of-use.php">
+    
+    <!-- Alternate language tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/terms-of-use.php" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/terms-of-use.php" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/terms-of-use.php" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/terms-of-use.php" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/terms-of-use.php" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/terms-of-use.php" />>
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php">

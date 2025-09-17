@@ -77,6 +77,14 @@ $categories = $categoryStmt->fetchAll();
     <meta name="description" content="ミニマルなイラスト素材をダウンロード！ソフトでミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     
+    <!-- Alternate language tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/" />
+    
     <!-- ヒーロー画像のpreload -->
     <link rel="preload" as="image" href="/assets/images/simple-apple-red.webp" fetchpriority="high" />
 
