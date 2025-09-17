@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# 管理画面はクロール禁止
+Disallow: /admin/
+Disallow: /api/
+
+# 設定ファイルやログファイルはクロール禁止
+Disallow: /config.php
+Disallow: /logs/
+Disallow: /*.log$
+
+# テストファイルはクロール禁止
+Disallow: /test.html
+Disallow: /dbtest.php
+
+# Docker関連ファイルはクロール禁止
+Disallow: /Dockerfile
+Disallow: /docker-compose.yml
+
+# XMLサイトマップの場所
+Sitemap: https://marutto.art/sitemap.xml.php
