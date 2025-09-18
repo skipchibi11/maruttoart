@@ -25,6 +25,38 @@ $categorySql = "SELECT id, title, slug, category_image_path FROM categories ORDE
 $categoryStmt = $pdo->prepare($categorySql);
 $categoryStmt->execute();
 $categories = $categoryStmt->fetchAll();
+
+// タイル表示用のランダム素材を取得
+// 1. 素材の総数と最大IDを取得
+$totalMaterialsForTile = $pdo->query("SELECT COUNT(*) FROM materials")->fetchColumn();
+$maxId = $pdo->query("SELECT MAX(id) FROM materials")->fetchColumn();
+
+// 2. 表示する件数を決定（最大40件、実際の素材数が少ない場合はその数）
+$tileCount = min(40, $totalMaterialsForTile);
+
+// 3. 素材数が0の場合は空配列
+$tileMaterials = [];
+if ($tileCount > 0) {
+    // 4. 1〜maxIdの中からランダムに選出
+    $randomIds = [];
+    while (count($randomIds) < $tileCount) {
+        $rand = rand(1, $maxId);
+        $randomIds[$rand] = true; // 重複排除
+    }
+    $randomIds = array_keys($randomIds);
+
+    // 5. IN句と並び順
+    $placeholders = implode(',', array_fill(0, count($randomIds), '?'));
+    $fieldOrder = implode(',', $randomIds);
+
+    $tileSql = "SELECT m.*, c.slug as category_slug FROM materials m 
+                LEFT JOIN categories c ON m.category_id = c.id 
+                WHERE m.id IN ($placeholders) 
+                ORDER BY FIELD(m.id, $fieldOrder)";
+    $tileStmt = $pdo->prepare($tileSql);
+    $tileStmt->execute($randomIds);
+    $tileMaterials = $tileStmt->fetchAll();
+}
 ?>
 
 <!DOCTYPE html>
@@ -74,7 +106,7 @@ $categories = $categoryStmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ミニマルなイラスト素材集｜marutto.art（無料・商用利用OK）</title>
-    <meta name="description" content="ミニマルなイラスト素材をダウンロード！ソフトでミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
+    <meta name="description" content="ミニマルなイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- Alternate language tags -->
@@ -1097,6 +1129,112 @@ $categories = $categoryStmt->fetchAll();
                 font-size: 0.85rem;
             }
         }
+
+        /* ランダム素材セクション */
+        .random-materials-section {
+            background-color: #f9f9f9; /* 薄いグレー */
+            padding-bottom: 40px;
+        }
+
+        /* タイトルスタイル */
+        .random-materials-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 40px 0;
+            color: #333;
+        }
+
+        /* 素材タイルグリッド - レスポンシブ対応 */
+        .material-tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* スマホ: 3列 */
+            gap: 1rem; /* スマホでは狭めのギャップ */
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 576px) {
+            .material-tiles-grid {
+                grid-template-columns: repeat(3, 1fr); /* 小タブレット: 3列維持 */
+                gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .material-tiles-grid {
+                grid-template-columns: repeat(4, 1fr); /* タブレット: 4列 */
+                gap: 2rem;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .material-tiles-grid {
+                grid-template-columns: repeat(5, 1fr); /* デスクトップ: 5列 */
+                gap: 2.5rem;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .material-tiles-grid {
+                grid-template-columns: repeat(6, 1fr); /* 大画面: 6列 */
+                gap: 3rem;
+            }
+        }
+
+        /* カード風デザイン */
+        .material-tile-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* より薄いシャドウ */
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            aspect-ratio: 1 / 1; /* 正方形比率 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10%; /* カードの10%をパディングとして確保 */
+        }
+
+        .material-tile-card:hover {
+            transform: scale(1.03); /* わずかに拡大 */
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .material-tile-link {
+            display: block;
+            text-decoration: none;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .material-tile-image {
+            max-width: 100%; /* カード内の80%相当（paddingを考慮） */
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain; /* 画像を切り取らず、全体を表示 */
+            object-position: center; /* 中央配置 */
+        }
+
+        /* スマホでのバランス調整 */
+        @media (max-width: 767px) {
+            .random-materials-title {
+                margin: 30px 0 20px 0;
+                font-size: 22px;
+            }
+            
+            .material-tiles-grid {
+                margin-top: 10px;
+                gap: 0.8rem; /* 3列なのでより狭く */
+            }
+            
+            .material-tile-card {
+                padding: 6%; /* 3列なのでより狭く */
+            }
+        }
     </style>
 </head>
 <body>
@@ -1287,6 +1425,47 @@ $categories = $categoryStmt->fetchAll();
         </div>
         <?php endif; ?>
     </div>
+
+    <!-- ランダム素材から探すセクション -->
+    <?php if (!empty($tileMaterials)): ?>
+    <div class="random-materials-section mt-5 py-5" id="random-materials">
+        <div class="container">
+            <!-- タイトル部分 -->
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="random-materials-title text-center">ランダム素材から探す</h2>
+                </div>
+            </div>
+            
+            <!-- タイルグリッド -->
+            <div class="material-tiles-grid">
+                <?php foreach ($tileMaterials as $material): ?>
+                    <?php
+                    // レスポンシブ画像の設定（新着画像と同じ方法）
+                    $smallImage = $material['webp_small_path'] ?? $material['image_path'];
+                    $mediumImage = $material['webp_medium_path'] ?? $material['image_path'];
+                    ?>
+                    <div class="material-tile-card">
+                        <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-tile-link">
+                            <picture>
+                                <!-- スマホ: 180x180のWebP画像 -->
+                                <source media="(max-width: 768px)" srcset="/<?= h($smallImage) ?>" type="image/webp">
+                                <!-- PC: 300x300のWebP画像 -->
+                                <source media="(min-width: 769px)" srcset="/<?= h($mediumImage) ?>" type="image/webp">
+                                <!-- フォールバック -->
+                                <img src="/<?= h($material['image_path']) ?>" 
+                                     alt="<?= h($material['title']) ?>" 
+                                     class="material-tile-image"
+                                     loading="lazy"
+                                     decoding="async">
+                            </picture>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
     <div id="gdpr-banner" class="gdpr-cookie-banner hidden" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #212529; color: #ffffff; padding: 1rem; z-index: 1050; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
