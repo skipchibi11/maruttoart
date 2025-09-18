@@ -92,11 +92,11 @@ $materials = $materialsStmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($category['title']) ?> - 無料のミニマルなイラスト素材｜maruttoart（商用利用OK）</title>
+    <title><?= h($category['title']) ?> - ミニマルなイラスト素材（無料・商用OK）｜marutto.art</title>
     
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
-    <meta name="description" content="<?= h($category['title']) ?>の無料イラスト素材一覧。ミニマルなイラスト素材を商用利用OK。高品質なフリー素材をダウンロードして、デザイン制作にお役立てください。">
+    <meta name="description" content="<?= h($category['title']) ?>の無料イラスト素材一覧。ミニマルなイラスト素材を商用利用OK">
 
     <!-- カノニカルタグ -->
     <?php
