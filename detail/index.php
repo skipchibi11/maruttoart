@@ -56,8 +56,11 @@ function getStructuredDataImageUrl($material) {
     $host = $_SERVER['HTTP_HOST'];
     
     // 構造化データ用画像が存在する場合は優先使用
-    if (!empty($material['structured_image_path']) && file_exists($material['structured_image_path'])) {
-        return "{$scheme}://{$host}/{$material['structured_image_path']}";
+    if (!empty($material['structured_image_path'])) {
+        $absolutePath = dirname(__DIR__) . '/' . $material['structured_image_path'];
+        if (file_exists($absolutePath)) {
+            return "{$scheme}://{$host}/{$material['structured_image_path']}";
+        }
     }
     
     // フォールバック: 通常画像を使用
