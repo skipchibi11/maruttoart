@@ -99,8 +99,8 @@ $tweetText = createTweetText($material['title']);
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($material['title']) ?>  - ミニマルなイラスト素材（無料・商用OK）｜marutto.art</title>
-    <meta name="description" content="<?= h($material['title']) ?>のミニマルなイラスト素材（無料・商用OK）。<?= h($category['title']) ?>カテゴリの高品質なフリー素材をお楽しみください。">
+    <title><?= h($material['title']) ?>  - ミニマルなフリーイラスト素材（商用OK）｜marutto.art</title>
+    <meta name="description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用OK）。<?= h($category['title']) ?>カテゴリのフリーイラストをお楽しみください。">
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -119,15 +119,15 @@ $tweetText = createTweetText($material['title']);
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなイラスト素材（無料・商用OK）">
-    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなイラスト素材（無料・商用OK）。">
+    <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用OK）">
+    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用OK）。">
     <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなイラスト素材（無料・商用OK）">
-    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなイラスト素材（無料・商用OK）。">
+    <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用OK）">
+    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用OK）。">
     <meta property="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- JSON-LD structured data -->
@@ -135,26 +135,15 @@ $tweetText = createTweetText($material['title']);
     {
         "@context": "https://schema.org",
         "@type": "ImageObject",
-        "name": "<?= addslashes(h($material['title'])) ?>",
-        "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
-        "contentUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>",
-        "description": "<?= addslashes(h($material['description'] ?? $material['title'] . 'のミニマルなイラスト（商用OK）。')) ?>",
+        "contentUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
+        "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "acquireLicensePage": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "creditText": "marutto.art",
         "creator": {
             "@type": "Organization",
-            "name": "maruttoart"
+            "name": "marutto.art"
         },
-        "publisher": {
-            "@type": "Organization",
-            "name": "maruttoart"
-        },
-        "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
-        "datePublished": "<?= date('c', strtotime($material['created_at'])) ?>",
-        "category": "<?= addslashes(h($category['name'])) ?>",
-        "keywords": "<?= addslashes(h($material['search_keywords'] ?? '')) ?>, 無料イラスト, 商用利用OK",
-        "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/"
-        }
+        "copyrightNotice": "marutto.art"
     }
     </script>
     
@@ -977,7 +966,7 @@ $tweetText = createTweetText($material['title']);
     <div class="container mt-4">
         <div class="row">
             <div class="col-lg-6" style="margin: 0 auto;">
-                <div class="text-center">
+                <div class="text-center position-relative">
                     <!-- WebPに対応したpicture要素 -->
                     <picture style="display: block; max-width: 400px; margin: 0 auto;">
                         <!-- デスクトップ用：300x300のWebP -->
@@ -1028,16 +1017,6 @@ $tweetText = createTweetText($material['title']);
                         </div>
                         <?php endif; ?>
                     </div>
-                </div>
-
-                <!-- ツイートボタン（カード外に配置） -->
-                                <!-- ツイートボタン（カード外に配置） -->
-                <div class="text-center mt-3">
-                    <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" 
-                       class="twitter-share-button" 
-                       data-text="<?= h($tweetText) ?>"
-                       data-show-count="false">Tweet</a>
-                    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                 </div>
             </div>
         </div>
