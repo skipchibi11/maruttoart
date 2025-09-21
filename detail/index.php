@@ -1007,8 +1007,7 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
                          height="300"
                          loading="eager"
                          decoding="async"
-                         fetchpriority="high"
-                         style="display: block; max-width: 400px; margin: 0 auto;">
+                         fetchpriority="high">
                     
                     <!-- ダウンロードリンクを画像の直下に配置 -->
                     <div class="mb-4">
