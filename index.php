@@ -1291,7 +1291,7 @@ if ($tileCount > 0) {
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="hero-title">ミニマルなフリーイラスト素材</h1>
+                    <h1 class="hero-title">ミニマルなフリーイラスト素材集</h1>
                     <p class="hero-description">
                         まるく、やさしく、シンプルに。動物や植物、食べ物などのイラスト素材を、商用・個人問わずご利用いただけます。
                     </p>
