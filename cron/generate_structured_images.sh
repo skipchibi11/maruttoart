@@ -14,7 +14,7 @@ mkdir -p "$(dirname "$LOG_FILE")"
 echo "=== $(date '+%Y-%m-%d %H:%M:%S') - 構造化データ用画像生成開始 ===" >> "$LOG_FILE"
 
 # PHP スクリプトを実行
-php generate_structured_images.php >> "$LOG_FILE" 2>&1
+/usr/local/php/8.4/bin/php generate_structured_images.php >> "$LOG_FILE" 2>&1
 
 echo "=== $(date '+%Y-%m-%d %H:%M:%S') - 構造化データ用画像生成完了 ===" >> "$LOG_FILE"
 echo "" >> "$LOG_FILE"
