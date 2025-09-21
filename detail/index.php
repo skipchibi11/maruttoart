@@ -985,22 +985,30 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
         <div class="row">
             <div class="col-lg-6" style="margin: 0 auto;">
                 <div class="text-center position-relative">
-                    <!-- WebPに対応したpicture要素 -->
-                    <picture style="display: block; max-width: 400px; margin: 0 auto;">
-                        <!-- デスクトップ用：300x300のWebP -->
-                        <source media="(min-width: 768px)" srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" type="image/webp">
-                        <!-- モバイル用：180x180のWebP -->
-                        <source media="(max-width: 767px)" srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" type="image/webp">
-                        <!-- フォールバック：オリジナル画像 -->
-                        <img src="/<?= h($material['image_path']) ?>" 
-                             class="detail-main-image mb-3" 
-                             alt="<?= h($material['title']) ?>のイラスト"
-                             width="300"
-                             height="300"
-                             loading="eager"
-                             decoding="async"
-                             fetchpriority="high">
-                    </picture>
+                    <!-- 構造化データ画像を優先使用 -->
+                    <?php
+                    // 画像パスの決定（優先順位: 構造化データ用画像 > WebP中サイズ > 通常画像）
+                    $displayImagePath = $material['image_path']; // デフォルト
+                    
+                    if (!empty($material['structured_image_path'])) {
+                        $absolutePath = dirname(__DIR__) . '/' . $material['structured_image_path'];
+                        if (file_exists($absolutePath)) {
+                            $displayImagePath = $material['structured_image_path'];
+                        }
+                    } elseif (!empty($material['webp_medium_path'])) {
+                        $displayImagePath = $material['webp_medium_path'];
+                    }
+                    ?>
+                    
+                    <img src="/<?= h($displayImagePath) ?>" 
+                         class="detail-main-image mb-3" 
+                         alt="<?= h($material['title']) ?>のイラスト"
+                         width="300"
+                         height="300"
+                         loading="eager"
+                         decoding="async"
+                         fetchpriority="high"
+                         style="display: block; max-width: 400px; margin: 0 auto;">
                     
                     <!-- ダウンロードリンクを画像の直下に配置 -->
                     <div class="mb-4">
