@@ -50,7 +50,22 @@ function createTweetText($title) {
     return $tweetText;
 }
 
+// 構造化データ用画像のURLを取得（優先順位: 構造化データ用画像 > 通常画像）
+function getStructuredDataImageUrl($material) {
+    $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'https';
+    $host = $_SERVER['HTTP_HOST'];
+    
+    // 構造化データ用画像が存在する場合は優先使用
+    if (!empty($material['structured_image_path']) && file_exists($material['structured_image_path'])) {
+        return "{$scheme}://{$host}/{$material['structured_image_path']}";
+    }
+    
+    // フォールバック: 通常画像を使用
+    return "{$scheme}://{$host}/{$material['image_path']}";
+}
+
 $tweetText = createTweetText($material['title']);
+$structuredImageUrl = getStructuredDataImageUrl($material);
 ?>
 
 <!DOCTYPE html>
@@ -121,21 +136,21 @@ $tweetText = createTweetText($material['title']);
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
     <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。">
-    <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
+    <meta property="og:image" content="<?= h($structuredImageUrl) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
     <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。">
-    <meta property="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
+    <meta property="twitter:image" content="<?= h($structuredImageUrl) ?>">
     
     <!-- JSON-LD structured data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "ImageObject",
-        "contentUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>",
+        "contentUrl": "<?= h($structuredImageUrl) ?>",
         "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
         "acquireLicensePage": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
         "creditText": "marutto.art",
