@@ -337,14 +337,22 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
 
         /* メイン画像のスタイル */
         .detail-main-image {
-            max-width: 400px;
-            width: auto;
+            max-width: 100%;
+            width: 100%;
             height: auto;
             aspect-ratio: 1 / 1;
             object-fit: contain;
             border-radius: 8px;
             background-color: #F9F5E9;
             padding: 40px;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 768px) {
+            .detail-main-image {
+                max-width: 400px;
+                width: auto;
+            }
         }
 
         /* カード内画像のスタイル（関連素材用） */
@@ -1007,7 +1015,8 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
                          height="300"
                          loading="eager"
                          decoding="async"
-                         fetchpriority="high">
+                         fetchpriority="high"
+                         style="display: block; max-width: 100%; width: 100%; margin: 0 auto;">
                     
                     <!-- ダウンロードリンクを画像の直下に配置 -->
                     <div class="mb-4">
