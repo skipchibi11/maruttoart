@@ -99,13 +99,13 @@ cd /path/to/maruttoart/cron
 ## 出力
 
 ### 生成される画像
-- パス: `uploads/structured/{year}/{month}/{slug}structured.png`
-- 例: `uploads/structured/2024/08/peach-illustrationstructured.png`
+- パス: `uploads/{year}/{month}/{slug}-structured.png`
+- 例: `uploads/2024/08/peach-illustration-structured.png`
 - サイズ: 1200x1200px (正方形)
 - 形式: PNG (圧縮レベル6)
 - 背景: OpenAI分析による適切なペールトーン
 - 特徴: イラストに最適な無劣化圧縮で高品質を保持
-- ディレクトリ構造: 作成年月で自動分類され、スラッグで識別
+- 保存場所: 他の素材ファイルと同じディレクトリに統一
 
 ### データベース更新
 - `structured_image_path`: 生成画像の相対パス

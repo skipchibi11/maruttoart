@@ -261,16 +261,16 @@ function main($materialId = null) {
                 echo "  背景色: {$colorData['background_color']} ({$colorData['color_name']})\n";
                 echo "  理由: {$colorData['reasoning']}\n";
 
-                // 構造化データ用画像を生成（uploads/year/month/slug形式）
+                // 構造化データ用画像を生成（他の素材と同じディレクトリ）
                 $createdDate = new DateTime($material['created_at']);
                 $year = $createdDate->format('Y');
                 $month = $createdDate->format('m');
                 $slug = $material['slug'] ?? pathinfo($material['image_path'], PATHINFO_FILENAME);
                 
-                $outputDir = dirname(__DIR__) . "/uploads/structured/{$year}/{$month}";
-                $outputFilename = $slug . 'structured.png';
+                $outputDir = dirname(__DIR__) . "/uploads/{$year}/{$month}";
+                $outputFilename = $slug . '-structured.png';
                 $outputPath = $outputDir . '/' . $outputFilename;
-                $relativeOutputPath = "uploads/structured/{$year}/{$month}/{$outputFilename}";
+                $relativeOutputPath = "uploads/{$year}/{$month}/{$outputFilename}";
 
                 // 出力ディレクトリを作成
                 if (!is_dir($outputDir)) {
