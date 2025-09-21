@@ -51,30 +51,6 @@ function createTweetText($title) {
 }
 
 $tweetText = createTweetText($material['title']);
-
-// 関連イラストを取得（カテゴリ一致5点、タグ一致1点、高い順で上位6点）
-$stmt = $pdo->prepare("
-    SELECT DISTINCT m.*, c.title as category_name, c.slug as category_slug,
-           -- スコア計算: カテゴリ一致は5点、タグ一致は1点
-           (CASE WHEN m.category_id = ? THEN 5 ELSE 0 END +
-            CASE WHEN EXISTS (
-                SELECT 1 FROM material_tags mt1 
-                INNER JOIN material_tags mt2 ON mt1.tag_id = mt2.tag_id 
-                WHERE mt1.material_id = m.id AND mt2.material_id = ?
-            ) THEN 1 ELSE 0 END) as relevance_score
-    FROM materials m
-    LEFT JOIN categories c ON m.category_id = c.id
-    WHERE m.id != ? 
-      AND (m.category_id = ? OR EXISTS (
-          SELECT 1 FROM material_tags mt1 
-          INNER JOIN material_tags mt2 ON mt1.tag_id = mt2.tag_id 
-          WHERE mt1.material_id = m.id AND mt2.material_id = ?
-      ))
-    ORDER BY relevance_score DESC, m.created_at DESC
-    LIMIT 6
-");
-$stmt->execute([$material['category_id'], $material['id'], $material['id'], $material['category_id'], $material['id']]);
-$relatedMaterials = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -544,21 +520,6 @@ $relatedMaterials = $stmt->fetchAll();
             }
         }
 
-        /* 関連イラストのスタイル */
-        .related-materials-section {
-            margin-top: 3rem;
-        }
-
-        .related-materials-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #5d4037;
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #fef9e7;
-        }
-
         .material-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
@@ -930,6 +891,31 @@ $relatedMaterials = $stmt->fetchAll();
         .footer-custom .footer-text:hover {
             color: #1a252f !important;
         }
+
+        /* Load More Button - トップページと同じスタイル */
+        .load-more-button {
+            text-align: center;
+        }
+        
+        .load-more-button a {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .load-more-button a:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -1057,37 +1043,16 @@ $relatedMaterials = $stmt->fetchAll();
         </div>
     </div>
 
-    <!-- 関連イラスト -->
-    <?php if (!empty($relatedMaterials)): ?>
-    <div class="related-materials-section">
-        <div class="container">
-            <h3 class="related-materials-title">関連イラスト</h3>
-            <div class="row">
-                <?php foreach ($relatedMaterials as $relMaterial): ?>
-                <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
-                    <a href="/<?= h($relMaterial['category_slug']) ?>/<?= h($relMaterial['slug']) ?>/" 
-                       class="material-card text-decoration-none">
-                        <div class="position-relative">
-                            <!-- WebPに対応したpicture要素 -->
-                            <picture>
-                                <source srcset="/<?= h($relMaterial['webp_small_path'] ?? $relMaterial['image_path']) ?>" type="image/webp">
-                                <img src="/<?= h($relMaterial['image_path']) ?>" 
-                                     alt="<?= h($relMaterial['title']) ?>" 
-                                     class="material-image"
-                                     loading="lazy">
-                            </picture>
-                            
-                        </div>
-                        <div class="card-body">
-                            <h3 class="card-title"><?= h($relMaterial['title']) ?></h3>
-                        </div>
-                    </a>
-                </div>
-                <?php endforeach; ?>
+    <!-- 他のイラストを見るボタン -->
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-center">
+            <div class="load-more-button">
+                <a href="/list.php">
+                    他のイラストを見る
+                </a>
             </div>
         </div>
     </div>
-    <?php endif; ?>
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
