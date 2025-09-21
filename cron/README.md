@@ -1,0 +1,153 @@
+# 構造化データ用画像生成システム
+
+## 概要
+このシステムは、アップロードされた素材画像から構造化データ（JSON-LD、OGP等）用の1200x1200px画像を自動生成します。
+
+## 機能
+- OpenAI Vision APIを使用した画像分析による適切な背景色の自動決定
+- 元画像のアスペクト比を保持した1200x1200pxへのリサイズ
+- ペールトーン（薄い色調）の背景色適用
+- バッチ処理による複数画像の一括処理
+
+## ファイル構成
+```
+cron/
+├── .htaccess                        # Webアクセス制限
+├── generate_structured_images.php   # メイン処理スクリプト
+├── generate_structured_images.sh    # 実行用シェルスクリプト
+└── README.md                        # このファイル
+```
+
+## セットアップ
+
+### 1. データベースの更新
+```sql
+-- database/add_structured_image_columns.sql を実行
+ALTER TABLE materials 
+ADD COLUMN structured_image_path VARCHAR(255) DEFAULT NULL,
+ADD COLUMN structured_bg_color VARCHAR(7) DEFAULT NULL;
+```
+
+### 2. 必要な拡張機能の確認
+- PHP GD拡張 (画像処理用)
+- cURL拡張 (OpenAI API通信用)
+
+### 3. 環境変数の設定
+`.env`ファイルに以下が設定されていることを確認：
+```
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+## 使用方法
+
+### 手動実行
+
+#### 全ての未処理素材を処理
+```bash
+cd /path/to/maruttoart/cron
+php generate_structured_images.php
+```
+
+#### 特定の素材IDのみ処理
+```bash
+cd /path/to/maruttoart/cron
+php generate_structured_images.php 123
+```
+
+#### シェルスクリプト経由（ログ付き）
+```bash
+cd /path/to/maruttoart/cron
+./generate_structured_images.sh
+```
+
+### cron設定例
+
+#### 推奨: 15分ごとに実行（1件ずつ処理）
+```bash
+# crontabに追加 - OpenAI APIレート制限に配慮した効率的な処理
+*/15 * * * * /path/to/maruttoart/cron/generate_structured_images.sh
+```
+
+#### 毎日午前2時に実行（バッチ処理）
+```bash
+# crontabに追加 - 特定の素材IDを指定する場合や手動実行向け
+0 2 * * * /path/to/maruttoart/cron/generate_structured_images.sh
+```
+
+#### 6時間ごとに実行
+```bash
+# crontabに追加 - 中間的な頻度での処理
+0 */6 * * * /path/to/maruttoart/cron/generate_structured_images.sh
+```
+
+## 処理方式
+
+### 自動処理モード（推奨）
+デフォルトでは**1件ずつ処理**するように最適化されています：
+- 15分間隔での実行に最適
+- OpenAI APIレート制限に配慮
+- システム負荷を分散
+- 未処理件数の進捗表示
+
+### 処理の流れ
+1. 未処理の素材を1件取得（作成日時の新しい順）
+2. OpenAI APIで背景色を分析
+3. 1200x1200px画像を生成
+4. データベースを更新
+5. 残り件数を表示
+
+## 出力
+
+### 生成される画像
+- パス: `uploads/structured/{year}/{month}/{slug}structured.png`
+- 例: `uploads/structured/2024/08/peach-illustrationstructured.png`
+- サイズ: 1200x1200px (正方形)
+- 形式: PNG (圧縮レベル6)
+- 背景: OpenAI分析による適切なペールトーン
+- 特徴: イラストに最適な無劣化圧縮で高品質を保持
+- ディレクトリ構造: 作成年月で自動分類され、スラッグで識別
+
+### データベース更新
+- `structured_image_path`: 生成画像の相対パス
+- `structured_bg_color`: 使用された背景色のHEXコード
+
+### ログ出力
+- ファイル: `logs/structured_images.log`
+- 内容: 処理結果、エラー情報、実行時間
+
+## エラー対応
+
+### よくあるエラー
+
+#### OpenAI APIキーエラー
+```
+OpenAI APIキーが設定されていません
+```
+→ `.env`ファイルの`OPENAI_API_KEY`を確認
+
+#### 画像ファイルエラー
+```
+画像ファイルが見つかりません
+```
+→ 元画像ファイルの存在とパスを確認
+
+#### GD拡張エラー
+```
+GD拡張が必要です
+```
+→ PHP環境にGD拡張をインストール
+
+### ログの確認
+```bash
+tail -f logs/structured_images.log
+```
+
+## セキュリティ
+- cronフォルダは`.htaccess`でWebアクセスを完全に制限
+- スクリプトはコマンドライン実行のみ許可
+- APIキーは環境変数で安全に管理
+
+## パフォーマンス
+- 大量の画像処理時はメモリ使用量に注意
+- OpenAI APIのレート制限に配慮
+- 一度に処理する画像数を制限することを推奨
