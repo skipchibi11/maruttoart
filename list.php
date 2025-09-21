@@ -7,7 +7,7 @@ setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 $pdo = getDB();
 
 // ページネーション設定
-$perPage = 20; // 1ページあたりの表示件数
+$perPage =  50; // 1ページあたりの表示件数
 $page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
 $offset = ($page - 1) * $perPage;
 
@@ -525,59 +525,58 @@ $materials = $stmt->fetchAll();
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
         }
 
-        /* ページネーション */
-        .pagination {
-            display: flex;
-            padding-left: 0;
-            list-style: none;
-            border-radius: 0;
-            gap: 5px;
-        }
-
-        .justify-content-center {
-            justify-content: center !important;
-        }
-
-        .page-item {
-            position: relative;
-            display: block;
-        }
-
-        .page-item:first-child .page-link,
-        .page-item:last-child .page-link {
+        /* ボタンスタイル */
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
             border-radius: 8px;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
         }
 
-        .page-item.active .page-link {
-            z-index: 3;
-            background-color: #f5f5f5;
-            color: #444;
-            border: 2px solid #999;
-            font-weight: bold;
+        .btn-outline-secondary:hover {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+            text-decoration: none;
         }
 
-        .page-item.disabled .page-link {
+        .btn-outline-secondary.disabled {
             color: #adb5bd;
+            background-color: transparent;
+            border-color: #dee2e6;
             pointer-events: none;
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
         }
 
-        .page-link {
-            position: relative;
-            display: block;
-            padding: 0.75em 1em;
-            margin: 0;
-            line-height: 1.2;
+        /* ページネーションボタン（トップページの「もっと見る」と同じスタイル） */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination-btn {
             background-color: #ffffff;
             color: #444;
             border: 2px solid #ccc;
             border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
             font-weight: bold;
             text-decoration: none;
-            min-width: 44px;
-            text-align: center;
+            display: inline-block;
             transition: all 0.2s ease-in-out;
+        }
+
+        .pagination-btn:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
+        }
         }
 
         .page-link:hover {
@@ -1072,77 +1071,27 @@ $materials = $stmt->fetchAll();
         <!-- ページネーション -->
         <?php if ($totalPages > 1): ?>
         <nav aria-label="ページネーション" class="mt-5">
-            <ul class="pagination justify-content-center">
-                <!-- 前のページ -->
-                <?php if ($page > 1): ?>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<?= $page - 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" aria-label="前のページ">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                <?php else: ?>
-                    <li class="page-item disabled">
-                        <span class="page-link" aria-label="前のページ">
-                            <span aria-hidden="true">&laquo;</span>
-                        </span>
-                    </li>
-                <?php endif; ?>
-
-                <!-- ページ番号 -->
-                <?php
-                $startPage = max(1, $page - 2);
-                $endPage = min($totalPages, $page + 2);
-                
-                // 最初のページを表示
-                if ($startPage > 1): ?>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1<?= !empty($search) ? '&search=' . urlencode($search) : '' ?>">1</a>
-                    </li>
-                    <?php if ($startPage > 2): ?>
-                        <li class="page-item disabled">
-                            <span class="page-link">...</span>
-                        </li>
-                    <?php endif;
-                endif;
-
-                // 現在のページ周辺を表示
-                for ($i = $startPage; $i <= $endPage; $i++): ?>
-                    <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                        <?php if ($i == $page): ?>
-                            <span class="page-link"><?= $i ?></span>
-                        <?php else: ?>
-                            <a class="page-link" href="?page=<?= $i ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>"><?= $i ?></a>
+            <div class="row">
+                <div class="col-12 text-center">
+                    <div class="pagination-container">
+                        <!-- 前のページ -->
+                        <?php if ($page > 1): ?>
+                            <a href="?page=<?= $page - 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" 
+                               class="pagination-btn">
+                                前へ
+                            </a>
                         <?php endif; ?>
-                    </li>
-                <?php endfor;
 
-                // 最後のページを表示
-                if ($endPage < $totalPages): ?>
-                    <?php if ($endPage < $totalPages - 1): ?>
-                        <li class="page-item disabled">
-                            <span class="page-link">...</span>
-                        </li>
-                    <?php endif; ?>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<?= $totalPages ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>"><?= $totalPages ?></a>
-                    </li>
-                <?php endif; ?>
-
-                <!-- 次のページ -->
-                <?php if ($page < $totalPages): ?>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<?= $page + 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" aria-label="次のページ">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                <?php else: ?>
-                    <li class="page-item disabled">
-                        <span class="page-link" aria-label="次のページ">
-                            <span aria-hidden="true">&raquo;</span>
-                        </span>
-                    </li>
-                <?php endif; ?>
-            </ul>
+                        <!-- 次のページ -->
+                        <?php if ($page < $totalPages): ?>
+                            <a href="?page=<?= $page + 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" 
+                               class="pagination-btn">
+                                次へ
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
         </nav>
         <?php endif; ?>
 
