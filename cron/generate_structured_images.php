@@ -40,7 +40,7 @@ function getBackgroundColorFromAI($imagePath) {
 - 構造化データやソーシャルメディアでの表示に適した色
 - 画像が見やすくなる色
 
-回答は以下のJSONフォーマットのみで返してください：
+回答は以下のJSONフォーマットのみで返してください。コードブロック（```）は使用せず、直接JSONを返してください：
 {
   \"background_color\": \"#RRGGBB\",
   \"color_name\": \"色の名前（日本語）\",
@@ -96,10 +96,23 @@ function getBackgroundColorFromAI($imagePath) {
 
     $content = trim($result['choices'][0]['message']['content']);
     
+    // デバッグ用：元のレスポンスを表示
+    echo "  OpenAI生レスポンス: " . $content . "\n";
+    
+    // JSONブロックが```json```で囲まれている場合は抽出
+    if (preg_match('/```json\s*\n(.*?)\n```/s', $content, $matches)) {
+        $content = trim($matches[1]);
+        echo "  JSONブロックを抽出しました\n";
+    } elseif (preg_match('/```\s*\n(.*?)\n```/s', $content, $matches)) {
+        $content = trim($matches[1]);
+        echo "  コードブロックを抽出しました\n";
+    }
+    
     // JSONレスポンスをパース
     $colorData = json_decode($content, true);
     if (!$colorData || !isset($colorData['background_color'])) {
-        throw new Exception('OpenAI APIから有効な色情報が得られませんでした: ' . $content);
+        $jsonError = json_last_error_msg();
+        throw new Exception("OpenAI APIから有効な色情報が得られませんでした。JSONエラー: {$jsonError}, 内容: {$content}");
     }
 
     return $colorData;
