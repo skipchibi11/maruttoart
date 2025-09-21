@@ -99,8 +99,8 @@ $tweetText = createTweetText($material['title']);
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($material['title']) ?>  - ミニマルなフリーイラスト素材（商用OK）｜marutto.art</title>
-    <meta name="description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用OK）。<?= h($category['title']) ?>カテゴリのフリーイラストをお楽しみください。">
+    <title><?= h($material['title']) ?>  - ミニマルなフリーイラスト素材（商用利用OK）｜marutto.art</title>
+    <meta name="description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。<?= h($category['title']) ?>カテゴリのフリーイラストをお楽しみください。">
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -119,15 +119,15 @@ $tweetText = createTweetText($material['title']);
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用OK）">
-    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用OK）。">
+    <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
+    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。">
     <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用OK）">
-    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用OK）。">
+    <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
+    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。">
     <meta property="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['image_path']) ?>">
     
     <!-- JSON-LD structured data -->

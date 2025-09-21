@@ -105,8 +105,8 @@ if ($tileCount > 0) {
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ミニマルなフリーイラスト素材集｜marutto.art（商用OK）</title>
-    <meta name="description" content="ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用OK。個人・法人問わずご利用いただける無料素材集です。">
+    <title>ミニマルなフリーイラスト素材集｜marutto.art（商用利用OK）</title>
+    <meta name="description" content="ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- Alternate language tags -->

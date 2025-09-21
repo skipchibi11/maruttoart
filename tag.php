@@ -71,7 +71,7 @@ $materials = $materialsStmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($tag['name']) ?> - ミニマルなフリーイラスト素材（商用OK）｜marutto.art</title>
+    <title><?= h($tag['name']) ?> - ミニマルなフリーイラスト素材（商用利用OK）｜marutto.art</title>
     <meta name="description" content="<?= h($tag['name']) ?>タグのフリーイラスト素材一覧。ミニマルなフリーイラスト素材を商用利用OK。<?= h($tag['name']) ?>に関連する高品質なフリー素材をダウンロードできます。">
 
     <!-- Site Icons -->

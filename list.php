@@ -88,7 +88,7 @@ $materials = $stmt->fetchAll();
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ミニマルなフリーイラスト素材｜maruttoart（商用OK）</title>
+    <title>ミニマルなフリーイラスト素材｜maruttoart（商用利用OK）</title>
     <meta name="description" content="ミニマルなフリーイラスト素材の一覧ページ！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     

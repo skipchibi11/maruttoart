@@ -51,7 +51,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>利用規約 - やさしいイラスト素材（無料・商用OK）｜maruttoart</title>
+    <title>利用規約 - ミニマルなフリーイラスト素材（商用利用OK）｜maruttoart</title>
     <meta name="description" content="maruttoartのやさしいイラスト素材の利用規約。無料・商用利用可能な素材の使用条件、禁止事項、著作権について詳しく説明しています。">
     
     <!-- Site Icons -->
