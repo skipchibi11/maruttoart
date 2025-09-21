@@ -105,8 +105,8 @@ if ($tileCount > 0) {
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ミニマルなイラスト素材集｜marutto.art（無料・商用利用OK）</title>
-    <meta name="description" content="ミニマルなイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
+    <title>ミニマルなフリーイラスト素材集｜marutto.art（商用OK）</title>
+    <meta name="description" content="ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- Alternate language tags -->
@@ -1291,7 +1291,7 @@ if ($tileCount > 0) {
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="hero-title">ミニマルなイラスト素材</h1>
+                    <h1 class="hero-title">ミニマルなフリーイラスト素材</h1>
                     <p class="hero-description">
                         まるく、やさしく、シンプルに。動物や植物、食べ物などのイラスト素材を、商用・個人問わずご利用いただけます。
                     </p>
@@ -1299,7 +1299,7 @@ if ($tileCount > 0) {
                 </div>
                 <div class="hero-image">
                     <img src="/assets/images/simple-apple-red.webp" 
-                         alt="ミニマルなイラスト素材のサンプル" 
+                         alt="ミニマルなフリーイラスト素材のサンプル" 
                          width="500"
                          height="500"
                          fetchpriority="high"
@@ -1314,7 +1314,7 @@ if ($tileCount > 0) {
             <div class="col-12">
                 <h2 class="mb-2">新着イラスト素材</h2>
                 <p class="text-muted mb-4">
-                    最新のミニマルなイラスト素材をご紹介
+                    最新のミニマルなフリーイラスト素材をご紹介
                 </p>
             </div>
         </div>

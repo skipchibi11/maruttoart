@@ -57,7 +57,7 @@ $categories = $categoryStmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - ページが見つかりません｜maruttoart</title>
-    <meta name="description" content="お探しのページが見つかりませんでした。トップページからミニマルなイラスト素材をお探しください。">
+    <meta name="description" content="お探しのページが見つかりませんでした。トップページからミニマルなフリーイラスト素材をお探しください。">
     <link rel="icon" href="/favicon.ico">
     
     <style>
