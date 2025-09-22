@@ -40,6 +40,15 @@ if (!$material) {
 // 素材に関連付けられたタグを取得
 $materialTags = getMaterialTags($material['id'], $pdo);
 
+// 同じカテゴリ内での前後の素材を取得
+$prevStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id < ? ORDER BY id DESC LIMIT 1");
+$prevStmt->execute([$category['id'], $material['id']]);
+$prevMaterial = $prevStmt->fetch();
+
+$nextStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id > ? ORDER BY id ASC LIMIT 1");
+$nextStmt->execute([$category['id'], $material['id']]);
+$nextMaterial = $nextStmt->fetch();
+
 // ツイート用テキストを生成
 function createTweetText($title) {
     
@@ -459,6 +468,64 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
             color: #000;
             background-color: #f8f9fa;
             border-color: #f8f9fa;
+        }
+
+        /* ナビゲーションボタン - load-more-buttonと同じスタイル */
+        .nav-button {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .nav-button:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
+        }
+
+        .nav-button-disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #dee2e6;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .nav-button-disabled:hover {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #6c757d;
+        }
+
+        /* ナビゲーション全体の中央配置 */
+        .nav-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: nowrap;
+        }
+
+        @media (max-width: 576px) {
+            .nav-container {
+                flex-direction: row;
+                gap: 0.75rem;
+            }
+            
+            .nav-button {
+                padding: 0.5em 1.5em;
+                font-size: 0.9rem;
+            }
         }
 
         .btn-sm {
@@ -1053,6 +1120,27 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 前へ・次へナビゲーション -->
+    <div class="container mt-4">
+        <div class="nav-container">
+            <?php if ($prevMaterial): ?>
+                <a href="/<?= h($category['slug']) ?>/<?= h($prevMaterial['slug']) ?>/" class="nav-button">
+                    ← 前へ
+                </a>
+            <?php else: ?>
+                <span class="nav-button nav-button-disabled">← 前へ</span>
+            <?php endif; ?>
+            
+            <?php if ($nextMaterial): ?>
+                <a href="/<?= h($category['slug']) ?>/<?= h($nextMaterial['slug']) ?>/" class="nav-button">
+                    次へ →
+                </a>
+            <?php else: ?>
+                <span class="nav-button nav-button-disabled">次へ →</span>
+            <?php endif; ?>
         </div>
     </div>
 
