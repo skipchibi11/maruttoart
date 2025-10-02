@@ -350,6 +350,14 @@ if ($tileCount > 0) {
             text-decoration: none;
         }
 
+        /* ヒーローボタンコンテナ */
+        .hero-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
         .hero-image {
             flex: 1;
             text-align: center;
@@ -387,6 +395,17 @@ if ($tileCount > 0) {
             .hero-description {
                 font-size: 1.1rem;
             }
+
+            .hero-buttons {
+                align-items: center;
+                width: 100%;
+            }
+
+            .hero-cta, .hero-cta-secondary {
+                width: 100%;
+                max-width: 300px;
+                text-align: center;
+            }
         }
 
         @media (max-width: 576px) {
@@ -400,6 +419,11 @@ if ($tileCount > 0) {
 
             .hero-section {
                 padding: 40px 0 30px;
+            }
+
+            .hero-cta-secondary {
+                font-size: 0.9rem;
+                padding: 8px 20px;
             }
         }
 
@@ -1295,7 +1319,10 @@ if ($tileCount > 0) {
                     <p class="hero-description">
                         まるく、やさしく、シンプルに。動物や植物、食べ物などのイラスト素材を、商用・個人問わずご利用いただけます。
                     </p>
-                    <a href="/list.php" class="hero-cta">素材を見る</a>
+                    <div class="hero-buttons">
+                        <a href="/list.php" class="hero-cta">素材を見る</a>
+                        <a href="/customizer.php" class="hero-cta">素材を並べて遊ぼう</a>
+                    </div>
                 </div>
                 <div class="hero-image">
                     <img src="/assets/images/simple-apple-red.webp" 
