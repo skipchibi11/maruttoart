@@ -1573,8 +1573,8 @@ $total_pages = ceil($total_count / $limit);
                     id: Date.now(),
                     title: title,
                     image: img,
-                    x: Math.random() * (canvas.width - 100),
-                    y: Math.random() * (canvas.height - 100),
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
                     width: Math.min(img.width, 150),
                     height: Math.min(img.height, 150),
                     rotation: 0,
@@ -1615,6 +1615,12 @@ $total_pages = ceil($total_count / $limit);
             // 各レイヤーを描画（配列の最初が最前面）
             layers.forEach(layer => {
                 ctx.save();
+                
+                // キャンバス範囲でクリッピング（はみ出した部分は表示しない）
+                ctx.beginPath();
+                ctx.rect(0, 0, canvas.width, canvas.height);
+                ctx.clip();
+                
                 ctx.globalAlpha = layer.opacity;
                 ctx.translate(layer.x + layer.width/2, layer.y + layer.height/2);
                 ctx.rotate(layer.rotation * Math.PI / 180);
@@ -1789,6 +1795,12 @@ $total_pages = ceil($total_count / $limit);
             // 各レイヤーを描画（選択枠は描画しない）
             layers.forEach(layer => {
                 ctx.save();
+                
+                // キャンバス範囲でクリッピング
+                ctx.beginPath();
+                ctx.rect(0, 0, canvas.width, canvas.height);
+                ctx.clip();
+                
                 ctx.globalAlpha = layer.opacity;
                 ctx.translate(layer.x + layer.width/2, layer.y + layer.height/2);
                 ctx.rotate(layer.rotation * Math.PI / 180);
@@ -1805,6 +1817,12 @@ $total_pages = ceil($total_count / $limit);
             // 各レイヤーを描画（選択枠は描画しない）
             layers.forEach(layer => {
                 ctx.save();
+                
+                // キャンバス範囲でクリッピング
+                ctx.beginPath();
+                ctx.rect(0, 0, canvas.width, canvas.height);
+                ctx.clip();
+                
                 ctx.globalAlpha = layer.opacity;
                 ctx.translate(layer.x + layer.width/2, layer.y + layer.height/2);
                 ctx.rotate(layer.rotation * Math.PI / 180);
@@ -1956,29 +1974,14 @@ $total_pages = ceil($total_count / $limit);
                 }
                 
                 // キャンバス内に収まるように調整
-                if (newX < 0) {
-                    newWidth += newX;
-                    newHeight = newWidth / aspectRatio;
-                    newX = 0;
-                }
-                if (newY < 0) {
-                    newHeight += newY;
-                    newWidth = newHeight * aspectRatio;
-                    newY = 0;
-                }
-                if (newX + newWidth > canvas.width) {
-                    newWidth = canvas.width - newX;
-                    newHeight = newWidth / aspectRatio;
-                }
-                if (newY + newHeight > canvas.height) {
-                    newHeight = canvas.height - newY;
-                    newWidth = newHeight * aspectRatio;
-                }
+                // 最小サイズのみ制限（境界制限は除去）
+                newWidth = Math.max(20, newWidth);
+                newHeight = Math.max(20, newHeight);
                 
                 selectedLayer.x = newX;
                 selectedLayer.y = newY;
-                selectedLayer.width = newWidth;
-                selectedLayer.height = newHeight;
+                selectedLayer.width = Math.max(20, newWidth);
+                selectedLayer.height = Math.max(20, newHeight);
                 
                 redrawCanvas();
                 
@@ -1987,9 +1990,7 @@ $total_pages = ceil($total_count / $limit);
                 selectedLayer.x = x - dragOffset.x;
                 selectedLayer.y = y - dragOffset.y;
                 
-                // キャンバス内に留める
-                selectedLayer.x = Math.max(0, Math.min(canvas.width - selectedLayer.width, selectedLayer.x));
-                selectedLayer.y = Math.max(0, Math.min(canvas.height - selectedLayer.height, selectedLayer.y));
+                // はみ出しを許可（制限なし）
                 
                 redrawCanvas();
             } else if (selectedLayer && !isDragging && !isResizing && !isRotating) {
