@@ -4,6 +4,13 @@ require_once 'config.php';
 // 公開ページなのでキャッシュを有効化
 setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
+// セキュリティヘッダーの追加
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' cdn.gtranslate.net www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'");
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: DENY");
+header("X-XSS-Protection: 1; mode=block");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+
 $pdo = getDB();
 
 
@@ -1507,6 +1514,12 @@ $total_pages = ceil($total_count / $limit);
 
         // 素材ポップアップを表示
         function showMaterialPopup(imagePath, title) {
+            // 画像パスの基本的な検証
+            if (!imagePath || typeof imagePath !== 'string' || imagePath.includes('..')) {
+                console.error('Invalid image path');
+                return;
+            }
+            
             currentMaterialPath = imagePath;
             currentMaterialTitle = title;
             
@@ -1547,6 +1560,12 @@ $total_pages = ceil($total_count / $limit);
 
         // 素材をキャンバスに追加
         function addMaterialToCanvas(imagePath, title) {
+            // 画像パスの基本的な検証
+            if (!imagePath || typeof imagePath !== 'string' || imagePath.includes('..')) {
+                console.error('Invalid image path');
+                return;
+            }
+            
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = function() {
