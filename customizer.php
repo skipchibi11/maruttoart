@@ -904,6 +904,79 @@ $total_pages = ceil($total_count / $limit);
             color: #333;
         }
 
+        /* カラーパレット */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .color-option {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .color-option.active {
+            border-color: #007bff;
+            border-width: 3px;
+        }
+
+        .color-option.active::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #007bff;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 0 0 3px rgba(255,255,255,0.8);
+        }
+
+        /* カラーセクション */
+        .color-section {
+            margin-bottom: 1rem;
+        }
+
+        .color-section-label {
+            display: block;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* カラーピッカー input */
+        .color-picker-input {
+            width: 100%;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .color-picker-input:hover {
+            border-color: #007bff;
+        }
+
+        .color-picker-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
         .canvas-layers {
             max-height: 300px;
             overflow-y: auto;
@@ -1047,6 +1120,25 @@ $total_pages = ceil($total_count / $limit);
                 font-size: 0.85rem;
                 padding: 8px 12px;
                 max-width: none;
+            }
+
+            /* スマホでのカラーパレット調整 */
+            .color-palette {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+            }
+            
+            .color-option {
+                height: 35px;
+                min-height: 35px;
+            }
+
+            .color-picker-input {
+                height: 45px;
+            }
+
+            .color-section-label {
+                font-size: 0.85rem;
             }
             
             .canvas-wrapper {
@@ -1252,8 +1344,30 @@ $total_pages = ceil($total_count / $limit);
 
                     <div class="control-group">
                         <h4>背景色</h4>
-                        <input type="color" id="backgroundColor" value="#ffffff" 
-                               onchange="setBackgroundColor()" style="width: 100%; height: 40px;">
+                        
+                        <!-- プリセットカラーパレット -->
+                        <div class="color-section">
+                            <label class="color-section-label">プリセット色:</label>
+                            <div class="color-palette">
+                                <div class="color-option active" data-color="#ffffff" style="background-color: #ffffff;" title="白"></div>
+                                <div class="color-option" data-color="#f8f9fa" style="background-color: #f8f9fa;" title="ライトグレー"></div>
+                                <div class="color-option" data-color="#e9ecef" style="background-color: #e9ecef;" title="グレー"></div>
+                                <div class="color-option" data-color="#dee2e6" style="background-color: #dee2e6;" title="ダークグレー"></div>
+                                <div class="color-option" data-color="#000000" style="background-color: #000000;" title="黒"></div>
+                                <div class="color-option" data-color="#fef9e7" style="background-color: #fef9e7;" title="アイボリー"></div>
+                                <div class="color-option" data-color="#e3f2fd" style="background-color: #e3f2fd;" title="ライトブルー"></div>
+                                <div class="color-option" data-color="#f3e5f5" style="background-color: #f3e5f5;" title="ライトピンク"></div>
+                                <div class="color-option" data-color="#e8f5e8" style="background-color: #e8f5e8;" title="ライトグリーン"></div>
+                                <div class="color-option" data-color="#fff3e0" style="background-color: #fff3e0;" title="ライトオレンジ"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- カラーピッカー -->
+                        <div class="color-section">
+                            <label for="backgroundColor" class="color-section-label">カスタム色:</label>
+                            <input type="color" id="backgroundColor" value="#ffffff" 
+                                   onchange="setBackgroundColor()" class="color-picker-input">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1733,8 +1847,60 @@ $total_pages = ceil($total_count / $limit);
         }
 
         // 背景色を設定
-        function setBackgroundColor() {
+        function setBackgroundColor(color) {
+            if (color) {
+                document.getElementById('backgroundColor').value = color;
+                // プリセットパレットの選択状態を更新
+                updatePaletteSelection(color);
+            }
             redrawCanvas();
+        }
+
+        // プリセットパレットの選択状態を更新
+        function updatePaletteSelection(color) {
+            const colorOptions = document.querySelectorAll('.color-option');
+            
+            // 全てのactiveクラスを削除
+            colorOptions.forEach(option => option.classList.remove('active'));
+            
+            // 一致する色があればactiveクラスを追加
+            colorOptions.forEach(option => {
+                if (option.getAttribute('data-color').toLowerCase() === color.toLowerCase()) {
+                    option.classList.add('active');
+                }
+            });
+        }
+
+        // カラーパレットを初期化
+        function initColorPalette() {
+            const colorOptions = document.querySelectorAll('.color-option');
+            const colorPicker = document.getElementById('backgroundColor');
+            
+            // プリセットカラーのクリックイベント
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 現在のアクティブを削除
+                    document.querySelectorAll('.color-option.active').forEach(el => el.classList.remove('active'));
+                    
+                    // 新しいアクティブを設定
+                    this.classList.add('active');
+                    
+                    // 背景色を変更
+                    const color = this.getAttribute('data-color');
+                    setBackgroundColor(color);
+                });
+            });
+            
+            // カラーピッカーの変更イベント
+            colorPicker.addEventListener('input', function() {
+                updatePaletteSelection(this.value);
+                redrawCanvas();
+            });
+            
+            colorPicker.addEventListener('change', function() {
+                updatePaletteSelection(this.value);
+                redrawCanvas();
+            });
         }
 
         // 作品をダウンロード（選択枠なし）
@@ -2120,6 +2286,9 @@ $total_pages = ceil($total_count / $limit);
 
         // ページ読み込み時に保存された作業を復元
         window.addEventListener('load', function() {
+            // カラーパレットを初期化
+            initColorPalette();
+            
             const restored = loadCanvasState();
             // 復元されなかった場合は初期描画
             if (!restored) {
