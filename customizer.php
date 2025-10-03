@@ -1369,17 +1369,6 @@ $total_pages = ceil($total_count / $limit);
                                    onchange="setBackgroundColor()" class="color-picker-input">
                         </div>
                     </div>
-
-                    <div class="control-group">
-                        <h4>デバッグ設定</h4>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="checkbox" id="debugTransparency" onchange="toggleTransparencyDebug()" style="margin: 0;">
-                            透明度判定を表示
-                        </label>
-                        <small style="color: #666; font-size: 0.8rem;">
-                            チェックすると、クリック時の透明度値がコンソールに表示されます
-                        </small>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1557,11 +1546,6 @@ $total_pages = ceil($total_count / $limit);
                 // ピクセルデータを取得
                 const imageData = tempCtx.getImageData(localX, localY, 1, 1);
                 const alpha = imageData.data[3]; // アルファ値
-                
-                // デバッグ用：透明度をコンソールに出力
-                if (window.debugTransparency) {
-                    console.log(`Layer ${layer.id}: Alpha at (${localX}, ${localY}) = ${alpha}`);
-                }
                 
                 // アルファ値が一定以上なら不透明とみなす（透明度が50%以下なら当たり判定あり）
                 return alpha > 128;
@@ -1973,18 +1957,6 @@ $total_pages = ceil($total_count / $limit);
             });
         }
 
-        // 透明度デバッグを切り替え
-        function toggleTransparencyDebug() {
-            const debugCheckbox = document.getElementById('debugTransparency');
-            window.debugTransparency = debugCheckbox.checked;
-            
-            if (window.debugTransparency) {
-                console.log('透明度デバッグモードが有効になりました。レイヤーをクリックすると透明度値が表示されます。');
-            } else {
-                console.log('透明度デバッグモードが無効になりました。');
-            }
-        }
-
         // 作品をダウンロード（選択枠なし）
         function downloadCanvas() {
             // 現在の選択状態を保存
@@ -2370,9 +2342,6 @@ $total_pages = ceil($total_count / $limit);
         window.addEventListener('load', function() {
             // カラーパレットを初期化
             initColorPalette();
-            
-            // デバッグ機能を初期化
-            window.debugTransparency = false;
             
             const restored = loadCanvasState();
             // 復元されなかった場合は初期描画
