@@ -1369,6 +1369,17 @@ $total_pages = ceil($total_count / $limit);
                                    onchange="setBackgroundColor()" class="color-picker-input">
                         </div>
                     </div>
+
+                    <div class="control-group">
+                        <h4>デバッグ設定</h4>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="debugTransparency" onchange="toggleTransparencyDebug()" style="margin: 0;">
+                            透明度判定を表示
+                        </label>
+                        <small style="color: #666; font-size: 0.8rem;">
+                            チェックすると、クリック時の透明度値がコンソールに表示されます
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1501,6 +1512,65 @@ $total_pages = ceil($total_count / $limit);
                            rotatedY >= layer.y && rotatedY <= layer.y + layer.height;
             
             return isInside;
+        }
+
+        // 透過部分を考慮した当たり判定（ピクセルレベル）
+        function isPointInOpaqueArea(px, py, layer) {
+            // まず矩形内かどうかをチェック
+            if (!isPointInRotatedRect(px, py, layer)) {
+                return false;
+            }
+            
+            // 画像が読み込まれていない場合は従来の判定にフォールバック
+            if (!layer.image || !layer.image.complete) {
+                return true;
+            }
+            
+            try {
+                // 一時的なキャンバスを作成してピクセル情報を取得
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = layer.width;
+                tempCanvas.height = layer.height;
+                
+                // レイヤーの画像を一時キャンバスに描画（回転なし）
+                tempCtx.drawImage(layer.image, 0, 0, layer.width, layer.height);
+                
+                // クリック位置をレイヤー内の相対座標に変換
+                const centerX = layer.x + layer.width / 2;
+                const centerY = layer.y + layer.height / 2;
+                const rotation = -layer.rotation * Math.PI / 180; // 逆回転
+                
+                const dx = px - centerX;
+                const dy = py - centerY;
+                const rotatedX = centerX + (dx * Math.cos(rotation) - dy * Math.sin(rotation));
+                const rotatedY = centerY + (dx * Math.sin(rotation) + dy * Math.cos(rotation));
+                
+                const localX = Math.floor(rotatedX - layer.x);
+                const localY = Math.floor(rotatedY - layer.y);
+                
+                // 範囲外チェック
+                if (localX < 0 || localX >= layer.width || localY < 0 || localY >= layer.height) {
+                    return false;
+                }
+                
+                // ピクセルデータを取得
+                const imageData = tempCtx.getImageData(localX, localY, 1, 1);
+                const alpha = imageData.data[3]; // アルファ値
+                
+                // デバッグ用：透明度をコンソールに出力
+                if (window.debugTransparency) {
+                    console.log(`Layer ${layer.id}: Alpha at (${localX}, ${localY}) = ${alpha}`);
+                }
+                
+                // アルファ値が一定以上なら不透明とみなす（透明度が50%以下なら当たり判定あり）
+                return alpha > 128;
+                
+            } catch (error) {
+                console.warn('Pixel-level hit detection failed:', error);
+                // エラーの場合は従来の矩形判定にフォールバック
+                return true;
+            }
         }
 
         // ハンドルの当たり判定（回転対応）
@@ -1903,6 +1973,18 @@ $total_pages = ceil($total_count / $limit);
             });
         }
 
+        // 透明度デバッグを切り替え
+        function toggleTransparencyDebug() {
+            const debugCheckbox = document.getElementById('debugTransparency');
+            window.debugTransparency = debugCheckbox.checked;
+            
+            if (window.debugTransparency) {
+                console.log('透明度デバッグモードが有効になりました。レイヤーをクリックすると透明度値が表示されます。');
+            } else {
+                console.log('透明度デバッグモードが無効になりました。');
+            }
+        }
+
         // 作品をダウンロード（選択枠なし）
         function downloadCanvas() {
             // 現在の選択状態を保存
@@ -2055,8 +2137,8 @@ $total_pages = ceil($total_count / $limit);
                 const layer = layers[i];
 
                 
-                // 回転を考慮した当たり判定
-                if (isPointInRotatedRect(x, y, layer)) {
+                // 透過部分を考慮した当たり判定
+                if (isPointInOpaqueArea(x, y, layer)) {
 
                     newSelectedLayer = layer;
                     isDragging = true;
@@ -2288,6 +2370,9 @@ $total_pages = ceil($total_count / $limit);
         window.addEventListener('load', function() {
             // カラーパレットを初期化
             initColorPalette();
+            
+            // デバッグ機能を初期化
+            window.debugTransparency = false;
             
             const restored = loadCanvasState();
             // 復元されなかった場合は初期描画
