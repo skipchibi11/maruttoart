@@ -24,16 +24,33 @@ $offset = ($page - 1) * $limit;
 // カテゴリ一覧を取得（参考用）
 $categories = $pdo->query("SELECT * FROM categories ORDER BY categories.title ASC")->fetchAll();
 
-// 検索条件の構築（list.phpと完全に同じ方式）
+// 検索条件の構築（スペース区切りでOR検索対応）
 $whereClause = "WHERE 1=1";
 $params = [];
 $countParams = [];
 
 if (!empty($search)) {
-    $whereClause .= " AND (m.title LIKE ? OR m.description LIKE ? OR m.search_keywords LIKE ?)";
-    $searchTerm = "%{$search}%";
-    $params = [$searchTerm, $searchTerm, $searchTerm];
-    $countParams = $params;
+    // 半角・全角スペースで区切って検索キーワードを分割
+    $keywords = array_filter(array_map('trim', preg_split('/[\s　]+/u', $search)));
+    
+    if (!empty($keywords)) {
+        $searchConditions = [];
+        $searchParams = [];
+        
+        // 各キーワードに対して完全なOR検索条件を作成
+        foreach ($keywords as $keyword) {
+            $searchConditions[] = "(m.title LIKE ? OR m.description LIKE ? OR m.search_keywords LIKE ?)";
+            $searchTerm = "%{$keyword}%";
+            $searchParams[] = $searchTerm;
+            $searchParams[] = $searchTerm;
+            $searchParams[] = $searchTerm;
+        }
+        
+        // 複数のキーワードをOR条件で結合（いずれかのキーワードにマッチすればヒット）
+        $whereClause .= " AND (" . implode(" OR ", $searchConditions) . ")";
+        $params = $searchParams;
+        $countParams = $params;
+    }
 }
 
 // 総件数を取得
@@ -1235,13 +1252,17 @@ $total_pages = ceil($total_count / $limit);
                         <input type="text" 
                                name="search" 
                                value="<?= h($search) ?>" 
-                               placeholder="素材を検索（例：猫、花、食べ物など）" 
+                               placeholder="素材を検索（例：子供　野菜　夏 - スペース区切りでOR検索）" 
                                class="search-input me-2">
                         <button type="submit" class="search-button">検索</button>
                         <?php if (!empty($search)): ?>
                             <a href="<?= $_SERVER['PHP_SELF'] ?>" class="btn btn-outline-secondary ms-2">クリア</a>
                         <?php endif; ?>
                     </form>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                        <i class="fas fa-info-circle"></i> 
+                        複数のキーワードをスペースで区切ると、いずれかのキーワードを含む素材を検索できます
+                    </div>
                 </div>
             </div>
         </div>
@@ -2305,7 +2326,6 @@ $total_pages = ceil($total_count / $limit);
 
         canvas.addEventListener('touchmove', function(e) {
             e.preventDefault();
-            
             if (!e.touches || e.touches.length === 0) {
                 return;
             }
