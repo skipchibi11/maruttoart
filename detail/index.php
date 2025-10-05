@@ -404,6 +404,57 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
             text-decoration: none;
         }
         
+        /* シェアボタンのスタイル */
+        .share-section {
+            margin: 1rem 0;
+        }
+        
+        .share-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white !important;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            margin: 0 0.25rem;
+        }
+        
+        .share-button.twitter {
+            background-color: #1da1f2;
+        }
+        
+        .share-button.twitter:hover {
+            background-color: #0d8bd9;
+            box-shadow: 0 2px 4px rgba(29, 161, 242, 0.3);
+        }
+        
+        .share-button.pinterest {
+            background-color: #bd081c;
+        }
+        
+        .share-button.pinterest:hover {
+            background-color: #a50718;
+            box-shadow: 0 2px 4px rgba(189, 8, 28, 0.3);
+        }
+        
+        .share-button:hover {
+            color: white !important;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .share-button svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+        
         /* 画材のスタイル */
         .art-materials-section {
             margin-bottom: 1rem;
@@ -1120,6 +1171,47 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- シェアボタン（枠外） -->
+    <div class="container mt-3">
+        <div class="share-section text-center">
+            <?php
+            $currentUrl = urlencode(($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+            $shareText = urlencode($material['title'] . ' - ミニマルなフリーイラスト素材');
+            $twitterShareUrl = "https://twitter.com/intent/tweet?url={$currentUrl}&text={$shareText}";
+            
+            // Pinterest用のパラメータ
+            $pinterestUrl = urldecode($currentUrl);
+            $pinterestDescription = urlencode($material['title'] . ' - ミニマルなフリーイラスト素材（商用利用OK）');
+            $pinterestImageUrl = urlencode(($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . '/' . $displayImagePath);
+            $pinterestShareUrl = "https://pinterest.com/pin/create/button/?url={$currentUrl}&media={$pinterestImageUrl}&description={$pinterestDescription}";
+            ?>
+            
+            <!-- Xシェアボタン -->
+            <a href="<?= h($twitterShareUrl) ?>" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="share-button twitter"
+               onclick="gtag('event', 'share', { 'method': 'twitter', 'content_type': 'image', 'item_id': '<?= h($material['slug']) ?>' });">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                Xでシェア
+            </a>
+            
+            <!-- Pinterestシェアボタン -->
+            <a href="<?= h($pinterestShareUrl) ?>" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="share-button pinterest"
+               onclick="gtag('event', 'share', { 'method': 'pinterest', 'content_type': 'image', 'item_id': '<?= h($material['slug']) ?>' });">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.097.118.110.221.082.343-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.017 0z"/>
+                </svg>
+                Pinterestでシェア
+            </a>
         </div>
     </div>
 
