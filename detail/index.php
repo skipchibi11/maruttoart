@@ -174,85 +174,94 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
     }
     </script>
     
-    <!-- パンくずリスト構造化データ -->
-    <script type="application/ld+json">
-    <?php
-    // 現在のURLから言語を検出
-    $currentUri = $_SERVER['REQUEST_URI'] ?? '';
-    $pathParts = explode('/', trim($currentUri, '/'));
-    $detectedLang = '';
-    $langPrefix = '';
-    
-    // 対応言語リスト
-    $supportedLangs = ['en', 'es', 'fr', 'nl'];
-    
-    // URLの最初の部分が言語コードかチェック
-    if (!empty($pathParts[0]) && in_array($pathParts[0], $supportedLangs)) {
-        $detectedLang = $pathParts[0];
-        $langPrefix = '/' . $detectedLang;
-    }
-    
-    // 言語別のホーム名
-    $homeNames = [
-        '' => 'ホーム',      // 日本語（デフォルト）
-        'en' => 'Home',
-        'es' => 'Inicio',
-        'fr' => 'Accueil',
-        'nl' => 'Home'
-    ];
-    
-    $homeName = $homeNames[$detectedLang] ?? $homeNames[''];
-    $baseUrl = ($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'];
-    ?>
+    <!-- パンくずリスト構造化データ（JavaScript動的生成） -->
+    <script type="application/ld+json" id="breadcrumb-structured-data">
     {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "<?= h($homeName) ?>",
-                "item": "<?= h($baseUrl . $langPrefix) ?>/"
-            },
-            {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "<?= h($category['title']) ?>",
-                "item": "<?= h($baseUrl . $langPrefix) ?>/<?= h($category['slug']) ?>/"
-            },
-            {
-                "@type": "ListItem",
-                "position": 3,
-                "name": "<?= h($material['title']) ?>"
-            }
-        ]
+        "itemListElement": []
     }
     </script>
     
-    <!-- 言語検出デバッグログ -->
     <script>
-    // 言語検出デバッグログ（本番環境用）
-    console.log('=== 言語検出デバッグ情報 ===');
-    console.log('REQUEST_URI raw:', '<?= addslashes($currentUri) ?>');
-    console.log('REQUEST_URI trimmed:', '<?= addslashes(trim($currentUri, '/')) ?>');
-    console.log('pathParts raw:', <?= json_encode($pathParts) ?>);
-    console.log('pathParts length:', <?= count($pathParts) ?>);
-    console.log('pathParts[0] exists:', <?= json_encode(!empty($pathParts[0])) ?>);
-    console.log('pathParts[0] value:', '<?= addslashes($pathParts[0] ?? 'undefined') ?>');
-    console.log('pathParts[0] type:', typeof '<?= addslashes($pathParts[0] ?? '') ?>');
-    console.log('supportedLangs:', <?= json_encode($supportedLangs) ?>);
-    console.log('in_array check:', <?= json_encode(in_array($pathParts[0] ?? '', $supportedLangs)) ?>);
-    console.log('Combined check:', <?= json_encode(!empty($pathParts[0]) && in_array($pathParts[0], $supportedLangs)) ?>);
-    console.log('detectedLang:', '<?= addslashes($detectedLang) ?>');
-    console.log('langPrefix:', '<?= addslashes($langPrefix) ?>');
-    console.log('homeName:', '<?= addslashes($homeName) ?>');
-    console.log('baseUrl:', '<?= addslashes($baseUrl) ?>');
-    console.log('HTTP_HOST:', '<?= addslashes($_SERVER['HTTP_HOST'] ?? 'undefined') ?>');
-    console.log('Final breadcrumb URLs:');
-    console.log('  Home:', '<?= addslashes($baseUrl . $langPrefix) ?>/');
-    console.log('  Category:', '<?= addslashes($baseUrl . $langPrefix) ?>/<?= addslashes($category['slug']) ?>/');
-    console.log('=============================');
+    // GTtranslate対応：JavaScript動的パンくずリスト構造化データ生成
+    (function() {
+        // 現在のURLから言語を検出
+        const currentUrl = window.location.pathname;
+        const pathParts = currentUrl.split('/').filter(part => part !== '');
+        
+        // 対応言語リスト
+        const supportedLangs = ['en', 'es', 'fr', 'nl'];
+        
+        let detectedLang = '';
+        let langPrefix = '';
+        
+        // URLの最初の部分が言語コードかチェック
+        if (pathParts.length > 0 && supportedLangs.includes(pathParts[0])) {
+            detectedLang = pathParts[0];
+            langPrefix = '/' + detectedLang;
+        }
+        
+        // 言語別のホーム名
+        const homeNames = {
+            '': 'ホーム',      // 日本語（デフォルト）
+            'en': 'Home',
+            'es': 'Inicio',
+            'fr': 'Accueil',
+            'nl': 'Home'
+        };
+        
+        const homeName = homeNames[detectedLang] || homeNames[''];
+        const baseUrl = window.location.protocol + '//' + window.location.host;
+        
+        // パンくずリスト構造化データを動的生成
+        const breadcrumbData = {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": homeName,
+                    "item": baseUrl + langPrefix + "/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "<?= h($category['title']) ?>",
+                    "item": baseUrl + langPrefix + "/<?= h($category['slug']) ?>/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "<?= h($material['title']) ?>"
+                }
+            ]
+        };
+        
+        // 構造化データを更新
+        const scriptElement = document.getElementById('breadcrumb-structured-data');
+        if (scriptElement) {
+            scriptElement.textContent = JSON.stringify(breadcrumbData, null, 2);
+        }
+        
+        // デバッグログ
+        console.log('=== JavaScript言語検出デバッグ情報 ===');
+        console.log('currentUrl:', currentUrl);
+        console.log('pathParts:', pathParts);
+        console.log('detectedLang:', detectedLang);
+        console.log('langPrefix:', langPrefix);
+        console.log('homeName:', homeName);
+        console.log('baseUrl:', baseUrl);
+        console.log('Final breadcrumb URLs:');
+        console.log('  Home:', baseUrl + langPrefix + '/');
+        console.log('  Category:', baseUrl + langPrefix + '/<?= h($category['slug']) ?>/');
+        console.log('Generated breadcrumb data:', breadcrumbData);
+        console.log('========================================');
+    })();
     </script>
+    
+
     
     <style>
         /* リセットCSS */
