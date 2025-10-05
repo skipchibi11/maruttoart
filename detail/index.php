@@ -204,6 +204,18 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
     $homeName = $homeNames[$detectedLang] ?? $homeNames[''];
     $baseUrl = ($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'];
     ?>
+    <script>
+    // 言語検出デバッグログ（本番環境用）
+    console.log('=== 言語検出デバッグ情報 ===');
+    console.log('REQUEST_URI:', '<?= addslashes($currentUri) ?>');
+    console.log('pathParts:', <?= json_encode($pathParts) ?>);
+    console.log('detectedLang:', '<?= addslashes($detectedLang) ?>');
+    console.log('langPrefix:', '<?= addslashes($langPrefix) ?>');
+    console.log('homeName:', '<?= addslashes($homeName) ?>');
+    console.log('baseUrl:', '<?= addslashes($baseUrl) ?>');
+    console.log('supportedLangs:', <?= json_encode($supportedLangs) ?>);
+    console.log('=============================');
+    </script>
     {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
