@@ -366,23 +366,6 @@ function generateStructuredDataImage($inputPath, $outputPath, $backgroundColor) 
 }
 
 /**
- * HEXカラーをRGBに変換
- */
-function hexToRgb($hex) {
-    $hex = ltrim($hex, '#');
-    
-    if (strlen($hex) === 3) {
-        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-    }
-    
-    return [
-        'r' => hexdec(substr($hex, 0, 2)),
-        'g' => hexdec(substr($hex, 2, 2)),
-        'b' => hexdec(substr($hex, 4, 2))
-    ];
-}
-
-/**
  * メイン処理
  */
 function main($materialId = null) {
