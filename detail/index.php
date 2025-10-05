@@ -235,11 +235,17 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
     console.log('=== 言語検出デバッグ情報 ===');
     console.log('REQUEST_URI:', '<?= addslashes($currentUri) ?>');
     console.log('pathParts:', <?= json_encode($pathParts) ?>);
+    console.log('pathParts[0]:', '<?= addslashes($pathParts[0] ?? 'undefined') ?>');
+    console.log('pathParts[0] in supportedLangs:', <?= json_encode(!empty($pathParts[0]) && in_array($pathParts[0], $supportedLangs)) ?>);
     console.log('detectedLang:', '<?= addslashes($detectedLang) ?>');
     console.log('langPrefix:', '<?= addslashes($langPrefix) ?>');
     console.log('homeName:', '<?= addslashes($homeName) ?>');
     console.log('baseUrl:', '<?= addslashes($baseUrl) ?>');
+    console.log('HTTP_HOST:', '<?= addslashes($_SERVER['HTTP_HOST'] ?? 'undefined') ?>');
     console.log('supportedLangs:', <?= json_encode($supportedLangs) ?>);
+    console.log('Final breadcrumb URLs:');
+    console.log('  Home:', '<?= addslashes($baseUrl . $langPrefix) ?>/');
+    console.log('  Category:', '<?= addslashes($baseUrl . $langPrefix) ?>/<?= addslashes($category['slug']) ?>/');
     console.log('=============================');
     </script>
     
