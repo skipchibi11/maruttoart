@@ -176,6 +176,34 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
     
     <!-- パンくずリスト構造化データ -->
     <script type="application/ld+json">
+    <?php
+    // 現在のURLから言語を検出
+    $currentUri = $_SERVER['REQUEST_URI'] ?? '';
+    $pathParts = explode('/', trim($currentUri, '/'));
+    $detectedLang = '';
+    $langPrefix = '';
+    
+    // 対応言語リスト
+    $supportedLangs = ['en', 'es', 'fr', 'nl'];
+    
+    // URLの最初の部分が言語コードかチェック
+    if (!empty($pathParts[0]) && in_array($pathParts[0], $supportedLangs)) {
+        $detectedLang = $pathParts[0];
+        $langPrefix = '/' . $detectedLang;
+    }
+    
+    // 言語別のホーム名
+    $homeNames = [
+        '' => 'ホーム',      // 日本語（デフォルト）
+        'en' => 'Home',
+        'es' => 'Inicio',
+        'fr' => 'Accueil',
+        'nl' => 'Home'
+    ];
+    
+    $homeName = $homeNames[$detectedLang] ?? $homeNames[''];
+    $baseUrl = ($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'];
+    ?>
     {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -183,14 +211,14 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
             {
                 "@type": "ListItem",
                 "position": 1,
-                "name": "ホーム",
-                "item": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/"
+                "name": "<?= h($homeName) ?>",
+                "item": "<?= h($baseUrl . $langPrefix) ?>/"
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "<?= h($category['title']) ?>",
-                "item": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/"
+                "item": "<?= h($baseUrl . $langPrefix) ?>/<?= h($category['slug']) ?>/"
             },
             {
                 "@type": "ListItem",
