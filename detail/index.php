@@ -174,6 +174,33 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
     }
     </script>
     
+    <!-- パンくずリスト構造化データ -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "ホーム",
+                "item": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "<?= h($category['title']) ?>",
+                "item": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "<?= h($material['title']) ?>"
+            }
+        ]
+    }
+    </script>
+    
     <style>
         /* リセットCSS */
         * {
