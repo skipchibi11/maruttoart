@@ -244,20 +244,6 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
         if (scriptElement) {
             scriptElement.textContent = JSON.stringify(breadcrumbData, null, 2);
         }
-        
-        // デバッグログ
-        console.log('=== JavaScript言語検出デバッグ情報 ===');
-        console.log('currentUrl:', currentUrl);
-        console.log('pathParts:', pathParts);
-        console.log('detectedLang:', detectedLang);
-        console.log('langPrefix:', langPrefix);
-        console.log('homeName:', homeName);
-        console.log('baseUrl:', baseUrl);
-        console.log('Final breadcrumb URLs:');
-        console.log('  Home:', baseUrl + langPrefix + '/');
-        console.log('  Category:', baseUrl + langPrefix + '/<?= h($category['slug']) ?>/');
-        console.log('Generated breadcrumb data:', breadcrumbData);
-        console.log('========================================');
     })();
     </script>
     
