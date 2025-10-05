@@ -35,16 +35,22 @@ function getBackgroundColorFromAI($imagePath) {
     $prompt = "この画像を分析して、構造化データ用の背景として最適なペールトーン（薄い色調）の背景色を1つ提案してください。
 
 要件：
-- 画像の主要な色調と調和する色
-- ペールトーン（明度80%以上）
+- 画像の主要な色調と十分なコントラストを持つ色（同化を避ける）
+- ペールトーン（明度80%以上）で、かつ画像の主要色と明確に区別できる色
+- 画像が背景に埋もれず、輪郭がはっきり見える色
 - 構造化データやソーシャルメディアでの表示に適した色
-- 画像が見やすくなる色
+- 補色や対比色の概念を活用した選択
+
+優先順位：
+1. 画像とのコントラスト（最重要）
+2. 見やすさ・読みやすさ
+3. 色調の調和
 
 回答は以下のJSONフォーマットのみで返してください。コードブロック（```）は使用せず、直接JSONを返してください：
 {
   \"background_color\": \"#RRGGBB\",
   \"color_name\": \"色の名前（日本語）\",
-  \"reasoning\": \"選択理由\"
+  \"reasoning\": \"選択理由（コントラストの根拠を含む）\"
 }";
 
     $postData = [
@@ -116,6 +122,166 @@ function getBackgroundColorFromAI($imagePath) {
     }
 
     return $colorData;
+}
+
+/**
+ * 16進カラーをRGB配列に変換
+ */
+function hexToRgb($hex) {
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) === 3) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
+    return [
+        'r' => hexdec(substr($hex, 0, 2)),
+        'g' => hexdec(substr($hex, 2, 2)),
+        'b' => hexdec(substr($hex, 4, 2))
+    ];
+}
+
+/**
+ * 画像の主要色を取得（簡易版）
+ */
+function getDominantColor($imagePath) {
+    $image = null;
+    $imageInfo = getimagesize($imagePath);
+    
+    switch ($imageInfo[2]) {
+        case IMAGETYPE_JPEG:
+            $image = imagecreatefromjpeg($imagePath);
+            break;
+        case IMAGETYPE_PNG:
+            $image = imagecreatefrompng($imagePath);
+            break;
+        case IMAGETYPE_WEBP:
+            $image = imagecreatefromwebp($imagePath);
+            break;
+        default:
+            return null;
+    }
+    
+    if (!$image) return null;
+    
+    // 画像を小さくリサイズして処理速度向上
+    $width = imagesx($image);
+    $height = imagesy($image);
+    $sample_size = 50;
+    
+    $sample = imagecreatetruecolor($sample_size, $sample_size);
+    imagecopyresampled($sample, $image, 0, 0, 0, 0, $sample_size, $sample_size, $width, $height);
+    
+    $colors = [];
+    for ($x = 0; $x < $sample_size; $x++) {
+        for ($y = 0; $y < $sample_size; $y++) {
+            $rgb = imagecolorat($sample, $x, $y);
+            $r = ($rgb >> 16) & 0xFF;
+            $g = ($rgb >> 8) & 0xFF;
+            $b = $rgb & 0xFF;
+            
+            // 透明ピクセルをスキップ
+            $a = ($rgb >> 24) & 0x7F;
+            if ($a > 100) continue;
+            
+            $key = sprintf('%02x%02x%02x', $r, $g, $b);
+            $colors[$key] = ($colors[$key] ?? 0) + 1;
+        }
+    }
+    
+    imagedestroy($image);
+    imagedestroy($sample);
+    
+    if (empty($colors)) return null;
+    
+    // 最も頻出する色を返す
+    arsort($colors);
+    $dominantHex = key($colors);
+    return hexToRgb('#' . $dominantHex);
+}
+
+/**
+ * 色の明度を計算（0-255）
+ */
+function getLuminance($rgb) {
+    $r = $rgb['r'] / 255;
+    $g = $rgb['g'] / 255;
+    $b = $rgb['b'] / 255;
+    
+    // sRGB補正
+    $r = $r <= 0.03928 ? $r / 12.92 : pow(($r + 0.055) / 1.055, 2.4);
+    $g = $g <= 0.03928 ? $g / 12.92 : pow(($g + 0.055) / 1.055, 2.4);
+    $b = $b <= 0.03928 ? $b / 12.92 : pow(($b + 0.055) / 1.055, 2.4);
+    
+    return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+}
+
+/**
+ * 2色間のコントラスト比を計算
+ */
+function getContrastRatio($color1, $color2) {
+    $lum1 = getLuminance($color1);
+    $lum2 = getLuminance($color2);
+    
+    $lighter = max($lum1, $lum2);
+    $darker = min($lum1, $lum2);
+    
+    return ($lighter + 0.05) / ($darker + 0.05);
+}
+
+/**
+ * コントラストが不十分な場合の安全な背景色を取得
+ */
+function getSafeBackgroundColor($dominantColor) {
+    $luminance = getLuminance($dominantColor);
+    
+    // 主要色が明るい場合は暗いペールトーン、暗い場合は明るいペールトーンを返す
+    if ($luminance > 0.5) {
+        // 明るい主要色 → 暗めのペールトーン
+        return ['r' => 240, 'g' => 245, 'b' => 250]; // ライトブルーグレー
+    } else {
+        // 暗い主要色 → 明るいペールトーン
+        return ['r' => 255, 'g' => 253, 'b' => 245]; // ウォームホワイト
+    }
+}
+
+/**
+ * 背景色をコントラストチェック付きで取得
+ */
+function getOptimizedBackgroundColor($imagePath) {
+    try {
+        // AI分析で背景色を取得
+        $aiResult = getBackgroundColorFromAI($imagePath);
+        $aiBackgroundColor = hexToRgb($aiResult['background_color']);
+        
+        // 画像の主要色を取得
+        $dominantColor = getDominantColor($imagePath);
+        
+        if ($dominantColor) {
+            // コントラスト比をチェック
+            $contrastRatio = getContrastRatio($aiBackgroundColor, $dominantColor);
+            echo "  コントラスト比: " . number_format($contrastRatio, 2) . "\n";
+            
+            // コントラスト比が2.0未満の場合は安全な背景色を使用
+            if ($contrastRatio < 2.0) {
+                echo "  コントラスト不足を検出。安全な背景色に変更します。\n";
+                $safeColor = getSafeBackgroundColor($dominantColor);
+                $aiResult['background_color'] = sprintf('#%02x%02x%02x', $safeColor['r'], $safeColor['g'], $safeColor['b']);
+                $aiResult['color_name'] = 'セーフカラー（コントラスト調整済み）';
+                $aiResult['reasoning'] = '元の提案色とのコントラスト不足のため、視認性を重視した色に変更';
+            }
+        }
+        
+        return $aiResult;
+        
+    } catch (Exception $e) {
+        echo "  AI分析エラー: " . $e->getMessage() . "\n";
+        echo "  フォールバック: デフォルト背景色を使用\n";
+        
+        return [
+            'background_color' => '#f8f9fa',
+            'color_name' => 'ライトグレー（フォールバック）',
+            'reasoning' => 'AI分析エラーのためデフォルト色を使用'
+        ];
+    }
 }
 
 /**
@@ -255,9 +421,9 @@ function main($materialId = null) {
                     continue;
                 }
 
-                // OpenAIで背景色を決定
-                echo "  OpenAIで背景色を分析中...\n";
-                $colorData = getBackgroundColorFromAI($inputPath);
+                // コントラストチェック付きで背景色を決定
+                echo "  背景色を分析中（コントラストチェック付き）...\n";
+                $colorData = getOptimizedBackgroundColor($inputPath);
                 echo "  背景色: {$colorData['background_color']} ({$colorData['color_name']})\n";
                 echo "  理由: {$colorData['reasoning']}\n";
 

@@ -1285,9 +1285,20 @@ $total_pages = ceil($total_count / $limit);
                 <div class="col-12">
                     <div class="materials-grid">
                         <?php foreach ($materials as $material): ?>
+                            <?php
+                                // 軽量版WebPのパスを生成
+                                $imagePath = $material['image_path'];
+                                $pathInfo = pathinfo($imagePath);
+                                $thumbnailPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '_small.webp';
+                                
+                                // 軽量版が存在しない場合は元のファイルを使用
+                                if (!file_exists($_SERVER['DOCUMENT_ROOT'] . '/' . $thumbnailPath)) {
+                                    $thumbnailPath = $imagePath;
+                                }
+                            ?>
                             <div class="material-item" 
                                  onclick="showMaterialPopup('<?= h($material['image_path']) ?>', '<?= h($material['title']) ?>')">
-                                <img src="/<?= h($material['image_path']) ?>" 
+                                <img src="/<?= h($thumbnailPath) ?>" 
                                      alt="<?= h($material['title']) ?>"
                                      loading="lazy">
                             </div>
@@ -1701,6 +1712,22 @@ $total_pages = ceil($total_count / $limit);
         let currentMaterialPath = '';
         let currentMaterialTitle = '';
 
+        // 軽量版WebPのパスを生成するヘルパー関数
+        function generateThumbnailPath(imagePath) {
+            // パスの拡張子を取得
+            const lastDotIndex = imagePath.lastIndexOf('.');
+            const lastSlashIndex = imagePath.lastIndexOf('/');
+            
+            if (lastDotIndex > lastSlashIndex) {
+                // 拡張子がある場合
+                const pathWithoutExt = imagePath.substring(0, lastDotIndex);
+                return pathWithoutExt + '_small.webp';
+            } else {
+                // 拡張子がない場合
+                return imagePath + '_small.webp';
+            }
+        }
+
         // 素材ポップアップを表示
         function showMaterialPopup(imagePath, title) {
             // 画像パスの基本的な検証
@@ -1712,7 +1739,9 @@ $total_pages = ceil($total_count / $limit);
             currentMaterialPath = imagePath;
             currentMaterialTitle = title;
             
-            document.getElementById('popupImage').src = '/' + imagePath;
+            // ポップアップでは軽量版WebPを使用
+            const thumbnailPath = generateThumbnailPath(imagePath);
+            document.getElementById('popupImage').src = '/' + thumbnailPath;
             document.getElementById('popupTitle').textContent = title;
             document.getElementById('materialPopup').style.display = 'flex';
         }
@@ -1755,6 +1784,7 @@ $total_pages = ceil($total_count / $limit);
                 return;
             }
             
+            // キャンバスには高画質版を使用（imagePathは元ファイルのパス）
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = function() {
