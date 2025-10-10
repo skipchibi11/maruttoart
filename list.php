@@ -11,8 +11,8 @@ $perPage =  50; // 1ページあたりの表示件数
 $page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
 $offset = ($page - 1) * $perPage;
 
-// 検索処理
-$search = $_GET['search'] ?? '';
+// 検索処理（qパラメータを使用、下位互換のためsearchも受け取る）
+$search = $_GET['q'] ?? $_GET['search'] ?? '';
 $whereClause = "WHERE 1=1";
 $params = [];
 $countParams = [];
@@ -946,7 +946,7 @@ $materials = $stmt->fetchAll();
                 <div class="search-form">
                     <form method="GET" action="/list.php" class="d-flex align-items-center">
                         <input type="text" 
-                               name="search" 
+                               name="q" 
                                value="<?= h($search) ?>" 
                                placeholder="素材を検索（例：猫、花、食べ物など）" 
                                class="search-input form-control me-2">
@@ -962,11 +962,21 @@ $materials = $stmt->fetchAll();
         <div class="row">
             <?php foreach ($materials as $material): ?>
             <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
-                <?php if (!empty($material['category_slug'])): ?>
-                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
-                <?php else: ?>
-                    <a href="/detail/<?= h($material['slug']) ?>" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
-                <?php endif; ?>
+                <?php 
+                // 詳細ページのURLを生成（検索パラメータ付き）
+                $detailUrl = '';
+                if (!empty($material['category_slug'])) {
+                    $detailUrl = "/{$material['category_slug']}/{$material['slug']}/";
+                } else {
+                    $detailUrl = "/detail/{$material['slug']}";
+                }
+                
+                                // 検索クエリがある場合はパラメータを追加
+                if (!empty($search)) {
+                    $detailUrl .= '?from=search&q=' . urlencode($search);
+                }
+                ?>
+                <a href="<?= h($detailUrl) ?>" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
                     <?php
                     // レスポンシブ画像の設定
                     $smallImage = $material['webp_small_path'] ?? $material['image_path'];
@@ -1001,7 +1011,7 @@ $materials = $stmt->fetchAll();
                     <div class="pagination-container">
                         <!-- 前のページ -->
                         <?php if ($page > 1): ?>
-                            <a href="?page=<?= $page - 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" 
+                            <a href="?page=<?= $page - 1 ?><?= !empty($search) ? '&q=' . urlencode($search) : '' ?>" 
                                class="pagination-btn">
                                 前へ
                             </a>
@@ -1009,7 +1019,7 @@ $materials = $stmt->fetchAll();
 
                         <!-- 次のページ -->
                         <?php if ($page < $totalPages): ?>
-                            <a href="?page=<?= $page + 1 ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?>" 
+                            <a href="?page=<?= $page + 1 ?><?= !empty($search) ? '&q=' . urlencode($search) : '' ?>" 
                                class="pagination-btn">
                                 次へ
                             </a>

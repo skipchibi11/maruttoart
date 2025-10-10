@@ -40,14 +40,110 @@ if (!$material) {
 // 素材に関連付けられたタグを取得
 $materialTags = getMaterialTags($material['id'], $pdo);
 
-// 同じカテゴリ内での前後の素材を取得
-$prevStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id < ? ORDER BY id DESC LIMIT 1");
-$prevStmt->execute([$category['id'], $material['id']]);
-$prevMaterial = $prevStmt->fetch();
+// リファラーから検索やタグページからのアクセスかを判定
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+$searchQuery = '';
+$tagSlug = '';
+$isFromSearch = false;
+$isFromTag = false;
 
-$nextStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id > ? ORDER BY id ASC LIMIT 1");
-$nextStmt->execute([$category['id'], $material['id']]);
-$nextMaterial = $nextStmt->fetch();
+// URLパラメータもチェック（直接アクセスの場合）
+$fromSearch = $_GET['from'] ?? '';
+$searchParam = $_GET['q'] ?? '';
+$tagParam = $_GET['tag'] ?? '';
+
+if ($fromSearch === 'search' && !empty($searchParam)) {
+    $isFromSearch = true;
+    $searchQuery = $searchParam;
+} elseif ($fromSearch === 'tag' && !empty($tagParam)) {
+    $isFromTag = true;
+    $tagSlug = $tagParam;
+} elseif (strpos($referer, '/list.php') !== false && strpos($referer, 'q=') !== false) {
+    // 検索結果からのアクセス
+    $isFromSearch = true;
+    parse_str(parse_url($referer, PHP_URL_QUERY), $queryParams);
+    $searchQuery = $queryParams['q'] ?? '';
+} elseif (strpos($referer, '/tag/') !== false) {
+    // タグページからのアクセス
+    $isFromTag = true;
+    $refererPath = parse_url($referer, PHP_URL_PATH);
+    if (preg_match('/\/tag\/([^\/]+)\/?/', $refererPath, $matches)) {
+        $tagSlug = $matches[1];
+    }
+}
+
+// 前後の素材を取得（コンテキストに応じて）
+$prevMaterial = null;
+$nextMaterial = null;
+
+if ($isFromSearch && !empty($searchQuery)) {
+    // 検索結果内での前後
+    $searchTerms = explode(' ', $searchQuery);
+    $searchConditions = [];
+    $searchParams = [];
+    
+    foreach ($searchTerms as $term) {
+        if (!empty(trim($term))) {
+            $searchConditions[] = "(m.title LIKE ? OR m.description LIKE ?)";
+            $searchParams[] = '%' . trim($term) . '%';
+            $searchParams[] = '%' . trim($term) . '%';
+        }
+    }
+    
+    if (!empty($searchConditions)) {
+        $searchWhere = implode(' AND ', $searchConditions);
+        
+        // 前の素材
+        $prevQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
+                     JOIN categories c ON m.category_id = c.id 
+                     WHERE ($searchWhere) AND m.id < ? 
+                     ORDER BY m.id DESC LIMIT 1";
+        $prevParams = array_merge($searchParams, [$material['id']]);
+        $prevStmt = $pdo->prepare($prevQuery);
+        $prevStmt->execute($prevParams);
+        $prevMaterial = $prevStmt->fetch();
+        
+        // 次の素材
+        $nextQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
+                     JOIN categories c ON m.category_id = c.id 
+                     WHERE ($searchWhere) AND m.id > ? 
+                     ORDER BY m.id ASC LIMIT 1";
+        $nextParams = array_merge($searchParams, [$material['id']]);
+        $nextStmt = $pdo->prepare($nextQuery);
+        $nextStmt->execute($nextParams);
+        $nextMaterial = $nextStmt->fetch();
+    }
+} elseif ($isFromTag && !empty($tagSlug)) {
+    // タグ内での前後
+    $prevQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
+                 JOIN categories c ON m.category_id = c.id 
+                 JOIN material_tags mt ON m.id = mt.material_id 
+                 JOIN tags t ON mt.tag_id = t.id 
+                 WHERE t.slug = ? AND m.id < ? 
+                 ORDER BY m.id DESC LIMIT 1";
+    $prevStmt = $pdo->prepare($prevQuery);
+    $prevStmt->execute([$tagSlug, $material['id']]);
+    $prevMaterial = $prevStmt->fetch();
+    
+    $nextQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
+                 JOIN categories c ON m.category_id = c.id 
+                 JOIN material_tags mt ON m.id = mt.material_id 
+                 JOIN tags t ON mt.tag_id = t.id 
+                 WHERE t.slug = ? AND m.id > ? 
+                 ORDER BY m.id ASC LIMIT 1";
+    $nextStmt = $pdo->prepare($nextQuery);
+    $nextStmt->execute([$tagSlug, $material['id']]);
+    $nextMaterial = $nextStmt->fetch();
+} else {
+    // デフォルト：同じカテゴリ内での前後の素材を取得
+    $prevStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id < ? ORDER BY id DESC LIMIT 1");
+    $prevStmt->execute([$category['id'], $material['id']]);
+    $prevMaterial = $prevStmt->fetch();
+
+    $nextStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id > ? ORDER BY id ASC LIMIT 1");
+    $nextStmt->execute([$category['id'], $material['id']]);
+    $nextMaterial = $nextStmt->fetch();
+}
 
 // ツイート用テキストを生成
 function createTweetText($title) {
@@ -1210,7 +1306,52 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
                          fetchpriority="high"
                          style="display: block; max-width: 100%; width: 100%; margin: 0 auto;">
                     
-                    <!-- ダウンロードリンクを画像の直下に配置 -->
+                    <!-- 前へ・次へナビゲーション（ダウンロードリンクの上） -->
+                    <div class="nav-container mb-4">
+                        <?php if ($prevMaterial): ?>
+                            <?php
+                            // リンクURLを生成（コンテキストに応じて）
+                            $prevUrl = '';
+                            if ($isFromSearch && !empty($searchQuery)) {
+                                $prevCategorySlug = $prevMaterial['category_slug'] ?? $category['slug'];
+                                $prevUrl = "/{$prevCategorySlug}/{$prevMaterial['slug']}/?from=search&q=" . urlencode($searchQuery);
+                            } elseif ($isFromTag && !empty($tagSlug)) {
+                                $prevCategorySlug = $prevMaterial['category_slug'] ?? $category['slug'];
+                                $prevUrl = "/{$prevCategorySlug}/{$prevMaterial['slug']}/?from=tag&tag=" . urlencode($tagSlug);
+                            } else {
+                                $prevUrl = "/{$category['slug']}/{$prevMaterial['slug']}/";
+                            }
+                            ?>
+                            <a href="<?= h($prevUrl) ?>" class="nav-button">
+                                ← 前へ
+                            </a>
+                        <?php else: ?>
+                            <span class="nav-button nav-button-disabled">← 前へ</span>
+                        <?php endif; ?>
+                        
+                        <?php if ($nextMaterial): ?>
+                            <?php
+                            // リンクURLを生成（コンテキストに応じて）
+                            $nextUrl = '';
+                            if ($isFromSearch && !empty($searchQuery)) {
+                                $nextCategorySlug = $nextMaterial['category_slug'] ?? $category['slug'];
+                                $nextUrl = "/{$nextCategorySlug}/{$nextMaterial['slug']}/?from=search&q=" . urlencode($searchQuery);
+                            } elseif ($isFromTag && !empty($tagSlug)) {
+                                $nextCategorySlug = $nextMaterial['category_slug'] ?? $category['slug'];
+                                $nextUrl = "/{$nextCategorySlug}/{$nextMaterial['slug']}/?from=tag&tag=" . urlencode($tagSlug);
+                            } else {
+                                $nextUrl = "/{$category['slug']}/{$nextMaterial['slug']}/";
+                            }
+                            ?>
+                            <a href="<?= h($nextUrl) ?>" class="nav-button">
+                                次へ →
+                            </a>
+                        <?php else: ?>
+                            <span class="nav-button nav-button-disabled">次へ →</span>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <!-- ダウンロードリンク -->
                     <div class="mb-4">
                         <a href="/<?= h($material['image_path']) ?>" download class="download-link">
                             <?= h($material['title']) ?>をダウンロード
@@ -1289,26 +1430,7 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
         </div>
     </div>
 
-    <!-- 前へ・次へナビゲーション -->
-    <div class="container mt-4">
-        <div class="nav-container">
-            <?php if ($prevMaterial): ?>
-                <a href="/<?= h($category['slug']) ?>/<?= h($prevMaterial['slug']) ?>/" class="nav-button">
-                    ← 前へ
-                </a>
-            <?php else: ?>
-                <span class="nav-button nav-button-disabled">← 前へ</span>
-            <?php endif; ?>
-            
-            <?php if ($nextMaterial): ?>
-                <a href="/<?= h($category['slug']) ?>/<?= h($nextMaterial['slug']) ?>/" class="nav-button">
-                    次へ →
-                </a>
-            <?php else: ?>
-                <span class="nav-button nav-button-disabled">次へ →</span>
-            <?php endif; ?>
-        </div>
-    </div>
+
 
     <!-- 他のイラストを見るボタン -->
     <div class="container mt-4 mb-5">

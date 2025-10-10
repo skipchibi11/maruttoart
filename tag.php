@@ -470,7 +470,11 @@ $materials = $materialsStmt->fetchAll();
             <!-- 素材一覧 -->
             <div class="materials-grid">
                 <?php foreach ($materials as $material): ?>
-                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-card">
+                    <?php
+                    // 詳細ページのURL（タグパラメータ付き）
+                    $detailUrl = "/{$material['category_slug']}/{$material['slug']}/?from=tag&tag=" . urlencode($tag_slug);
+                    ?>
+                    <a href="<?= h($detailUrl) ?>" class="material-card">
                         <picture>
                             <!-- デスクトップ用：300x300のWebP -->
                             <source media="(min-width: 768px)" 
