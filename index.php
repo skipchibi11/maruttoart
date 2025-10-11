@@ -929,11 +929,6 @@ if ($tileCount > 0) {
 
         /* レスポンシブ調整 */
         @media (max-width: 768px) {
-            .material-image {
-                height: auto;
-                min-height: 200px;
-                max-height: 250px;
-            }
             .navbar-brand {
                 font-size: 1.5rem;
             }
@@ -968,10 +963,6 @@ if ($tileCount > 0) {
         }
 
         @media (max-width: 576px) {
-            .material-image {
-                min-height: 180px;
-                max-height: 200px;
-            }
             .card-body {
                 padding: 0.75rem;
             }
