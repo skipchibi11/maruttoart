@@ -387,10 +387,19 @@ $materials = $stmt->fetchAll();
 
         .material-image {
             width: 100%;
+            height: auto;
             aspect-ratio: 1 / 1;
             object-fit: contain;
             border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
+        }
+        
+        /* aspect-ratioをサポートしていないブラウザ向けフォールバック */
+        @supports not (aspect-ratio: 1 / 1) {
+            .material-image {
+                height: 0;
+                padding-bottom: 100%;
+            }
         }
 
         /* Lazyload用のスタイル */
@@ -638,11 +647,6 @@ $materials = $stmt->fetchAll();
 
         /* レスポンシブ調整 */
         @media (max-width: 768px) {
-            .material-image {
-                height: auto;
-                min-height: 200px;
-                max-height: 250px;
-            }
             .navbar-brand {
                 font-size: 1.5rem;
             }
@@ -662,10 +666,6 @@ $materials = $stmt->fetchAll();
         }
 
         @media (max-width: 576px) {
-            .material-image {
-                min-height: 180px;
-                max-height: 200px;
-            }
             .card-body {
                 padding: 0.5rem 0.75rem 0.1rem 0.75rem;
             }
