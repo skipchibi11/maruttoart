@@ -336,6 +336,7 @@ $materials = $stmt->fetchAll();
             position: relative;
             border-radius: 8px;
             will-change: transform, box-shadow;
+            background-color: #F9F5E9;
             margin-bottom: 0.5rem;
             padding: 20px;
             overflow: hidden;
@@ -390,7 +391,6 @@ $materials = $stmt->fetchAll();
             object-fit: contain;
             border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
-            background-color: #F9F5E9;
         }
 
         /* Lazyload用のスタイル */
@@ -982,8 +982,7 @@ $materials = $stmt->fetchAll();
                    class="card material-card h-100" 
                    role="button" 
                    tabindex="0" 
-                   aria-label="<?= h($material['title']) ?>の詳細を見る"
-                   style="background-color: <?= h($backgroundColor) ?>;">
+                   aria-label="<?= h($material['title']) ?>の詳細を見る">
                     <?php
                     // レスポンシブ画像の設定
                     $smallImage = $material['webp_small_path'] ?? $material['image_path'];
@@ -999,7 +998,8 @@ $materials = $stmt->fetchAll();
                              class="material-image" 
                              alt="<?= h($material['title']) ?>のイラスト"
                              loading="lazy"
-                             decoding="async">
+                             decoding="async"
+                             style="background-color: <?= h($backgroundColor) ?>;"
                     </picture>
                     
                     <div class="card-body">

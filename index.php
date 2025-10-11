@@ -537,6 +537,7 @@ if ($tileCount > 0) {
             position: relative;
             border-radius: 8px;
             will-change: transform, box-shadow;
+            background-color: #F9F5E9;
             margin-bottom: 0.5rem;
             padding: 20px;
             overflow: hidden;
@@ -591,7 +592,6 @@ if ($tileCount > 0) {
             object-fit: contain;
             border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
-            background-color: #F9F5E9;
         }
 
         /* Lazyload用のスタイル */
@@ -1206,6 +1206,7 @@ if ($tileCount > 0) {
 
         /* カード風デザイン */
         .material-tile-card {
+            background: white;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* より薄いシャドウ */
             overflow: hidden;
@@ -1356,15 +1357,13 @@ if ($tileCount > 0) {
                        class="card material-card h-100" 
                        role="button" 
                        tabindex="0" 
-                       aria-label="<?= h($material['title']) ?>の詳細を見る"
-                       style="background-color: <?= h($backgroundColor) ?>;">
+                       aria-label="<?= h($material['title']) ?>の詳細を見る">
                 <?php else: ?>
                     <a href="/detail/<?= h($material['slug']) ?>" 
                        class="card material-card h-100" 
                        role="button" 
                        tabindex="0" 
-                       aria-label="<?= h($material['title']) ?>の詳細を見る"
-                       style="background-color: <?= h($backgroundColor) ?>;">
+                       aria-label="<?= h($material['title']) ?>の詳細を見る">
                 <?php endif; ?>
                     <?php
                     // レスポンシブ画像の設定
@@ -1381,7 +1380,8 @@ if ($tileCount > 0) {
                              class="material-image" 
                              alt="<?= h($material['title']) ?>のイラスト"
                              loading="lazy"
-                             decoding="async">
+                             decoding="async"
+                             style="background-color: <?= h($backgroundColor) ?>;"
                     </picture>
                     
                     <div class="card-body">
@@ -1486,7 +1486,7 @@ if ($tileCount > 0) {
                     // AIが指定した背景色を取得（フォールバックは白）
                     $tileBackgroundColor = $material['structured_bg_color'] ?? '#ffffff';
                     ?>
-                    <div class="material-tile-card" style="background-color: <?= h($tileBackgroundColor) ?>;">
+                    <div class="material-tile-card">
                         <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-tile-link">
                             <picture>
                                 <!-- スマホ: 180x180のWebP画像 -->
@@ -1498,7 +1498,8 @@ if ($tileCount > 0) {
                                      alt="<?= h($material['title']) ?>" 
                                      class="material-tile-image"
                                      loading="lazy"
-                                     decoding="async">
+                                     decoding="async"
+                                     style="background-color: <?= h($tileBackgroundColor) ?>;"
                             </picture>
                         </a>
                     </div>

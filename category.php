@@ -262,6 +262,7 @@ $materials = $materialsStmt->fetchAll();
             position: relative;
             border-radius: 8px;
             will-change: transform, box-shadow;
+            background-color: #F9F5E9;
             margin-bottom: 0.5rem;
             padding: 20px;
             overflow: hidden;
@@ -288,6 +289,7 @@ $materials = $materialsStmt->fetchAll();
             object-fit: contain;
             border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
+            background-color: #F9F5E9;
         }
 
         .material-card-body {
@@ -632,7 +634,7 @@ $materials = $materialsStmt->fetchAll();
                     // AIが指定した背景色を取得（フォールバックは従来の色）
                     $backgroundColor = $material['structured_bg_color'] ?? '#F9F5E9';
                     ?>
-                    <a href="/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" class="material-card" style="background-color: <?= h($backgroundColor) ?>;">
+                    <a href="/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" class="material-card">
                         <picture>
                             <!-- デスクトップ用：300x300のWebP -->
                             <source media="(min-width: 768px)" 
@@ -646,7 +648,8 @@ $materials = $materialsStmt->fetchAll();
                             <img src="/<?= h($material['image_path']) ?>" 
                                  class="material-image" 
                                  alt="<?= h($material['title']) ?>のイラスト" 
-                                 loading="lazy">
+                                 loading="lazy"
+                                 style="background-color: <?= h($backgroundColor) ?>;"
                         </picture>
                         
                         <div class="material-card-body">
