@@ -999,7 +999,7 @@ $materials = $stmt->fetchAll();
                              alt="<?= h($material['title']) ?>のイラスト"
                              loading="lazy"
                              decoding="async"
-                             style="background-color: <?= h($backgroundColor) ?>;"
+                             style="background-color: <?= h($backgroundColor) ?>;">
                     </picture>
                     
                     <div class="card-body">

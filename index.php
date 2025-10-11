@@ -1381,7 +1381,7 @@ if ($tileCount > 0) {
                              alt="<?= h($material['title']) ?>のイラスト"
                              loading="lazy"
                              decoding="async"
-                             style="background-color: <?= h($backgroundColor) ?>;"
+                             style="background-color: <?= h($backgroundColor) ?>;">
                     </picture>
                     
                     <div class="card-body">
@@ -1499,7 +1499,7 @@ if ($tileCount > 0) {
                                      class="material-tile-image"
                                      loading="lazy"
                                      decoding="async"
-                                     style="background-color: <?= h($tileBackgroundColor) ?>;"
+                                     style="background-color: <?= h($tileBackgroundColor) ?>;">
                             </picture>
                         </a>
                     </div>

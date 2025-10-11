@@ -289,7 +289,6 @@ $materials = $materialsStmt->fetchAll();
             object-fit: contain;
             border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
-            background-color: #F9F5E9;
         }
 
         .material-card-body {
