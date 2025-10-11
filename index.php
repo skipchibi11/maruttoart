@@ -6,7 +6,7 @@ setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
 $pdo = getDB();
 
-// トップページは新着6件のみ表示
+// トップページは新着6件のみ表示（背景色情報も取得）
 $sql = "SELECT m.*, c.slug as category_slug FROM materials m 
         LEFT JOIN categories c ON m.category_id = c.id 
         ORDER BY m.created_at DESC LIMIT 6";
@@ -537,7 +537,6 @@ if ($tileCount > 0) {
             position: relative;
             border-radius: 8px;
             will-change: transform, box-shadow;
-            background-color: #F9F5E9;
             margin-bottom: 0.5rem;
             padding: 20px;
             overflow: hidden;
@@ -1207,7 +1206,6 @@ if ($tileCount > 0) {
 
         /* カード風デザイン */
         .material-tile-card {
-            background: white;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* より薄いシャドウ */
             overflow: hidden;
@@ -1349,10 +1347,24 @@ if ($tileCount > 0) {
         <div class="row">
             <?php foreach ($materials as $material): ?>
             <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
+                <?php 
+                // AIが指定した背景色を取得（フォールバックは従来の色）
+                $backgroundColor = $material['structured_bg_color'] ?? '#F9F5E9';
+                ?>
                 <?php if (!empty($material['category_slug'])): ?>
-                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
+                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" 
+                       class="card material-card h-100" 
+                       role="button" 
+                       tabindex="0" 
+                       aria-label="<?= h($material['title']) ?>の詳細を見る"
+                       style="background-color: <?= h($backgroundColor) ?>;">
                 <?php else: ?>
-                    <a href="/detail/<?= h($material['slug']) ?>" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
+                    <a href="/detail/<?= h($material['slug']) ?>" 
+                       class="card material-card h-100" 
+                       role="button" 
+                       tabindex="0" 
+                       aria-label="<?= h($material['title']) ?>の詳細を見る"
+                       style="background-color: <?= h($backgroundColor) ?>;">
                 <?php endif; ?>
                     <?php
                     // レスポンシブ画像の設定
@@ -1471,8 +1483,10 @@ if ($tileCount > 0) {
                     // レスポンシブ画像の設定（新着画像と同じ方法）
                     $smallImage = $material['webp_small_path'] ?? $material['image_path'];
                     $mediumImage = $material['webp_medium_path'] ?? $material['image_path'];
+                    // AIが指定した背景色を取得（フォールバックは白）
+                    $tileBackgroundColor = $material['structured_bg_color'] ?? '#ffffff';
                     ?>
-                    <div class="material-tile-card">
+                    <div class="material-tile-card" style="background-color: <?= h($tileBackgroundColor) ?>;">
                         <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-tile-link">
                             <picture>
                                 <!-- スマホ: 180x180のWebP画像 -->

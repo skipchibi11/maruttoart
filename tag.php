@@ -335,7 +335,6 @@ $materials = $materialsStmt->fetchAll();
             position: relative;
             border-radius: 8px;
             will-change: transform, box-shadow;
-            background-color: #F9F5E9;
             margin-bottom: 0.5rem;
             padding: 20px;
             overflow: hidden;
@@ -473,8 +472,10 @@ $materials = $materialsStmt->fetchAll();
                     <?php
                     // 詳細ページのURL（タグパラメータ付き）
                     $detailUrl = "/{$material['category_slug']}/{$material['slug']}/?from=tag&tag=" . urlencode($tag_slug);
+                    // AIが指定した背景色を取得（フォールバックは従来の色）
+                    $backgroundColor = $material['structured_bg_color'] ?? '#F9F5E9';
                     ?>
-                    <a href="<?= h($detailUrl) ?>" class="material-card">
+                    <a href="<?= h($detailUrl) ?>" class="material-card" style="background-color: <?= h($backgroundColor) ?>;">
                         <picture>
                             <!-- デスクトップ用：300x300のWebP -->
                             <source media="(min-width: 768px)" 

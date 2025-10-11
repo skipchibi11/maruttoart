@@ -31,7 +31,7 @@ $countStmt->execute($countParams);
 $totalItems = $countStmt->fetchColumn();
 $totalPages = ceil($totalItems / $perPage);
 
-// データを取得（カテゴリ情報も含める）
+// データを取得（カテゴリ情報と背景色も含める）
 $sql = "SELECT m.*, c.slug as category_slug FROM materials m 
         LEFT JOIN categories c ON m.category_id = c.id " . 
         $whereClause . " ORDER BY m.created_at DESC LIMIT ? OFFSET ?";
@@ -336,7 +336,6 @@ $materials = $stmt->fetchAll();
             position: relative;
             border-radius: 8px;
             will-change: transform, box-shadow;
-            background-color: #F9F5E9;
             margin-bottom: 0.5rem;
             padding: 20px;
             overflow: hidden;
@@ -975,8 +974,16 @@ $materials = $stmt->fetchAll();
                 if (!empty($search)) {
                     $detailUrl .= '?from=search&q=' . urlencode($search);
                 }
+                
+                // AIが指定した背景色を取得（フォールバックは従来の色）
+                $backgroundColor = $material['structured_bg_color'] ?? '#F9F5E9';
                 ?>
-                <a href="<?= h($detailUrl) ?>" class="card material-card h-100" role="button" tabindex="0" aria-label="<?= h($material['title']) ?>の詳細を見る">
+                <a href="<?= h($detailUrl) ?>" 
+                   class="card material-card h-100" 
+                   role="button" 
+                   tabindex="0" 
+                   aria-label="<?= h($material['title']) ?>の詳細を見る"
+                   style="background-color: <?= h($backgroundColor) ?>;">
                     <?php
                     // レスポンシブ画像の設定
                     $smallImage = $material['webp_small_path'] ?? $material['image_path'];
