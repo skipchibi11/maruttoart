@@ -587,11 +587,14 @@ if ($tileCount > 0) {
         }
 
         .material-image {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: contain;
+            width: 100% !important;
+            aspect-ratio: 1 / 1 !important;
+            object-fit: contain !important;
             border-radius: 4px;
             transition: opacity 0.3s ease-in-out;
+            height: auto !important;
+            min-height: unset !important;
+            max-height: unset !important;
         }
 
         /* Lazyload用のスタイル */
