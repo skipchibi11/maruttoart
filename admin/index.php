@@ -8,23 +8,65 @@ setNoCache();
 
 $pdo = getDB();
 
+// 検索パラメータの取得
+$search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search_category = isset($_GET['category']) ? intval($_GET['category']) : 0;
+
 // ページング設定
 $items_per_page = isset($_GET['per_page']) ? max(10, min(100, intval($_GET['per_page']))) : 20; // 1ページあたりの表示件数（10-100の範囲）
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
-// 総素材数を取得
-$count_stmt = $pdo->prepare("SELECT COUNT(*) as total FROM materials");
-$count_stmt->execute();
+// 検索条件を組み立て（より安全な方法）
+$where_conditions = [];
+$bind_params = [];
+
+if (!empty($search_query)) {
+    $where_conditions[] = "(m.title LIKE ? OR m.slug LIKE ? OR m.description LIKE ?)";
+    $search_term = '%' . $search_query . '%';
+    $bind_params[] = $search_term;
+    $bind_params[] = $search_term;
+    $bind_params[] = $search_term;
+}
+
+if ($search_category > 0) {
+    $where_conditions[] = "m.category_id = ?";
+    $bind_params[] = $search_category;
+}
+
+$where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+
+// 総素材数を取得（検索条件を適用）
+$count_sql = "SELECT COUNT(*) as total FROM materials m LEFT JOIN categories c ON m.category_id = c.id " . $where_clause;
+$count_stmt = $pdo->prepare($count_sql);
+$count_stmt->execute($bind_params);
 $total_count = $count_stmt->fetchColumn();
 $total_pages = ceil($total_count / $items_per_page);
 
-// ページング対応の素材一覧を取得（カテゴリ情報も含める）
-$stmt = $pdo->prepare("SELECT m.*, c.slug as category_slug FROM materials m LEFT JOIN categories c ON m.category_id = c.id ORDER BY m.created_at DESC LIMIT :limit OFFSET :offset");
-$stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
+// ページング対応の素材一覧を取得（カテゴリ情報も含める、検索条件を適用）
+$sql = "SELECT m.*, c.slug as category_slug, c.title as category_name FROM materials m LEFT JOIN categories c ON m.category_id = c.id " . $where_clause . " ORDER BY m.created_at DESC LIMIT ? OFFSET ?";
+$stmt = $pdo->prepare($sql);
+// 検索パラメータとページングパラメータを結合
+$all_params = array_merge($bind_params, [$items_per_page, $offset]);
+$stmt->execute($all_params);
 $materials = $stmt->fetchAll();
+
+// カテゴリ一覧を取得（検索フォーム用）
+$categories_stmt = $pdo->prepare("SELECT id, title as name FROM categories ORDER BY title");
+$categories_stmt->execute();
+$categories = $categories_stmt->fetchAll();
+
+// ページング用URL生成関数
+function buildPagingUrl($page, $per_page, $search_query, $search_category) {
+    $params = ['page' => $page, 'per_page' => $per_page];
+    if (!empty($search_query)) {
+        $params['search'] = $search_query;
+    }
+    if ($search_category > 0) {
+        $params['category'] = $search_category;
+    }
+    return '?' . http_build_query($params);
+}
 ?>
 
 <!DOCTYPE html>
@@ -119,6 +161,68 @@ $materials = $stmt->fetchAll();
                     </div>
                 </div>
 
+                <!-- 検索フォーム -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-search"></i> 素材検索</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="" class="row g-3">
+                            <div class="col-md-6">
+                                <label for="search" class="form-label">キーワード</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       value="<?= h($search_query) ?>" 
+                                       placeholder="タイトル、スラッグ、説明で検索">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="category" class="form-label">カテゴリ</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="0">すべてのカテゴリ</option>
+                                    <?php foreach ($categories as $category): ?>
+                                    <option value="<?= $category['id'] ?>" <?= $search_category == $category['id'] ? 'selected' : '' ?>>
+                                        <?= h($category['name']) ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-search"></i> 検索
+                                </button>
+                                <?php if (!empty($search_query) || $search_category > 0): ?>
+                                <a href="?" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> クリア
+                                </a>
+                                <?php endif; ?>
+                            </div>
+                            <!-- 現在のper_pageを保持 -->
+                            <input type="hidden" name="per_page" value="<?= $items_per_page ?>">
+                        </form>
+                        
+                        <?php if (!empty($search_query) || $search_category > 0): ?>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle"></i> 
+                                検索条件: 
+                                <?php if (!empty($search_query)): ?>
+                                    キーワード「<?= h($search_query) ?>」
+                                <?php endif; ?>
+                                <?php if ($search_category > 0): ?>
+                                    <?php 
+                                    $selected_category = array_filter($categories, function($cat) use ($search_category) {
+                                        return $cat['id'] == $search_category;
+                                    });
+                                    $selected_category = reset($selected_category);
+                                    ?>
+                                    <?= !empty($search_query) ? ', ' : '' ?>カテゴリ「<?= h($selected_category['name']) ?>」
+                                <?php endif; ?>
+                                で検索中
+                            </small>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
                 <!-- 素材一覧 -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -147,6 +251,7 @@ $materials = $stmt->fetchAll();
                                     <tr>
                                         <th>サムネイル</th>
                                         <th>タイトル</th>
+                                        <th>カテゴリ</th>
                                         <th>スラッグ</th>
                                         <th>投稿日</th>
                                         <th>操作</th>
@@ -159,6 +264,13 @@ $materials = $stmt->fetchAll();
                                             <img src="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" alt="<?= h($material['title']) ?>" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
                                         </td>
                                         <td><?= h($material['title']) ?></td>
+                                        <td>
+                                            <?php if (!empty($material['category_name'])): ?>
+                                                <span class="badge bg-secondary"><?= h($material['category_name']) ?></span>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?= h($material['slug']) ?></td>
                                         <td><?= date('Y/m/d', strtotime($material['upload_date'])) ?></td>
                                         <td>
@@ -194,12 +306,12 @@ $materials = $stmt->fetchAll();
                                     <!-- 最初のページ -->
                                     <?php if ($current_page > 1): ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=1&per_page=<?= $items_per_page ?>" aria-label="最初のページ">
+                                        <a class="page-link" href="<?= buildPagingUrl(1, $items_per_page, $search_query, $search_category) ?>" aria-label="最初のページ">
                                             <i class="bi bi-chevron-double-left"></i>
                                         </a>
                                     </li>
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=<?= $current_page - 1 ?>&per_page=<?= $items_per_page ?>" aria-label="前のページ">
+                                        <a class="page-link" href="<?= buildPagingUrl($current_page - 1, $items_per_page, $search_query, $search_category) ?>" aria-label="前のページ">
                                             <i class="bi bi-chevron-left"></i>
                                         </a>
                                     </li>
@@ -218,7 +330,7 @@ $materials = $stmt->fetchAll();
                                     $end_page = min($total_pages, $current_page + 2);
                                     
                                     if ($start_page > 1): ?>
-                                    <li class="page-item"><a class="page-link" href="?page=1&per_page=<?= $items_per_page ?>">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="<?= buildPagingUrl(1, $items_per_page, $search_query, $search_category) ?>">1</a></li>
                                     <?php if ($start_page > 2): ?>
                                     <li class="page-item disabled"><span class="page-link">...</span></li>
                                     <?php endif; ?>
@@ -226,7 +338,7 @@ $materials = $stmt->fetchAll();
 
                                     <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                                     <li class="page-item <?= $i == $current_page ? 'active' : '' ?>">
-                                        <a class="page-link" href="?page=<?= $i ?>&per_page=<?= $items_per_page ?>"><?= $i ?></a>
+                                        <a class="page-link" href="<?= buildPagingUrl($i, $items_per_page, $search_query, $search_category) ?>"><?= $i ?></a>
                                     </li>
                                     <?php endfor; ?>
 
@@ -234,18 +346,18 @@ $materials = $stmt->fetchAll();
                                     <?php if ($end_page < $total_pages - 1): ?>
                                     <li class="page-item disabled"><span class="page-link">...</span></li>
                                     <?php endif; ?>
-                                    <li class="page-item"><a class="page-link" href="?page=<?= $total_pages ?>&per_page=<?= $items_per_page ?>"><?= $total_pages ?></a></li>
+                                    <li class="page-item"><a class="page-link" href="<?= buildPagingUrl($total_pages, $items_per_page, $search_query, $search_category) ?>"><?= $total_pages ?></a></li>
                                     <?php endif; ?>
 
                                     <!-- 最後のページ -->
                                     <?php if ($current_page < $total_pages): ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=<?= $current_page + 1 ?>&per_page=<?= $items_per_page ?>" aria-label="次のページ">
+                                        <a class="page-link" href="<?= buildPagingUrl($current_page + 1, $items_per_page, $search_query, $search_category) ?>" aria-label="次のページ">
                                             <i class="bi bi-chevron-right"></i>
                                         </a>
                                     </li>
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=<?= $total_pages ?>&per_page=<?= $items_per_page ?>" aria-label="最後のページ">
+                                        <a class="page-link" href="<?= buildPagingUrl($total_pages, $items_per_page, $search_query, $search_category) ?>" aria-label="最後のページ">
                                             <i class="bi bi-chevron-double-right"></i>
                                         </a>
                                     </li>
@@ -280,6 +392,13 @@ $materials = $stmt->fetchAll();
             url.searchParams.set('per_page', perPage);
             url.searchParams.set('page', '1'); // ページ数変更時は1ページ目に戻る
             window.location.href = url.toString();
+        }
+
+        // 検索パラメータを含むURLを生成する関数
+        function buildUrl(page) {
+            const url = new URL(window.location);
+            url.searchParams.set('page', page);
+            return url.toString();
         }
     </script>
 </body>
