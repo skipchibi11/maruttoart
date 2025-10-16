@@ -110,11 +110,11 @@ function uploadImage($file, $slug) {
     // セキュリティチェック
     $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-    $maxFileSize = 5 * 1024 * 1024; // 5MB
+    $maxFileSize = 10 * 1024 * 1024; // 10MB
     
     // ファイルサイズチェック
     if ($file['size'] > $maxFileSize) {
-        throw new Exception('ファイルサイズが大きすぎます（最大5MB）');
+        throw new Exception('ファイルサイズが大きすぎます（最大10MB）');
     }
     
     // MIMEタイプチェック

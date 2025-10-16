@@ -757,6 +757,125 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
             border-radius: 0.2rem;
         }
         
+        /* AI生成製品画像セクションのスタイル - シンプルセンター配置 */
+        #ai-product-section {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        /* Bootstrap rowクラスのflexを無効化 */
+        #ai-product-section .row {
+            display: block !important;
+            margin: 0;
+        }
+
+        #ai-product-section .col-12 {
+            padding: 0;
+        }
+
+        .ai-section-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .ai-product-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .ai-product-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .ai-product-card {
+            background: transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            max-width: 280px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .ai-product-card:hover {
+            transform: translateY(-1px);
+        }
+
+        .ai-product-image-wrapper {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .ai-product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: opacity 0.3s ease;
+        }
+
+        .ai-product-description {
+            padding: 15px 0 0;
+            text-align: center;
+        }
+
+        .ai-product-description p {
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #6c757d;
+        }
+
+        .ai-product-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        .ai-product-subtitle {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            #ai-product-section {
+                padding: 20px 0;
+                margin: 30px 0;
+            }
+
+            .ai-product-card {
+                max-width: 220px;
+            }
+
+            .ai-product-description p {
+                font-size: 0.8rem;
+            }
+
+            .ai-product-title {
+                font-size: 1rem;
+            }
+
+            .ai-product-subtitle {
+                font-size: 0.85rem;
+            }
+        }
+        
         /* フッターのスタイル */
         .footer-custom {
             background-color: #fef9e7 !important;
@@ -1431,6 +1550,41 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
     </div>
 
 
+
+    <!-- AI生成製品画像セクション -->
+    <?php if (!empty($material['ai_product_image_path'])): ?>
+    <section id="ai-product-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="ai-section-content">
+                        <h3 class="ai-product-title">イラストの世界を、かたちにしてみました</h3>
+                        <p class="ai-product-subtitle">
+                            marutto.artのイラストをもとに、AIで立体化しました。<br />
+                            やさしい世界が、ちょっとだけ現実にやってきたようです。
+                        </p>
+                        
+                        <div class="ai-product-card">
+                        <div class="ai-product-image-wrapper">
+                            <img src="/<?= h($material['ai_product_image_path']) ?>" 
+                                 alt="<?= h($material['title']) ?>を使用したAI生成製品"
+                                 class="ai-product-image"
+                                 loading="lazy"
+                                 decoding="async">
+                        </div>
+                        
+                        <?php if (!empty($material['ai_product_image_description'])): ?>
+                        <div class="ai-product-description">
+                            <p><?= nl2br(h($material['ai_product_image_description'])) ?></p>
+                        </div>
+                        <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <!-- 他のイラストを見るボタン -->
     <div class="container mt-4 mb-5">

@@ -85,18 +85,59 @@ if ($_POST) {
                 }
             }
             
+            // AI製品画像のアップロード処理
+            $aiProductImagePath = $material['ai_product_image_path'] ?? null;
+            $aiProductImageDescription = trim($_POST['ai_product_image_description'] ?? '');
+            
+            if (isset($_FILES['ai_product_image']) && $_FILES['ai_product_image']['error'] === UPLOAD_ERR_OK) {
+                try {
+                    // 古いAI製品画像ファイルを削除
+                    if ($aiProductImagePath) {
+                        $oldAiProductImagePath = __DIR__ . '/../' . $aiProductImagePath;
+                        if (file_exists($oldAiProductImagePath)) {
+                            unlink($oldAiProductImagePath);
+                        }
+                    }
+                    
+                    // 新しいAI製品画像をアップロード
+                    $aiUploadResult = uploadImage($_FILES['ai_product_image'], $slug . '_ai_product');
+                    if ($aiUploadResult) {
+                        $aiProductImagePath = $aiUploadResult['original'];
+                    } else {
+                        $error = 'AI製品画像のアップロードに失敗しました。';
+                    }
+                } catch (Exception $e) {
+                    $error = 'AI製品画像のアップロードエラー: ' . $e->getMessage();
+                }
+            } elseif (isset($_FILES['ai_product_image']) && $_FILES['ai_product_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+                // ファイルエラーの詳細を表示
+                $uploadErrors = [
+                    UPLOAD_ERR_INI_SIZE => 'ファイルサイズがPHP設定値を超えています',
+                    UPLOAD_ERR_FORM_SIZE => 'ファイルサイズがフォーム設定値を超えています',
+                    UPLOAD_ERR_PARTIAL => 'ファイルが部分的にしかアップロードされませんでした',
+                    UPLOAD_ERR_NO_TMP_DIR => '一時ディレクトリが見つかりません',
+                    UPLOAD_ERR_CANT_WRITE => 'ディスクへの書き込みに失敗しました',
+                    UPLOAD_ERR_EXTENSION => 'PHPの拡張機能によってアップロードが停止されました'
+                ];
+                $errorCode = $_FILES['ai_product_image']['error'];
+                $currentLimits = 'upload_max_filesize=' . ini_get('upload_max_filesize') . ', post_max_size=' . ini_get('post_max_size');
+                $error = 'AI製品画像アップロードエラー: ' . ($uploadErrors[$errorCode] ?? "不明なエラー (Code: $errorCode)") . " (現在の制限: $currentLimits)";
+            }
+            
             if (empty($error)) {
                 // データベースを更新
                 $stmt = $pdo->prepare("
                     UPDATE materials 
                     SET title = ?, slug = ?, description = ?, search_keywords = ?, 
-                        image_path = ?, webp_small_path = ?, webp_medium_path = ?, category_id = ?
+                        image_path = ?, webp_small_path = ?, webp_medium_path = ?, category_id = ?,
+                        ai_product_image_path = ?, ai_product_image_description = ?
                     WHERE id = ?
                 ");
                 
                 if ($stmt->execute([
                     $title, $slug, $description, $search_keywords,
-                    $imagePath, $webpSmallPath, $webpMediumPath, $category_id, $id
+                    $imagePath, $webpSmallPath, $webpMediumPath, $category_id, 
+                    $aiProductImagePath, $aiProductImageDescription, $id
                 ])) {
                     // タグを更新
                     addMaterialTags($id, $tag_ids, $pdo);
@@ -282,6 +323,36 @@ if ($_POST) {
 
                             <hr>
 
+                            <!-- AI生成製品画像セクション -->
+                            <h5 class="mb-3">AI生成製品画像</h5>
+                            
+                            <?php if (!empty($material['ai_product_image_path'])): ?>
+                            <div class="mb-3">
+                                <label class="form-label">現在のAI生成製品画像</label>
+                                <div class="preview-container">
+                                    <img src="/<?= h($material['ai_product_image_path']) ?>" class="preview-image" alt="AI生成製品画像">
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
+                            <div class="mb-3">
+                                <label for="ai_product_image" class="form-label">AI生成製品画像ファイル</label>
+                                <input type="file" class="form-control" id="ai_product_image" name="ai_product_image" accept="image/*" onchange="previewAiProductImage(this)">
+                                <div class="form-text">このイラストを使用したAI生成製品の画像をアップロードできます。PNG, JPEG, GIF対応。</div>
+                                
+                                <div class="preview-container">
+                                    <img id="aiProductImagePreview" class="preview-image" style="display: none;" alt="AI生成製品画像プレビュー">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="ai_product_image_description" class="form-label">AI生成製品画像の説明</label>
+                                <textarea class="form-control" id="ai_product_image_description" name="ai_product_image_description" rows="3" placeholder="AI生成製品の説明や使用方法などを入力してください"><?= h($material['ai_product_image_description'] ?? '') ?></textarea>
+                                <div class="form-text">AI生成製品画像の説明文を入力してください。</div>
+                            </div>
+
+                            <hr>
+
                             <div class="d-flex justify-content-between">
                                 <a href="/admin/" class="btn btn-secondary">
                                     <i class="bi bi-arrow-left"></i> 戻る
@@ -301,6 +372,18 @@ if ($_POST) {
     <script>
         function previewNewImage(input) {
             const preview = document.getElementById('newImagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewAiProductImage(input) {
+            const preview = document.getElementById('aiProductImagePreview');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
