@@ -18,8 +18,8 @@ RUN docker-php-ext-configure gd \
 # Install PHP extensions
 RUN docker-php-ext-install -j$(nproc) gd pdo pdo_mysql mysqli
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache modules
+RUN a2enmod rewrite expires headers
 
 # Copy Apache configuration
 COPY apache-config/000-default.conf /etc/apache2/sites-available/000-default.conf

@@ -254,6 +254,38 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
     <meta property="twitter:image" content="<?= h($structuredImageUrl) ?>">
     
     <!-- JSON-LD structured data -->
+    <?php if (!empty($material['ai_product_image_path'])): ?>
+    <!-- 複数画像がある場合：配列形式 -->
+    <script type="application/ld+json">
+    [{
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        "contentUrl": "<?= h($structuredImageUrl) ?>",
+        "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "acquireLicensePage": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "creditText": "marutto.art",
+        "creator": {
+            "@type": "Organization",
+            "name": "marutto.art"
+        },
+        "copyrightNotice": "marutto.art"
+    },
+    {
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        "contentUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['ai_product_image_path']) ?>",
+        "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "acquireLicensePage": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "creditText": "marutto.art",
+        "creator": {
+            "@type": "Organization",
+            "name": "marutto.art"
+        },
+        "copyrightNotice": "marutto.art"
+    }]
+    </script>
+    <?php else: ?>
+    <!-- 単一画像の場合：従来の形式 -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -269,6 +301,7 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
         "copyrightNotice": "marutto.art"
     }
     </script>
+    <?php endif; ?>
     
     <!-- パンくずリスト構造化データ（JavaScript動的生成） -->
     <script type="application/ld+json" id="breadcrumb-structured-data">
@@ -278,6 +311,8 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
         "itemListElement": []
     }
     </script>
+
+
     
     <script>
     // GTtranslate対応：JavaScript動的パンくずリスト構造化データ生成
