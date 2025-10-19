@@ -1,0 +1,45 @@
+{
+    "name": "marutto.art - ミニマルなフリーイラスト素材集",
+    "short_name": "marutto.art",
+    "description": "ミニマルなフリーイラスト素材をダウンロード！商用利用OK。",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "orientation": "portrait-primary",
+    "categories": ["design", "graphics", "productivity"],
+    "icons": [
+        {
+            "src": "/assets/icons/web-app-manifest-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/assets/icons/web-app-manifest-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/assets/icons/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/icons/favicon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/assets/images/hero.webp",
+            "sizes": "1200x800",
+            "type": "image/webp",
+            "form_factor": "wide"
+        }
+    ]
+}

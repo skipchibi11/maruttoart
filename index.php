@@ -107,7 +107,44 @@ if ($tileCount > 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ミニマルなフリーイラスト素材集｜marutto.art（商用利用OK）</title>
     <meta name="description" content="ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。">
+    
+    <!-- Open Graph Protocol (OGP) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/">
+    <meta property="og:title" content="ミニマルなフリーイラスト素材集｜marutto.art（商用利用OK）">
+    <meta property="og:description" content="ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。">
+    <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png">
+    <meta property="og:image:alt" content="marutto.art - ミニマルなフリーイラスト素材集のロゴ">
+    <meta property="og:site_name" content="marutto.art">
+    <meta property="og:locale" content="ja_JP">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@maruttoart">
+    <meta name="twitter:creator" content="@maruttoart">
+    <meta name="twitter:title" content="ミニマルなフリーイラスト素材集｜marutto.art（商用利用OK）">
+    <meta name="twitter:description" content="ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。">
+    <meta name="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png">
+    <meta name="twitter:image:alt" content="marutto.art - ミニマルなフリーイラスト素材集のロゴ">
+    
+    <!-- Icons and Apple Touch Icons -->
     <link rel="icon" href="/favicon.ico">
+    <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/icons/favicon-96x96.png" sizes="96x96" type="image/png">
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Apple specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="marutto.art">
+    <meta name="theme-color" content="#ffffff">
+    
+    <!-- Microsoft Edge/IE specific meta tags -->
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-config" content="/browserconfig.xml">
     
     <!-- Alternate language tags -->
     <link rel="alternate" hreflang="ja" href="https://marutto.art/" />
@@ -119,6 +156,53 @@ if ($tileCount > 0) {
     
     <!-- ヒーロー画像のpreload -->
     <link rel="preload" as="image" href="/assets/images/simple-apple-red.webp" fetchpriority="high" />
+
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "marutto.art",
+        "alternateName": "ミニマルなフリーイラスト素材集",
+        "description": "ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。",
+        "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/",
+        "image": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png",
+        "publisher": {
+            "@type": "Organization",
+            "name": "marutto.art",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png"
+            }
+        },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/list.php?search={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        },
+        "mainEntity": {
+            "@type": "ItemList",
+            "name": "フリーイラスト素材一覧",
+            "numberOfItems": <?= $totalMaterialsCount ?>,
+            "itemListElement": [
+                <?php foreach ($materials as $index => $material): ?>
+                {
+                    "@type": "ImageObject",
+                    "position": <?= $index + 1 ?>,
+                    "name": "<?= h($material['title']) ?>",
+                    "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?><?= !empty($material['category_slug']) ? '/' . h($material['category_slug']) . '/' . h($material['slug']) . '/' : '/detail/' . h($material['slug']) ?>",
+                    "contentUrl": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>",
+                    "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+                    "creditText": "marutto.art"
+                }<?= $index < count($materials) - 1 ? ',' : '' ?>
+                <?php endforeach; ?>
+            ]
+        }
+    }
+    </script>
 
     <style>
         /* リセットCSS */
