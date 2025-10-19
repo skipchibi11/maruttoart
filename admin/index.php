@@ -149,6 +149,19 @@ function buildPagingUrl($page, $per_page, $search_query, $search_category) {
                     </div>
                 </div>
 
+                <!-- メッセージ表示 -->
+                <?php if (isset($_GET['deleted']) && $_GET['deleted'] == '1'): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> 素材と関連する画像ファイルが正常に削除されました。
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php elseif (isset($_GET['error']) && $_GET['error'] == 'delete_failed'): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> 素材の削除中にエラーが発生しました。
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php endif; ?>
+
                 <!-- 統計情報 -->
                 <div class="row mb-4">
                     <div class="col-md-3">
