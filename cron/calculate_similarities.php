@@ -116,24 +116,32 @@ function calculateSimilarities($materialId, $pdo) {
         $targetTags = array_column($tagStmt->fetchAll(), 'tag_id');
         
         // 比較対象を取得（同じカテゴリまたは共通タグを持つ素材）
-        $compareQuery = "
-            SELECT DISTINCT m.id, m.title, m.image_embedding
-            FROM materials m
-            WHERE m.id != ? 
-              AND m.image_embedding IS NOT NULL
-              AND (
-                  m.category_id = ?
-                  OR EXISTS (
-                      SELECT 1 FROM material_tags mt 
-                      WHERE mt.material_id = m.id 
-                        AND mt.tag_id IN (" . (empty($targetTags) ? '0' : implode(',', array_fill(0, count($targetTags), '?'))) . ")
-                  )
-              )
-        ";
-        
-        $compareParams = [$materialId, $targetMaterial['category_id']];
         if (!empty($targetTags)) {
+            $compareQuery = "
+                SELECT DISTINCT m.id, m.title, m.image_embedding
+                FROM materials m
+                WHERE m.id != ? 
+                  AND m.image_embedding IS NOT NULL
+                  AND (
+                      m.category_id = ?
+                      OR EXISTS (
+                          SELECT 1 FROM material_tags mt 
+                          WHERE mt.material_id = m.id 
+                            AND mt.tag_id IN (" . implode(',', array_fill(0, count($targetTags), '?')) . ")
+                      )
+                  )
+            ";
+            $compareParams = [$materialId, $targetMaterial['category_id']];
             $compareParams = array_merge($compareParams, $targetTags);
+        } else {
+            $compareQuery = "
+                SELECT DISTINCT m.id, m.title, m.image_embedding
+                FROM materials m
+                WHERE m.id != ? 
+                  AND m.image_embedding IS NOT NULL
+                  AND m.category_id = ?
+            ";
+            $compareParams = [$materialId, $targetMaterial['category_id']];
         }
         
         $compareStmt = $pdo->prepare($compareQuery);
