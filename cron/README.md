@@ -1,20 +1,32 @@
-# 構造化データ用画像生成システム
+# 画像処理システム
 
 ## 概要
-このシステムは、アップロードされた素材画像から構造化データ（JSON-LD、OGP等）用の1200x1200px画像を自動生成します。
+このシステムは、アップロードされた素材画像の処理を自動化します：
+1. 構造化データ（JSON-LD、OGP等）用の1200x1200px画像生成
+2. 画像のベクトル化（類似検索用）
 
 ## 機能
+
+### 構造化画像生成
 - OpenAI Vision APIを使用した画像分析による適切な背景色の自動決定
 - 元画像のアスペクト比を保持した1200x1200pxへのリサイズ
 - ペールトーン（薄い色調）の背景色適用
 - バッチ処理による複数画像の一括処理
 
+### 画像ベクトル化
+- OpenAI Vision APIによる画像内容の自動説明文生成
+- Text Embedding APIによるベクトル数値の生成
+- 未処理素材の1件ずつ処理（API制限対応）
+- 類似画像検索の基盤データ作成
+
 ## ファイル構成
 ```
 cron/
 ├── .htaccess                        # Webアクセス制限
-├── generate_structured_images.php   # メイン処理スクリプト
-├── generate_structured_images.sh    # 実行用シェルスクリプト
+├── generate_structured_images.php   # 構造化画像生成スクリプト
+├── generate_structured_images.sh    # 構造化画像生成用シェルスクリプト
+├── generate_image_embeddings.php    # 画像ベクトル化スクリプト
+├── generate_image_embeddings.sh     # 画像ベクトル化用シェルスクリプト
 └── README.md                        # このファイル
 ```
 
@@ -22,10 +34,16 @@ cron/
 
 ### 1. データベースの更新
 ```sql
--- database/add_structured_image_columns.sql を実行
+-- 構造化画像用カラム（database/add_structured_image_columns.sql）
 ALTER TABLE materials 
 ADD COLUMN structured_image_path VARCHAR(255) DEFAULT NULL,
 ADD COLUMN structured_bg_color VARCHAR(7) DEFAULT NULL;
+
+-- 画像ベクトル化用カラム（database/add_image_embedding.sql）
+ALTER TABLE materials 
+ADD COLUMN image_embedding TEXT DEFAULT NULL,
+ADD COLUMN embedding_model VARCHAR(100) DEFAULT NULL,
+ADD COLUMN embedding_created_at TIMESTAMP NULL DEFAULT NULL;
 ```
 
 ### 2. 必要な拡張機能の確認
@@ -42,10 +60,16 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ### 手動実行
 
-#### 全ての未処理素材を処理
+#### 構造化画像生成（全ての未処理素材を処理）
 ```bash
 cd /path/to/maruttoart/cron
 php generate_structured_images.php
+```
+
+#### 画像ベクトル化（1件ずつ処理）
+```bash
+cd /path/to/maruttoart/cron
+php generate_image_embeddings.php
 ```
 
 #### 特定の素材IDのみ処理
@@ -142,8 +166,35 @@ GD拡張が必要です
 tail -f logs/structured_images.log
 ```
 
+### Cron設定
+
+#### crontabへの登録例
+```bash
+# 構造化画像生成（毎日深夜2時に実行）
+0 2 * * * /path/to/maruttoart/cron/generate_structured_images.sh
+
+# 画像ベクトル化（毎分実行、未処理を1件ずつ）
+* * * * * /path/to/maruttoart/cron/generate_image_embeddings.sh
+```
+
+#### 設定手順
+```bash
+# crontabを編集
+crontab -e
+
+# 設定したcronジョブを確認
+crontab -l
+
+# cronログを確認
+tail -f /var/log/cron
+tail -f logs/structured_images.log
+tail -f logs/image_embedding.log
+```
+
 ## セキュリティ
 - cronフォルダは`.htaccess`でWebアクセスを完全に制限
+- OpenAI API Keyは環境変数で管理
+- ロックファイルで重複実行を防止
 - スクリプトはコマンドライン実行のみ許可
 - APIキーは環境変数で安全に管理
 
