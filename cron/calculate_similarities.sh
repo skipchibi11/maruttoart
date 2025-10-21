@@ -36,7 +36,7 @@ log_message "Starting similarity calculation cron job"
 
 # PHPスクリプト実行
 cd "$PROJECT_DIR"
-php "$SCRIPT_DIR/calculate_similarities.php"
+/usr/local/php/8.4/bin/php "$SCRIPT_DIR/calculate_similarities.php"
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -eq 0 ]; then
