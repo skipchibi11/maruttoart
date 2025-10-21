@@ -43,9 +43,14 @@ function checkRequiredTables($pdo) {
     ];
     
     foreach ($requiredTables as $table) {
-        $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as table_count 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?
+        ");
         $stmt->execute([$table]);
-        if (!$stmt->fetch()) {
+        $result = $stmt->fetch();
+        if ($result['table_count'] == 0) {
             throw new Exception("Required table '{$table}' does not exist. Please run database migration: add_material_similarities.sql");
         }
     }
