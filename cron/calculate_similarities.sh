@@ -36,8 +36,13 @@ log_message "Starting similarity calculation cron job"
 
 # PHPスクリプト実行
 cd "$PROJECT_DIR"
-/usr/local/php/8.4/bin/php "$SCRIPT_DIR/calculate_similarities.php"
+PHP_OUTPUT=$(/usr/local/php/8.4/bin/php "$SCRIPT_DIR/calculate_similarities.php" 2>&1)
 EXIT_CODE=$?
+
+# PHPの出力をログに記録
+if [ ! -z "$PHP_OUTPUT" ]; then
+    log_message "PHP Output: $PHP_OUTPUT"
+fi
 
 if [ $EXIT_CODE -eq 0 ]; then
     log_message "Similarity calculation cron job completed successfully"

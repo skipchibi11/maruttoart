@@ -4,10 +4,21 @@
  * ベクトル類似度（コサイン類似度）を計算して類似画像をDBに保存
  */
 
+// エラー表示を有効化（デバッグ用）
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('log_errors', '1');
+
 require_once __DIR__ . '/../config.php';
 
 // ログファイルの設定
 $logFile = __DIR__ . '/../logs/similarity_calculation.log';
+
+// ログディレクトリを作成
+$logDir = dirname($logFile);
+if (!is_dir($logDir)) {
+    mkdir($logDir, 0755, true);
+}
 
 /**
  * ログ出力関数
@@ -18,6 +29,26 @@ function logMessage($message, $level = 'INFO') {
     $logEntry = "[{$timestamp}] [{$level}] {$message}" . PHP_EOL;
     file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
     echo $logEntry;
+}
+
+/**
+ * 必要なデータベーステーブルが存在するかチェック
+ */
+function checkRequiredTables($pdo) {
+    $requiredTables = [
+        'material_similarities',
+        'similarity_calculation_progress'
+    ];
+    
+    foreach ($requiredTables as $table) {
+        $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
+        $stmt->execute([$table]);
+        if (!$stmt->fetch()) {
+            throw new Exception("Required table '{$table}' does not exist. Please run database migration: add_material_similarities.sql");
+        }
+    }
+    
+    logMessage("All required tables exist");
 }
 
 /**
@@ -203,6 +234,9 @@ function main() {
     
     try {
         $pdo = getDB();
+        
+        // 必要なテーブルの存在チェック
+        checkRequiredTables($pdo);
         
         // 未処理の素材を1件取得
         $stmt = $pdo->prepare("
