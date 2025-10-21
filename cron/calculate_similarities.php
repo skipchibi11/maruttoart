@@ -261,6 +261,9 @@ function main() {
         // 必要なテーブルの存在チェック
         checkRequiredTables($pdo);
         
+        // 新しい素材を進捗テーブルに追加
+        addNewMaterialsToProgress($pdo);
+        
         // 未処理の素材を1件取得
         $stmt = $pdo->prepare("
             SELECT material_id 
@@ -315,6 +318,65 @@ function main() {
         
         logMessage("Error: " . $e->getMessage(), 'ERROR');
         exit(1);
+    }
+}
+
+/**
+ * 新しい素材を進捗テーブルに追加
+ */
+function addNewMaterialsToProgress($pdo) {
+    try {
+        // 画像埋め込みがある素材で、まだ進捗テーブルに登録されていないものを取得
+        $stmt = $pdo->prepare("
+            SELECT m.id
+            FROM materials m
+            LEFT JOIN similarity_calculation_progress scp ON m.id = scp.material_id
+            WHERE m.image_embedding IS NOT NULL 
+              AND scp.material_id IS NULL
+        ");
+        $stmt->execute();
+        $newMaterials = $stmt->fetchAll();
+        
+        // 新しい素材を進捗テーブルに追加
+        if (!empty($newMaterials)) {
+            $insertStmt = $pdo->prepare("
+                INSERT INTO similarity_calculation_progress 
+                (material_id, status, created_at, updated_at) 
+                VALUES (?, 'pending', NOW(), NOW())
+            ");
+            
+            $addedCount = 0;
+            foreach ($newMaterials as $material) {
+                $insertStmt->execute([$material['id']]);
+                $addedCount++;
+            }
+            
+            logMessage("Added {$addedCount} new materials to similarity calculation queue");
+        }
+        
+        // 既存の完了済み素材で画像埋め込みが更新された場合、再計算対象にする
+        $updateStmt = $pdo->prepare("
+            UPDATE similarity_calculation_progress scp
+            JOIN materials m ON scp.material_id = m.id
+            SET scp.status = 'pending', scp.updated_at = NOW()
+            WHERE scp.status = 'completed' 
+              AND m.image_embedding IS NOT NULL
+              AND m.updated_at > scp.processed_at
+        ");
+        $updateStmt->execute();
+        $updatedCount = $updateStmt->rowCount();
+        
+        if ($updatedCount > 0) {
+            logMessage("Updated {$updatedCount} materials for re-calculation due to embedding updates");
+        }
+        
+        if (empty($newMaterials) && $updatedCount == 0) {
+            logMessage('No new materials found to add to similarity calculation queue');
+        }
+        
+    } catch (Exception $e) {
+        logMessage("Error adding new materials to progress: " . $e->getMessage(), 'ERROR');
+        throw $e;
     }
 }
 
