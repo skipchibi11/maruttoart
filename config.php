@@ -649,4 +649,93 @@ function setMaterialCategory($materialId, $categoryId, $pdo = null) {
     
     return $stmt->execute([$categoryId, $materialId]);
 }
+
+/**
+ * 類似画像を取得
+ * @param int $materialId 基準となる素材ID
+ * @param int $limit 取得件数（デフォルト: 5）
+ * @param float $minSimilarity 最小類似度（デフォルト: 0.5）
+ * @return array 類似画像の配列
+ */
+function getSimilarMaterials($materialId, $limit = 5, $minSimilarity = 0.5, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    $sql = "
+        SELECT 
+            m.id,
+            m.title,
+            m.slug,
+            m.image_path,
+            m.webp_small_path,
+            m.webp_medium_path,
+            c.slug as category_slug,
+            c.title as category_title,
+            ms.similarity_score
+        FROM material_similarities ms
+        JOIN materials m ON ms.similar_material_id = m.id
+        LEFT JOIN categories c ON m.category_id = c.id
+        WHERE ms.material_id = ? 
+          AND ms.similarity_score >= ?
+        ORDER BY ms.similarity_score DESC
+        LIMIT ?
+    ";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$materialId, $minSimilarity, $limit]);
+    
+    return $stmt->fetchAll();
+}
+
+/**
+ * 類似画像があるかチェック
+ * @param int $materialId 素材ID
+ * @param float $minSimilarity 最小類似度（デフォルト: 0.5）
+ * @return bool 類似画像があるかどうか
+ */
+function hasSimilarMaterials($materialId, $minSimilarity = 0.5, $pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    $sql = "
+        SELECT COUNT(*) 
+        FROM material_similarities 
+        WHERE material_id = ? AND similarity_score >= ?
+    ";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$materialId, $minSimilarity]);
+    
+    return $stmt->fetchColumn() > 0;
+}
+
+/**
+ * 類似度計算の進捗を取得
+ * @return array 進捗情報
+ */
+function getSimilarityCalculationProgress($pdo = null) {
+    if (!$pdo) $pdo = getDB();
+    
+    $sql = "
+        SELECT 
+            status,
+            COUNT(*) as count
+        FROM similarity_calculation_progress
+        GROUP BY status
+    ";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    
+    $progress = [
+        'pending' => 0,
+        'processing' => 0,
+        'completed' => 0,
+        'error' => 0
+    ];
+    
+    foreach ($stmt->fetchAll() as $row) {
+        $progress[$row['status']] = $row['count'];
+    }
+    
+    return $progress;
+}
 ?>

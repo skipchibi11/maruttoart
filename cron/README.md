@@ -4,6 +4,7 @@
 このシステムは、アップロードされた素材画像の処理を自動化します：
 1. 構造化データ（JSON-LD、OGP等）用の1200x1200px画像生成
 2. 画像のベクトル化（類似検索用）
+3. 類似画像の計算・管理
 
 ## 機能
 
@@ -19,6 +20,13 @@
 - 未処理素材の1件ずつ処理（API制限対応）
 - 類似画像検索の基盤データ作成
 
+### 類似画像計算・管理
+- コサイン類似度による画像類似度計算
+- カテゴリ・タグが一致する素材のみを比較対象とする効率化
+- 中間テーブルによる類似関係の管理
+- 上位20件の類似画像を保存（閾値: 0.3以上）
+- 進捗管理による安定した処理
+
 ## ファイル構成
 ```
 cron/
@@ -27,6 +35,8 @@ cron/
 ├── generate_structured_images.sh    # 構造化画像生成用シェルスクリプト
 ├── generate_image_embeddings.php    # 画像ベクトル化スクリプト
 ├── generate_image_embeddings.sh     # 画像ベクトル化用シェルスクリプト
+├── calculate_similarities.php       # 類似画像計算スクリプト
+├── calculate_similarities.sh        # 類似画像計算用シェルスクリプト
 └── README.md                        # このファイル
 ```
 
@@ -44,6 +54,23 @@ ALTER TABLE materials
 ADD COLUMN image_embedding TEXT DEFAULT NULL,
 ADD COLUMN embedding_model VARCHAR(100) DEFAULT NULL,
 ADD COLUMN embedding_created_at TIMESTAMP NULL DEFAULT NULL;
+
+-- 類似画像管理用テーブル（database/add_material_similarities.sql）
+CREATE TABLE material_similarities (
+    material_id INT NOT NULL,
+    similar_material_id INT NOT NULL,
+    similarity_score DECIMAL(5,4) NOT NULL,
+    calculation_method VARCHAR(50) NOT NULL DEFAULT 'cosine_similarity',
+    calculated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ...
+);
+
+CREATE TABLE similarity_calculation_progress (
+    material_id INT NOT NULL,
+    status ENUM('pending', 'processing', 'completed', 'error'),
+    processed_at TIMESTAMP NULL,
+    ...
+);
 ```
 
 ### 2. 必要な拡張機能の確認
@@ -66,10 +93,22 @@ cd /path/to/maruttoart/cron
 php generate_structured_images.php
 ```
 
-#### 画像ベクトル化（1件ずつ処理）
+#### 類似画像計算（1件ずつ処理）
 ```bash
 cd /path/to/maruttoart/cron
-php generate_image_embeddings.php
+php calculate_similarities.php
+```
+
+#### 類似画像の取得（PHP関数）
+```php
+// 類似画像を5件取得（類似度0.5以上）
+$similarMaterials = getSimilarMaterials($materialId, 5, 0.5);
+
+// 類似画像があるかチェック
+$hasSimilar = hasSimilarMaterials($materialId, 0.5);
+
+// 計算進捗を確認
+$progress = getSimilarityCalculationProgress();
 ```
 
 #### 特定の素材IDのみ処理
@@ -175,6 +214,9 @@ tail -f logs/structured_images.log
 
 # 画像ベクトル化（毎分実行、未処理を1件ずつ）
 * * * * * /path/to/maruttoart/cron/generate_image_embeddings.sh
+
+# 類似画像計算（5分おきに実行、未処理を1件ずつ）
+*/5 * * * * /path/to/maruttoart/cron/calculate_similarities.sh
 ```
 
 #### 設定手順
