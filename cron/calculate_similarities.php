@@ -36,6 +36,8 @@ function logMessage($message, $level = 'INFO') {
  */
 function checkRequiredTables($pdo) {
     $requiredTables = [
+        'materials',
+        'material_tags',
         'material_similarities',
         'similarity_calculation_progress'
     ];
@@ -87,6 +89,7 @@ function calculateSimilarities($materialId, $pdo) {
     
     try {
         // 対象素材の情報とベクトルを取得
+        logMessage("Executing target material query for ID: {$materialId}");
         $stmt = $pdo->prepare("
             SELECT id, title, category_id, image_embedding
             FROM materials 
@@ -107,13 +110,19 @@ function calculateSimilarities($materialId, $pdo) {
         logMessage("Target material: {$targetMaterial['title']} (ID: {$materialId})");
         
         // 対象素材のタグを取得
-        $tagStmt = $pdo->prepare("
-            SELECT tag_id 
-            FROM material_tags 
-            WHERE material_id = ?
-        ");
-        $tagStmt->execute([$materialId]);
-        $targetTags = array_column($tagStmt->fetchAll(), 'tag_id');
+        logMessage("Executing tag query for material ID: {$materialId}");
+        try {
+            $tagStmt = $pdo->prepare("
+                SELECT tag_id 
+                FROM material_tags 
+                WHERE material_id = ?
+            ");
+            $tagStmt->execute([$materialId]);
+            $targetTags = array_column($tagStmt->fetchAll(), 'tag_id');
+        } catch (Exception $e) {
+            logMessage("Warning: Could not fetch tags (table might not exist): " . $e->getMessage(), 'WARNING');
+            $targetTags = [];
+        }
         
         // 比較対象を取得（同じカテゴリまたは共通タグを持つ素材）
         if (!empty($targetTags)) {
@@ -144,6 +153,7 @@ function calculateSimilarities($materialId, $pdo) {
             $compareParams = [$materialId, $targetMaterial['category_id']];
         }
         
+        logMessage("Executing compare materials query");
         $compareStmt = $pdo->prepare($compareQuery);
         $compareStmt->execute($compareParams);
         $compareMaterials = $compareStmt->fetchAll();
