@@ -212,7 +212,7 @@ function calculateSimilarities($materialId, $pdo) {
             // 上位3件をログに出力
             for ($i = 0; $i < min(3, count($similarities)); $i++) {
                 $sim = $similarities[$i];
-                logMessage("  #{$i+1}: {$sim['title']} (score: " . round($sim['similarity_score'], 4) . ")");
+                logMessage("  #" . ($i+1) . ": {$sim['title']} (score: " . round($sim['similarity_score'], 4) . ")");
             }
         } else {
             logMessage("No similar materials found above threshold for ID: {$materialId}");
