@@ -177,38 +177,41 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
 
 // 関連画像（類似度）を取得
 $relatedMaterials = [];
+$showRelatedSection = false;
+
 try {
-    // 既存のビューを使用して類似画像を取得
-    $relatedStmt = $pdo->prepare("
-        SELECT 
-            mts.similar_material_id as id,
-            mts.similar_material_title as title,
-            mts.similar_material_slug as slug,
-            mts.similar_material_category_slug as category_slug,
-            mts.similarity_score,
-            m.image_path,
-            m.webp_small_path,
-            m.background_color
-        FROM material_top_similarities mts
-        JOIN materials m ON mts.similar_material_id = m.id
-        WHERE mts.material_id = ?
-        ORDER BY mts.similarity_score DESC
-        LIMIT 8
-    ");
-    $relatedStmt->execute([$material['id']]);
-    $relatedMaterials = $relatedStmt->fetchAll();
+    // まずビューの存在確認
+    $viewCheckStmt = $pdo->query("SHOW TABLES LIKE 'material_top_similarities'");
+    $viewExists = $viewCheckStmt->fetch();
+    
+    if ($viewExists) {
+        // 既存のビューを使用して類似画像を取得
+        $relatedStmt = $pdo->prepare("
+            SELECT 
+                mts.similar_material_id as id,
+                mts.similar_material_title as title,
+                mts.similar_material_slug as slug,
+                mts.similar_material_category_slug as category_slug,
+                mts.similarity_score,
+                m.image_path,
+                m.webp_small_path,
+                m.background_color
+            FROM material_top_similarities mts
+            JOIN materials m ON mts.similar_material_id = m.id
+            WHERE mts.material_id = ?
+            ORDER BY mts.similarity_score DESC
+            LIMIT 8
+        ");
+        $relatedStmt->execute([$material['id']]);
+        $relatedMaterials = $relatedStmt->fetchAll();
+        
+        // 類似度データがある場合のみ関連セクションを表示
+        if (!empty($relatedMaterials)) {
+            $showRelatedSection = true;
+        }
+    }
 } catch (Exception $e) {
-    // ビューが存在しない場合は、同じカテゴリの他の素材を表示
-    $relatedStmt = $pdo->prepare("
-        SELECT m.*, c.slug as category_slug
-        FROM materials m
-        JOIN categories c ON m.category_id = c.id
-        WHERE m.category_id = ? AND m.id != ?
-        ORDER BY m.created_at DESC
-        LIMIT 8
-    ");
-    $relatedStmt->execute([$material['category_id'], $material['id']]);
-    $relatedMaterials = $relatedStmt->fetchAll();
+    // エラーが発生した場合は関連セクションを表示しない
 }
 ?>
 
@@ -1726,7 +1729,7 @@ try {
     <?php endif; ?>
 
     <!-- 関連画像セクション -->
-    <?php if (!empty($relatedMaterials)): ?>
+    <?php if ($showRelatedSection): ?>
     <section class="related-materials mt-5">
         <div class="container">
             <h2 class="text-center mb-4">この子と仲良しのイラストたち</h2>
