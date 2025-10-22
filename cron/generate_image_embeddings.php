@@ -23,7 +23,7 @@ function logMessage($message, $level = 'INFO') {
 /**
  * OpenAI Vision APIを使用して画像のベクトル化を実行
  */
-function getImageEmbedding($imagePath) {
+function getImageEmbedding($imagePath, $title = '') {
     $openaiApiKey = getenv('OPENAI_API_KEY');
     if (!$openaiApiKey) {
         throw new Exception('OPENAI_API_KEY environment variable is not set');
@@ -47,6 +47,12 @@ function getImageEmbedding($imagePath) {
         'Content-Type: application/json',
     ];
 
+    // タイトル情報を含めたプロンプトを作成
+    $promptText = 'この画像の内容を簡潔に英語で説明してください。色、形、オブジェクト、スタイルを含めてください。';
+    if (!empty($title)) {
+        $promptText = "この画像は「{$title}」というタイトルのミニマルイラストです。このタイトルを参考にして、画像の内容を簡潔に英語で説明してください。色、形、オブジェクト、スタイルを含めてください。";
+    }
+
     // 画像の特徴を文字列で記述してからベクトル化
     // まず画像を解析してテキスト記述を取得
     $visionUrl = 'https://api.openai.com/v1/chat/completions';
@@ -58,7 +64,7 @@ function getImageEmbedding($imagePath) {
                 'content' => [
                     [
                         'type' => 'text',
-                        'text' => 'この画像の内容を簡潔に英語で説明してください。色、形、オブジェクト、スタイルを含めてください。'
+                        'text' => $promptText
                     ],
                     [
                         'type' => 'image_url',
@@ -100,7 +106,7 @@ function getImageEmbedding($imagePath) {
     }
 
     $imageDescription = $visionResult['choices'][0]['message']['content'];
-    logMessage("Image description generated: {$imageDescription}");
+    logMessage("Image description generated for '{$title}': {$imageDescription}");
 
     // 画像説明をベクトル化
     $embeddingData = [
@@ -185,8 +191,8 @@ function main() {
 
         logMessage("Using image path: {$imagePath}");
 
-        // OpenAI APIでベクトル化を実行
-        $embeddingResult = getImageEmbedding($imagePath);
+        // OpenAI APIでベクトル化を実行（タイトル情報を含める）
+        $embeddingResult = getImageEmbedding($imagePath, $material['title']);
         
         // データベースに保存
         $updateStmt = $pdo->prepare("
