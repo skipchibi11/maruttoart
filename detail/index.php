@@ -174,6 +174,42 @@ function getStructuredDataImageUrl($material) {
 
 $tweetText = createTweetText($material['title']);
 $structuredImageUrl = getStructuredDataImageUrl($material);
+
+// 関連画像（類似度）を取得
+$relatedMaterials = [];
+try {
+    // 既存のビューを使用して類似画像を取得
+    $relatedStmt = $pdo->prepare("
+        SELECT 
+            mts.similar_material_id as id,
+            mts.similar_material_title as title,
+            mts.similar_material_slug as slug,
+            mts.similar_material_category_slug as category_slug,
+            mts.similarity_score,
+            m.image_path,
+            m.webp_small_path,
+            m.background_color
+        FROM material_top_similarities mts
+        JOIN materials m ON mts.similar_material_id = m.id
+        WHERE mts.material_id = ?
+        ORDER BY mts.similarity_score DESC
+        LIMIT 8
+    ");
+    $relatedStmt->execute([$material['id']]);
+    $relatedMaterials = $relatedStmt->fetchAll();
+} catch (Exception $e) {
+    // ビューが存在しない場合は、同じカテゴリの他の素材を表示
+    $relatedStmt = $pdo->prepare("
+        SELECT m.*, c.slug as category_slug
+        FROM materials m
+        JOIN categories c ON m.category_id = c.id
+        WHERE m.category_id = ? AND m.id != ?
+        ORDER BY m.created_at DESC
+        LIMIT 8
+    ");
+    $relatedStmt->execute([$material['category_id'], $material['id']]);
+    $relatedMaterials = $relatedStmt->fetchAll();
+}
 ?>
 
 <!DOCTYPE html>
@@ -200,8 +236,6 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','GTM-579HN546');
-            
-            console.log('GTM loaded after GDPR consent');
         }
         
         // 同意状況を確認
@@ -209,9 +243,6 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
         if (consent === 'accepted') {
             // 既に同意済みの場合は即座に読み込み
             loadGTM();
-        } else {
-            // 同意していない場合は読み込まない
-            console.log('GTM not loaded - GDPR consent required');
         }
         
         // GDPR同意イベントを監視（将来の同意に対応）
@@ -1374,6 +1405,79 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
             color: #444;
             text-decoration: none;
         }
+
+        /* 関連画像セクション */
+        .related-materials {
+            background-color: #F9F5E9;
+            padding: 2rem 0;
+            border-radius: 8px;
+        }
+
+        .related-materials .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .related-materials .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        .related-materials .card-img-top-wrapper {
+            position: relative;
+            padding-bottom: 100%; /* 1:1 aspect ratio for square */
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .related-materials .card-img-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* PC用：確実に6列表示にする */
+        @media (min-width: 992px) {
+            .related-materials .col-lg-2 {
+                flex: 0 0 auto;
+                width: 16.66666667%;
+            }
+        }
+
+        /* タブレット用：左右余白と3列表示 */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .related-materials {
+                padding: 1.5rem 1rem;
+            }
+            
+            .related-materials .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .related-materials .row > .col-md-3 {
+                flex: 0 0 auto;
+                width: 33.33333333% !important;
+                max-width: 33.33333333%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .related-materials {
+                padding: 1.5rem 1rem;
+                margin: 0 -15px;
+            }
+            
+            .related-materials .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1616,6 +1720,39 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <!-- 関連画像セクション -->
+    <?php if (!empty($relatedMaterials)): ?>
+    <section class="related-materials mt-5">
+        <div class="container">
+            <h2 class="text-center mb-4">この子と仲良しのイラストたち</h2>
+            <div class="row g-3">
+                <?php foreach ($relatedMaterials as $relatedMaterial): ?>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 col-xl-2">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <a href="/<?= h($relatedMaterial['category_slug']) ?>/<?= h($relatedMaterial['slug']) ?>/" class="text-decoration-none">
+                            <div class="card-img-top-wrapper" 
+                                 style="background-color: <?= !empty($relatedMaterial['background_color']) ? h($relatedMaterial['background_color']) : '#ffffff' ?>;">
+                                <?php
+                                // WebP画像のパスを優先的に使用
+                                $imageSrc = !empty($relatedMaterial['webp_small_path']) 
+                                    ? '/' . h($relatedMaterial['webp_small_path'])
+                                    : '/' . h($relatedMaterial['image_path']);
+                                ?>
+                                <img src="<?= $imageSrc ?>" 
+                                     class="card-img-top" 
+                                     alt="<?= h($relatedMaterial['title']) ?>"
+                                     loading="lazy"
+                                     decoding="async">
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
