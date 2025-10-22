@@ -177,12 +177,20 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
 
 // 関連画像（類似度）を取得
 $relatedMaterials = [];
+// 関連画像（類似度）を取得
+$relatedMaterials = [];
 $showRelatedSection = false;
 
 try {
-    // まずビューの存在確認
-    $viewCheckStmt = $pdo->query("SHOW TABLES LIKE 'material_top_similarities'");
-    $viewExists = $viewCheckStmt->fetch();
+    // ビューの存在確認
+    $viewCheckStmt = $pdo->query("
+        SELECT COUNT(*) as view_count 
+        FROM information_schema.views 
+        WHERE table_schema = DATABASE() 
+        AND table_name = 'material_top_similarities'
+    ");
+    $viewResult = $viewCheckStmt->fetch();
+    $viewExists = $viewResult['view_count'] > 0;
     
     if ($viewExists) {
         // 既存のビューを使用して類似画像を取得
@@ -195,7 +203,7 @@ try {
                 mts.similarity_score,
                 m.image_path,
                 m.webp_small_path,
-                m.background_color
+                m.structured_bg_color
             FROM material_top_similarities mts
             JOIN materials m ON mts.similar_material_id = m.id
             WHERE mts.material_id = ?
@@ -1739,7 +1747,7 @@ try {
                     <div class="card h-100 border-0 shadow-sm">
                         <a href="/<?= h($relatedMaterial['category_slug']) ?>/<?= h($relatedMaterial['slug']) ?>/" class="text-decoration-none">
                             <div class="card-img-top-wrapper" 
-                                 style="background-color: <?= !empty($relatedMaterial['background_color']) ? h($relatedMaterial['background_color']) : '#ffffff' ?>;">
+                                 style="background-color: <?= !empty($relatedMaterial['structured_bg_color']) ? h($relatedMaterial['structured_bg_color']) : '#ffffff' ?>;">
                                 <?php
                                 // WebP画像のパスを優先的に使用
                                 $imageSrc = !empty($relatedMaterial['webp_small_path']) 
