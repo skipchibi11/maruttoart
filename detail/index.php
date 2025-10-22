@@ -1664,8 +1664,9 @@ try {
             border: 2px solid #e3f2fd;
             min-height: 140px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
+            flex-wrap: wrap;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
             transition: all 0.3s ease;
         }
@@ -1675,8 +1676,12 @@ try {
         }
 
         .color-palette.loaded {
-            display: block;
             animation: fadeIn 0.5s ease-out;
+        }
+
+        .color-palette .text-center {
+            width: 100%;
+            margin-bottom: 1rem;
         }
 
         @keyframes fadeIn {
@@ -1698,6 +1703,9 @@ try {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 12px;
             padding: 0.5rem;
+            vertical-align: top;
+            width: 120px;
+            min-height: 140px;
         }
 
         .color-item:hover {
@@ -1712,7 +1720,6 @@ try {
             border: 4px solid #ffffff;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 
                         0 2px 4px rgba(0, 0, 0, 0.1);
-            margin: 0 auto 0.75rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
@@ -1766,14 +1773,18 @@ try {
         }
 
         .color-picker-wrapper {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            margin-top: 1rem;
+            padding: 1.5rem 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             border-radius: 12px;
             border: 2px solid #e3f2fd;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             display: none;
-            animation: slideIn 0.3s ease-out;
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 100%;
+            overflow: hidden;
+            grid-column: 1 / -1;
+            width: 100%;
         }
 
         .color-picker-wrapper.active {
@@ -1781,13 +1792,17 @@ try {
         }
 
         @keyframes slideIn {
-            from {
+            0% {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(-20px) scale(0.95);
             }
-            to {
+            50% {
+                opacity: 0.8;
+                transform: translateY(-5px) scale(1.02);
+            }
+            100% {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
 
@@ -1798,43 +1813,177 @@ try {
             font-size: 0.9rem;
         }
 
-        /* 変更前後の色表示 */
-        .color-comparison {
+        /* 色ピッカーセクション */
+        .color-picker-section {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            justify-content: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
-        .color-comparison .color-swatch {
+        .color-picker-section > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .color-picker-section .color-swatch {
             width: 50px;
             height: 50px;
-            border: 3px solid #dee2e6;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 0.2rem auto;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .color-comparison .arrow {
+        .color-picker-section .color-label {
+            font-size: 0.8rem;
             color: #6c757d;
-            font-size: 1.2rem;
+            font-weight: 500;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .color-swatch-wrapper {
+            cursor: pointer;
+            position: relative;
+            display: inline-block;
+        }
+
+        .color-swatch-wrapper:hover .color-swatch {
+            border-color: #4285f4;
+            transform: scale(1.05);
+            box-shadow: 0 3px 8px rgba(66, 133, 244, 0.2);
+        }
+
+        .hidden-color-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 1;
+        }
+            white-space: nowrap;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .color-palette,
+            .color-palette.loaded {
+                padding: 1.5rem;
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.75rem;
+                align-items: start;
+                justify-items: center;
+            }
+            
+            .color-palette .text-center {
+                grid-column: 1 / -1;
+                width: 100%;
+                margin-bottom: 0.75rem;
+            }
+            
+            .color-item {
+                display: block;
+                width: 100%;
+                max-width: 120px;
+                margin: 0;
+                padding: 0.5rem;
+                min-height: 130px;
+            }
+            
+            .color-picker-wrapper {
+                grid-column: 1 / -1;
+                width: 100%;
+                margin-top: 1rem;
+                padding: 1rem 0.8rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .color-palette,
+            .color-palette.loaded {
+                padding: 1rem;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+                align-items: start;
+                justify-items: center;
+            }
+            
+            .color-palette .text-center {
+                grid-column: 1 / -1;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .color-item {
+                display: block;
+                width: 100%;
+                max-width: 140px;
+                margin: 0;
+                padding: 0.5rem;
+                min-height: 120px;
+            }
+            
+            .color-picker-wrapper {
+                grid-column: 1 / -1;
+                width: 100%;
+                margin-top: 0.8rem;
+                padding: 0.8rem 0.6rem;
+            }
         }
 
         /* カラーピッカー入力 */
         .form-control-color {
-            width: 50px !important;
-            height: 50px !important;
-            border: 3px solid #dee2e6 !important;
+            width: 35px !important;
+            height: 35px !important;
+            border: 2px solid #dee2e6 !important;
             border-radius: 50% !important;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            display: block;
+            flex-shrink: 0;
+            min-width: 35px;
         }
 
         .form-control-color:hover {
             border-color: #4285f4 !important;
             transform: scale(1.05);
+            box-shadow: 0 3px 8px rgba(66, 133, 244, 0.2);
         }
 
         .form-control-color:focus {
             border-color: #4285f4 !important;
-            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25) !important;
+            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25), 
+                        0 3px 8px rgba(66, 133, 244, 0.2) !important;
+            transform: scale(1.02);
+        }
+
+        .form-control-color::-webkit-color-swatch-wrapper {
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        .form-control-color::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
         }
 
         /* アクションボタン */
@@ -1842,35 +1991,93 @@ try {
             display: flex;
             gap: 0.5rem;
             align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1rem;
         }
 
         .color-actions .btn {
             border-radius: 8px;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 100px;
+            font-size: 0.85rem;
         }
 
         .color-actions .btn-primary {
             background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
             border: none;
-            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+            box-shadow: 0 3px 12px rgba(66, 133, 244, 0.3);
+            color: white;
         }
 
         .color-actions .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+        }
+
+        .color-actions .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
         }
 
         .color-actions .btn-outline-secondary {
-            border-color: #dee2e6;
+            border: 2px solid #dee2e6;
             color: #6c757d;
+            background: white;
         }
 
         .color-actions .btn-outline-secondary:hover {
             background-color: #f8f9fa;
             border-color: #adb5bd;
+            color: #495057;
             transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* モバイル対応 */
+        @media (max-width: 768px) {
+            .color-picker-wrapper {
+                margin-top: 1.5rem;
+                padding: 1.5rem;
+            }
+            
+            .color-comparison {
+                gap: 1rem;
+            }
+            
+            .color-comparison .color-swatch,
+            .form-control-color {
+                width: 50px !important;
+                height: 50px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .color-picker-wrapper {
+                padding: 1rem;
+                border-radius: 12px;
+            }
+            
+            .color-actions {
+                flex-direction: column;
+                width: 100%;
+                gap: 0.5rem;
+            }
+            
+            .color-actions .btn {
+                width: 100%;
+                min-width: auto;
+                padding: 0.75rem;
+            }
+            
+            .color-comparison .color-swatch,
+            .form-control-color {
+                width: 45px !important;
+                height: 45px !important;
+                border-width: 3px !important;
+            }
         }
 
         .rotating {
@@ -1900,6 +2107,30 @@ try {
             box-shadow: 0 2px 8px rgba(66, 133, 244, 0.4);
             z-index: 2;
             font-weight: bold;
+        }
+
+        /* 色変更状態の表示 */
+        .color-swatch-container {
+            position: relative;
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 0.75rem;
+        }
+
+        .color-swatch.changed {
+            border-color: #28a745;
+            border-width: 4px;
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .original-code {
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-top: 0.25rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            text-align: center;
         }
 
         @media (max-width: 768px) {
@@ -2163,6 +2394,15 @@ try {
                         <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 0 12px 12px 0;">
                             <i class="bi bi-download"></i> ダウンロード
                         </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> 
+                            同じ色を何度でも違う色に変更できます。
+                            <span class="badge bg-success ms-1"><i class="bi bi-arrow-repeat"></i></span> 変更済み、
+                            <span class="badge bg-secondary ms-1">元</span> オリジナル色表示
+                        </small>
                     </div>
                 </div>
             </div>
@@ -2476,6 +2716,9 @@ try {
     <script>
     let originalSvgContent = null;
     let extractedColors = [];
+    let originalColors = []; // オリジナルの色情報を保持（変更されない）
+    let initialColorStates = []; // 初期状態の完全なコピー（リセット用）
+    let colorMappings = new Map(); // オリジナル色 → 現在色のマッピング
     let selectedColorIndex = -1;
     
     // ページ読み込み時にオリジナルのSVGを保存し、色を抽出
@@ -2500,19 +2743,27 @@ try {
             if (svgWrapper) {
                 svgWrapper.innerHTML = originalSvgContent;
                 
+                // 初期状態を完全に復元
+                extractedColors = JSON.parse(JSON.stringify(initialColorStates));
+                originalColors = JSON.parse(JSON.stringify(initialColorStates));
+                
+                // 色のマッピングを初期化
+                colorMappings.clear();
+                originalColors.forEach(colorInfo => {
+                    colorMappings.set(colorInfo.color, colorInfo.color);
+                });
+                
                 // カラーパレットを再生成
                 setTimeout(() => {
-                    extractColorsFromSvg();
+                    displayColorPalette();
                     cancelColorChange();
                 }, 100);
             }
         }
-        
+
         // 色パレット選択をリセット
         selectedColorIndex = -1;
-    }
-    
-    // カスタム色でSVGをダウンロードする関数
+    }    // カスタム色でSVGをダウンロードする関数
     function downloadCustomSvg() {
         const svg = document.getElementById('customizable-svg');
         if (!svg) {
@@ -2586,6 +2837,22 @@ try {
             .sort((a, b) => b.count - a.count)
             .slice(0, 8); // 最大8色まで
         
+        // オリジナル色情報のディープコピーを保存
+        originalColors = extractedColors.map(color => ({
+            color: color.color,
+            count: color.count,
+            elements: [...color.elements]
+        }));
+        
+        // 初期状態の完全なコピーを保存（リセット用）
+        initialColorStates = JSON.parse(JSON.stringify(originalColors));
+        
+        // 色のマッピングを初期化（オリジナル色 → 現在色）
+        colorMappings.clear();
+        originalColors.forEach(colorInfo => {
+            colorMappings.set(colorInfo.color, colorInfo.color);
+        });
+        
         displayColorPalette();
     }
     
@@ -2622,6 +2889,40 @@ try {
         return colors;
     }
     
+    // パレット表示を更新（色変更後）
+    function updateColorPalette() {
+        const paletteContainer = document.getElementById('colorPalette');
+        
+        // 色スウォッチのみ更新（カラーピッカーUIは維持）
+        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（クリックして変更）</small></div>';
+        
+        extractedColors.forEach((colorInfo, index) => {
+            const originalColor = colorInfo.color;
+            const currentColor = colorMappings.get(originalColor) || originalColor;
+            const isChanged = currentColor !== originalColor;
+            
+            paletteHTML += `
+                <div class="color-item" onclick="selectColor(${index})">
+                    <div class="color-swatch-container">
+                        <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
+                            <div class="usage-count">${colorInfo.count}</div>
+                        </div>
+                    </div>
+                    <div class="color-code">${currentColor}</div>
+                    ${isChanged ? `<div class="original-code">元: ${originalColor}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        // 既存のカラーピッカーUIを保持
+        const existingPickerWrapper = document.getElementById('colorPickerWrapper');
+        if (existingPickerWrapper) {
+            paletteHTML += existingPickerWrapper.outerHTML;
+        }
+        
+        paletteContainer.innerHTML = paletteHTML;
+    }
+    
     // カラーパレット表示
     function displayColorPalette() {
         const paletteContainer = document.getElementById('colorPalette');
@@ -2639,12 +2940,19 @@ try {
         let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（クリックして変更）</small></div>';
         
         extractedColors.forEach((colorInfo, index) => {
+            const originalColor = colorInfo.color;
+            const currentColor = colorMappings.get(originalColor) || originalColor;
+            const isChanged = currentColor !== originalColor;
+            
             paletteHTML += `
                 <div class="color-item" onclick="selectColor(${index})">
-                    <div class="color-swatch" style="background-color: ${colorInfo.color}" id="swatch-${index}">
-                        <div class="usage-count">${colorInfo.count}</div>
+                    <div class="color-swatch-container">
+                        <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
+                            <div class="usage-count">${colorInfo.count}</div>
+                        </div>
                     </div>
-                    <div class="color-code">${colorInfo.color}</div>
+                    <div class="color-code">${currentColor}</div>
+                    ${isChanged ? `<div class="original-code">元: ${originalColor}</div>` : ''}
                 </div>
             `;
         });
@@ -2662,17 +2970,13 @@ try {
                     <small class="text-muted">新しい色を選択して適用してください</small>
                 </div>
                 
-                <div class="color-comparison justify-content-center mb-4">
+                <div class="color-picker-section justify-content-center mb-3">
                     <div class="text-center">
-                        <label class="form-label mb-2">変更前</label>
-                        <div class="color-swatch" id="oldColorSwatch"></div>
-                    </div>
-                    <div class="arrow d-flex align-items-center">
-                        <i class="bi bi-arrow-right-circle-fill"></i>
-                    </div>
-                    <div class="text-center">
-                        <label class="form-label mb-2">変更後</label>
-                        <input type="color" class="form-control-color" id="newColorPicker" onchange="previewColorChange()">
+                        <div class="color-swatch-wrapper">
+                            <div class="color-swatch" id="newColorSwatch" style="background-color: #ff0000;"></div>
+                            <input type="color" class="hidden-color-input" id="newColorPicker" onchange="previewColorChange()">
+                        </div>
+                        <p class="color-label">新しい色を選択</p>
                     </div>
                 </div>
                 
@@ -2691,7 +2995,7 @@ try {
     // 色を選択
     function selectColor(index) {
         selectedColorIndex = index;
-        const colorInfo = extractedColors[index];
+        const originalColorInfo = originalColors[index]; // オリジナル色情報を参照
         
         // 全てのスウォッチからactiveクラスを削除
         document.querySelectorAll('.color-swatch').forEach(swatch => {
@@ -2703,11 +3007,13 @@ try {
         
         // カラーピッカーを表示
         const pickerWrapper = document.getElementById('colorPickerWrapper');
-        const oldColorSwatch = document.getElementById('oldColorSwatch');
+        const newColorSwatch = document.getElementById('newColorSwatch');
         const newColorPicker = document.getElementById('newColorPicker');
         
-        oldColorSwatch.style.backgroundColor = colorInfo.color;
-        newColorPicker.value = colorInfo.color;
+        // 現在の色を表示（変更済みの場合は変更後の色）
+        const currentColor = colorMappings.get(originalColorInfo.color) || originalColorInfo.color;
+        newColorSwatch.style.backgroundColor = currentColor;
+        newColorPicker.value = currentColor;
         pickerWrapper.classList.add('active');
     }
     
@@ -2716,9 +3022,12 @@ try {
         if (selectedColorIndex === -1) return;
         
         const newColor = document.getElementById('newColorPicker').value;
-        const oldColor = extractedColors[selectedColorIndex].color;
         
-        // プレビューロジックをここに追加可能
+        // 新しい色のスワッチを更新
+        const newColorSwatch = document.getElementById('newColorSwatch');
+        if (newColorSwatch) {
+            newColorSwatch.style.backgroundColor = newColor;
+        }
     }
     
     // 色選択をキャンセル
@@ -2814,7 +3123,7 @@ try {
         }
         
         const newColor = newColorElement.value;
-        const oldColor = extractedColors[selectedColorIndex].color;
+        const oldColor = originalColors[selectedColorIndex].color; // 常にオリジナル色を使用
         
         if (newColor === oldColor) {
             cancelColorChange();
@@ -2830,19 +3139,23 @@ try {
         
         let changeCount = 0;
         
-        // 全てのSVG要素をチェック
+        // 現在その色グループに適用されている色を取得
+        const currentColor = colorMappings.get(oldColor);
+        
+        // 全てのSVG要素をチェックして、現在の色を新しい色に置換
         const allElements = svgElement.querySelectorAll('*');
+        
         allElements.forEach(element => {
             // fill属性をチェック
             const fillAttr = element.getAttribute('fill');
-            if (fillAttr && convertToHex(fillAttr) === oldColor) {
+            if (fillAttr && convertToHex(fillAttr) === convertToHex(currentColor)) {
                 element.setAttribute('fill', newColor);
                 changeCount++;
             }
             
             // stroke属性をチェック
             const strokeAttr = element.getAttribute('stroke');
-            if (strokeAttr && convertToHex(strokeAttr) === oldColor) {
+            if (strokeAttr && convertToHex(strokeAttr) === convertToHex(currentColor)) {
                 element.setAttribute('stroke', newColor);
                 changeCount++;
             }
@@ -2851,35 +3164,42 @@ try {
             const styleAttr = element.getAttribute('style');
             if (styleAttr) {
                 let newStyle = styleAttr;
+                let styleChanged = false;
+                
                 const fillMatch = styleAttr.match(/fill\s*:\s*([^;]+)/);
                 const strokeMatch = styleAttr.match(/stroke\s*:\s*([^;]+)/);
                 
-                if (fillMatch && convertToHex(fillMatch[1].trim()) === oldColor) {
+                if (fillMatch && convertToHex(fillMatch[1].trim()) === convertToHex(currentColor)) {
                     newStyle = newStyle.replace(/fill\s*:\s*[^;]+/, `fill: ${newColor}`);
+                    styleChanged = true;
                     changeCount++;
                 }
                 
-                if (strokeMatch && convertToHex(strokeMatch[1].trim()) === oldColor) {
+                if (strokeMatch && convertToHex(strokeMatch[1].trim()) === convertToHex(currentColor)) {
                     newStyle = newStyle.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newColor}`);
+                    styleChanged = true;
                     changeCount++;
                 }
                 
-                if (newStyle !== styleAttr) {
+                if (styleChanged) {
                     element.setAttribute('style', newStyle);
                 }
             }
         });
         
-        // 色パレットを更新
-        extractedColors[selectedColorIndex].color = newColor;
-        document.getElementById(`swatch-${selectedColorIndex}`).style.backgroundColor = newColor;
-        document.querySelector(`#swatch-${selectedColorIndex}`).parentElement.querySelector('.color-code').textContent = newColor;
+        // 色のマッピングを更新
+        colorMappings.set(oldColor, newColor);
+        
+        // パレットはオリジナル色のまま保持（更新しない）
         
         // UIを閉じる
         cancelColorChange();
         
         // 完了メッセージ
-        showMessage(`色を変更しました（${changeCount}箇所）`, 'success');
+        showMessage(`${currentColor} → ${newColor} に変更しました（${changeCount}箇所）`, 'success');
+        
+        // パレット表示を更新
+        updateColorPalette();
     }
     
     // メッセージ表示

@@ -81,8 +81,8 @@ if ($_POST) {
                     unlink($oldWebpMediumPath);
                 }
                 
-                // 新しい画像をアップロード
-                $uploadResult = uploadImage($_FILES['image'], $slug);
+                // 新しい画像をアップロード（初回投稿日のフォルダを使用）
+                $uploadResult = uploadImage($_FILES['image'], $slug, $material['created_at']);
                 if ($uploadResult) {
                     $imagePath = $uploadResult['original'];
                     $webpSmallPath = $uploadResult['webp_small'];
@@ -107,8 +107,8 @@ if ($_POST) {
             // SVGファイルアップロード処理
             if (isset($_FILES['svg_file']) && $_FILES['svg_file']['error'] === UPLOAD_ERR_OK) {
                 try {
-                    // 新しいSVGファイルをアップロード（古いファイルは自動削除）
-                    $svgUploadResult = uploadSvgFile($_FILES['svg_file'], $slug, false, $svgPath); // 開発中は寛容なセキュリティチェック
+                    // 新しいSVGファイルをアップロード（初回投稿日のフォルダを使用、古いファイルは自動削除）
+                    $svgUploadResult = uploadSvgFile($_FILES['svg_file'], $slug, false, $svgPath, $material['created_at']); // 開発中は寛容なセキュリティチェック
                     if ($svgUploadResult) {
                         $svgPath = $svgUploadResult;
                     }
@@ -131,8 +131,8 @@ if ($_POST) {
                         }
                     }
                     
-                    // 新しいAI製品画像をアップロード
-                    $aiUploadResult = uploadImage($_FILES['ai_product_image'], $slug . '_ai_product');
+                    // 新しいAI製品画像をアップロード（初回投稿日のフォルダを使用）
+                    $aiUploadResult = uploadImage($_FILES['ai_product_image'], $slug . '_ai_product', $material['created_at']);
                     if ($aiUploadResult) {
                         $aiProductImagePath = $aiUploadResult['original'];
                     } else {

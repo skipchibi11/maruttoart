@@ -106,7 +106,7 @@ function h($str) {
 }
 
 // ファイルアップロード関数（セキュリティ強化版）
-function uploadImage($file, $slug) {
+function uploadImage($file, $slug, $createdAt = null) {
     // セキュリティチェック
     $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
@@ -137,7 +137,14 @@ function uploadImage($file, $slug) {
         throw new Exception('スラッグに不正な文字が含まれています');
     }
     
-    $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+    // 作成日が指定されている場合はその年月を使用、そうでなければ現在の年月を使用
+    if ($createdAt) {
+        $date = new DateTime($createdAt);
+        $uploadDir = __DIR__ . '/uploads/' . $date->format('Y/m/');
+    } else {
+        $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+    }
+    
     if (!file_exists($uploadDir)) {
         if (!mkdir($uploadDir, 0755, true)) {
             throw new Exception('アップロードディレクトリの作成に失敗しました');
@@ -161,15 +168,18 @@ function uploadImage($file, $slug) {
         $webpBasePath = $uploadDir . preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
         $webpResults = convertToWebP($filepath, $webpBasePath);
         
+        // 年月フォルダのパスを動的に決定
+        $folderPath = $createdAt ? (new DateTime($createdAt))->format('Y/m/') : date('Y/m/');
+        
         if ($webpResults) {
             return [
-                'original' => 'uploads/' . date('Y/m/') . $filename,
+                'original' => 'uploads/' . $folderPath . $filename,
                 'webp_small' => str_replace(__DIR__ . '/', '', $webpResults['_small']),
                 'webp_medium' => str_replace(__DIR__ . '/', '', $webpResults['_medium'])
             ];
         } else {
             return [
-                'original' => 'uploads/' . date('Y/m/') . $filename,
+                'original' => 'uploads/' . $folderPath . $filename,
                 'webp_small' => null,
                 'webp_medium' => null
             ];
@@ -250,7 +260,7 @@ function convertToWebP($source, $basePath) {
 }
 
 // SVGファイルアップロード関数
-function uploadSvgFile($file, $slug, $strictSecurity = false, $oldSvgPath = null) {
+function uploadSvgFile($file, $slug, $strictSecurity = false, $oldSvgPath = null, $createdAt = null) {
     // セキュリティチェック
     $allowedMimeTypes = ['image/svg+xml'];
     $allowedExtensions = ['svg'];
@@ -320,7 +330,16 @@ function uploadSvgFile($file, $slug, $strictSecurity = false, $oldSvgPath = null
         throw new Exception('スラッグに不正な文字が含まれています');
     }
     
-    $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+    // 作成日が指定されている場合はその年月を使用、そうでなければ現在の年月を使用
+    if ($createdAt) {
+        $date = new DateTime($createdAt);
+        $uploadDir = __DIR__ . '/uploads/' . $date->format('Y/m/');
+        $folderPath = $date->format('Y/m/');
+    } else {
+        $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+        $folderPath = date('Y/m/');
+    }
+    
     if (!file_exists($uploadDir)) {
         if (!mkdir($uploadDir, 0755, true)) {
             throw new Exception('アップロードディレクトリの作成に失敗しました');
@@ -338,7 +357,7 @@ function uploadSvgFile($file, $slug, $strictSecurity = false, $oldSvgPath = null
     
     // サニタイズされたコンテンツをファイルに保存
     if (file_put_contents($filepath, $content)) {
-        return 'uploads/' . date('Y/m/') . $filename;
+        return 'uploads/' . $folderPath . $filename;
     }
     
     throw new Exception('SVGファイルのアップロードに失敗しました');
