@@ -1866,6 +1866,19 @@ try {
             box-shadow: 0 3px 8px rgba(66, 133, 244, 0.2);
         }
 
+        .swatch-color-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+            border: none;
+            background: transparent;
+        }
+
         .hidden-color-input {
             position: absolute;
             top: 0;
@@ -2388,9 +2401,6 @@ try {
                         <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()" style="border-radius: 12px 0 0 12px;">
                             <i class="bi bi-arrow-counterclockwise"></i> リセット
                         </button>
-                        <button type="button" class="btn btn-outline-info" onclick="extractColorsFromSvg()">
-                            <i class="bi bi-arrow-clockwise"></i> 再抽出
-                        </button>
                         <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 0 12px 12px 0;">
                             <i class="bi bi-download"></i> ダウンロード
                         </button>
@@ -2756,7 +2766,6 @@ try {
                 // カラーパレットを再生成
                 setTimeout(() => {
                     displayColorPalette();
-                    cancelColorChange();
                 }, 100);
             }
         }
@@ -2818,6 +2827,17 @@ try {
             colors.forEach(colorInfo => {
                 const hex = convertToHex(colorInfo.color);
                 if (hex && hex !== '#FFFFFF' && hex !== '#000000') { // 白と黒は除外
+                    // 元の色情報をdata属性として保存
+                    if (colorInfo.type === 'fill' && element.getAttribute('fill')) {
+                        element.setAttribute('data-original-fill', hex);
+                    } else if (colorInfo.type === 'stroke' && element.getAttribute('stroke')) {
+                        element.setAttribute('data-original-stroke', hex);
+                    } else if (colorInfo.type === 'style-fill') {
+                        element.setAttribute('data-original-style-fill', hex);
+                    } else if (colorInfo.type === 'style-stroke') {
+                        element.setAttribute('data-original-style-stroke', hex);
+                    }
+                    
                     if (colorMap.has(hex)) {
                         colorMap.get(hex).count++;
                         colorMap.get(hex).elements.push({ element, type: colorInfo.type });
@@ -2852,6 +2872,9 @@ try {
         originalColors.forEach(colorInfo => {
             colorMappings.set(colorInfo.color, colorInfo.color);
         });
+        
+        console.log('Extracted colors:', extractedColors.map(c => c.color));
+        console.log('Initial color mappings:', Object.fromEntries(colorMappings));
         
         displayColorPalette();
     }
@@ -2893,8 +2916,8 @@ try {
     function updateColorPalette() {
         const paletteContainer = document.getElementById('colorPalette');
         
-        // 色スウォッチのみ更新（カラーピッカーUIは維持）
-        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（クリックして変更）</small></div>';
+        // 色スウォッチのみ更新
+        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（直接クリックして変更）</small></div>';
         
         extractedColors.forEach((colorInfo, index) => {
             const originalColor = colorInfo.color;
@@ -2902,23 +2925,20 @@ try {
             const isChanged = currentColor !== originalColor;
             
             paletteHTML += `
-                <div class="color-item" onclick="selectColor(${index})">
+                <div class="color-item">
                     <div class="color-swatch-container">
-                        <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
-                            <div class="usage-count">${colorInfo.count}</div>
+                        <div class="color-swatch-wrapper" onclick="event.stopPropagation()">
+                            <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
+                                <div class="usage-count">${colorInfo.count}</div>
+                            </div>
+                            <input type="color" class="swatch-color-input" id="colorInput-${index}" value="${currentColor}" onchange="changeColorDirectly(${index}, this.value)">
                         </div>
                     </div>
-                    <div class="color-code">${currentColor}</div>
+                    <div class="color-code" id="colorCode-${index}">${currentColor}</div>
                     ${isChanged ? `<div class="original-code">元: ${originalColor}</div>` : ''}
                 </div>
             `;
         });
-        
-        // 既存のカラーピッカーUIを保持
-        const existingPickerWrapper = document.getElementById('colorPickerWrapper');
-        if (existingPickerWrapper) {
-            paletteHTML += existingPickerWrapper.outerHTML;
-        }
         
         paletteContainer.innerHTML = paletteHTML;
     }
@@ -2937,7 +2957,7 @@ try {
             return;
         }
         
-        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（クリックして変更）</small></div>';
+        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（直接クリックして変更）</small></div>';
         
         extractedColors.forEach((colorInfo, index) => {
             const originalColor = colorInfo.color;
@@ -2945,13 +2965,16 @@ try {
             const isChanged = currentColor !== originalColor;
             
             paletteHTML += `
-                <div class="color-item" onclick="selectColor(${index})">
+                <div class="color-item">
                     <div class="color-swatch-container">
-                        <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
-                            <div class="usage-count">${colorInfo.count}</div>
+                        <div class="color-swatch-wrapper" onclick="event.stopPropagation()">
+                            <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
+                                <div class="usage-count">${colorInfo.count}</div>
+                            </div>
+                            <input type="color" class="swatch-color-input" id="colorInput-${index}" value="${currentColor}" onchange="changeColorDirectly(${index}, this.value)">
                         </div>
                     </div>
-                    <div class="color-code">${currentColor}</div>
+                    <div class="color-code" id="colorCode-${index}">${currentColor}</div>
                     ${isChanged ? `<div class="original-code">元: ${originalColor}</div>` : ''}
                 </div>
             `;
@@ -2959,84 +2982,74 @@ try {
         
         paletteContainer.innerHTML = paletteHTML;
         paletteContainer.classList.add('loaded');
-        
-        // カラーピッカーUI追加
-        paletteContainer.innerHTML += `
-            <div class="color-picker-wrapper" id="colorPickerWrapper">
-                <div class="text-center mb-3">
-                    <h6 class="mb-2 text-primary">
-                        <i class="bi bi-palette2"></i> 色を変更
-                    </h6>
-                    <small class="text-muted">新しい色を選択して適用してください</small>
-                </div>
-                
-                <div class="color-picker-section justify-content-center mb-3">
-                    <div class="text-center">
-                        <div class="color-swatch-wrapper">
-                            <div class="color-swatch" id="newColorSwatch" style="background-color: #ff0000;"></div>
-                            <input type="color" class="hidden-color-input" id="newColorPicker" onchange="previewColorChange()">
-                        </div>
-                        <p class="color-label">新しい色を選択</p>
-                    </div>
-                </div>
-                
-                <div class="color-actions justify-content-center">
-                    <button type="button" class="btn btn-primary" onclick="applyColorChange()">
-                        <i class="bi bi-check-circle"></i> 変更を適用
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="cancelColorChange()">
-                        <i class="bi bi-x-circle"></i> キャンセル
-                    </button>
-                </div>
-            </div>
-        `;
     }
     
-    // 色を選択
-    function selectColor(index) {
-        selectedColorIndex = index;
-        const originalColorInfo = originalColors[index]; // オリジナル色情報を参照
+    // カラースワッチから直接色を変更
+    function changeColorDirectly(index, newColor) {
+        if (index < 0 || index >= extractedColors.length) return;
         
-        // 全てのスウォッチからactiveクラスを削除
-        document.querySelectorAll('.color-swatch').forEach(swatch => {
-            swatch.classList.remove('active');
-        });
+        const colorInfo = extractedColors[index];
+        const originalColor = colorInfo.color; // 元の色（初期状態）
+        const currentColor = colorMappings.get(originalColor) || originalColor; // 現在の色
         
-        // 選択されたスウォッチにactiveクラスを追加
-        document.getElementById(`swatch-${index}`).classList.add('active');
+        // 新しい色を統一形式に変換
+        const normalizedNewColor = convertToHex(newColor) || newColor.toUpperCase();
         
-        // カラーピッカーを表示
-        const pickerWrapper = document.getElementById('colorPickerWrapper');
-        const newColorSwatch = document.getElementById('newColorSwatch');
-        const newColorPicker = document.getElementById('newColorPicker');
+        // 同じ色への変更は処理しない
+        if (currentColor === normalizedNewColor) return;
         
-        // 現在の色を表示（変更済みの場合は変更後の色）
-        const currentColor = colorMappings.get(originalColorInfo.color) || originalColorInfo.color;
-        newColorSwatch.style.backgroundColor = currentColor;
-        newColorPicker.value = currentColor;
-        pickerWrapper.classList.add('active');
-    }
-    
-    // 色変更のプレビュー
-    function previewColorChange() {
-        if (selectedColorIndex === -1) return;
+        // 元の色から新しい色へのマッピングを更新
+        colorMappings.set(originalColor, normalizedNewColor);
         
-        const newColor = document.getElementById('newColorPicker').value;
+        console.log(`Color change: ${originalColor} -> ${currentColor} -> ${normalizedNewColor}`);
+        console.log('Updated mappings:', Object.fromEntries(colorMappings));
         
-        // 新しい色のスワッチを更新
-        const newColorSwatch = document.getElementById('newColorSwatch');
-        if (newColorSwatch) {
-            newColorSwatch.style.backgroundColor = newColor;
+        // SVGの色を即座に更新
+        updateSvgColors();
+        
+        // カラースワッチの表示を更新
+        const swatch = document.getElementById(`swatch-${index}`);
+        const colorCode = document.getElementById(`colorCode-${index}`);
+        const colorInput = document.getElementById(`colorInput-${index}`);
+        
+        if (swatch) {
+            swatch.style.backgroundColor = normalizedNewColor;
+            // 変更されたことを示すクラスを追加
+            if (normalizedNewColor !== originalColor) {
+                swatch.classList.add('changed');
+            } else {
+                swatch.classList.remove('changed');
+            }
         }
-    }
-    
-    // 色選択をキャンセル
-    function cancelColorChange() {
-        selectedColorIndex = -1;
-        document.getElementById('colorPickerWrapper').classList.remove('active');
-        document.querySelectorAll('.color-swatch').forEach(swatch => {
-            swatch.classList.remove('active');
-        });
+        
+        if (colorCode) {
+            colorCode.textContent = normalizedNewColor;
+        }
+        
+        if (colorInput) {
+            colorInput.value = normalizedNewColor;
+        }
+        
+        // 元の色コードの表示を更新
+        const parentItem = swatch?.closest('.color-item');
+        if (parentItem) {
+            const originalCodeDiv = parentItem.querySelector('.original-code');
+            if (normalizedNewColor !== originalColor) {
+                if (!originalCodeDiv) {
+                    const newOriginalCodeDiv = document.createElement('div');
+                    newOriginalCodeDiv.className = 'original-code';
+                    newOriginalCodeDiv.textContent = `元: ${originalColor}`;
+                    parentItem.appendChild(newOriginalCodeDiv);
+                } else {
+                    // 既存の元色表示を更新（元の色は変わらない）
+                    originalCodeDiv.textContent = `元: ${originalColor}`;
+                }
+            } else {
+                if (originalCodeDiv) {
+                    originalCodeDiv.remove();
+                }
+            }
+        }
     }
     
     // 色を16進数に変換
@@ -3126,7 +3139,6 @@ try {
         const oldColor = originalColors[selectedColorIndex].color; // 常にオリジナル色を使用
         
         if (newColor === oldColor) {
-            cancelColorChange();
             return;
         }
         
@@ -3192,14 +3204,100 @@ try {
         
         // パレットはオリジナル色のまま保持（更新しない）
         
-        // UIを閉じる
-        cancelColorChange();
-        
         // 完了メッセージ
         showMessage(`${currentColor} → ${newColor} に変更しました（${changeCount}箇所）`, 'success');
         
         // パレット表示を更新
         updateColorPalette();
+    }
+    
+    // SVGの色を更新する関数
+    function updateSvgColors() {
+        const svgElement = document.getElementById('customizable-svg');
+        if (!svgElement) {
+            console.log('SVG element not found');
+            return;
+        }
+        
+        console.log('Updating SVG colors with mappings:', Object.fromEntries(colorMappings));
+        
+        // 全てのSVG要素をチェック
+        const allElements = svgElement.querySelectorAll('*');
+        let changeCount = 0;
+        
+        console.log(`Found ${allElements.length} SVG elements to check`);
+        
+        allElements.forEach((element, elementIndex) => {
+            // fill属性をチェック
+            const fillAttr = element.getAttribute('fill');
+            const originalFill = element.getAttribute('data-original-fill');
+            if (fillAttr && fillAttr !== 'none' && originalFill) {
+                console.log(`Element ${elementIndex}: fill="${fillAttr}" -> original="${originalFill}"`);
+                if (colorMappings.has(originalFill)) {
+                    const newColor = colorMappings.get(originalFill);
+                    console.log(`Changing fill: ${fillAttr} (original: ${originalFill}) -> ${newColor}`);
+                    element.setAttribute('fill', newColor);
+                    changeCount++;
+                }
+            }
+            
+            // stroke属性をチェック
+            const strokeAttr = element.getAttribute('stroke');
+            const originalStroke = element.getAttribute('data-original-stroke');
+            if (strokeAttr && strokeAttr !== 'none' && originalStroke) {
+                console.log(`Element ${elementIndex}: stroke="${strokeAttr}" -> original="${originalStroke}"`);
+                if (colorMappings.has(originalStroke)) {
+                    const newColor = colorMappings.get(originalStroke);
+                    console.log(`Changing stroke: ${strokeAttr} (original: ${originalStroke}) -> ${newColor}`);
+                    element.setAttribute('stroke', newColor);
+                    changeCount++;
+                }
+            }
+            
+            // style属性をチェック
+            const styleAttr = element.getAttribute('style');
+            if (styleAttr) {
+                let newStyle = styleAttr;
+                let styleChanged = false;
+                
+                const fillMatch = styleAttr.match(/fill\s*:\s*([^;]+)/);
+                const strokeMatch = styleAttr.match(/stroke\s*:\s*([^;]+)/);
+                
+                if (fillMatch && fillMatch[1].trim() !== 'none') {
+                    const originalStyleFill = element.getAttribute('data-original-style-fill');
+                    if (originalStyleFill) {
+                        console.log(`Element ${elementIndex}: style fill="${fillMatch[1].trim()}" -> original="${originalStyleFill}"`);
+                        if (colorMappings.has(originalStyleFill)) {
+                            const newColor = colorMappings.get(originalStyleFill);
+                            console.log(`Changing style fill: ${fillMatch[1].trim()} (original: ${originalStyleFill}) -> ${newColor}`);
+                            newStyle = newStyle.replace(/fill\s*:\s*[^;]+/, `fill: ${newColor}`);
+                            styleChanged = true;
+                            changeCount++;
+                        }
+                    }
+                }
+                
+                if (strokeMatch && strokeMatch[1].trim() !== 'none') {
+                    const originalStyleStroke = element.getAttribute('data-original-style-stroke');
+                    if (originalStyleStroke) {
+                        console.log(`Element ${elementIndex}: style stroke="${strokeMatch[1].trim()}" -> original="${originalStyleStroke}"`);
+                        if (colorMappings.has(originalStyleStroke)) {
+                            const newColor = colorMappings.get(originalStyleStroke);
+                            console.log(`Changing style stroke: ${strokeMatch[1].trim()} (original: ${originalStyleStroke}) -> ${newColor}`);
+                            newStyle = newStyle.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newColor}`);
+                            styleChanged = true;
+                            changeCount++;
+                        }
+                    }
+                }
+                
+                if (styleChanged) {
+                    element.setAttribute('style', newStyle);
+                }
+            }
+        });
+        
+        console.log(`Updated ${changeCount} color attributes in SVG`);
     }
     
     // メッセージ表示
