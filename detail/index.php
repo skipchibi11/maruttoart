@@ -177,10 +177,7 @@ $structuredImageUrl = getStructuredDataImageUrl($material);
 
 // 関連画像（類似度）を取得
 $relatedMaterials = [];
-// 関連画像（類似度）を取得
-$relatedMaterials = [];
 $showRelatedSection = false;
-$debugInfo = []; // デバッグ情報を格納
 
 try {
     // ビューの存在確認
@@ -193,20 +190,7 @@ try {
     $viewResult = $viewCheckStmt->fetch();
     $viewExists = $viewResult['view_count'] > 0;
     
-    $debugInfo['view_exists'] = $viewExists;
-    $debugInfo['material_id'] = $material['id'];
-    
     if ($viewExists) {
-        // 類似度データの総数をチェック
-        $countStmt = $pdo->prepare("
-            SELECT COUNT(*) as total_count 
-            FROM material_top_similarities 
-            WHERE material_id = ?
-        ");
-        $countStmt->execute([$material['id']]);
-        $countResult = $countStmt->fetch();
-        $debugInfo['similarity_records_count'] = $countResult['total_count'];
-        
         // 既存のビューを使用して類似画像を取得
         $relatedStmt = $pdo->prepare("
             SELECT 
@@ -227,41 +211,14 @@ try {
         $relatedStmt->execute([$material['id']]);
         $relatedMaterials = $relatedStmt->fetchAll();
         
-        $debugInfo['related_materials_found'] = count($relatedMaterials);
-        
         // 類似度データがある場合のみ関連セクションを表示
         if (!empty($relatedMaterials)) {
             $showRelatedSection = true;
         }
-    } else {
-        // ビューが存在しない場合、material_similarities テーブルを直接チェック
-        $tableCheckStmt = $pdo->query("
-            SELECT COUNT(*) as table_count 
-            FROM information_schema.tables 
-            WHERE table_schema = DATABASE() 
-            AND table_name = 'material_similarities'
-        ");
-        $tableResult = $tableCheckStmt->fetch();
-        $debugInfo['material_similarities_table_exists'] = $tableResult['table_count'] > 0;
-        
-        if ($tableResult['table_count'] > 0) {
-            $directCountStmt = $pdo->prepare("
-                SELECT COUNT(*) as direct_count 
-                FROM material_similarities 
-                WHERE material_id = ?
-            ");
-            $directCountStmt->execute([$material['id']]);
-            $directCountResult = $directCountStmt->fetch();
-            $debugInfo['direct_similarity_records_count'] = $directCountResult['direct_count'];
-        }
     }
 } catch (Exception $e) {
     // エラーが発生した場合は関連セクションを表示しない
-    $debugInfo['error'] = $e->getMessage();
 }
-
-// デバッグ情報をHTMLコメントとして出力（本番環境でも確認可能）
-echo "<!-- Debug Info: " . json_encode($debugInfo) . " -->\n";
 ?>
 
 <!DOCTYPE html>
