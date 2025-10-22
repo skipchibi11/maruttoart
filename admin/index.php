@@ -174,6 +174,36 @@ function buildPagingUrl($page, $per_page, $search_query, $search_category) {
                     </div>
                 </div>
 
+                <!-- SVGマイグレーション案内 -->
+                <?php
+                // SVGパス列が存在するかチェック
+                try {
+                    $pdo->query("SELECT svg_path FROM materials LIMIT 1");
+                    $svg_migrated = true;
+                } catch (PDOException $e) {
+                    $svg_migrated = false;
+                }
+                
+                if (!$svg_migrated):
+                ?>
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle me-3" style="font-size: 1.5rem;"></i>
+                        <div class="flex-grow-1">
+                            <h6 class="alert-heading mb-1">SVG機能のためのデータベース更新が必要です</h6>
+                            <p class="mb-2">SVGファイルのアップロード機能を有効にするには、データベースの更新が必要です。</p>
+                            <a href="/admin/migrate_svg.php" class="btn btn-primary btn-sm">
+                                <i class="bi bi-database-up"></i> データベース更新を実行
+                            </a>
+                            <a href="/admin/svg_debug.php" class="btn btn-outline-info btn-sm ms-2">
+                                <i class="bi bi-bug"></i> デバッグ情報
+                            </a>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <?php endif; ?>
+
                 <!-- 検索フォーム -->
                 <div class="card mb-3">
                     <div class="card-header">
@@ -276,7 +306,14 @@ function buildPagingUrl($page, $per_page, $search_query, $search_category) {
                                         <td>
                                             <img src="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" alt="<?= h($material['title']) ?>" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
                                         </td>
-                                        <td><?= h($material['title']) ?></td>
+                                        <td>
+                                            <?= h($material['title']) ?>
+                                            <?php if (!empty($material['svg_path'])): ?>
+                                                <span class="badge bg-success ms-2" title="SVGファイル付き">
+                                                    <i class="bi bi-vector-pen"></i> SVG
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td>
                                             <?php if (!empty($material['category_name'])): ?>
                                                 <span class="badge bg-secondary"><?= h($material['category_name']) ?></span>

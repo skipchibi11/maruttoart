@@ -249,6 +249,129 @@ function convertToWebP($source, $basePath) {
     return false;
 }
 
+// SVGファイルアップロード関数
+function uploadSvgFile($file, $slug, $strictSecurity = false, $oldSvgPath = null) {
+    // セキュリティチェック
+    $allowedMimeTypes = ['image/svg+xml'];
+    $allowedExtensions = ['svg'];
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
+    
+    // ファイルサイズチェック
+    if ($file['size'] > $maxFileSize) {
+        throw new Exception('SVGファイルサイズが大きすぎます（最大5MB）');
+    }
+    
+    // 拡張子チェック
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($extension, $allowedExtensions)) {
+        throw new Exception('SVGファイルの拡張子が正しくありません');
+    }
+    
+    // ファイル内容を読み取ってSVGかどうかチェック
+    $content = file_get_contents($file['tmp_name']);
+    
+    // デバッグ用：SVGの先頭部分を確認（一時的）
+    error_log("SVG upload attempt - File: " . $file['name'] . ", Size: " . $file['size'] . " bytes");
+    error_log("SVG content preview: " . substr($content, 0, 500));
+    
+    if (strpos($content, '<svg') === false || strpos($content, '</svg>') === false) {
+        throw new Exception('有効なSVGファイルではありません');
+    }
+    
+    // セキュリティチェック（開発中は緩和可能）
+    if ($strictSecurity) {
+        $dangerousPatterns = [
+            '/<script[\s>]/i' => 'script要素',
+            '/javascript\s*:/i' => 'JavaScript URL',
+            '/\son(click|load|mouse|key|focus|blur|change|submit|error)\s*=/i' => 'イベントハンドラー',
+            '/<iframe[\s>]/i' => 'iframe要素',
+            '/<embed[\s>]/i' => 'embed要素',
+            '/<object[\s>]/i' => 'object要素',
+            '/data:text\/html/i' => 'HTML data URL',
+            '/vbscript:/i' => 'VBScript URL'
+        ];
+        
+        foreach ($dangerousPatterns as $pattern => $description) {
+            if (preg_match($pattern, $content, $matches)) {
+                error_log("SVG security check failed: {$description} - Matched: " . $matches[0]);
+                throw new Exception("SVGファイルにセキュリティ上の問題があります: {$description}が検出されました (該当箇所: " . htmlspecialchars(substr($matches[0], 0, 50)) . ")");
+            }
+        }
+    } else {
+        // 最低限のセキュリティチェック（明らかに危険なもののみ）
+        $criticalPatterns = [
+            '/<script[\s>]/i' => 'script要素',
+            '/javascript\s*:/i' => 'JavaScript URL'
+        ];
+        
+        foreach ($criticalPatterns as $pattern => $description) {
+            if (preg_match($pattern, $content, $matches)) {
+                error_log("SVG critical security check failed: {$description} - Matched: " . $matches[0]);
+                throw new Exception("SVGファイルに危険な要素があります: {$description}");
+            }
+        }
+    }
+    
+    // SVGコンテンツをサニタイズ（危険な要素を除去）
+    $content = sanitizeSvgContent($content);
+    
+    // スラッグの安全性チェック
+    if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $slug)) {
+        throw new Exception('スラッグに不正な文字が含まれています');
+    }
+    
+    $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+    if (!file_exists($uploadDir)) {
+        if (!mkdir($uploadDir, 0755, true)) {
+            throw new Exception('アップロードディレクトリの作成に失敗しました');
+        }
+    }
+    
+    // 古いSVGファイルを削除
+    if ($oldSvgPath && file_exists(__DIR__ . '/' . $oldSvgPath)) {
+        unlink(__DIR__ . '/' . $oldSvgPath);
+    }
+    
+    // ファイル名を安全に生成（重複チェックなし、既存ファイルを上書き）
+    $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.svg';
+    $filepath = $uploadDir . $filename;
+    
+    // サニタイズされたコンテンツをファイルに保存
+    if (file_put_contents($filepath, $content)) {
+        return 'uploads/' . date('Y/m/') . $filename;
+    }
+    
+    throw new Exception('SVGファイルのアップロードに失敗しました');
+}
+
+// SVGコンテンツをサニタイズする関数
+function sanitizeSvgContent($content) {
+    // 危険な属性を除去
+    $dangerousAttributes = [
+        '/\son[a-z]+\s*=/i', // イベントハンドラー
+        '/\shref\s*=\s*["\']javascript:/i', // JavaScript URLs
+        '/\shref\s*=\s*["\']data:text\/html/i', // HTML data URLs
+    ];
+    
+    foreach ($dangerousAttributes as $pattern) {
+        $content = preg_replace($pattern, '', $content);
+    }
+    
+    // 危険な要素を除去
+    $dangerousElements = [
+        '/<script[^>]*>.*?<\/script>/is',
+        '/<iframe[^>]*>.*?<\/iframe>/is',
+        '/<embed[^>]*>/i',
+        '/<object[^>]*>.*?<\/object>/is',
+    ];
+    
+    foreach ($dangerousElements as $pattern) {
+        $content = preg_replace($pattern, '', $content);
+    }
+    
+    return $content;
+}
+
 // 現在のサイトのベースURLを取得（言語サブドメイン対応）
 function getCurrentBaseUrl() {
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';

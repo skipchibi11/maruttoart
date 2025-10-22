@@ -33,7 +33,8 @@ try {
         'webp_small_path',
         'webp_medium_path',
         'structured_image_path',
-        'ai_product_image_path'
+        'ai_product_image_path',
+        'svg_path'
     ];
     
     $deletedFiles = [];

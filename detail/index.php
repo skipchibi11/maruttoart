@@ -268,6 +268,9 @@ try {
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
     
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
     <!-- Canonical tag -->
     <link rel="canonical" href="https://marutto.art/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     
@@ -1214,6 +1217,13 @@ try {
         }
         
         /* ダウンロードリンクのスタイル */
+        .download-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
         .download-link {
             color: #222;
             text-decoration: none;
@@ -1221,8 +1231,12 @@ try {
             padding: 0.5rem 1rem;
             border: 1px solid #dee2e6;
             border-radius: 0.25rem;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+            min-width: 200px;
+            justify-content: center;
         }
         
         .download-link:hover {
@@ -1230,6 +1244,24 @@ try {
             background-color: #f8f9fa;
             border-color: #adb5bd;
             text-decoration: none;
+        }
+        
+        .svg-download {
+            border-color: #28a745;
+            color: #28a745;
+        }
+        
+        .svg-download:hover {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        
+        @media (min-width: 576px) {
+            .download-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
         }
         
         /* コンテンツのテキストスタイル */
@@ -1487,6 +1519,423 @@ try {
                 padding-right: 1rem;
             }
         }
+
+        /* SVG表示セクション */
+        .svg-display-section {
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            border: 2px solid #e8f0fe;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .svg-section-title {
+            color: #4285f4;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .svg-section-title::before {
+            content: '🎨';
+            font-size: 1.2rem;
+        }
+
+        .svg-container {
+            text-align: center;
+        }
+
+        .svg-image-wrapper {
+            background: #ffffff;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            display: inline-block;
+            max-width: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .svg-image-wrapper .svg-inline {
+            max-width: 100%;
+            height: auto;
+            max-height: 400px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .svg-info {
+            margin-top: 0.75rem;
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .svg-info .bi {
+            color: #4285f4;
+            margin-right: 0.25rem;
+        }
+
+        /* SVG色変更コントロール */
+        .svg-controls {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .svg-controls .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control-color {
+            width: 50px;
+            height: 38px;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .form-control-color:hover {
+            border-color: #4285f4;
+            transform: scale(1.05);
+        }
+
+        .form-control-color:focus {
+            border-color: #4285f4;
+            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25);
+        }
+
+        .svg-controls .btn {
+            transition: all 0.2s ease;
+        }
+
+        .svg-controls .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* スポイト機能用スタイル */
+        .color-preview {
+            width: 40px;
+            height: 32px;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .color-preview:hover {
+            border-color: #4285f4;
+        }
+
+        .eyedropper-mode .svg-inline {
+            cursor: crosshair !important;
+        }
+
+        .eyedropper-mode .svg-inline * {
+            cursor: crosshair !important;
+        }
+
+        .btn-check {
+            position: absolute;
+            clip: rect(0, 0, 0, 0);
+            pointer-events: none;
+        }
+
+        .btn-check:checked + .btn {
+            background-color: #4285f4;
+            border-color: #4285f4;
+            color: white;
+        }
+
+        /* カラーパレット用スタイル */
+        .color-palette {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 2px solid #e3f2fd;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .color-palette:hover {
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-palette.loaded {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .color-item {
+            display: inline-block;
+            margin: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            padding: 0.5rem;
+        }
+
+        .color-item:hover {
+            transform: scale(1.05) translateY(-2px);
+            background-color: rgba(66, 133, 244, 0.08);
+        }
+
+        .color-swatch {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 
+                        0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            background-clip: padding-box;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 
+                        0 4px 8px rgba(0, 0, 0, 0.15);
+            border-color: rgba(66, 133, 244, 0.3);
+        }
+
+        .color-swatch.active {
+            border-color: #4285f4;
+            border-width: 5px;
+            transform: scale(1.08);
+            box-shadow: 0 8px 30px rgba(66, 133, 244, 0.3), 
+                        0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .color-swatch.active::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .color-code {
+            font-size: 0.8rem;
+            color: #495057;
+            font-weight: 600;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            background-color: rgba(108, 117, 125, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .color-item:hover .color-code {
+            background-color: rgba(66, 133, 244, 0.1);
+            color: #4285f4;
+        }
+
+        .color-picker-wrapper {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 12px;
+            border: 2px solid #e3f2fd;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .color-picker-wrapper.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* カラーピッカー内のラベル */
+        .color-picker-wrapper .form-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        /* 変更前後の色表示 */
+        .color-comparison {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .color-comparison .color-swatch {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-comparison .arrow {
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+
+        /* カラーピッカー入力 */
+        .form-control-color {
+            width: 50px !important;
+            height: 50px !important;
+            border: 3px solid #dee2e6 !important;
+            border-radius: 50% !important;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-color:hover {
+            border-color: #4285f4 !important;
+            transform: scale(1.05);
+        }
+
+        .form-control-color:focus {
+            border-color: #4285f4 !important;
+            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25) !important;
+        }
+
+        /* アクションボタン */
+        .color-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .color-actions .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .color-actions .btn-primary {
+            background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
+            border: none;
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+        }
+
+        .color-actions .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+        }
+
+        .color-actions .btn-outline-secondary {
+            border-color: #dee2e6;
+            color: #6c757d;
+        }
+
+        .color-actions .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+            transform: translateY(-1px);
+        }
+
+        .rotating {
+            animation: rotate 2s infinite linear;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .usage-count {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(135deg, #4285f4 0%, #357ae8 100%);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.4);
+            z-index: 2;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .svg-display-section {
+                padding: 1rem;
+                margin: 1rem 0;
+            }
+
+            .svg-image-wrapper {
+                padding: 0.75rem;
+            }
+
+            .svg-image-wrapper .svg-inline {
+                max-height: 300px;
+            }
+
+            .svg-controls {
+                padding: 0.75rem;
+            }
+
+            .svg-controls .row {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .svg-controls .col-auto {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .svg-controls .form-label {
+                margin-bottom: 0;
+                min-width: 60px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1620,9 +2069,17 @@ try {
                     
                     <!-- ダウンロードリンク -->
                     <div class="mb-4">
-                        <a href="/<?= h($material['image_path']) ?>" download class="download-link">
-                            <?= h($material['title']) ?>をダウンロード
-                        </a>
+                        <div class="download-buttons">
+                            <a href="/<?= h($material['image_path']) ?>" download class="download-link">
+                                <i class="bi bi-download"></i> PNG/JPEGをダウンロード
+                            </a>
+                            
+                            <?php if (isset($material['svg_path']) && !empty($material['svg_path'])): ?>
+                            <a href="/<?= h($material['svg_path']) ?>" download class="download-link svg-download">
+                                <i class="bi bi-vector-pen"></i> SVGをダウンロード
+                            </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 
@@ -1633,6 +2090,8 @@ try {
                         <?php if (!empty($material['description'])): ?>
                         <p class="detail-description mb-3"><?= nl2br(h($material['description'])) ?></p>
                         <?php endif; ?>
+                        
+
                         
                         <div class="mb-3">
                             <small class="detail-date">投稿日：<?= date('Y-m-d', strtotime($material['upload_date'])) ?></small>
@@ -1655,6 +2114,90 @@ try {
             </div>
         </div>
     </div>
+
+    <!-- SVG表示セクション（シェアボタンの上） -->
+    <?php 
+    // SVGファイルの表示
+    $hasSvgColumn = false;
+    try {
+        $pdo->query("SELECT svg_path FROM materials LIMIT 1");
+        $hasSvgColumn = true;
+    } catch (PDOException $e) {
+        $hasSvgColumn = false;
+    }
+    
+    if ($hasSvgColumn && !empty($material['svg_path']) && file_exists(__DIR__ . '/../' . $material['svg_path'])): 
+    ?>
+    <div class="container mt-4">
+        <div class="svg-display-section">
+            <h5 class="svg-section-title mb-3">ベクター画像</h5>
+            
+            <!-- 色変更コントロール（カラーパレット方式） -->
+            <div class="svg-controls mb-4">
+                <div class="text-center mb-3">
+                    <h6 class="text-primary mb-2">
+                        <i class="bi bi-palette"></i> インタラクティブカラー編集
+                    </h6>
+                    <small class="text-muted">SVGの色をカスタマイズして、あなた好みのイラストにしましょう</small>
+                </div>
+                
+                <!-- 色パレット表示エリア -->
+                <div id="colorPalette" class="color-palette mb-4">
+                    <div class="text-center text-muted">
+                        <div class="mb-2">
+                            <i class="bi bi-gear-fill rotating" style="font-size: 1.5rem; color: #4285f4;"></i>
+                        </div>
+                        <div>色を抽出しています...</div>
+                        <small class="d-block mt-1">しばらくお待ちください</small>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="btn-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                        <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()" style="border-radius: 12px 0 0 12px;">
+                            <i class="bi bi-arrow-counterclockwise"></i> リセット
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="extractColorsFromSvg()">
+                            <i class="bi bi-arrow-clockwise"></i> 再抽出
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 0 12px 12px 0;">
+                            <i class="bi bi-download"></i> ダウンロード
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="svg-container">
+                <div class="svg-image-wrapper">
+                    <?php
+                    // SVGファイルの内容を安全に表示（インライン方式）
+                    $svgFilePath = __DIR__ . '/../' . $material['svg_path'];
+                    if (file_exists($svgFilePath)) {
+                        $svgContent = file_get_contents($svgFilePath);
+                        
+                        // セキュリティのための基本的なサニタイズ
+                        $svgContent = preg_replace('/<script[^>]*>.*?<\/script>/is', '', $svgContent);
+                        $svgContent = preg_replace('/on[a-z]+\s*=\s*["\'][^"\']*["\']/i', '', $svgContent);
+                        $svgContent = preg_replace('/javascript\s*:/i', '', $svgContent);
+                        
+                        // SVGタグにIDとクラスを追加
+                        $svgContent = preg_replace('/<svg([^>]*)>/i', '<svg$1 id="customizable-svg" class="svg-inline">', $svgContent);
+                        
+                        echo $svgContent;
+                    } else {
+                        echo '<p class="text-muted">SVGファイルが見つかりません</p>';
+                    }
+                    ?>
+                </div>
+                <div class="svg-info mt-2">
+                    <small class="text-muted">
+                        <i class="bi bi-vector-pen"></i> SVG形式 - 色を変更してダウンロード可能
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- シェアボタン（枠外） -->
     <div class="container mt-3">
@@ -1927,6 +2470,447 @@ try {
 
     <!-- YouTube動画モーダル用JavaScript -->
     <script>
+    </script>
+
+    <!-- SVG色変更機能JavaScript -->
+    <script>
+    let originalSvgContent = null;
+    let extractedColors = [];
+    let selectedColorIndex = -1;
+    
+    // ページ読み込み時にオリジナルのSVGを保存し、色を抽出
+    document.addEventListener('DOMContentLoaded', function() {
+        const svg = document.getElementById('customizable-svg');
+        if (svg) {
+            originalSvgContent = svg.outerHTML;
+            
+            // 色を自動抽出
+            setTimeout(extractColorsFromSvg, 500);
+        }
+    });
+    
+
+    
+
+    
+    // 元の色に戻す関数
+    function resetSvgColors() {
+        if (originalSvgContent) {
+            const svgWrapper = document.querySelector('.svg-image-wrapper');
+            if (svgWrapper) {
+                svgWrapper.innerHTML = originalSvgContent;
+                
+                // カラーパレットを再生成
+                setTimeout(() => {
+                    extractColorsFromSvg();
+                    cancelColorChange();
+                }, 100);
+            }
+        }
+        
+        // 色パレット選択をリセット
+        selectedColorIndex = -1;
+    }
+    
+    // カスタム色でSVGをダウンロードする関数
+    function downloadCustomSvg() {
+        const svg = document.getElementById('customizable-svg');
+        if (!svg) {
+            alert('SVGが見つかりません');
+            return;
+        }
+        
+        // SVGの内容を取得
+        const svgData = new XMLSerializer().serializeToString(svg);
+        
+        // Blobを作成
+        const blob = new Blob([svgData], { type: 'image/svg+xml' });
+        
+        // ダウンロードリンクを作成
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = '<?= h($material['slug']) ?>_custom_colors.svg';
+        
+        // ダウンロードを実行
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // URLを解放
+        URL.revokeObjectURL(url);
+        
+        // ダウンロード追跡（Google Analytics）
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'download', {
+                'event_category': 'SVG',
+                'event_label': 'custom_colors',
+                'item_id': '<?= h($material['slug']) ?>'
+            });
+        }
+    }
+    
+    // SVGから色を自動抽出
+    function extractColorsFromSvg() {
+        const svg = document.getElementById('customizable-svg');
+        
+        if (!svg) {
+            return;
+        }
+        
+        const elements = svg.querySelectorAll('*');
+        const colorMap = new Map();
+        
+        elements.forEach((element, index) => {
+            const colors = getElementColors(element);
+            
+            colors.forEach(colorInfo => {
+                const hex = convertToHex(colorInfo.color);
+                if (hex && hex !== '#FFFFFF' && hex !== '#000000') { // 白と黒は除外
+                    if (colorMap.has(hex)) {
+                        colorMap.get(hex).count++;
+                        colorMap.get(hex).elements.push({ element, type: colorInfo.type });
+                    } else {
+                        colorMap.set(hex, {
+                            color: hex,
+                            count: 1,
+                            elements: [{ element, type: colorInfo.type }]
+                        });
+                    }
+                }
+            });
+        });
+        
+        // 色を使用回数順にソート
+        extractedColors = Array.from(colorMap.values())
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 8); // 最大8色まで
+        
+        displayColorPalette();
+    }
+    
+    // 要素から色情報を取得
+    function getElementColors(element) {
+        const colors = [];
+        
+        // fill属性
+        const fill = element.getAttribute('fill');
+        if (fill && fill !== 'none' && fill !== 'transparent') {
+            colors.push({ color: fill, type: 'fill' });
+        }
+        
+        // stroke属性
+        const stroke = element.getAttribute('stroke');
+        if (stroke && stroke !== 'none' && stroke !== 'transparent') {
+            colors.push({ color: stroke, type: 'stroke' });
+        }
+        
+        // style属性
+        const style = element.getAttribute('style');
+        if (style) {
+            const fillMatch = style.match(/fill\s*:\s*([^;]+)/);
+            const strokeMatch = style.match(/stroke\s*:\s*([^;]+)/);
+            
+            if (fillMatch && fillMatch[1].trim() !== 'none') {
+                colors.push({ color: fillMatch[1].trim(), type: 'style-fill' });
+            }
+            if (strokeMatch && strokeMatch[1].trim() !== 'none') {
+                colors.push({ color: strokeMatch[1].trim(), type: 'style-stroke' });
+            }
+        }
+        
+        return colors;
+    }
+    
+    // カラーパレット表示
+    function displayColorPalette() {
+        const paletteContainer = document.getElementById('colorPalette');
+        
+        if (extractedColors.length === 0) {
+            paletteContainer.innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="bi bi-exclamation-circle"></i> 
+                    このSVGには変更可能な色が見つかりませんでした
+                </div>
+            `;
+            return;
+        }
+        
+        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（クリックして変更）</small></div>';
+        
+        extractedColors.forEach((colorInfo, index) => {
+            paletteHTML += `
+                <div class="color-item" onclick="selectColor(${index})">
+                    <div class="color-swatch" style="background-color: ${colorInfo.color}" id="swatch-${index}">
+                        <div class="usage-count">${colorInfo.count}</div>
+                    </div>
+                    <div class="color-code">${colorInfo.color}</div>
+                </div>
+            `;
+        });
+        
+        paletteContainer.innerHTML = paletteHTML;
+        paletteContainer.classList.add('loaded');
+        
+        // カラーピッカーUI追加
+        paletteContainer.innerHTML += `
+            <div class="color-picker-wrapper" id="colorPickerWrapper">
+                <div class="text-center mb-3">
+                    <h6 class="mb-2 text-primary">
+                        <i class="bi bi-palette2"></i> 色を変更
+                    </h6>
+                    <small class="text-muted">新しい色を選択して適用してください</small>
+                </div>
+                
+                <div class="color-comparison justify-content-center mb-4">
+                    <div class="text-center">
+                        <label class="form-label mb-2">変更前</label>
+                        <div class="color-swatch" id="oldColorSwatch"></div>
+                    </div>
+                    <div class="arrow d-flex align-items-center">
+                        <i class="bi bi-arrow-right-circle-fill"></i>
+                    </div>
+                    <div class="text-center">
+                        <label class="form-label mb-2">変更後</label>
+                        <input type="color" class="form-control-color" id="newColorPicker" onchange="previewColorChange()">
+                    </div>
+                </div>
+                
+                <div class="color-actions justify-content-center">
+                    <button type="button" class="btn btn-primary" onclick="applyColorChange()">
+                        <i class="bi bi-check-circle"></i> 変更を適用
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="cancelColorChange()">
+                        <i class="bi bi-x-circle"></i> キャンセル
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // 色を選択
+    function selectColor(index) {
+        selectedColorIndex = index;
+        const colorInfo = extractedColors[index];
+        
+        // 全てのスウォッチからactiveクラスを削除
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.classList.remove('active');
+        });
+        
+        // 選択されたスウォッチにactiveクラスを追加
+        document.getElementById(`swatch-${index}`).classList.add('active');
+        
+        // カラーピッカーを表示
+        const pickerWrapper = document.getElementById('colorPickerWrapper');
+        const oldColorSwatch = document.getElementById('oldColorSwatch');
+        const newColorPicker = document.getElementById('newColorPicker');
+        
+        oldColorSwatch.style.backgroundColor = colorInfo.color;
+        newColorPicker.value = colorInfo.color;
+        pickerWrapper.classList.add('active');
+    }
+    
+    // 色変更のプレビュー
+    function previewColorChange() {
+        if (selectedColorIndex === -1) return;
+        
+        const newColor = document.getElementById('newColorPicker').value;
+        const oldColor = extractedColors[selectedColorIndex].color;
+        
+        // プレビューロジックをここに追加可能
+    }
+    
+    // 色選択をキャンセル
+    function cancelColorChange() {
+        selectedColorIndex = -1;
+        document.getElementById('colorPickerWrapper').classList.remove('active');
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.classList.remove('active');
+        });
+    }
+    
+    // 色を16進数に変換
+    function convertToHex(color) {
+        if (!color) return null;
+        
+        color = color.trim().toLowerCase();
+        
+        // すでに16進数の場合
+        if (color.startsWith('#')) {
+            // 3桁の場合は6桁に展開
+            if (color.length === 4) {
+                const expanded = '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
+                return expanded.toUpperCase();
+            }
+            return color.toUpperCase();
+        }
+        
+        // RGB形式の場合
+        const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (rgbMatch) {
+            const r = parseInt(rgbMatch[1]);
+            const g = parseInt(rgbMatch[2]);
+            const b = parseInt(rgbMatch[3]);
+            const hex = '#' + 
+                ('0' + r.toString(16)).slice(-2) + 
+                ('0' + g.toString(16)).slice(-2) + 
+                ('0' + b.toString(16)).slice(-2);
+            return hex.toUpperCase();
+        }
+        
+        // RGBA形式の場合
+        const rgbaMatch = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/);
+        if (rgbaMatch) {
+            const r = parseInt(rgbaMatch[1]);
+            const g = parseInt(rgbaMatch[2]);
+            const b = parseInt(rgbaMatch[3]);
+            const hex = '#' + 
+                ('0' + r.toString(16)).slice(-2) + 
+                ('0' + g.toString(16)).slice(-2) + 
+                ('0' + b.toString(16)).slice(-2);
+            return hex.toUpperCase();
+        }
+        
+        // 色名の場合（拡張版）
+        const colorNames = {
+            'black': '#000000',
+            'white': '#FFFFFF',
+            'red': '#FF0000',
+            'green': '#008000',
+            'lime': '#00FF00',
+            'blue': '#0000FF',
+            'yellow': '#FFFF00',
+            'cyan': '#00FFFF',
+            'magenta': '#FF00FF',
+            'silver': '#C0C0C0',
+            'gray': '#808080',
+            'grey': '#808080',
+            'maroon': '#800000',
+            'olive': '#808000',
+            'navy': '#000080',
+            'purple': '#800080',
+            'teal': '#008080',
+            'aqua': '#00FFFF'
+        };
+        
+        if (colorNames[color]) {
+            return colorNames[color];
+        }
+        
+        return color.toUpperCase();
+    }
+    
+    // 色変更を適用
+    function applyColorChange() {
+        if (selectedColorIndex === -1) {
+            return;
+        }
+        
+        const newColorElement = document.getElementById('newColorPicker');
+        if (!newColorElement) {
+            alert('カラーピッカーが見つかりません');
+            return;
+        }
+        
+        const newColor = newColorElement.value;
+        const oldColor = extractedColors[selectedColorIndex].color;
+        
+        if (newColor === oldColor) {
+            cancelColorChange();
+            return;
+        }
+        
+        // SVG内の該当する色を全て変更
+        const svgElement = document.getElementById('customizable-svg');
+        if (!svgElement) {
+            alert('SVGが見つかりません');
+            return;
+        }
+        
+        let changeCount = 0;
+        
+        // 全てのSVG要素をチェック
+        const allElements = svgElement.querySelectorAll('*');
+        allElements.forEach(element => {
+            // fill属性をチェック
+            const fillAttr = element.getAttribute('fill');
+            if (fillAttr && convertToHex(fillAttr) === oldColor) {
+                element.setAttribute('fill', newColor);
+                changeCount++;
+            }
+            
+            // stroke属性をチェック
+            const strokeAttr = element.getAttribute('stroke');
+            if (strokeAttr && convertToHex(strokeAttr) === oldColor) {
+                element.setAttribute('stroke', newColor);
+                changeCount++;
+            }
+            
+            // style属性をチェック
+            const styleAttr = element.getAttribute('style');
+            if (styleAttr) {
+                let newStyle = styleAttr;
+                const fillMatch = styleAttr.match(/fill\s*:\s*([^;]+)/);
+                const strokeMatch = styleAttr.match(/stroke\s*:\s*([^;]+)/);
+                
+                if (fillMatch && convertToHex(fillMatch[1].trim()) === oldColor) {
+                    newStyle = newStyle.replace(/fill\s*:\s*[^;]+/, `fill: ${newColor}`);
+                    changeCount++;
+                }
+                
+                if (strokeMatch && convertToHex(strokeMatch[1].trim()) === oldColor) {
+                    newStyle = newStyle.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newColor}`);
+                    changeCount++;
+                }
+                
+                if (newStyle !== styleAttr) {
+                    element.setAttribute('style', newStyle);
+                }
+            }
+        });
+        
+        // 色パレットを更新
+        extractedColors[selectedColorIndex].color = newColor;
+        document.getElementById(`swatch-${selectedColorIndex}`).style.backgroundColor = newColor;
+        document.querySelector(`#swatch-${selectedColorIndex}`).parentElement.querySelector('.color-code').textContent = newColor;
+        
+        // UIを閉じる
+        cancelColorChange();
+        
+        // 完了メッセージ
+        showMessage(`色を変更しました（${changeCount}箇所）`, 'success');
+    }
+    
+    // メッセージ表示
+    function showMessage(message, type = 'info') {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'info'} alert-dismissible fade show position-fixed`;
+        messageDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        messageDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(messageDiv);
+        
+        // 3秒後に自動削除
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+    
+    // 抽出した色の表示を更新
+    function updateExtractedColorDisplay(color) {
+        const preview = document.getElementById('extractedColorPreview');
+        const code = document.getElementById('extractedColorCode');
+        
+        preview.style.backgroundColor = color;
+        code.textContent = color;
+        code.style.fontWeight = 'bold';
+    }
+    
+
     </script>
 
 </body>

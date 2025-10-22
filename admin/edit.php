@@ -28,6 +28,13 @@ if (!$material) {
     exit;
 }
 
+// デバッグ: SVGパス情報をログに出力
+if (isset($material['svg_path'])) {
+    error_log("SVG Path from DB: " . $material['svg_path']);
+} else {
+    error_log("SVG Path column not found in material data");
+}
+
 // 素材に関連付けられたタグを取得
 $materialTags = getMaterialTags($id, $pdo);
 $materialTagIds = array_column($materialTags, 'id');
@@ -85,6 +92,31 @@ if ($_POST) {
                 }
             }
             
+            // SVGファイルの処理
+            $svgPath = $material['svg_path'] ?? null;
+            
+            // SVGファイル削除処理
+            if (isset($_POST['remove_svg']) && $_POST['remove_svg'] == '1' && $svgPath) {
+                $oldSvgPath = __DIR__ . '/../' . $svgPath;
+                if (file_exists($oldSvgPath)) {
+                    unlink($oldSvgPath);
+                }
+                $svgPath = null;
+            }
+            
+            // SVGファイルアップロード処理
+            if (isset($_FILES['svg_file']) && $_FILES['svg_file']['error'] === UPLOAD_ERR_OK) {
+                try {
+                    // 新しいSVGファイルをアップロード（古いファイルは自動削除）
+                    $svgUploadResult = uploadSvgFile($_FILES['svg_file'], $slug, false, $svgPath); // 開発中は寛容なセキュリティチェック
+                    if ($svgUploadResult) {
+                        $svgPath = $svgUploadResult;
+                    }
+                } catch (Exception $e) {
+                    $error = 'SVGファイルのアップロードエラー: ' . $e->getMessage();
+                }
+            }
+
             // AI製品画像のアップロード処理
             $aiProductImagePath = $material['ai_product_image_path'] ?? null;
             $aiProductImageDescription = trim($_POST['ai_product_image_description'] ?? '');
@@ -125,20 +157,48 @@ if ($_POST) {
             }
             
             if (empty($error)) {
-                // データベースを更新
-                $stmt = $pdo->prepare("
-                    UPDATE materials 
-                    SET title = ?, slug = ?, description = ?, search_keywords = ?, 
-                        image_path = ?, webp_small_path = ?, webp_medium_path = ?, category_id = ?,
-                        ai_product_image_path = ?, ai_product_image_description = ?
-                    WHERE id = ?
-                ");
+                // svg_pathカラムの存在確認
+                $hasSvgColumn = false;
+                try {
+                    $checkStmt = $pdo->query("SHOW COLUMNS FROM materials LIKE 'svg_path'");
+                    $hasSvgColumn = $checkStmt->rowCount() > 0;
+                } catch (Exception $e) {
+                    // カラムチェックに失敗した場合は無視
+                }
                 
-                if ($stmt->execute([
-                    $title, $slug, $description, $search_keywords,
-                    $imagePath, $webpSmallPath, $webpMediumPath, $category_id, 
-                    $aiProductImagePath, $aiProductImageDescription, $id
-                ])) {
+                // データベースを更新
+                if ($hasSvgColumn) {
+                    $stmt = $pdo->prepare("
+                        UPDATE materials 
+                        SET title = ?, slug = ?, description = ?, search_keywords = ?, 
+                            image_path = ?, webp_small_path = ?, webp_medium_path = ?, svg_path = ?, category_id = ?,
+                            ai_product_image_path = ?, ai_product_image_description = ?
+                        WHERE id = ?
+                    ");
+                    
+                    $executeParams = [
+                        $title, $slug, $description, $search_keywords,
+                        $imagePath, $webpSmallPath, $webpMediumPath, $svgPath, $category_id, 
+                        $aiProductImagePath, $aiProductImageDescription, $id
+                    ];
+                } else {
+                    // svg_pathカラムが存在しない場合は除外して更新
+                    $stmt = $pdo->prepare("
+                        UPDATE materials 
+                        SET title = ?, slug = ?, description = ?, search_keywords = ?, 
+                            image_path = ?, webp_small_path = ?, webp_medium_path = ?, category_id = ?,
+                            ai_product_image_path = ?, ai_product_image_description = ?
+                        WHERE id = ?
+                    ");
+                    
+                    $executeParams = [
+                        $title, $slug, $description, $search_keywords,
+                        $imagePath, $webpSmallPath, $webpMediumPath, $category_id, 
+                        $aiProductImagePath, $aiProductImageDescription, $id
+                    ];
+                }
+                
+                if ($stmt->execute($executeParams)) {
                     // タグを更新
                     addMaterialTags($id, $tag_ids, $pdo);
                     
@@ -188,6 +248,25 @@ if ($_POST) {
             height: auto;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .svg-preview {
+            margin-top: 10px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .svg-preview-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .svg-preview-info {
+            text-align: center;
+        }
+        .current-svg-info {
+            padding: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -321,6 +400,54 @@ if ($_POST) {
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label for="svg_file" class="form-label">SVGファイル（オプション）</label>
+                                
+                                <!-- デバッグ情報 -->
+                                <?php if (isset($_GET['debug'])): ?>
+                                <div class="alert alert-info">
+                                    <strong>SVGデバッグ情報:</strong><br>
+                                    <table class="table table-sm">
+                                        <tr><td>SVG Path:</td><td><?= isset($material['svg_path']) ? h($material['svg_path']) : '<em>(not set)</em>' ?></td></tr>
+                                        <tr><td>Empty check:</td><td><?= empty($material['svg_path']) ? 'true' : 'false' ?></td></tr>
+                                        <tr><td>File exists:</td><td><?= isset($material['svg_path']) && file_exists(__DIR__ . '/../' . $material['svg_path']) ? 'true' : 'false' ?></td></tr>
+                                        <tr><td>Full file path:</td><td><?= isset($material['svg_path']) ? h(__DIR__ . '/../' . $material['svg_path']) : '<em>(not available)</em>' ?></td></tr>
+                                    </table>
+                                    <a href="/admin/svg_debug.php" class="btn btn-sm btn-info">詳細デバッグページを開く</a>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($material['svg_path'])): ?>
+                                    <div class="current-svg-info mb-2">
+                                        <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                            <small class="text-muted">
+                                                現在のSVG: <a href="/<?= h($material['svg_path']) ?>" target="_blank" class="text-decoration-none">
+                                                    <i class="bi bi-file-earmark-image"></i> <?= basename($material['svg_path']) ?>
+                                                </a>
+                                            </small>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="remove_svg" id="remove_svg" value="1">
+                                                <label class="form-check-label text-danger" for="remove_svg">
+                                                    <small>削除</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" class="form-control" id="svg_file" name="svg_file" accept=".svg,image/svg+xml" onchange="previewSvg(this)">
+                                <div class="form-text">
+                                    SVGファイルをアップロードすると、詳細画面でベクター形式でダウンロードできます。<br>
+                                    <small class="text-warning">※ 新しいファイルをアップロードすると、既存のSVGファイルは自動的に置き換えられます。</small>
+                                </div>
+                                
+                                <div class="preview-container">
+                                    <div id="svgPreview" class="svg-preview" style="display: none;">
+                                        <div class="svg-preview-container"></div>
+                                        <div class="svg-preview-info"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <hr>
 
                             <!-- AI生成製品画像セクション -->
@@ -391,6 +518,52 @@ if ($_POST) {
                     preview.style.display = 'block';
                 }
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewSvg(input) {
+            const preview = document.getElementById('svgPreview');
+            const container = preview.querySelector('.svg-preview-container');
+            const info = preview.querySelector('.svg-preview-info');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const svgContent = e.target.result;
+                    container.innerHTML = svgContent;
+                    
+                    // SVGのサイズ情報を表示
+                    const svgElement = container.querySelector('svg');
+                    if (svgElement) {
+                        const width = svgElement.getAttribute('width') || 'auto';
+                        const height = svgElement.getAttribute('height') || 'auto';
+                        const viewBox = svgElement.getAttribute('viewBox') || 'none';
+                        
+                        info.innerHTML = `
+                            <small class="text-muted">
+                                サイズ: ${width} × ${height} | ViewBox: ${viewBox} | ファイルサイズ: ${(file.size / 1024).toFixed(1)}KB
+                            </small>
+                        `;
+                        
+                        // プレビュー用のスタイルを適用
+                        svgElement.style.maxWidth = '200px';
+                        svgElement.style.maxHeight = '200px';
+                        svgElement.style.border = '1px solid #dee2e6';
+                        svgElement.style.borderRadius = '4px';
+                        svgElement.style.padding = '8px';
+                        svgElement.style.backgroundColor = '#f8f9fa';
+                    }
+                    
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsText(file);
+            } else {
+                preview.style.display = 'none';
+                container.innerHTML = '';
+                info.innerHTML = '';
             }
         }
     </script>

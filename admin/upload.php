@@ -190,23 +190,64 @@ if ($_POST) {
             // 画像アップロード
             $uploadResult = uploadImage($_FILES['image'], $slug);
             if ($uploadResult) {
+                // SVGファイルのアップロード処理（オプション）
+                $svgPath = null;
+                if (isset($_FILES['svg_file']) && $_FILES['svg_file']['error'] === UPLOAD_ERR_OK) {
+                    $svgUploadResult = uploadSvgFile($_FILES['svg_file'], $slug, false); // 開発中は寛容なセキュリティチェック
+                    if ($svgUploadResult) {
+                        $svgPath = $svgUploadResult;
+                    }
+                }
+
+                // svg_pathカラムの存在確認
+                $hasSvgColumn = false;
+                try {
+                    $checkStmt = $pdo->query("SHOW COLUMNS FROM materials LIKE 'svg_path'");
+                    $hasSvgColumn = $checkStmt->rowCount() > 0;
+                } catch (Exception $e) {
+                    // カラムチェックに失敗した場合は無視
+                }
+
                 // データベースに保存
-                $stmt = $pdo->prepare("
-                    INSERT INTO materials (title, slug, description, search_keywords, image_path, webp_small_path, webp_medium_path, upload_date, category_id) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ");
+                if ($hasSvgColumn) {
+                    $stmt = $pdo->prepare("
+                        INSERT INTO materials (title, slug, description, search_keywords, image_path, webp_small_path, webp_medium_path, svg_path, upload_date, category_id) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    
+                    $executeParams = [
+                        $title,
+                        $slug,
+                        $description,
+                        $search_keywords,
+                        $uploadResult['original'],
+                        $uploadResult['webp_small'],
+                        $uploadResult['webp_medium'],
+                        $svgPath,
+                        date('Y-m-d'),
+                        $category_id
+                    ];
+                } else {
+                    // svg_pathカラムが存在しない場合は除外して挿入
+                    $stmt = $pdo->prepare("
+                        INSERT INTO materials (title, slug, description, search_keywords, image_path, webp_small_path, webp_medium_path, upload_date, category_id) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    
+                    $executeParams = [
+                        $title,
+                        $slug,
+                        $description,
+                        $search_keywords,
+                        $uploadResult['original'],
+                        $uploadResult['webp_small'],
+                        $uploadResult['webp_medium'],
+                        date('Y-m-d'),
+                        $category_id
+                    ];
+                }
                 
-                if ($stmt->execute([
-                    $title,
-                    $slug,
-                    $description,
-                    $search_keywords,
-                    $uploadResult['original'],
-                    $uploadResult['webp_small'],
-                    $uploadResult['webp_medium'],
-                    date('Y-m-d'),
-                    $category_id
-                ])) {
+                if ($stmt->execute($executeParams)) {
                     // 登録した素材のIDを取得
                     $materialId = $pdo->lastInsertId();
                     
@@ -257,6 +298,20 @@ if ($_POST) {
             height: auto;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .svg-preview {
+            margin-top: 10px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .svg-preview-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .svg-preview-info {
+            text-align: center;
         }
     </style>
 </head>
@@ -364,6 +419,19 @@ if ($_POST) {
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label for="svg_file" class="form-label">SVGファイル（オプション）</label>
+                                <input type="file" class="form-control" id="svg_file" name="svg_file" accept=".svg,image/svg+xml" onchange="previewSvg(this)">
+                                <div class="form-text">SVGファイルをアップロードすると、詳細画面でベクター形式でダウンロードできます。</div>
+                                
+                                <div class="preview-container">
+                                    <div id="svgPreview" class="svg-preview" style="display: none;">
+                                        <div class="svg-preview-container"></div>
+                                        <div class="svg-preview-info"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <hr>
 
                             <div class="mb-3">
@@ -447,6 +515,52 @@ if ($_POST) {
                     preview.style.display = 'block';
                 }
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewSvg(input) {
+            const preview = document.getElementById('svgPreview');
+            const container = preview.querySelector('.svg-preview-container');
+            const info = preview.querySelector('.svg-preview-info');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const svgContent = e.target.result;
+                    container.innerHTML = svgContent;
+                    
+                    // SVGのサイズ情報を表示
+                    const svgElement = container.querySelector('svg');
+                    if (svgElement) {
+                        const width = svgElement.getAttribute('width') || 'auto';
+                        const height = svgElement.getAttribute('height') || 'auto';
+                        const viewBox = svgElement.getAttribute('viewBox') || 'none';
+                        
+                        info.innerHTML = `
+                            <small class="text-muted">
+                                サイズ: ${width} × ${height} | ViewBox: ${viewBox} | ファイルサイズ: ${(file.size / 1024).toFixed(1)}KB
+                            </small>
+                        `;
+                        
+                        // プレビュー用のスタイルを適用
+                        svgElement.style.maxWidth = '200px';
+                        svgElement.style.maxHeight = '200px';
+                        svgElement.style.border = '1px solid #dee2e6';
+                        svgElement.style.borderRadius = '4px';
+                        svgElement.style.padding = '8px';
+                        svgElement.style.backgroundColor = '#f8f9fa';
+                    }
+                    
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsText(file);
+            } else {
+                preview.style.display = 'none';
+                container.innerHTML = '';
+                info.innerHTML = '';
             }
         }
 
