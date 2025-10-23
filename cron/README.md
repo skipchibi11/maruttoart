@@ -5,6 +5,7 @@
 1. 構造化データ（JSON-LD、OGP等）用の1200x1200px画像生成
 2. 画像のベクトル化（類似検索用）
 3. 類似画像の計算・管理
+4. 素材ファイルの整理・統合
 
 ## 機能
 
@@ -27,6 +28,12 @@
 - 上位20件の類似画像を保存（閾値: 0.3以上）
 - 進捗管理による安定した処理
 
+### 素材ファイル整理
+- 更新時に作成された異なる年月フォルダのファイルを、新規登録時の年月フォルダに統合
+- 不要なファイルの自動削除
+- 空のディレクトリの自動削除
+- 1回の実行で1素材分を処理（安全性重視）
+
 ## ファイル構成
 ```
 cron/
@@ -37,6 +44,8 @@ cron/
 ├── generate_image_embeddings.sh     # 画像ベクトル化用シェルスクリプト
 ├── calculate_similarities.php       # 類似画像計算スクリプト
 ├── calculate_similarities.sh        # 類似画像計算用シェルスクリプト
+├── cleanup_material_files.php      # 素材ファイル整理スクリプト
+├── cleanup_material_files.sh       # 素材ファイル整理用シェルスクリプト
 └── README.md                        # このファイル
 ```
 
@@ -231,6 +240,25 @@ crontab -l
 tail -f /var/log/cron
 tail -f logs/structured_images.log
 tail -f logs/image_embedding.log
+tail -f logs/cleanup_material_files.log
+```
+
+### 4. 素材ファイル整理の実行
+
+#### 手動実行
+```bash
+cd /path/to/maruttoart/cron
+./cleanup_material_files.sh
+```
+
+#### cron設定（1日1回、午前2時に実行）
+```bash
+0 2 * * * /path/to/maruttoart/cron/cleanup_material_files.sh
+```
+
+#### ログ確認
+```bash
+tail -f logs/cleanup_material_files.log
 ```
 
 ## セキュリティ
