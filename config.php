@@ -188,6 +188,75 @@ function uploadImage($file, $slug, $createdAt = null) {
     throw new Exception('ファイルのアップロードに失敗しました');
 }
 
+// AI製品画像専用のアップロード関数（WebP変換なし）
+function uploadAiProductImage($file, $slug, $createdAt = null) {
+    // セキュリティチェック
+    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $maxFileSize = 10 * 1024 * 1024; // 10MB
+    
+    // ファイルサイズチェック
+    if ($file['size'] > $maxFileSize) {
+        throw new Exception('ファイルサイズが大きすぎます（最大10MB）');
+    }
+    
+    // MIMEタイプチェック
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($mimeType, $allowedTypes)) {
+        throw new Exception('許可されていないファイル形式です');
+    }
+    
+    // 拡張子チェック
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($extension, $allowedExtensions)) {
+        throw new Exception('許可されていないファイル拡張子です');
+    }
+    
+    // スラッグの安全性チェック
+    if (!preg_match('/^[a-zA-Z0-9\-_]+$/', $slug)) {
+        throw new Exception('スラッグに不正な文字が含まれています');
+    }
+    
+    // 作成日が指定されている場合はその年月を使用、そうでなければ現在の年月を使用
+    if ($createdAt) {
+        $date = new DateTime($createdAt);
+        $uploadDir = __DIR__ . '/uploads/' . $date->format('Y/m/');
+    } else {
+        $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+    }
+    
+    if (!file_exists($uploadDir)) {
+        if (!mkdir($uploadDir, 0755, true)) {
+            throw new Exception('アップロードディレクトリの作成に失敗しました');
+        }
+    }
+    
+    // ファイル名を安全に生成
+    $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.' . $extension;
+    $filepath = $uploadDir . $filename;
+    
+    // ファイルの重複チェック
+    $counter = 1;
+    while (file_exists($filepath)) {
+        $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '_' . $counter . '.' . $extension;
+        $filepath = $uploadDir . $filename;
+        $counter++;
+    }
+    
+    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+        // 年月フォルダのパスを動的に決定
+        $folderPath = $createdAt ? (new DateTime($createdAt))->format('Y/m/') : date('Y/m/');
+        
+        return [
+            'original' => 'uploads/' . $folderPath . $filename
+        ];
+    }
+    throw new Exception('ファイルのアップロードに失敗しました');
+}
+
 // WebP変換関数（180x180と300x300の2つのサイズを生成）
 function convertToWebP($source, $basePath) {
     $info = getimagesize($source);

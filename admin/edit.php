@@ -131,8 +131,8 @@ if ($_POST) {
                         }
                     }
                     
-                    // 新しいAI製品画像をアップロード（初回投稿日のフォルダを使用）
-                    $aiUploadResult = uploadImage($_FILES['ai_product_image'], $slug . '_ai_product', $material['created_at']);
+                    // 新しいAI製品画像をアップロード（初回投稿日のフォルダを使用、WebP変換なし）
+                    $aiUploadResult = uploadAiProductImage($_FILES['ai_product_image'], $slug . '_ai_product', $material['created_at']);
                     if ($aiUploadResult) {
                         $aiProductImagePath = $aiUploadResult['original'];
                     } else {
