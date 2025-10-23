@@ -153,7 +153,15 @@ try {
     foreach ($fileFields as $field => $dbField) {
         if (!empty($material[$field])) {
             writeLog("チェック中: {$field} = {$material[$field]}");
-            $currentPath = $uploadsDir . '/' . $material[$field];
+            
+            // パスがuploads/で始まっている場合は、uploadsを除去
+            $relativePath = $material[$field];
+            if (strpos($relativePath, 'uploads/') === 0) {
+                $relativePath = substr($relativePath, 8); // 'uploads/'を除去
+                writeLog("uploads/を除去: {$relativePath}");
+            }
+            
+            $currentPath = $uploadsDir . '/' . $relativePath;
             
             // ファイルパス内の年月を抽出
             $pathPattern = '/(?:uploads\/)?(\d{4}\/\d{2})\//';
@@ -165,7 +173,7 @@ try {
                 if ($fileFolder !== $correctFolder && file_exists($currentPath)) {
                     writeLog("移動対象: {$field} ({$fileFolder} -> {$correctFolder})");
                     // 正しいフォルダパスに変更
-                    $newRelativePath = str_replace($fileFolder, $correctFolder, $material[$field]);
+                    $newRelativePath = str_replace($fileFolder, $correctFolder, $relativePath);
                     $newFullPath = $uploadsDir . '/' . $newRelativePath;
                     
                     $filesToMove[] = [
@@ -176,7 +184,9 @@ try {
                         'old_folder' => $fileFolder
                     ];
                     
-                    $dbUpdates[$dbField] = $newRelativePath;
+                    // データベース更新用のパス（元のパスがuploads/で始まっていたら、uploads/を付けて保存）
+                    $dbPath = (strpos($material[$field], 'uploads/') === 0) ? 'uploads/' . $newRelativePath : $newRelativePath;
+                    $dbUpdates[$dbField] = $dbPath;
                 } else {
                     if ($fileFolder === $correctFolder) {
                         writeLog("年月が同一のためスキップ: {$field}");
