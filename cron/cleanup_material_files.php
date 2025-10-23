@@ -125,9 +125,12 @@ try {
     }
     
     writeLog("処理対象素材: ID={$material['id']}, タイトル={$material['title']}");
+    writeLog("created_at={$material['created_at']}, updated_at={$material['updated_at']}");
     
     $materialId = $material['id'];
     $correctFolder = getCorrectFolderPath($material['created_at']);
+    
+    writeLog("正しいフォルダ: {$correctFolder}");
     
     // uploadsディレクトリのパス
     $uploadsDir = __DIR__ . '/../uploads';
@@ -149,15 +152,18 @@ try {
     
     foreach ($fileFields as $field => $dbField) {
         if (!empty($material[$field])) {
+            writeLog("チェック中: {$field} = {$material[$field]}");
             $currentPath = $uploadsDir . '/' . $material[$field];
             
             // ファイルパス内の年月を抽出
-            $pathPattern = '/^(\d{4}\/\d{2})\//';
+            $pathPattern = '/(?:uploads\/)?(\d{4}\/\d{2})\//';
             if (preg_match($pathPattern, $material[$field], $matches)) {
                 $fileFolder = $matches[1];
+                writeLog("抽出された年月: {$fileFolder}, 正しい年月: {$correctFolder}");
                 
                 // ファイルの年月が正しいフォルダと異なる場合のみ移動対象とする
                 if ($fileFolder !== $correctFolder && file_exists($currentPath)) {
+                    writeLog("移動対象: {$field} ({$fileFolder} -> {$correctFolder})");
                     // 正しいフォルダパスに変更
                     $newRelativePath = str_replace($fileFolder, $correctFolder, $material[$field]);
                     $newFullPath = $uploadsDir . '/' . $newRelativePath;
@@ -171,7 +177,15 @@ try {
                     ];
                     
                     $dbUpdates[$dbField] = $newRelativePath;
+                } else {
+                    if ($fileFolder === $correctFolder) {
+                        writeLog("年月が同一のためスキップ: {$field}");
+                    } else {
+                        writeLog("ファイルが存在しないためスキップ: {$currentPath}");
+                    }
                 }
+            } else {
+                writeLog("年月パターンにマッチしない: {$field} = {$material[$field]}");
             }
         }
     }
