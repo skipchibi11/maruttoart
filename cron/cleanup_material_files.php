@@ -97,13 +97,15 @@ try {
     // 処理対象の素材を1つ取得（ファイルパス内の年月が新規登録日と異なる素材）
     $stmt = $pdo->prepare("
         SELECT id, title, created_at, updated_at,
-               image_path, image_medium_path, image_small_path,
-               svg_path, ai_product_image_path
+               image_path, webp_path, webp_small_path, webp_medium_path,
+               structured_image_path, svg_path, ai_product_image_path
         FROM materials 
         WHERE (
             (image_path IS NOT NULL AND image_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (image_medium_path IS NOT NULL AND image_medium_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (image_small_path IS NOT NULL AND image_small_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
+            (webp_path IS NOT NULL AND webp_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
+            (webp_small_path IS NOT NULL AND webp_small_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
+            (webp_medium_path IS NOT NULL AND webp_medium_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
+            (structured_image_path IS NOT NULL AND structured_image_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
             (svg_path IS NOT NULL AND svg_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
             (ai_product_image_path IS NOT NULL AND ai_product_image_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%'))
         )
@@ -137,8 +139,10 @@ try {
     // 各ファイルパスをチェックして移動リストを作成
     $fileFields = [
         'image_path' => 'image_path',
-        'image_medium_path' => 'image_medium_path', 
-        'image_small_path' => 'image_small_path',
+        'webp_path' => 'webp_path',
+        'webp_small_path' => 'webp_small_path',
+        'webp_medium_path' => 'webp_medium_path',
+        'structured_image_path' => 'structured_image_path',
         'svg_path' => 'svg_path',
         'ai_product_image_path' => 'ai_product_image_path'
     ];
