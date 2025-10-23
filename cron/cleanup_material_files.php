@@ -14,7 +14,20 @@ set_time_limit(60);
 // メモリ制限を設定
 ini_set('memory_limit', '128M');
 
-require_once __DIR__ . '/../config.php';
+// エラー報告を有効にする
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('log_errors', '1');
+
+try {
+    require_once __DIR__ . '/../config.php';
+} catch (Exception $e) {
+    $logFile = __DIR__ . '/../logs/cleanup_material_files.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $logMessage = "[{$timestamp}] config.php読み込みエラー: " . $e->getMessage() . PHP_EOL;
+    file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+    exit(1);
+}
 
 // ログファイルのパス
 $logFile = __DIR__ . '/../logs/cleanup_material_files.log';
@@ -73,9 +86,12 @@ function getCorrectFolderPath($createdAt) {
 try {
     writeLog("素材ファイル整理処理を開始");
     
-    // データベース接続を確認
-    if (!$pdo) {
-        throw new Exception("データベース接続が確立されていません");
+    // データベース接続を取得
+    try {
+        $pdo = getDB();
+        writeLog("データベース接続確立済み");
+    } catch (Exception $e) {
+        throw new Exception("データベース接続失敗: " . $e->getMessage());
     }
     
     // 処理対象の素材を1つ取得（ファイルパス内の年月が新規登録日と異なる素材）
