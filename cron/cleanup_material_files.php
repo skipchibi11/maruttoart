@@ -101,13 +101,13 @@ try {
                structured_image_path, svg_path, ai_product_image_path
         FROM materials 
         WHERE (
-            (image_path IS NOT NULL AND image_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (webp_path IS NOT NULL AND webp_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (webp_small_path IS NOT NULL AND webp_small_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (webp_medium_path IS NOT NULL AND webp_medium_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (structured_image_path IS NOT NULL AND structured_image_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (svg_path IS NOT NULL AND svg_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%')) OR
-            (ai_product_image_path IS NOT NULL AND ai_product_image_path NOT LIKE CONCAT(DATE_FORMAT(created_at, '%Y/%m'), '/%'))
+            (image_path IS NOT NULL AND TRIM(image_path) != '' AND SUBSTRING(image_path, 9, 7) != DATE_FORMAT(created_at, '%Y/%m')) OR
+            (webp_path IS NOT NULL AND TRIM(webp_path) != '' AND SUBSTRING(webp_path, 9, 7) != DATE_FORMAT(created_at, '%Y/%m')) OR
+            (webp_small_path IS NOT NULL AND TRIM(webp_small_path) != '' AND SUBSTRING(webp_small_path, 9, 7) != DATE_FORMAT(created_at, '%Y/%m')) OR
+            (webp_medium_path IS NOT NULL AND TRIM(webp_medium_path) != '' AND SUBSTRING(webp_medium_path, 9, 7) != DATE_FORMAT(created_at, '%Y/%m')) OR
+            (structured_image_path IS NOT NULL AND TRIM(structured_image_path) != '' AND SUBSTRING(structured_image_path, 9, 7) != DATE_FORMAT(created_at, '%Y/%m')) OR
+            (svg_path IS NOT NULL AND TRIM(svg_path) != '' AND SUBSTRING(svg_path, 9, 7) != DATE_FORMAT(created_at, '%Y/%m')) OR
+            (ai_product_image_path IS NOT NULL AND TRIM(ai_product_image_path) != '' AND SUBSTRING(ai_product_image_path, 9, 7) != DATE_FORMAT(created_at, '%Y/%m'))
         )
         ORDER BY updated_at DESC
         LIMIT 1
