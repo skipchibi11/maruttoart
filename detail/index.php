@@ -268,9 +268,6 @@ try {
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
     
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
     <!-- Canonical tag -->
     <link rel="canonical" href="https://marutto.art/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     
