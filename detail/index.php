@@ -3186,7 +3186,7 @@ try {
                             <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
                                 <div class="usage-count">${colorInfo.count}</div>
                             </div>
-                            <input type="color" class="swatch-color-input" id="colorInput-${index}" value="${currentColor}" onchange="changeColorDirectly(${index}, this.value)">
+                            <input type="color" class="swatch-color-input" id="colorInput-${index}" value="${currentColor}" oninput="changeColorDirectly(${index}, this.value)">
                         </div>
                     </div>
                     <div class="color-code" id="colorCode-${index}">${currentColor}</div>
@@ -3225,7 +3225,7 @@ try {
                             <div class="color-swatch ${isChanged ? 'changed' : ''}" style="background-color: ${currentColor}" id="swatch-${index}">
                                 <div class="usage-count">${colorInfo.count}</div>
                             </div>
-                            <input type="color" class="swatch-color-input" id="colorInput-${index}" value="${currentColor}" onchange="changeColorDirectly(${index}, this.value)">
+                            <input type="color" class="swatch-color-input" id="colorInput-${index}" value="${currentColor}" oninput="changeColorDirectly(${index}, this.value)">
                         </div>
                     </div>
                     <div class="color-code" id="colorCode-${index}">${currentColor}</div>
