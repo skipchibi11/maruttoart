@@ -1695,6 +1695,141 @@ try {
             }
         }
 
+        /* 背景色パレット用スタイル */
+        .bg-color-section {
+            background: linear-gradient(135deg, #fff8f0 0%, #f8f9fa 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid #f0f0f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .bg-color-palette {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .bg-color-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+        }
+
+        .bg-color-item:hover {
+            transform: translateY(-2px);
+            background-color: rgba(66, 133, 244, 0.1);
+        }
+
+        .bg-color-item.active {
+            background-color: rgba(66, 133, 244, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .bg-color-swatch {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .bg-color-item:hover .bg-color-swatch {
+            border-color: #4285f4;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        .bg-color-item.active .bg-color-swatch {
+            border-color: #4285f4;
+            border-width: 4px;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+        }
+
+        .transparent-bg {
+            background: linear-gradient(45deg, #ddd 25%, transparent 25%), 
+                        linear-gradient(-45deg, #ddd 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #ddd 75%), 
+                        linear-gradient(-45deg, transparent 75%, #ddd 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+        }
+
+        .bg-color-label {
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .bg-color-item.active .bg-color-label {
+            color: #4285f4;
+            font-weight: 600;
+        }
+
+        /* 新しい背景色コントロール用スタイル */
+        .bg-color-controls {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .bg-color-btn {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+        }
+
+        .bg-color-btn:hover {
+            border-color: #4285f4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+        }
+
+        .bg-color-btn.active {
+            border-color: #4285f4;
+            border-width: 3px;
+            background-color: rgba(66, 133, 244, 0.1);
+        }
+
+        .bg-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-bottom: 0.25rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .bg-color-btn small {
+            font-size: 0.7rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .bg-color-btn.active small {
+            color: #4285f4;
+            font-weight: 600;
+        }
+
         .color-item {
             display: inline-block;
             margin: 0.75rem;
@@ -2315,12 +2450,12 @@ try {
                     <div class="mb-4">
                         <div class="download-buttons">
                             <a href="/<?= h($material['image_path']) ?>" download class="download-link">
-                                <i class="bi bi-download"></i> PNG/JPEGをダウンロード
+                                PNG/JPEGをダウンロード
                             </a>
                             
                             <?php if (isset($material['svg_path']) && !empty($material['svg_path'])): ?>
                             <a href="/<?= h($material['svg_path']) ?>" download class="download-link svg-download">
-                                <i class="bi bi-vector-pen"></i> SVGをダウンロード
+                                SVGをダウンロード
                             </a>
                             <?php endif; ?>
                         </div>
@@ -2376,47 +2511,6 @@ try {
         <div class="svg-display-section">
             <h5 class="svg-section-title mb-3">ベクター画像</h5>
             
-            <!-- 色変更コントロール（カラーパレット方式） -->
-            <div class="svg-controls mb-4">
-                <div class="text-center mb-3">
-                    <h6 class="text-primary mb-2">
-                        <i class="bi bi-palette"></i> インタラクティブカラー編集
-                    </h6>
-                    <small class="text-muted">SVGの色をカスタマイズして、あなた好みのイラストにしましょう</small>
-                </div>
-                
-                <!-- 色パレット表示エリア -->
-                <div id="colorPalette" class="color-palette mb-4">
-                    <div class="text-center text-muted">
-                        <div class="mb-2">
-                            <i class="bi bi-gear-fill rotating" style="font-size: 1.5rem; color: #4285f4;"></i>
-                        </div>
-                        <div>色を抽出しています...</div>
-                        <small class="d-block mt-1">しばらくお待ちください</small>
-                    </div>
-                </div>
-                
-                <div class="text-center">
-                    <div class="btn-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
-                        <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()" style="border-radius: 12px 0 0 12px;">
-                            <i class="bi bi-arrow-counterclockwise"></i> リセット
-                        </button>
-                        <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 0 12px 12px 0;">
-                            <i class="bi bi-download"></i> ダウンロード
-                        </button>
-                    </div>
-                    
-                    <div class="mt-3">
-                        <small class="text-muted">
-                            <i class="bi bi-info-circle"></i> 
-                            同じ色を何度でも違う色に変更できます。
-                            <span class="badge bg-success ms-1"><i class="bi bi-arrow-repeat"></i></span> 変更済み、
-                            <span class="badge bg-secondary ms-1">元</span> オリジナル色表示
-                        </small>
-                    </div>
-                </div>
-            </div>
-            
             <div class="svg-container">
                 <div class="svg-image-wrapper">
                     <?php
@@ -2441,9 +2535,73 @@ try {
                 </div>
                 <div class="svg-info mt-2">
                     <small class="text-muted">
-                        <i class="bi bi-vector-pen"></i> SVG形式 - 色を変更してダウンロード可能
+                        SVG形式 - 色を変更してダウンロード可能
                     </small>
                 </div>
+                
+                <!-- 色変更コントロール（カラーパレット方式） -->
+                <div class="svg-controls mt-4">
+                    <div class="text-center mb-3">
+                        <h6 class="text-primary mb-2">
+                            インタラクティブカラー編集
+                        </h6>
+                        <small class="text-muted">SVGの色をカスタマイズして、あなた好みのイラストにしましょう</small>
+                    </div>
+                    
+                    <!-- 色パレット表示エリア -->
+                    <div id="colorPalette" class="color-palette mb-4">
+                        <div class="text-center text-muted">
+                            <div class="mb-2">
+                                読み込み中...
+                            </div>
+                            <div>色を抽出しています...</div>
+                            <small class="d-block mt-1">しばらくお待ちください</small>
+                        </div>
+                    </div>
+                    
+                    <!-- 背景色コントロール -->
+                    <div class="bg-color-controls mt-4">
+                        <div class="text-center mb-3">
+                            <h6 class="text-primary mb-2">
+                                背景色の選択
+                            </h6>
+                            <small class="text-muted">SVGの背景色を設定できます</small>
+                        </div>
+                        
+                        <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
+                            <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
+                                <div class="bg-swatch transparent-bg"></div>
+                                <small>透明</small>
+                            </button>
+                            
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="customBgColor" class="form-label mb-0" style="font-size: 0.9rem; color: #666;">カスタム背景色:</label>
+                                <input type="color" id="customBgColor" class="form-control form-control-color" 
+                                       style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <div class="btn-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()" style="border-radius: 12px 0 0 12px;">
+                                リセット
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 0 12px 12px 0;">
+                                ダウンロード
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                同じ色を何度でも違う色に変更できます。
+                                <span class="badge bg-success ms-1">●</span> 変更済み、
+                                <span class="badge bg-secondary ms-1">元</span> オリジナル色表示
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -2730,6 +2888,7 @@ try {
     let initialColorStates = []; // 初期状態の完全なコピー（リセット用）
     let colorMappings = new Map(); // オリジナル色 → 現在色のマッピング
     let selectedColorIndex = -1;
+    let currentBackgroundColor = 'transparent'; // 現在の背景色を保持
     
     // ページ読み込み時にオリジナルのSVGを保存し、色を抽出
     document.addEventListener('DOMContentLoaded', function() {
@@ -2739,6 +2898,50 @@ try {
             
             // 色を自動抽出
             setTimeout(extractColorsFromSvg, 500);
+        }
+        
+        // 背景色パレットのイベントリスナーを設定
+        const bgColorItems = document.querySelectorAll('.bg-color-item');
+        bgColorItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const color = this.getAttribute('data-color');
+                setBackgroundColor(color);
+                
+                // アクティブ状態を更新
+                bgColorItems.forEach(bgItem => bgItem.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // 透明背景ボタンのイベントリスナーを設定
+        const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
+        if (transparentBtn) {
+            transparentBtn.addEventListener('click', function() {
+                setBackgroundColor('transparent');
+                
+                // アクティブ状態を更新
+                transparentBtn.classList.add('active');
+                
+                // カスタムカラーピッカーをリセット
+                const customBgColorInput = document.getElementById('customBgColor');
+                if (customBgColorInput) {
+                    customBgColorInput.value = '#ffffff';
+                }
+            });
+        }
+        
+        // カスタム背景色ピッカーのイベントリスナーを設定（即座適用）
+        const customBgColorInput = document.getElementById('customBgColor');
+        if (customBgColorInput) {
+            customBgColorInput.addEventListener('input', function() {
+                const color = this.value;
+                setBackgroundColor(color);
+                
+                // 透明ボタンのアクティブ状態をクリア
+                if (transparentBtn) {
+                    transparentBtn.classList.remove('active');
+                }
+            });
         }
     });
     
@@ -2770,9 +2973,64 @@ try {
             }
         }
 
+        // 背景色もリセット
+        currentBackgroundColor = 'transparent';
+        const bgColorItems = document.querySelectorAll('.bg-color-item');
+        bgColorItems.forEach(item => item.classList.remove('active'));
+        const transparentItem = document.querySelector('.bg-color-item[data-color="transparent"]');
+        if (transparentItem) {
+            transparentItem.classList.add('active');
+        }
+        
+        // 透明背景ボタンをアクティブにする
+        const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
+        if (transparentBtn) {
+            transparentBtn.classList.add('active');
+        }
+        
+        // カスタム背景色ピッカーをリセット
+        const customBgColorInput = document.getElementById('customBgColor');
+        if (customBgColorInput) {
+            customBgColorInput.value = '#ffffff'; // デフォルト色に戻す
+        }
+
         // 色パレット選択をリセット
         selectedColorIndex = -1;
-    }    // カスタム色でSVGをダウンロードする関数
+    }
+    
+    // 背景色を設定する関数
+    function setBackgroundColor(color) {
+        currentBackgroundColor = color;
+        
+        const svg = document.getElementById('customizable-svg');
+        if (!svg) {
+            return;
+        }
+        
+        // 既存の背景rect要素を削除
+        const existingBg = svg.querySelector('#svg-background');
+        if (existingBg) {
+            existingBg.remove();
+        }
+        
+        // 透明以外の場合は背景rect要素を追加
+        if (color !== 'transparent') {
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('id', 'svg-background');
+            rect.setAttribute('x', '0');
+            rect.setAttribute('y', '0');
+            rect.setAttribute('width', '100%');
+            rect.setAttribute('height', '100%');
+            rect.setAttribute('fill', color);
+            
+            // 最初の子要素として挿入（背景として）
+            svg.insertBefore(rect, svg.firstChild);
+        }
+        
+        console.log(`Background color set to: ${color}`);
+    }
+    
+    // カスタム色でSVGをダウンロードする関数
     function downloadCustomSvg() {
         const svg = document.getElementById('customizable-svg');
         if (!svg) {
@@ -2950,7 +3208,6 @@ try {
         if (extractedColors.length === 0) {
             paletteContainer.innerHTML = `
                 <div class="text-center text-muted">
-                    <i class="bi bi-exclamation-circle"></i> 
                     このSVGには変更可能な色が見つかりませんでした
                 </div>
             `;
