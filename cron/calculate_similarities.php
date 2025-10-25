@@ -56,6 +56,39 @@ function checkRequiredTables($pdo) {
     }
     
     logMessage("All required tables exist");
+    
+    // similarity_calculation_progressテーブルにpriorityカラムが存在するかチェック
+    checkAndAddPriorityColumn($pdo);
+}
+
+/**
+ * similarity_calculation_progressテーブルにpriorityカラムを追加（存在しない場合）
+ */
+function checkAndAddPriorityColumn($pdo) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as column_count 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = DATABASE() 
+              AND TABLE_NAME = 'similarity_calculation_progress' 
+              AND COLUMN_NAME = 'priority'
+        ");
+        $stmt->execute();
+        $result = $stmt->fetch();
+        
+        if ($result['column_count'] == 0) {
+            // priorityカラムを追加
+            $pdo->exec("
+                ALTER TABLE similarity_calculation_progress 
+                ADD COLUMN priority INT DEFAULT 0 AFTER status
+            ");
+            logMessage("Added priority column to similarity_calculation_progress table");
+        } else {
+            logMessage("Priority column already exists in similarity_calculation_progress table");
+        }
+    } catch (Exception $e) {
+        logMessage("Warning: Could not check/add priority column: " . $e->getMessage(), 'WARNING');
+    }
 }
 
 /**
@@ -261,21 +294,67 @@ function main() {
         // 新しい素材を進捗テーブルに追加
         addNewMaterialsToProgress($pdo);
         
-        // 未処理の素材を1件取得
+        // 処理対象の素材を取得（新規優先 + 巡回処理）
         $stmt = $pdo->prepare("
-            SELECT material_id 
+            SELECT material_id, status, priority
             FROM similarity_calculation_progress 
             WHERE status IN ('pending', 'error')
             ORDER BY 
                 CASE WHEN status = 'error' THEN 1 ELSE 0 END,
+                priority DESC,
                 created_at ASC 
             LIMIT 1
         ");
         $stmt->execute();
         $progress = $stmt->fetch();
         
+        // 新規・エラー素材がない場合、巡回処理として完了済み素材を再処理
         if (!$progress) {
-            logMessage('No materials found that need similarity calculation');
+            // 統計情報を取得
+            $statsStmt = $pdo->prepare("
+                SELECT 
+                    COUNT(*) as total_materials,
+                    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
+                    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
+                    SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as error_count
+                FROM similarity_calculation_progress scp
+                JOIN materials m ON scp.material_id = m.id
+                WHERE m.image_embedding IS NOT NULL
+            ");
+            $statsStmt->execute();
+            $stats = $statsStmt->fetch();
+            
+            logMessage("Process statistics: Total={$stats['total_materials']}, Completed={$stats['completed_count']}, Pending={$stats['pending_count']}, Error={$stats['error_count']}");
+            logMessage('No pending materials found, starting circulation process for freshness');
+            
+            // 最も古く処理された完了済み素材を取得
+            $circulationStmt = $pdo->prepare("
+                SELECT scp.material_id, scp.status, scp.processed_at
+                FROM similarity_calculation_progress scp
+                JOIN materials m ON scp.material_id = m.id
+                WHERE scp.status = 'completed' 
+                  AND m.image_embedding IS NOT NULL
+                ORDER BY scp.processed_at ASC 
+                LIMIT 1
+            ");
+            $circulationStmt->execute();
+            $progress = $circulationStmt->fetch();
+            
+            if ($progress) {
+                logMessage("Starting circulation: Re-processing material ID {$progress['material_id']} (last processed: {$progress['processed_at']})");
+                
+                // 巡回処理の場合、既存の類似度データを削除
+                $deleteStmt = $pdo->prepare("
+                    DELETE FROM material_similarities 
+                    WHERE material_id = ?
+                ");
+                $deleteStmt->execute([$progress['material_id']]);
+                logMessage("Cleared existing similarity data for fresh calculation");
+            }
+        }
+        
+        if (!$progress) {
+            logMessage('No materials found for processing (including circulation)');
             return;
         }
         
@@ -323,32 +402,35 @@ function main() {
  */
 function addNewMaterialsToProgress($pdo) {
     try {
-        // 画像埋め込みがある素材で、まだ進捗テーブルに登録されていないものを取得
+        // 画像埋め込みがある素材で、まだ進捗テーブルに登録されていないものを取得（新規優先順）
         $stmt = $pdo->prepare("
-            SELECT m.id
+            SELECT m.id, m.created_at
             FROM materials m
             LEFT JOIN similarity_calculation_progress scp ON m.id = scp.material_id
             WHERE m.image_embedding IS NOT NULL 
               AND scp.material_id IS NULL
+            ORDER BY m.created_at DESC
         ");
         $stmt->execute();
         $newMaterials = $stmt->fetchAll();
         
-        // 新しい素材を進捗テーブルに追加
+        // 新しい素材を進捗テーブルに追加（作成日時の新しい順で優先度設定）
         if (!empty($newMaterials)) {
             $insertStmt = $pdo->prepare("
                 INSERT INTO similarity_calculation_progress 
-                (material_id, status, created_at, updated_at) 
-                VALUES (?, 'pending', NOW(), NOW())
+                (material_id, status, created_at, updated_at, priority) 
+                VALUES (?, 'pending', NOW(), NOW(), ?)
             ");
             
             $addedCount = 0;
             foreach ($newMaterials as $material) {
-                $insertStmt->execute([$material['id']]);
+                // より新しい素材により高い優先度を付与（1000 - インデックス）
+                $priority = 1000 - $addedCount;
+                $insertStmt->execute([$material['id'], $priority]);
                 $addedCount++;
             }
             
-            logMessage("Added {$addedCount} new materials to similarity calculation queue");
+            logMessage("Added {$addedCount} new materials to similarity calculation queue (newest first)");
         }
         
         // 既存の完了済み素材で画像埋め込みが更新された場合、再計算対象にする
