@@ -40,111 +40,6 @@ if (!$material) {
 // 素材に関連付けられたタグを取得
 $materialTags = getMaterialTags($material['id'], $pdo);
 
-// リファラーから検索やタグページからのアクセスかを判定
-$referer = $_SERVER['HTTP_REFERER'] ?? '';
-$searchQuery = '';
-$tagSlug = '';
-$isFromSearch = false;
-$isFromTag = false;
-
-// URLパラメータもチェック（直接アクセスの場合）
-$fromSearch = $_GET['from'] ?? '';
-$searchParam = $_GET['q'] ?? '';
-$tagParam = $_GET['tag'] ?? '';
-
-if ($fromSearch === 'search' && !empty($searchParam)) {
-    $isFromSearch = true;
-    $searchQuery = $searchParam;
-} elseif ($fromSearch === 'tag' && !empty($tagParam)) {
-    $isFromTag = true;
-    $tagSlug = $tagParam;
-} elseif (strpos($referer, '/list.php') !== false && strpos($referer, 'q=') !== false) {
-    // 検索結果からのアクセス
-    $isFromSearch = true;
-    parse_str(parse_url($referer, PHP_URL_QUERY), $queryParams);
-    $searchQuery = $queryParams['q'] ?? '';
-} elseif (strpos($referer, '/tag/') !== false) {
-    // タグページからのアクセス
-    $isFromTag = true;
-    $refererPath = parse_url($referer, PHP_URL_PATH);
-    if (preg_match('/\/tag\/([^\/]+)\/?/', $refererPath, $matches)) {
-        $tagSlug = $matches[1];
-    }
-}
-
-// 前後の素材を取得（コンテキストに応じて）
-$prevMaterial = null;
-$nextMaterial = null;
-
-if ($isFromSearch && !empty($searchQuery)) {
-    // 検索結果内での前後
-    $searchTerms = explode(' ', $searchQuery);
-    $searchConditions = [];
-    $searchParams = [];
-    
-    foreach ($searchTerms as $term) {
-        if (!empty(trim($term))) {
-            $searchConditions[] = "(m.title LIKE ? OR m.description LIKE ?)";
-            $searchParams[] = '%' . trim($term) . '%';
-            $searchParams[] = '%' . trim($term) . '%';
-        }
-    }
-    
-    if (!empty($searchConditions)) {
-        $searchWhere = implode(' AND ', $searchConditions);
-        
-        // 前の素材
-        $prevQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
-                     JOIN categories c ON m.category_id = c.id 
-                     WHERE ($searchWhere) AND m.id < ? 
-                     ORDER BY m.id DESC LIMIT 1";
-        $prevParams = array_merge($searchParams, [$material['id']]);
-        $prevStmt = $pdo->prepare($prevQuery);
-        $prevStmt->execute($prevParams);
-        $prevMaterial = $prevStmt->fetch();
-        
-        // 次の素材
-        $nextQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
-                     JOIN categories c ON m.category_id = c.id 
-                     WHERE ($searchWhere) AND m.id > ? 
-                     ORDER BY m.id ASC LIMIT 1";
-        $nextParams = array_merge($searchParams, [$material['id']]);
-        $nextStmt = $pdo->prepare($nextQuery);
-        $nextStmt->execute($nextParams);
-        $nextMaterial = $nextStmt->fetch();
-    }
-} elseif ($isFromTag && !empty($tagSlug)) {
-    // タグ内での前後
-    $prevQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
-                 JOIN categories c ON m.category_id = c.id 
-                 JOIN material_tags mt ON m.id = mt.material_id 
-                 JOIN tags t ON mt.tag_id = t.id 
-                 WHERE t.slug = ? AND m.id < ? 
-                 ORDER BY m.id DESC LIMIT 1";
-    $prevStmt = $pdo->prepare($prevQuery);
-    $prevStmt->execute([$tagSlug, $material['id']]);
-    $prevMaterial = $prevStmt->fetch();
-    
-    $nextQuery = "SELECT m.slug, m.title, c.slug as category_slug FROM materials m 
-                 JOIN categories c ON m.category_id = c.id 
-                 JOIN material_tags mt ON m.id = mt.material_id 
-                 JOIN tags t ON mt.tag_id = t.id 
-                 WHERE t.slug = ? AND m.id > ? 
-                 ORDER BY m.id ASC LIMIT 1";
-    $nextStmt = $pdo->prepare($nextQuery);
-    $nextStmt->execute([$tagSlug, $material['id']]);
-    $nextMaterial = $nextStmt->fetch();
-} else {
-    // デフォルト：同じカテゴリ内での前後の素材を取得
-    $prevStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id < ? ORDER BY id DESC LIMIT 1");
-    $prevStmt->execute([$category['id'], $material['id']]);
-    $prevMaterial = $prevStmt->fetch();
-
-    $nextStmt = $pdo->prepare("SELECT slug, title FROM materials WHERE category_id = ? AND id > ? ORDER BY id ASC LIMIT 1");
-    $nextStmt->execute([$category['id'], $material['id']]);
-    $nextMaterial = $nextStmt->fetch();
-}
-
 // ツイート用テキストを生成
 function createTweetText($title) {
     
@@ -767,63 +662,7 @@ try {
             border-color: #f8f9fa;
         }
 
-        /* ナビゲーションボタン - load-more-buttonと同じスタイル */
-        .nav-button {
-            background-color: #ffffff;
-            color: #444;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            padding: 0.75em 2em;
-            font-size: 1rem;
-            font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s ease-in-out;
-            white-space: nowrap;
-        }
 
-        .nav-button:hover {
-            background-color: #f5f5f5;
-            border-color: #999;
-            color: #444;
-            text-decoration: none;
-        }
-
-        .nav-button-disabled {
-            background-color: #f8f9fa;
-            color: #6c757d;
-            border: 2px solid #dee2e6;
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .nav-button-disabled:hover {
-            background-color: #f8f9fa;
-            border-color: #dee2e6;
-            color: #6c757d;
-        }
-
-        /* ナビゲーション全体の中央配置 */
-        .nav-container {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: nowrap;
-        }
-
-        @media (max-width: 576px) {
-            .nav-container {
-                flex-direction: row;
-                gap: 0.75rem;
-            }
-            
-            .nav-button {
-                padding: 0.5em 1.5em;
-                font-size: 0.9rem;
-            }
-        }
 
         .btn-sm {
             padding: 0.25rem 0.5rem;
@@ -2398,56 +2237,11 @@ try {
                          fetchpriority="high"
                          style="display: block; max-width: 100%; width: 100%; margin: 0 auto;">
                     
-                    <!-- 前へ・次へナビゲーション（ダウンロードリンクの上） -->
-                    <div class="nav-container mb-4">
-                        <?php if ($prevMaterial): ?>
-                            <?php
-                            // リンクURLを生成（コンテキストに応じて）
-                            $prevUrl = '';
-                            if ($isFromSearch && !empty($searchQuery)) {
-                                $prevCategorySlug = $prevMaterial['category_slug'] ?? $category['slug'];
-                                $prevUrl = "/{$prevCategorySlug}/{$prevMaterial['slug']}/?from=search&q=" . urlencode($searchQuery);
-                            } elseif ($isFromTag && !empty($tagSlug)) {
-                                $prevCategorySlug = $prevMaterial['category_slug'] ?? $category['slug'];
-                                $prevUrl = "/{$prevCategorySlug}/{$prevMaterial['slug']}/?from=tag&tag=" . urlencode($tagSlug);
-                            } else {
-                                $prevUrl = "/{$category['slug']}/{$prevMaterial['slug']}/";
-                            }
-                            ?>
-                            <a href="<?= h($prevUrl) ?>" class="nav-button">
-                                ← 前へ
-                            </a>
-                        <?php else: ?>
-                            <span class="nav-button nav-button-disabled">← 前へ</span>
-                        <?php endif; ?>
-                        
-                        <?php if ($nextMaterial): ?>
-                            <?php
-                            // リンクURLを生成（コンテキストに応じて）
-                            $nextUrl = '';
-                            if ($isFromSearch && !empty($searchQuery)) {
-                                $nextCategorySlug = $nextMaterial['category_slug'] ?? $category['slug'];
-                                $nextUrl = "/{$nextCategorySlug}/{$nextMaterial['slug']}/?from=search&q=" . urlencode($searchQuery);
-                            } elseif ($isFromTag && !empty($tagSlug)) {
-                                $nextCategorySlug = $nextMaterial['category_slug'] ?? $category['slug'];
-                                $nextUrl = "/{$nextCategorySlug}/{$nextMaterial['slug']}/?from=tag&tag=" . urlencode($tagSlug);
-                            } else {
-                                $nextUrl = "/{$category['slug']}/{$nextMaterial['slug']}/";
-                            }
-                            ?>
-                            <a href="<?= h($nextUrl) ?>" class="nav-button">
-                                次へ →
-                            </a>
-                        <?php else: ?>
-                            <span class="nav-button nav-button-disabled">次へ →</span>
-                        <?php endif; ?>
-                    </div>
-                    
                     <!-- ダウンロードリンク -->
                     <div class="mb-4">
                         <div class="download-buttons">
                             <a href="/<?= h($material['image_path']) ?>" download class="download-link">
-                                PNG/JPEGをダウンロード
+                                PNGをダウンロード
                             </a>
                             
                             <?php if (isset($material['svg_path']) && !empty($material['svg_path'])): ?>
