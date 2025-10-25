@@ -2580,12 +2580,19 @@ try {
                     </div>
                     
                     <div class="text-center mt-4">
-                        <div class="btn-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
-                            <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()" style="border-radius: 12px 0 0 12px;">
+                        <div class="mb-3">
+                            <div class="btn-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                                <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 12px 0 0 12px;">
+                                    SVGダウンロード
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="downloadCustomPng()" style="border-radius: 0 12px 12px 0;">
+                                    PNGダウンロード
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()">
                                 リセット
-                            </button>
-                            <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 0 12px 12px 0;">
-                                ダウンロード
                             </button>
                         </div>
                         
@@ -3063,6 +3070,93 @@ try {
                 'item_id': '<?= h($material['slug']) ?>'
             });
         }
+    }
+    
+    // カスタム色でSVGをPNGとしてダウンロードする関数
+    function downloadCustomPng() {
+        const svg = document.getElementById('customizable-svg');
+        if (!svg) {
+            alert('SVGが見つかりません');
+            return;
+        }
+        
+        // SVGの内容を取得
+        const svgData = new XMLSerializer().serializeToString(svg);
+        
+        // SVGのサイズを取得
+        const viewBox = svg.getAttribute('viewBox');
+        let width = 512; // デフォルトサイズ
+        let height = 512;
+        
+        if (viewBox) {
+            const [, , w, h] = viewBox.split(' ').map(Number);
+            width = w || 512;
+            height = h || 512;
+        } else {
+            width = svg.getAttribute('width') || 512;
+            height = svg.getAttribute('height') || 512;
+        }
+        
+        // 高解像度で出力（2倍サイズ）
+        const scale = 2;
+        const canvasWidth = width * scale;
+        const canvasHeight = height * scale;
+        
+        // Canvasを作成
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // 白い背景を描画（透明でない場合）
+        if (currentBackgroundColor !== 'transparent') {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        }
+        
+        // SVGをImageとして読み込み
+        const img = new Image();
+        img.onload = function() {
+            // 高解像度でCanvasに描画
+            ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+            
+            // PNGとしてダウンロード
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = '<?= h($material['slug']) ?>_custom_colors.png';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                URL.revokeObjectURL(url);
+                
+                // ダウンロード追跡（Google Analytics）
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'download', {
+                        'event_category': 'PNG',
+                        'event_label': 'custom_colors',
+                        'item_id': '<?= h($material['slug']) ?>'
+                    });
+                }
+            }, 'image/png');
+        };
+        
+        img.onerror = function() {
+            alert('PNG変換に失敗しました');
+        };
+        
+        // SVGデータをData URLとして設定
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        img.src = svgUrl;
+        
+        // 少し後にURLを解放
+        setTimeout(() => {
+            URL.revokeObjectURL(svgUrl);
+        }, 1000);
     }
     
     // SVGから色を自動抽出
