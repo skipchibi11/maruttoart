@@ -470,8 +470,8 @@ $materials = $materialsStmt->fetchAll();
             <div class="materials-grid">
                 <?php foreach ($materials as $material): ?>
                     <?php
-                    // 詳細ページのURL（タグパラメータ付き）
-                    $detailUrl = "/{$material['category_slug']}/{$material['slug']}/?from=tag&tag=" . urlencode($tag_slug);
+                    // 詳細ページのURL（シンプル形式）
+                    $detailUrl = "/{$material['category_slug']}/{$material['slug']}/";
                     // AIが指定した背景色を取得（フォールバックは従来の色）
                     $backgroundColor = $material['structured_bg_color'] ?? '#F9F5E9';
                     ?>

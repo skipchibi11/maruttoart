@@ -970,10 +970,7 @@ $materials = $stmt->fetchAll();
                     $detailUrl = "/detail/{$material['slug']}";
                 }
                 
-                                // 検索クエリがある場合はパラメータを追加
-                if (!empty($search)) {
-                    $detailUrl .= '?from=search&q=' . urlencode($search);
-                }
+                // 検索クエリがあってもパラメータは追加しない（シンプル形式）
                 
                 // AIが指定した背景色を取得（フォールバックは従来の色）
                 $backgroundColor = $material['structured_bg_color'] ?? '#F9F5E9';
