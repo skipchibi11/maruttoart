@@ -1492,6 +1492,52 @@ try {
             color: white;
         }
 
+        /* タブアイコン用スタイル */
+        .tab-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .tab-icon {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 60px;
+        }
+
+        .tab-icon:hover {
+            background: #e9ecef;
+            border-color: #4285f4;
+            color: #4285f4;
+            transform: translateY(-2px);
+        }
+
+        .tab-icon.active {
+            background: #4285f4;
+            border-color: #4285f4;
+            color: white;
+        }
+
+        .tab-icon.active .tab-icon-img {
+            color: white;
+        }
+
+        .tab-icon-img {
+            width: 24px;
+            height: 24px;
+            transition: color 0.3s ease;
+        }
+
         /* カラーパレット用スタイル */
         .color-palette {
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -2022,6 +2068,21 @@ try {
 
         /* モバイル対応 */
         @media (max-width: 768px) {
+            .tab-icons {
+                gap: 0.75rem;
+                margin: 1rem 0;
+            }
+
+            .tab-icon {
+                padding: 10px;
+                min-width: 50px;
+            }
+
+            .tab-icon-img {
+                width: 20px;
+                height: 20px;
+            }
+
             .color-picker-wrapper {
                 margin-top: 1.5rem;
                 padding: 1.5rem;
@@ -2300,7 +2361,6 @@ try {
     ?>
     <div class="container mt-4">
         <div class="svg-display-section">
-            <h5 class="svg-section-title mb-3">ベクター画像</h5>
             
             <div class="svg-container">
                 <div class="svg-image-wrapper">
@@ -2324,20 +2384,31 @@ try {
                     }
                     ?>
                 </div>
-                <div class="svg-info mt-2">
-                    <small class="text-muted">
-                        SVG形式 - 色を変更してダウンロード可能
-                    </small>
+                
+                <!-- タブアイコン -->
+                <div class="tab-icons mt-3 mb-4">
+                    <button type="button" class="tab-icon" data-tab="color" onclick="switchTab('color')" title="色変更">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette-icon lucide-palette tab-icon-img">
+                            <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/>
+                            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    
+                    <button type="button" class="tab-icon" data-tab="background" onclick="switchTab('background')" title="背景変更">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paint-bucket-icon lucide-paint-bucket tab-icon-img">
+                            <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/>
+                            <path d="m5 2 5 5"/>
+                            <path d="M2 13h15"/>
+                            <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- 色変更コントロール（カラーパレット方式） -->
-                <div class="svg-controls mt-4">
-                    <div class="text-center mb-3">
-                        <h6 class="text-primary mb-2">
-                            インタラクティブカラー編集
-                        </h6>
-                        <small class="text-muted">SVGの色をカスタマイズして、あなた好みのイラストにしましょう</small>
-                    </div>
+                <div class="svg-controls mt-4" id="colorTab" style="display: none;">
                     
                     <!-- 色パレット表示エリア -->
                     <div id="colorPalette" class="color-palette mb-4">
@@ -2350,53 +2421,38 @@ try {
                         </div>
                     </div>
                     
-                    <!-- 背景色コントロール -->
-                    <div class="bg-color-controls mt-4">
-                        <div class="text-center mb-3">
-                            <h6 class="text-primary mb-2">
-                                背景色の選択
-                            </h6>
-                            <small class="text-muted">SVGの背景色を設定できます</small>
-                        </div>
+                </div>
+
+                <!-- 背景色変更パネル -->
+                <div class="svg-controls mt-4" id="backgroundTab" style="display: none;">
+                    
+                    <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
+                        <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
+                            <div class="bg-swatch transparent-bg"></div>
+                            <small>透明</small>
+                        </button>
                         
-                        <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
-                            <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
-                                <div class="bg-swatch transparent-bg"></div>
-                                <small>透明</small>
-                            </button>
-                            
-                            <div class="d-flex align-items-center gap-2">
-                                <label for="customBgColor" class="form-label mb-0" style="font-size: 0.9rem; color: #666;">カスタム背景色:</label>
-                                <input type="color" id="customBgColor" class="form-control form-control-color" 
-                                       style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff">
-                            </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="color" id="customBgColor" class="form-control form-control-color" 
+                                   style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff">
                         </div>
                     </div>
-                    
-                    <div class="text-center mt-4">
-                        <div class="mb-3">
-                            <div class="btn-group shadow-sm" style="border-radius: 12px; overflow: hidden;">
-                                <button type="button" class="btn btn-success" onclick="downloadCustomSvg()" style="border-radius: 12px 0 0 12px;">
-                                    SVGダウンロード
-                                </button>
-                                <button type="button" class="btn btn-primary" onclick="downloadCustomPng()" style="border-radius: 0 12px 12px 0;">
-                                    PNGダウンロード
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()">
-                                リセット
-                            </button>
-                        </div>
-                        
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                同じ色を何度でも違う色に変更できます。
-                                <span class="badge bg-success ms-1">●</span> 変更済み、
-                                <span class="badge bg-secondary ms-1">元</span> オリジナル色表示
-                            </small>
-                        </div>
+                </div>
+
+                <!-- パネル外のダウンロードとリセットボタン -->
+                <div class="text-center mt-4">
+                    <div class="mb-3 download-buttons">
+                        <a href="#" class="download-link svg-download" onclick="downloadCustomSvg(); return false;">
+                            SVGダウンロード
+                        </a>
+                        <a href="#" class="download-link" onclick="downloadCustomPng(); return false;">
+                            PNGダウンロード
+                        </a>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()">
+                            リセット
+                        </button>
                     </div>
                 </div>
 
@@ -2754,19 +2810,12 @@ try {
             if (svgWrapper) {
                 svgWrapper.innerHTML = originalSvgContent;
                 
-                // 初期状態を完全に復元
-                extractedColors = JSON.parse(JSON.stringify(initialColorStates));
-                originalColors = JSON.parse(JSON.stringify(initialColorStates));
-                
                 // 色のマッピングを初期化
                 colorMappings.clear();
-                originalColors.forEach(colorInfo => {
-                    colorMappings.set(colorInfo.color, colorInfo.color);
-                });
                 
-                // カラーパレットを再生成
+                // SVGが復元された後、再度色抽出を実行してdata属性を設定
                 setTimeout(() => {
-                    displayColorPalette();
+                    extractColorsFromSvg();
                 }, 100);
             }
         }
@@ -2971,9 +3020,9 @@ try {
                 const hex = convertToHex(colorInfo.color);
                 if (hex && hex !== '#FFFFFF' && hex !== '#000000') { // 白と黒は除外
                     // 元の色情報をdata属性として保存
-                    if (colorInfo.type === 'fill' && element.getAttribute('fill')) {
+                    if (colorInfo.type === 'fill') {
                         element.setAttribute('data-original-fill', hex);
-                    } else if (colorInfo.type === 'stroke' && element.getAttribute('stroke')) {
+                    } else if (colorInfo.type === 'stroke') {
                         element.setAttribute('data-original-stroke', hex);
                     } else if (colorInfo.type === 'style-fill') {
                         element.setAttribute('data-original-style-fill', hex);
@@ -3060,7 +3109,7 @@ try {
         const paletteContainer = document.getElementById('colorPalette');
         
         // 色スウォッチのみ更新
-        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（直接クリックして変更）</small></div>';
+        let paletteHTML = '';
         
         extractedColors.forEach((colorInfo, index) => {
             const originalColor = colorInfo.color;
@@ -3099,7 +3148,7 @@ try {
             return;
         }
         
-        let paletteHTML = '<div class="text-center mb-2"><small class="text-muted">SVGから抽出された色（直接クリックして変更）</small></div>';
+        let paletteHTML = '';
         
         extractedColors.forEach((colorInfo, index) => {
             const originalColor = colorInfo.color;
@@ -3468,6 +3517,45 @@ try {
         preview.style.backgroundColor = color;
         code.textContent = color;
         code.style.fontWeight = 'bold';
+    }
+    
+    // タブ切り替え関数
+    function switchTab(tabName) {
+        // すべてのタブパネルを非表示にする
+        const allTabs = ['colorTab', 'backgroundTab'];
+        allTabs.forEach(tab => {
+            const tabElement = document.getElementById(tab);
+            if (tabElement) {
+                tabElement.style.display = 'none';
+            }
+        });
+        
+        // すべてのタブボタンのアクティブ状態をリセット
+        const allTabButtons = document.querySelectorAll('.tab-icon');
+        allTabButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+        
+        // 指定されたタブを表示
+        const targetTab = document.getElementById(tabName + 'Tab');
+        if (targetTab) {
+            targetTab.style.display = 'block';
+            
+            // クリックされたボタンをアクティブにする
+            const activeButton = document.querySelector(`.tab-icon[data-tab="${tabName}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+            
+            // 色変更タブの場合、色抽出処理を実行
+            if (tabName === 'color') {
+                console.log('Color tab activated, extracting colors...');
+                // SVGが完全に読み込まれるまで少し待つ
+                setTimeout(() => {
+                    extractColorsFromSvg();
+                }, 100);
+            }
+        }
     }
     
 
