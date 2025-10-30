@@ -322,12 +322,24 @@ try {
             padding: 0;
             box-sizing: border-box;
         }
+        
+        html {
+            /* スクロール動作の確保 */
+            -webkit-overflow-scrolling: touch;
+            touch-action: manipulation;
+            overflow-y: scroll;
+        }
 
         body {
             background-color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
             line-height: 1.5;
             color: #222;
+            /* スクロール動作の改善 */
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y pinch-zoom;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         /* コンテナシステム */
@@ -337,6 +349,8 @@ try {
             margin: 0 auto;
             padding-left: 15px;
             padding-right: 15px;
+            /* スクロール動作の確保 */
+            touch-action: pan-y;
         }
 
         /* グリッドシステム */
@@ -1384,6 +1398,8 @@ try {
 
         .svg-container {
             text-align: center;
+            padding: 2rem;
+            overflow: visible;
         }
 
         .svg-image-wrapper {
@@ -1394,6 +1410,14 @@ try {
             display: inline-block;
             max-width: 100%;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            min-height: 300px;
+            width: 400px;
+            /* タッチスクロールの改善 */
+            touch-action: manipulation;
+            -webkit-overflow-scrolling: touch;
         }
 
         .svg-image-wrapper .svg-inline {
@@ -1710,6 +1734,58 @@ try {
         .bg-color-btn.active small {
             color: #4285f4;
             font-weight: 600;
+        }
+
+        /* 移動コントロール用スタイル */
+        .move-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+        }
+
+        .move-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .move-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            gap: 0.25rem;
+            padding: 0.5rem;
+        }
+
+        .move-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+            background-color: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
+        }
+
+        .move-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(66, 133, 244, 0.3);
+        }
+
+        .move-btn svg {
+            margin-bottom: 0.125rem;
         }
 
         .color-item {
@@ -2186,6 +2262,9 @@ try {
 
             .svg-image-wrapper {
                 padding: 0.75rem;
+                width: 100%;
+                max-width: 350px;
+                min-height: 250px;
             }
 
             .svg-image-wrapper .svg-inline {
@@ -2405,6 +2484,17 @@ try {
                             <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/>
                         </svg>
                     </button>
+                    
+                    <button type="button" class="tab-icon" data-tab="move" onclick="switchTab('move')" title="位置変更">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-move-icon lucide-move tab-icon-img">
+                            <polyline points="5,9 2,12 5,15"></polyline>
+                            <polyline points="9,5 12,2 15,5"></polyline>
+                            <polyline points="15,19 12,22 9,19"></polyline>
+                            <polyline points="19,9 22,12 19,15"></polyline>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <line x1="12" y1="2" x2="12" y2="22"></line>
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- 色変更コントロール（カラーパレット方式） -->
@@ -2429,12 +2519,61 @@ try {
                     <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
                         <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
                             <div class="bg-swatch transparent-bg"></div>
-                            <small>透明</small>
                         </button>
                         
                         <div class="d-flex align-items-center gap-2">
                             <input type="color" id="customBgColor" class="form-control form-control-color" 
                                    style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 移動コントロールパネル -->
+                <div class="svg-controls mt-4" id="moveTab" style="display: none;">
+                    <div class="move-controls">
+                        <!-- 上ボタン -->
+                        <div class="move-row">
+                            <button type="button" class="move-btn" onclick="moveSvg('up')" title="上に移動">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+                                </svg>
+                                上
+                            </button>
+                        </div>
+                        
+                        <!-- 左・右ボタン -->
+                        <div class="move-row">
+                            <button type="button" class="move-btn" onclick="moveSvg('left')" title="左に移動">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                                </svg>
+                                左
+                            </button>
+                            
+                            <button type="button" class="move-btn" onclick="resetSvgPosition()" title="位置をリセット">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                                リセット
+                            </button>
+                            
+                            <button type="button" class="move-btn" onclick="moveSvg('right')" title="右に移動">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                                </svg>
+                                右
+                            </button>
+                        </div>
+                        
+                        <!-- 下ボタン -->
+                        <div class="move-row">
+                            <button type="button" class="move-btn" onclick="moveSvg('down')" title="下に移動">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                                </svg>
+                                下
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2743,6 +2882,7 @@ try {
     let colorMappings = new Map(); // オリジナル色 → 現在色のマッピング
     let selectedColorIndex = -1;
     let currentBackgroundColor = 'transparent'; // 現在の背景色を保持
+    let currentTransform = { x: 0, y: 0 }; // 現在の移動位置を保持
     
     // ページ読み込み時にオリジナルのSVGを保存し、色を抽出
     document.addEventListener('DOMContentLoaded', function() {
@@ -2843,6 +2983,11 @@ try {
 
         // 色パレット選択をリセット
         selectedColorIndex = -1;
+        
+        // 移動位置もリセット
+        currentTransform.x = 0;
+        currentTransform.y = 0;
+        applySvgTransform();
     }
     
     // 背景色を設定する関数
@@ -2870,6 +3015,9 @@ try {
             rect.setAttribute('height', '100%');
             rect.setAttribute('fill', color);
             
+            // 背景要素にはtransformを適用しない
+            rect.style.transform = 'none';
+            
             // 最初の子要素として挿入（背景として）
             svg.insertBefore(rect, svg.firstChild);
         }
@@ -2877,7 +3025,7 @@ try {
         console.log(`Background color set to: ${color}`);
     }
     
-    // カスタム色でSVGをダウンロードする関数
+    // カスタム色でSVGをダウンロードする関数（色変更と背景変更のみ対応）
     function downloadCustomSvg() {
         const svg = document.getElementById('customizable-svg');
         if (!svg) {
@@ -2885,8 +3033,54 @@ try {
             return;
         }
         
+        // SVGのクローンを作成
+        const svgClone = svg.cloneNode(true);
+        
+        // 移動グループの変形をリセット（移動は反映しない）
+        const moveGroup = svgClone.querySelector('#svg-move-group');
+        if (moveGroup) {
+            moveGroup.removeAttribute('transform');
+            console.log('Reset transform for SVG download - position changes not included');
+        }
+        
+        // 元のSVGサイズを維持（512×512）
+        const viewBox = svg.getAttribute('viewBox');
+        if (viewBox) {
+            svgClone.setAttribute('viewBox', viewBox);
+        } else {
+            svgClone.setAttribute('viewBox', '0 0 512 512');
+        }
+        svgClone.setAttribute('width', '512');
+        svgClone.setAttribute('height', '512');
+        
+        // 背景がある場合はフルサイズに調整（100%で全体をカバー）
+        const background = svgClone.querySelector('#svg-background');
+        if (background) {
+            background.setAttribute('width', '100%');
+            background.setAttribute('height', '100%');
+            background.setAttribute('x', '0');
+            background.setAttribute('y', '0');
+        }
+        
+        // clipPath関連の要素を削除（移動に関連するため不要）
+        const clipPath = svgClone.querySelector('clipPath#download-clip');
+        if (clipPath) {
+            clipPath.remove();
+        }
+        
+        // clipPath属性も削除
+        const elementsWithClip = svgClone.querySelectorAll('[clip-path]');
+        elementsWithClip.forEach(element => {
+            element.removeAttribute('clip-path');
+        });
+        
+        console.log('SVG download: colors and background only (no position changes)');
+        
         // SVGの内容を取得
-        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgData = new XMLSerializer().serializeToString(svgClone);
+        
+        // デバッグ: 生成されたSVGデータの一部をコンソールに出力
+        console.log('Generated SVG data (first 500 chars):', svgData.substring(0, 500));
         
         // Blobを作成
         const blob = new Blob([svgData], { type: 'image/svg+xml' });
@@ -2915,7 +3109,7 @@ try {
         }
     }
     
-    // カスタム色でSVGをPNGとしてダウンロードする関数
+    // カスタム色でSVGをPNGとしてダウンロードする関数（色変更、背景変更、変形すべて対応）
     function downloadCustomPng() {
         const svg = document.getElementById('customizable-svg');
         if (!svg) {
@@ -2923,7 +3117,7 @@ try {
             return;
         }
         
-        // SVGの内容を取得
+        // 現在の画面表示のSVGをそのまま使用（全ての変更を反映）
         const svgData = new XMLSerializer().serializeToString(svg);
         
         // SVGのサイズを取得
@@ -2940,8 +3134,8 @@ try {
             height = svg.getAttribute('height') || 512;
         }
         
-        // 高解像度で出力（2倍サイズ）
-        const scale = 2;
+        // 高解像度で出力（4倍サイズで高品質）
+        const scale = 4;
         const canvasWidth = width * scale;
         const canvasHeight = height * scale;
         
@@ -2951,16 +3145,20 @@ try {
         canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d');
         
-        // 白い背景を描画（透明でない場合）
+        // アンチエイリアシングを有効にして高品質描画
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // 透明背景の場合は何も描画しない、背景色がある場合は背景を描画
         if (currentBackgroundColor !== 'transparent') {
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = currentBackgroundColor;
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
         
         // SVGをImageとして読み込み
         const img = new Image();
         img.onload = function() {
-            // 高解像度でCanvasに描画
+            // 高解像度でCanvasに描画（移動位置も含めて画面表示通り）
             ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
             
             // PNGとしてダウンロード
@@ -2968,7 +3166,7 @@ try {
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = '<?= h($material['slug']) ?>_custom_colors.png';
+                link.download = '<?= h($material['slug']) ?>_custom_full.png';
                 
                 document.body.appendChild(link);
                 link.click();
@@ -2980,7 +3178,7 @@ try {
                 if (typeof gtag !== 'undefined') {
                     gtag('event', 'download', {
                         'event_category': 'PNG',
-                        'event_label': 'custom_colors',
+                        'event_label': 'custom_full',
                         'item_id': '<?= h($material['slug']) ?>'
                     });
                 }
@@ -3000,6 +3198,8 @@ try {
         setTimeout(() => {
             URL.revokeObjectURL(svgUrl);
         }, 1000);
+        
+        console.log('PNG download: includes all changes (colors, background, and position)');
     }
     
     // SVGから色を自動抽出
@@ -3522,7 +3722,7 @@ try {
     // タブ切り替え関数
     function switchTab(tabName) {
         // すべてのタブパネルを非表示にする
-        const allTabs = ['colorTab', 'backgroundTab'];
+        const allTabs = ['colorTab', 'backgroundTab', 'moveTab'];
         allTabs.forEach(tab => {
             const tabElement = document.getElementById(tab);
             if (tabElement) {
@@ -3556,6 +3756,106 @@ try {
                 }, 100);
             }
         }
+    }
+    
+    // SVG移動機能
+    function moveSvg(direction) {
+        const svg = document.getElementById('customizable-svg');
+        if (!svg) {
+            return;
+        }
+        
+        const moveDistance = 20; // 移動距離（ピクセル）
+        
+        // SVGコンテナのサイズに基づいた動的な移動制限を計算
+        const svgWrapper = document.querySelector('.svg-image-wrapper');
+        const svgRect = svg.getBoundingClientRect();
+        const wrapperRect = svgWrapper ? svgWrapper.getBoundingClientRect() : svgRect;
+        
+        // SVGの実際のサイズを取得
+        const svgWidth = svgRect.width;
+        const svgHeight = svgRect.height;
+        const wrapperWidth = wrapperRect.width;
+        const wrapperHeight = wrapperRect.height;
+        
+        // 枠外に出るギリギリまでの移動制限を計算（イラストの上部がキャンバ下部まで移動可能）
+        const maxMoveX = Math.max(200, wrapperWidth * 0.8 + svgWidth * 0.9);
+        const maxMoveY = Math.max(200, wrapperHeight * 0.9 + svgHeight * 0.9);
+        
+        let newX = currentTransform.x;
+        let newY = currentTransform.y;
+        
+        switch (direction) {
+            case 'up':
+                newY = currentTransform.y - moveDistance;
+                break;
+            case 'down':
+                newY = currentTransform.y + moveDistance;
+                break;
+            case 'left':
+                newX = currentTransform.x - moveDistance;
+                break;
+            case 'right':
+                newX = currentTransform.x + moveDistance;
+                break;
+        }
+        
+        // 動的に計算された移動範囲で制限
+        newX = Math.max(-maxMoveX, Math.min(maxMoveX, newX));
+        newY = Math.max(-maxMoveY, Math.min(maxMoveY, newY));
+        
+        // 値が変更された場合のみ更新
+        if (newX !== currentTransform.x || newY !== currentTransform.y) {
+            currentTransform.x = newX;
+            currentTransform.y = newY;
+            
+            // transformを適用
+            applySvgTransform();
+            
+            console.log(`SVG moved ${direction}. Current position: x=${currentTransform.x}, y=${currentTransform.y} (limits: ±${maxMoveX}, ±${maxMoveY})`);
+        } else {
+            console.log(`Movement ${direction} blocked - reached boundary (limits: ±${maxMoveX}, ±${maxMoveY})`);
+        }
+    }
+    
+    // SVG位置をリセット
+    function resetSvgPosition() {
+        currentTransform.x = 0;
+        currentTransform.y = 0;
+        applySvgTransform();
+        
+        console.log('SVG position reset to origin');
+    }
+    
+    // SVGにtransformを適用
+    function applySvgTransform() {
+        const svg = document.getElementById('customizable-svg');
+        if (!svg) {
+            return;
+        }
+        
+        // 移動用のグループ要素が存在しない場合は作成
+        let moveGroup = svg.querySelector('#svg-move-group');
+        if (!moveGroup) {
+            // 新しいgタグを作成
+            moveGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            moveGroup.setAttribute('id', 'svg-move-group');
+            
+            // 背景要素以外の全ての子要素を移動グループに移動
+            const childrenToMove = Array.from(svg.children).filter(child => child.id !== 'svg-background');
+            childrenToMove.forEach(child => {
+                moveGroup.appendChild(child);
+            });
+            
+            // 移動グループをSVGに追加
+            svg.appendChild(moveGroup);
+        }
+        
+        // 移動グループにSVGのtransform属性を適用
+        const transformString = `translate(${currentTransform.x}, ${currentTransform.y})`;
+        moveGroup.setAttribute('transform', transformString);
+        
+        console.log(`Applied SVG transform to move group: ${transformString}`);
     }
     
 
