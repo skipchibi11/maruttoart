@@ -1788,6 +1788,70 @@ try {
             margin-bottom: 0.125rem;
         }
 
+        /* 拡大縮小コントロール */
+        .scale-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .scale-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .scale-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 40px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            color: #6c757d;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0.5rem;
+        }
+
+        .scale-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+            background-color: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
+        }
+
+        .scale-btn.active {
+            border-color: #4285f4;
+            background-color: #4285f4;
+            color: white;
+            font-weight: 700;
+        }
+
+        .scale-btn.active:hover {
+            background-color: #3367d6;
+            border-color: #3367d6;
+        }
+
+        .scale-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(66, 133, 244, 0.3);
+        }
+
+        .scale-reset {
+            display: flex;
+            justify-content: center;
+        }
+
         .color-item {
             display: inline-block;
             margin: 0.75rem;
@@ -2495,6 +2559,15 @@ try {
                             <line x1="12" y1="2" x2="12" y2="22"></line>
                         </svg>
                     </button>
+                    
+                    <button type="button" class="tab-icon" data-tab="scale" onclick="switchTab('scale')" title="拡大縮小">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zoom-in-icon lucide-zoom-in tab-icon-img">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" x2="16.65" y1="21" y2="16.65"/>
+                            <line x1="11" x2="11" y1="8" y2="14"/>
+                            <line x1="8" x2="14" y1="11" y2="11"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- 色変更コントロール（カラーパレット方式） -->
@@ -2573,6 +2646,44 @@ try {
                                     <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                                 </svg>
                                 下
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 拡大縮小コントロールパネル -->
+                <div class="svg-controls mt-4" id="scaleTab" style="display: none;">
+                    <div class="text-center mb-3">
+                        <h6 class="text-primary mb-2">サイズ調整</h6>
+                        <small class="text-muted">SVGのサイズを変更できます</small>
+                    </div>
+                    
+                    <div class="scale-controls">
+                        <div class="scale-buttons">
+                            <button type="button" class="scale-btn" onclick="scaleSvg(0.5)" title="50%に縮小">
+                                50%
+                            </button>
+                            <button type="button" class="scale-btn" onclick="scaleSvg(0.7)" title="70%に縮小">
+                                70%
+                            </button>
+                            <button type="button" class="scale-btn active" onclick="scaleSvg(1.0)" title="元のサイズ（100%）">
+                                100%
+                            </button>
+                            <button type="button" class="scale-btn" onclick="scaleSvg(1.2)" title="120%に拡大">
+                                120%
+                            </button>
+                            <button type="button" class="scale-btn" onclick="scaleSvg(1.5)" title="150%に拡大">
+                                150%
+                            </button>
+                        </div>
+                        
+                        <div class="scale-reset mt-3">
+                            <button type="button" class="move-btn" onclick="resetSvgScale()" title="サイズをリセット">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                                リセット
                             </button>
                         </div>
                     </div>
@@ -2882,7 +2993,7 @@ try {
     let colorMappings = new Map(); // オリジナル色 → 現在色のマッピング
     let selectedColorIndex = -1;
     let currentBackgroundColor = 'transparent'; // 現在の背景色を保持
-    let currentTransform = { x: 0, y: 0 }; // 現在の移動位置を保持
+    let currentTransform = { x: 0, y: 0, scale: 1.0 }; // 現在の移動位置と拡大率を保持
     
     // ページ読み込み時にオリジナルのSVGを保存し、色を抽出
     document.addEventListener('DOMContentLoaded', function() {
@@ -2984,10 +3095,14 @@ try {
         // 色パレット選択をリセット
         selectedColorIndex = -1;
         
-        // 移動位置もリセット
+        // 移動位置と拡大率もリセット
         currentTransform.x = 0;
         currentTransform.y = 0;
+        currentTransform.scale = 1.0;
         applySvgTransform();
+        
+        // 拡大ボタンのアクティブ状態もリセット
+        updateScaleButtons();
     }
     
     // 背景色を設定する関数
@@ -3827,6 +3942,15 @@ try {
         console.log('SVG position reset to origin');
     }
     
+    // SVGサイズをリセット
+    function resetSvgScale() {
+        currentTransform.scale = 1.0;
+        applySvgTransform();
+        updateScaleButtons();
+        
+        console.log('SVG scale reset to 100%');
+    }
+    
     // SVGにtransformを適用
     function applySvgTransform() {
         const svg = document.getElementById('customizable-svg');
@@ -3851,11 +3975,92 @@ try {
             svg.appendChild(moveGroup);
         }
         
-        // 移動グループにSVGのtransform属性を適用
-        const transformString = `translate(${currentTransform.x}, ${currentTransform.y})`;
+        // 移動グループにSVGのtransform属性を適用（移動と拡大）
+        const transformString = `translate(${currentTransform.x}, ${currentTransform.y}) scale(${currentTransform.scale})`;
         moveGroup.setAttribute('transform', transformString);
         
         console.log(`Applied SVG transform to move group: ${transformString}`);
+    }
+    
+    // SVG拡大機能
+    function scaleSvg(scale) {
+        if (scale < 0.3 || scale > 2.0) {
+            console.log(`Scale ${scale} is out of range (0.3 - 2.0)`);
+            return;
+        }
+        
+        currentTransform.scale = scale;
+        applySvgTransform();
+        updateScaleButtons();
+        
+        console.log(`SVG scaled to ${(scale * 100)}%`);
+    }
+    
+    // 拡大ボタンのアクティブ状態を更新
+    function updateScaleButtons() {
+        const scaleButtons = document.querySelectorAll('.scale-btn');
+        scaleButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+        
+        // 現在のスケールに最も近いボタンをアクティブにする
+        const currentScale = currentTransform.scale;
+        const scaleOptions = [0.5, 0.7, 1.0, 1.2, 1.5];
+        const closestScale = scaleOptions.reduce((prev, curr) => 
+            Math.abs(curr - currentScale) < Math.abs(prev - currentScale) ? curr : prev
+        );
+        
+        scaleButtons.forEach(button => {
+            const buttonScale = parseFloat(button.textContent.replace('%', '')) / 100;
+            if (Math.abs(buttonScale - closestScale) < 0.01) {
+                button.classList.add('active');
+            }
+        });
+    }
+    
+    // タブ切り替え関数にscaleタブを追加
+    const originalSwitchTab = switchTab;
+    function switchTab(tabName) {
+        // すべてのタブパネルを非表示にする
+        const allTabs = ['colorTab', 'backgroundTab', 'moveTab', 'scaleTab'];
+        allTabs.forEach(tab => {
+            const tabElement = document.getElementById(tab);
+            if (tabElement) {
+                tabElement.style.display = 'none';
+            }
+        });
+        
+        // すべてのタブボタンのアクティブ状態をリセット
+        const allTabButtons = document.querySelectorAll('.tab-icon');
+        allTabButtons.forEach(button => {
+            button.classList.remove('active');
+        });
+        
+        // 指定されたタブを表示
+        const targetTab = document.getElementById(tabName + 'Tab');
+        if (targetTab) {
+            targetTab.style.display = 'block';
+            
+            // クリックされたボタンをアクティブにする
+            const activeButton = document.querySelector(`.tab-icon[data-tab="${tabName}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+            
+            // 色変更タブの場合、色抽出処理を実行
+            if (tabName === 'color') {
+                console.log('Color tab activated, extracting colors...');
+                // SVGが完全に読み込まれるまで少し待つ
+                setTimeout(() => {
+                    extractColorsFromSvg();
+                }, 100);
+            }
+            
+            // 拡大タブの場合、ボタンの状態を更新
+            if (tabName === 'scale') {
+                updateScaleButtons();
+            }
+        }
     }
     
 
