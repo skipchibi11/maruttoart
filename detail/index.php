@@ -1760,6 +1760,75 @@ try {
             font-weight: 600;
         }
 
+        /* 季節テーマ用スタイル */
+        .seasonal-themes-section {
+            border-top: 1px solid #e9ecef;
+            padding-top: 1rem;
+        }
+
+        .seasonal-themes {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .seasonal-btn {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 0.75rem 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 70px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .seasonal-btn:hover {
+            border-color: #4285f4;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(66, 133, 244, 0.2);
+        }
+
+        .seasonal-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(66, 133, 244, 0.3);
+        }
+
+        .seasonal-icon {
+            margin-bottom: 0.25rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .seasonal-icon svg {
+            width: 24px;
+            height: 24px;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .seasonal-btn small {
+            font-size: 0.7rem;
+            color: #666;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .seasonal-btn:hover small {
+            color: #4285f4;
+            font-weight: 600;
+        }
+        
+        .seasonal-btn:hover .seasonal-icon svg {
+            color: #4285f4;
+        }
+
         /* 移動コントロール用スタイル */
         .move-controls {
             display: flex;
@@ -2677,14 +2746,80 @@ try {
                 <!-- 背景色変更パネル -->
                 <div class="svg-controls mt-4" id="backgroundTab" style="display: none;">
                     
-                    <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
-                        <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
-                            <div class="bg-swatch transparent-bg"></div>
-                        </button>
-                        
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="color" id="customBgColor" class="form-control form-control-color" 
-                                   style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff">
+                    <!-- 背景色選択 -->
+                    <div class="bg-color-section mb-4">
+                        <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
+                            <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
+                                <div class="bg-swatch transparent-bg"></div>
+                            </button>
+                            
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" id="customBgColor" class="form-control form-control-color" 
+                                       style="width: 50px; height: 38px;" title="カスタم背景色を選択" value="#ffffff">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 季節テーマ選択 -->
+                    <div class="seasonal-themes-section">
+                        <div class="seasonal-themes">
+                            <button type="button" class="seasonal-btn" onclick="applySeasonalTheme('spring')" title="春のパステルカラー">
+                                <div class="seasonal-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flower-icon lucide-flower">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/>
+                                        <path d="M12 7.5V9"/>
+                                        <path d="M7.5 12H9"/>
+                                        <path d="M16.5 12H15"/>
+                                        <path d="M12 16.5V15"/>
+                                        <path d="m8 8 1.88 1.88"/>
+                                        <path d="M14.12 9.88 16 8"/>
+                                        <path d="m8 16 1.88-1.88"/>
+                                        <path d="M14.12 14.12 16 16"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <button type="button" class="seasonal-btn" onclick="applySeasonalTheme('summer')" title="夏のパステルカラー">
+                                <div class="seasonal-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun-icon lucide-sun">
+                                        <circle cx="12" cy="12" r="4"/>
+                                        <path d="M12 2v2"/>
+                                        <path d="M12 20v2"/>
+                                        <path d="m4.93 4.93 1.41 1.41"/>
+                                        <path d="m17.66 17.66 1.41 1.41"/>
+                                        <path d="M2 12h2"/>
+                                        <path d="M20 12h2"/>
+                                        <path d="m6.34 17.66-1.41 1.41"/>
+                                        <path d="m19.07 4.93-1.41 1.41"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <button type="button" class="seasonal-btn" onclick="applySeasonalTheme('autumn')" title="秋のパステルカラー">
+                                <div class="seasonal-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-leaf-icon lucide-leaf">
+                                        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                                        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <button type="button" class="seasonal-btn" onclick="applySeasonalTheme('winter')" title="冬のパステルカラー">
+                                <div class="seasonal-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-snowflake-icon lucide-snowflake">
+                                        <path d="m10 20-1.25-2.5L6 18"/>
+                                        <path d="M10 4 8.75 6.5 6 6"/>
+                                        <path d="m14 20 1.25-2.5L18 18"/>
+                                        <path d="m14 4 1.25 2.5L18 6"/>
+                                        <path d="m17 21-3-6h-4"/>
+                                        <path d="m17 3-3 6 1.5 3"/>
+                                        <path d="M2 12h6.5L10 9"/>
+                                        <path d="m20 10-1.5 2 1.5 2"/>
+                                        <path d="M22 12h-6.5L14 15"/>
+                                        <path d="m4 10 1.5 2L4 14"/>
+                                        <path d="m7 21 3-6-1.5-3"/>
+                                        <path d="m7 3 3 6h4"/>
+                                    </svg>
+                                </div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -3121,6 +3256,98 @@ try {
     let selectedColorIndex = -1;
     let currentBackgroundColor = 'transparent'; // 現在の背景色を保持
     let currentTransform = { x: 0, y: 0, scale: 1.0, rotation: 0 }; // 現在の移動位置、拡大率、回転角度を保持
+    
+    // 季節テーマのカラーパレット定義（marutto.art向け・明るめくすみパステル）
+const seasonalPalettes = {
+    spring: {
+        name: '春のやわらかパステル',
+        colors: [
+            '#F8CFCF', // 桜ピンク
+            '#FFF2B7', // レモンイエロー
+            '#D7EED1', // 若草グリーン
+            '#D7E8F8', // 空のあお
+            '#F3CFE8', // すみれピンク
+            '#F5E2C8', // クリームベージュ
+            '#D9EDD8', // 新芽グリーン
+            '#F6DCC3', // 木漏れ日ベージュ
+            '#F4C6D0', // 花びらピンク
+            '#FAF3E7'  // 春霞ホワイト
+        ],
+        bgColors: [
+            '#FCEBEA', // 桜の光
+            '#F8F3D9', // はるの陽ざし
+            '#E9F4EB', // 若葉の風
+            '#EEF5FB', // 春空
+            '#FFF7F5'  // 花びらホワイト
+        ]
+    },
+    summer: {
+        name: '夏のやわらかパステル',
+        colors: [
+            '#BDE7F7', // 空と海
+            '#FFF3A4', // ひまわりイエロー
+            '#C9F3E1', // ミント
+            '#D3EBFF', // そよ風ブルー
+            '#F7D5E8', // ラムネピンク
+            '#CFEAD2', // 木陰グリーン
+            '#FAEFD8', // 白砂ベージュ
+            '#FFF9D6', // ひだまり
+            '#BCE1F2', // 水しぶき
+            '#E3F2FA'  // 朝の空
+        ],
+        bgColors: [
+            '#E2F7FF', // 海のひかり
+            '#EAFBEF', // ミント風
+            '#FFFDE2', // 夏の陽ざし
+            '#FCEEF6', // ピンクラムネ
+            '#F4F9FF'  // 青空ホワイト
+        ]
+    },
+    autumn: {
+        name: '秋のやわらかパステル',
+        colors: [
+            '#F7D6B3', // 木の実ベージュ
+            '#FFD9A6', // くりオレンジ
+            '#F2E0B9', // こがねいろ
+            '#E7D5C1', // ベージュグレー
+            '#E7B9A4', // 紅茶ピンク
+            '#FAE9D2', // ミルクキャラメル
+            '#E1C4A7', // ほうじ茶
+            '#F5CDBB', // 秋風オレンジ
+            '#EBC7A4', // 焼きたてパン
+            '#F8E5D6'  // 秋霧ホワイト
+        ],
+        bgColors: [
+            '#FFF2E3', // 木漏れ日
+            '#FFECDD', // 秋の光
+            '#FAF1E8', // ベージュの風
+            '#F9EDE1', // 焼きたて空気
+            '#FFF8F1'  // 柔らかホワイト
+        ]
+    },
+    winter: {
+        name: '冬のやわらかパステル',
+        colors: [
+            '#E5EEF5', // 雪の青
+            '#DAD7F0', // ラベンダー
+            '#F1ECE6', // ミルクホワイト
+            '#D3DDE0', // 氷の灰
+            '#CBDDE1', // 冬の空
+            '#F2EFE9', // 白銀
+            '#E1DBD5', // ウールグレー
+            '#D9E2EA', // 凍てつく風
+            '#E8E1DC', // ココアベージュ
+            '#F4F3F1'  // 冬霞
+        ],
+        bgColors: [
+            '#EEF3F8', // 雪空
+            '#EDE8F3', // 冬の朝
+            '#F2F2F0', // あたたか光
+            '#E8EBEE', // 冷たい風
+            '#F7F6F4'  // 雪明かり
+        ]
+    }
+};
     
     // ページ読み込み時にオリジナルのSVGを保存し、色を抽出
     document.addEventListener('DOMContentLoaded', function() {
@@ -4100,6 +4327,115 @@ try {
         applySvgTransform();
         
         console.log('SVG rotation reset to 0°');
+    }
+    
+    // 色がグレー系・黒系かどうかを判定する関数
+    function isGrayOrBlackColor(hexColor) {
+        // 16進数カラーをRGBに変換
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // グレースケール判定：RGB値の差が小さい
+        const maxDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
+        const isGrayish = maxDiff < 20; // RGB値の差が20以下ならグレー系
+        
+        // 明度計算（0-255）
+        const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+        
+        // 以下の条件に該当する場合は除外対象（白に近い明るい色は除外しない）
+        // 1. グレー系かつ中程度の明度（30-200の範囲）
+        // 2. 非常に暗い色（明度30以下、黒に近い色）
+        if (brightness < 30) {
+            // 非常に暗い色は無条件で除外
+            return true;
+        } else if (isGrayish && brightness >= 30 && brightness <= 200) {
+            // 中程度の明度のグレー系のみ除外（白に近い色は変更対象）
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // 季節テーマを適用する関数（ランダム選択、ダークグレー系除外）
+    function applySeasonalTheme(season) {
+        if (!seasonalPalettes[season]) {
+            console.error(`Unknown season: ${season}`);
+            return;
+        }
+        
+        const palette = seasonalPalettes[season];
+        console.log(`Applying ${palette.name} (random selection, excluding gray/black colors)...`);
+        
+        // 抽出された色が存在しない場合は処理を停止
+        if (!extractedColors || extractedColors.length === 0) {
+            console.log('No colors extracted yet. Extracting colors first...');
+            extractColorsFromSvg();
+            setTimeout(() => applySeasonalTheme(season), 500);
+            return;
+        }
+        
+        let appliedCount = 0;
+        let excludedCount = 0;
+        
+        // 各抽出色に対してランダムな季節カラーを適用（グレー系・黒系は除外）
+        for (let i = 0; i < extractedColors.length; i++) {
+            const originalColor = extractedColors[i].color;
+            
+            // グレー系・黒系の色は変更しない
+            if (isGrayOrBlackColor(originalColor)) {
+                console.log(`Excluded gray/black color: ${originalColor}`);
+                excludedCount++;
+                continue;
+            }
+            
+            // パレットの色をランダムに選択（重複も許可）
+            const randomIndex = Math.floor(Math.random() * palette.colors.length);
+            const newColor = palette.colors[randomIndex];
+            
+            // 色のマッピングを更新
+            colorMappings.set(originalColor, newColor);
+            appliedCount++;
+        }
+        
+        // SVGの色を更新
+        updateSvgColors();
+        
+        // カラーパレット表示を更新
+        updateColorPalette();
+        
+        // 成功メッセージ（除外情報も含む）
+        let message = `${palette.name}をランダム適用しました（${appliedCount}色）`;
+        if (excludedCount > 0) {
+            message += `・グレー/黒系${excludedCount}色は保持`;
+        }
+        showMessage(message, 'success');
+        
+        // 季節の背景色もランダムに適用
+        if (palette.bgColors && palette.bgColors.length > 0) {
+            const randomBgIndex = Math.floor(Math.random() * palette.bgColors.length);
+            const seasonalBgColor = palette.bgColors[randomBgIndex];
+            setBackgroundColor(seasonalBgColor);
+            
+            // カスタム背景色ピッカーにも反映
+            const customBgColorInput = document.getElementById('customBgColor');
+            if (customBgColorInput) {
+                customBgColorInput.value = seasonalBgColor;
+            }
+            
+            // 透明ボタンのアクティブ状態をクリア
+            const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
+            if (transparentBtn) {
+                transparentBtn.classList.remove('active');
+            }
+            
+            console.log(`Applied seasonal background color: ${seasonalBgColor}`);
+        }
+        
+        console.log(`Applied seasonal theme randomly: ${season}`);
+        console.log(`Applied: ${appliedCount} colors, Excluded (gray/black): ${excludedCount} colors`);
+        console.log('Color mappings:', Object.fromEntries(colorMappings));
     }
     
     // SVGにtransformを適用
