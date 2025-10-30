@@ -1114,6 +1114,30 @@ try {
             }
         }
         
+        /* ダウンロード注記のスタイル */
+        .download-notes {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            margin: 0 auto;
+            max-width: 400px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .download-notes strong {
+            color: #495057;
+        }
+        
+        @media (max-width: 576px) {
+            .download-notes {
+                max-width: 100%;
+                font-size: 0.85rem;
+                padding: 0.6rem 0.8rem;
+            }
+        }
+        
         /* コンテンツのテキストスタイル */
         .detail-title {
             color: #222;
@@ -1852,6 +1876,63 @@ try {
             justify-content: center;
         }
 
+        /* 回転コントロール */
+        .rotate-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .rotate-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .rotate-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            background: white;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            gap: 0.5rem;
+            padding: 0.75rem;
+        }
+
+        .rotate-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+        }
+
+        .rotate-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
+        }
+
+        .rotate-btn svg {
+            margin-bottom: 0.25rem;
+        }
+
+        .rotate-reset {
+            display: flex;
+            justify-content: center;
+        }
+
         .color-item {
             display: inline-block;
             margin: 0.75rem;
@@ -2568,6 +2649,13 @@ try {
                             <line x1="8" x2="14" y1="11" y2="11"/>
                         </svg>
                     </button>
+                    
+                    <button type="button" class="tab-icon" data-tab="rotate" onclick="switchTab('rotate')" title="回転">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw-icon lucide-rotate-ccw tab-icon-img">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- 色変更コントロール（カラーパレット方式） -->
@@ -2653,10 +2741,6 @@ try {
 
                 <!-- 拡大縮小コントロールパネル -->
                 <div class="svg-controls mt-4" id="scaleTab" style="display: none;">
-                    <div class="text-center mb-3">
-                        <h6 class="text-primary mb-2">サイズ調整</h6>
-                        <small class="text-muted">SVGのサイズを変更できます</small>
-                    </div>
                     
                     <div class="scale-controls">
                         <div class="scale-buttons">
@@ -2689,6 +2773,40 @@ try {
                     </div>
                 </div>
 
+                <!-- 回転コントロールパネル -->
+                <div class="svg-controls mt-4" id="rotateTab" style="display: none;">
+                    
+                    <div class="rotate-controls">
+                        <div class="rotate-buttons">
+                            <button type="button" class="rotate-btn" onclick="rotateSvg(-15)" title="左に15度回転">
+                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                                左回転
+                            </button>
+                            
+                            <button type="button" class="rotate-btn" onclick="rotateSvg(15)" title="右に15度回転">
+                                <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="transform: scaleX(-1);">
+                                    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                                右回転
+                            </button>
+                        </div>
+                        
+                        <div class="rotate-reset mt-3">
+                            <button type="button" class="move-btn" onclick="resetSvgRotation()" title="回転をリセット">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                                </svg>
+                                リセット
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- パネル外のダウンロードとリセットボタン -->
                 <div class="text-center mt-4">
                     <div class="mb-3 download-buttons">
@@ -2699,6 +2817,15 @@ try {
                             PNGダウンロード
                         </a>
                     </div>
+                    
+                    <!-- ダウンロード仕様の注記 -->
+                    <div class="download-notes mb-3">
+                        <small class="text-muted">
+                            <strong>SVGダウンロード：</strong>色変更・背景変更のみ反映<br>
+                            <strong>PNGダウンロード：</strong>すべての変更を反映（移動・拡大縮小・回転を含む）
+                        </small>
+                    </div>
+                    
                     <div>
                         <button type="button" class="btn btn-outline-secondary" onclick="resetSvgColors()">
                             リセット
@@ -2993,7 +3120,7 @@ try {
     let colorMappings = new Map(); // オリジナル色 → 現在色のマッピング
     let selectedColorIndex = -1;
     let currentBackgroundColor = 'transparent'; // 現在の背景色を保持
-    let currentTransform = { x: 0, y: 0, scale: 1.0 }; // 現在の移動位置と拡大率を保持
+    let currentTransform = { x: 0, y: 0, scale: 1.0, rotation: 0 }; // 現在の移動位置、拡大率、回転角度を保持
     
     // ページ読み込み時にオリジナルのSVGを保存し、色を抽出
     document.addEventListener('DOMContentLoaded', function() {
@@ -3095,10 +3222,11 @@ try {
         // 色パレット選択をリセット
         selectedColorIndex = -1;
         
-        // 移動位置と拡大率もリセット
+        // 移動位置、拡大率、回転もリセット
         currentTransform.x = 0;
         currentTransform.y = 0;
         currentTransform.scale = 1.0;
+        currentTransform.rotation = 0;
         applySvgTransform();
         
         // 拡大ボタンのアクティブ状態もリセット
@@ -3951,6 +4079,29 @@ try {
         console.log('SVG scale reset to 100%');
     }
     
+    // SVG回転機能
+    function rotateSvg(degrees) {
+        currentTransform.rotation += degrees;
+        
+        // 360度を超えた場合は正規化
+        currentTransform.rotation = currentTransform.rotation % 360;
+        if (currentTransform.rotation < 0) {
+            currentTransform.rotation += 360;
+        }
+        
+        applySvgTransform();
+        
+        console.log(`SVG rotated by ${degrees} degrees. Current rotation: ${currentTransform.rotation}°`);
+    }
+    
+    // SVG回転をリセット
+    function resetSvgRotation() {
+        currentTransform.rotation = 0;
+        applySvgTransform();
+        
+        console.log('SVG rotation reset to 0°');
+    }
+    
     // SVGにtransformを適用
     function applySvgTransform() {
         const svg = document.getElementById('customizable-svg');
@@ -3975,8 +4126,25 @@ try {
             svg.appendChild(moveGroup);
         }
         
-        // 移動グループにSVGのtransform属性を適用（移動と拡大）
-        const transformString = `translate(${currentTransform.x}, ${currentTransform.y}) scale(${currentTransform.scale})`;
+        // SVGの中心点を取得
+        const svgRect = svg.getBoundingClientRect();
+        const viewBox = svg.getAttribute('viewBox');
+        let centerX = 256, centerY = 256; // デフォルト中心点（512x512の場合）
+        
+        if (viewBox) {
+            const [vx, vy, vw, vh] = viewBox.split(' ').map(Number);
+            centerX = vw / 2;
+            centerY = vh / 2;
+        } else {
+            const width = parseFloat(svg.getAttribute('width')) || 512;
+            const height = parseFloat(svg.getAttribute('height')) || 512;
+            centerX = width / 2;
+            centerY = height / 2;
+        }
+        
+        // 移動グループにSVGのtransform属性を適用（移動、拡大、中心点回転）
+        // 中心点を基準に回転するため、中心点まで移動→回転→中心点から戻す→拡大→最終位置へ移動
+        const transformString = `translate(${currentTransform.x}, ${currentTransform.y}) scale(${currentTransform.scale}) translate(${centerX}, ${centerY}) rotate(${currentTransform.rotation}) translate(${-centerX}, ${-centerY})`;
         moveGroup.setAttribute('transform', transformString);
         
         console.log(`Applied SVG transform to move group: ${transformString}`);
@@ -4022,7 +4190,7 @@ try {
     const originalSwitchTab = switchTab;
     function switchTab(tabName) {
         // すべてのタブパネルを非表示にする
-        const allTabs = ['colorTab', 'backgroundTab', 'moveTab', 'scaleTab'];
+        const allTabs = ['colorTab', 'backgroundTab', 'moveTab', 'scaleTab', 'rotateTab'];
         allTabs.forEach(tab => {
             const tabElement = document.getElementById(tab);
             if (tabElement) {
