@@ -1034,19 +1034,22 @@ $materials = $stmt->fetchAll();
             }
 
             .banner-size-controls {
-                flex-direction: column;
-                gap: 1.5rem;
+                flex-direction: row;
+                gap: 0.8rem;
+                justify-content: center;
             }
 
             .banner-size-select {
-                min-width: 100px;
-                font-size: 0.9rem;
-                padding: 0.7em 0.8em;
+                min-width: 90px;
+                font-size: 0.85rem;
+                padding: 0.6em 0.5em;
             }
 
             .size-separator {
-                transform: rotate(90deg);
-                margin: 0;
+                font-size: 1.2rem;
+                margin: 0 0.2rem;
+                align-self: flex-end;
+                margin-bottom: 0.5rem;
             }
 
 
