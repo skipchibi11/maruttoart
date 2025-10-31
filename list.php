@@ -888,6 +888,174 @@ $materials = $stmt->fetchAll();
         .footer-custom .footer-text:hover {
             color: #000000 !important;
         }
+
+        /* バナー作成機能のスタイル */
+        .banner-creator-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2rem 0;
+            border-radius: 12px;
+        }
+
+        /* バナーサイズ選択のスタイル */
+        .banner-size-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .size-control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .size-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            margin: 0;
+        }
+
+        .banner-size-select {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 1em;
+            font-size: 1rem;
+            font-weight: 500;
+            min-width: 120px;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .banner-size-select:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+        }
+
+        .banner-size-select:focus {
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
+            border-color: #999;
+        }
+
+        .size-separator {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #6c757d;
+            margin: 0 0.5rem;
+        }
+
+
+
+        /* バナーダウンロードボタンのスタイル */
+        .banner-download-button {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .banner-download-button:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+        }
+
+        .banner-download-button:focus {
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
+        }
+
+        .banner-download-button:disabled {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-color: #dee2e6;
+            cursor: not-allowed;
+        }
+
+        .banner-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .banner-preview-container {
+            position: relative;
+            text-align: center;
+        }
+
+        #bannerCanvas {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        #bannerCanvas.generating {
+            filter: blur(2px);
+            opacity: 0.7;
+        }
+
+        .btn-primary, .btn-success {
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover, .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .banner-creator-card {
+                padding: 1.5rem;
+            }
+            
+            .banner-controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .banner-size-controls {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .banner-size-select {
+                min-width: 100px;
+                font-size: 0.9rem;
+                padding: 0.7em 0.8em;
+            }
+
+            .size-separator {
+                transform: rotate(90deg);
+                margin: 0;
+            }
+
+
+
+            .banner-download-button {
+                font-size: 0.9rem;
+                padding: 0.7em 1.8em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1006,6 +1174,60 @@ $materials = $stmt->fetchAll();
             </div>
             <?php endforeach; ?>
         </div>
+
+        <!-- バナー作成機能 -->
+        <?php if (!empty($materials)): ?>
+        <div class="banner-creator-section mt-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <p class="text-muted mb-4">表示中の全イラストをタイル状に並べたバナーを作成</p>
+                        <div class="mb-4">
+                            <div class="banner-size-controls">
+                                <div class="size-control-group">
+                                    <select id="bannerWidth" class="banner-size-select">
+                                        <option value="500">500px</option>
+                                        <option value="600">600px</option>
+                                        <option value="700">700px</option>
+                                        <option value="800">800px</option>
+                                        <option value="900">900px</option>
+                                        <option value="1000">1000px</option>
+                                        <option value="1100">1100px</option>
+                                        <option value="1200">1200px</option>
+                                        <option value="1300" selected>1300px</option>
+                                        <option value="1400">1400px</option>
+                                        <option value="1500">1500px</option>
+                                    </select>
+                                </div>
+                                <div class="size-separator">×</div>
+                                <div class="size-control-group">
+                                    <select id="bannerHeight" class="banner-size-select">
+                                        <option value="500" selected>500px</option>
+                                        <option value="600">600px</option>
+                                        <option value="700">700px</option>
+                                        <option value="800">800px</option>
+                                        <option value="900">900px</option>
+                                        <option value="1000">1000px</option>
+                                        <option value="1100">1100px</option>
+                                        <option value="1200">1200px</option>
+                                        <option value="1300">1300px</option>
+                                        <option value="1400">1400px</option>
+                                        <option value="1500">1500px</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="banner-download-button" id="downloadBannerBtn">
+                            バナーをダウンロード
+                        </button>
+                        <div id="bannerStatus" class="mt-3 text-muted"></div>
+                        <canvas id="bannerCanvas" width="1300" height="500" style="display: none;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- ページネーション -->
         <?php if ($totalPages > 1): ?>
@@ -1269,6 +1491,141 @@ $materials = $stmt->fetchAll();
                 });
             }
         });
+    });
+
+    // バナー作成機能
+    document.addEventListener('DOMContentLoaded', function() {
+        const downloadBtn = document.getElementById('downloadBannerBtn');
+        const canvas = document.getElementById('bannerCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusDiv = document.getElementById('bannerStatus');
+        const widthSelect = document.getElementById('bannerWidth');
+        const heightSelect = document.getElementById('bannerHeight');
+
+        // 素材データを JavaScript に渡す
+        const materials = <?= json_encode(array_map(function($material) {
+            return [
+                'title' => $material['title'],
+                'image_path' => '/' . ($material['webp_medium_path'] ?? $material['image_path']),
+                'bg_color' => $material['structured_bg_color'] ?? '#F9F5E9'
+            ];
+        }, $materials)) ?>;
+
+        // タイル設定を計算
+        function calculateTileSettings(width, height) {
+            // 基本タイルサイズ（サイズに応じて調整）
+            const baseTileSize = Math.min(width, height) / 8; // 適応的なサイズ
+            const tileSize = Math.max(80, Math.min(150, baseTileSize)); // 80-150pxの範囲
+            
+            const cols = Math.ceil(width / tileSize);
+            const rows = Math.ceil(height / tileSize);
+            const totalTiles = cols * rows;
+            
+            return { tileSize, cols, rows, totalTiles };
+        }
+
+        // バナー生成＆ダウンロード機能
+        async function generateAndDownloadBanner() {
+            downloadBtn.disabled = true;
+            
+            // 選択されたサイズを取得
+            const selectedWidth = parseInt(widthSelect.value);
+            const selectedHeight = parseInt(heightSelect.value);
+            
+            // キャンバスサイズを更新
+            canvas.width = selectedWidth;
+            canvas.height = selectedHeight;
+            
+            // タイル設定を計算
+            const { tileSize, cols, rows, totalTiles } = calculateTileSettings(selectedWidth, selectedHeight);
+            
+            statusDiv.textContent = `バナーを生成しています... (${selectedWidth}×${selectedHeight}px, ${totalTiles}タイル)`;
+
+            // キャンバスをクリア
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 素材をランダムに並べ、足りない場合は繰り返し
+            const tilesData = [];
+            for (let i = 0; i < totalTiles; i++) {
+                const material = materials[i % materials.length];
+                tilesData.push(material);
+            }
+            
+            // シャッフル
+            tilesData.sort(() => Math.random() - 0.5);
+
+            let loadedCount = 0;
+
+            // 画像を読み込んで配置
+            tilesData.forEach((material, index) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    const col = index % cols;
+                    const row = Math.floor(index / cols);
+                    
+                    const x = col * tileSize;
+                    const y = row * tileSize;
+                    
+                    // 個々の素材の背景色を使用
+                    ctx.fillStyle = material.bg_color;
+                    ctx.fillRect(x, y, tileSize, tileSize);
+                    
+                    // 画像をタイルサイズに合わせて描画（中央に配置）
+                    const imgSize = tileSize * 0.8; // タイルの80%のサイズ
+                    const imgX = x + (tileSize - imgSize) / 2;
+                    const imgY = y + (tileSize - imgSize) / 2;
+                    
+                    ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+                    
+                    loadedCount++;
+                    statusDiv.textContent = `画像を読み込み中... (${loadedCount}/${totalTiles})`;
+                    
+                    if (loadedCount === totalTiles) {
+                        // 完了後、即座にダウンロード
+                        canvas.toBlob(function(blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `maruttoart_${selectedWidth}x${selectedHeight}_banner_${Date.now()}.png`;
+                            
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            URL.revokeObjectURL(url);
+                            
+                            downloadBtn.disabled = false;
+                            statusDiv.textContent = `バナーのダウンロードが完了しました！ (${selectedWidth}×${selectedHeight}px, ${totalTiles}タイル)`;
+                            
+                            // ダウンロード追跡
+                            if (typeof gtag !== 'undefined') {
+                                gtag('event', 'download', {
+                                    'event_category': 'Banner',
+                                    'event_label': `${selectedWidth}x${selectedHeight}_banner`,
+                                    'value': totalTiles
+                                });
+                            }
+                        }, 'image/png');
+                    }
+                };
+                
+                img.onerror = function() {
+                    console.error('画像の読み込みに失敗:', material.image_path);
+                    loadedCount++;
+                    if (loadedCount === totalTiles) {
+                        downloadBtn.disabled = false;
+                        statusDiv.textContent = `バナーのダウンロードが完了しました！ (${selectedWidth}×${selectedHeight}px, 読み込み済み: ${loadedCount}/${totalTiles})`;
+                    }
+                };
+                
+                img.src = material.image_path;
+            });
+        }
+
+        // イベントリスナー
+        downloadBtn.addEventListener('click', generateAndDownloadBanner);
     });
     </script>
 </body>
