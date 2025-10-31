@@ -1516,9 +1516,8 @@ $materials = $stmt->fetchAll();
 
         // タイル設定を計算
         function calculateTileSettings(width, height) {
-            // 基本タイルサイズ（サイズに応じて調整）
-            const baseTileSize = Math.min(width, height) / 8; // 適応的なサイズ
-            const tileSize = Math.max(80, Math.min(150, baseTileSize)); // 80-150pxの範囲
+            // 固定タイルサイズ
+            const tileSize = 130; // 130px固定
             
             const cols = Math.ceil(width / tileSize);
             const rows = Math.ceil(height / tileSize);
