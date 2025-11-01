@@ -1586,6 +1586,28 @@ try {
             transition: color 0.3s ease;
         }
 
+        /* 黒・グレー除外設定スタイル */
+        .exclude-colors-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .exclude-colors-section .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-check-input:checked {
+            background-color: #4285f4;
+            border-color: #4285f4;
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(66, 133, 244, 0.25);
+        }
+
         /* カラーパレット用スタイル */
         .color-palette {
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -2758,6 +2780,22 @@ try {
                                        style="width: 50px; height: 38px;" title="カスタم背景色を選択" value="#ffffff">
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- 黒・グレー除外設定 -->
+                    <div class="exclude-colors-section mb-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <label class="form-label mb-0" for="excludeGraySwitch">
+                                <i class="bi bi-palette me-1"></i>黒・グレー系色の保護
+                            </label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="excludeGraySwitch" checked>
+                                <label class="form-check-label" for="excludeGraySwitch"></label>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            ONの場合、季節テーマ適用時に黒・グレー系の色は変更されません
+                        </small>
                     </div>
                     
                     <!-- 季節テーマ選択 -->
@@ -4379,12 +4417,16 @@ const seasonalPalettes = {
         let appliedCount = 0;
         let excludedCount = 0;
         
-        // 各抽出色に対してランダムな季節カラーを適用（グレー系・黒系は除外）
+        // 黒・グレー除外設定を確認
+        const excludeGraySwitch = document.getElementById('excludeGraySwitch');
+        const shouldExcludeGray = excludeGraySwitch ? excludeGraySwitch.checked : true;
+        
+        // 各抽出色に対してランダムな季節カラーを適用
         for (let i = 0; i < extractedColors.length; i++) {
             const originalColor = extractedColors[i].color;
             
-            // グレー系・黒系の色は変更しない
-            if (isGrayOrBlackColor(originalColor)) {
+            // 設定がONの場合のみグレー系・黒系の色は変更しない
+            if (shouldExcludeGray && isGrayOrBlackColor(originalColor)) {
                 console.log(`Excluded gray/black color: ${originalColor}`);
                 excludedCount++;
                 continue;
@@ -4407,8 +4449,10 @@ const seasonalPalettes = {
         
         // 成功メッセージ（除外情報も含む）
         let message = `${palette.name}をランダム適用しました（${appliedCount}色）`;
-        if (excludedCount > 0) {
+        if (shouldExcludeGray && excludedCount > 0) {
             message += `・グレー/黒系${excludedCount}色は保持`;
+        } else if (!shouldExcludeGray && extractedColors.length > appliedCount) {
+            message += `・全ての色を変更対象としました`;
         }
         showMessage(message, 'success');
         
@@ -4434,7 +4478,7 @@ const seasonalPalettes = {
         }
         
         console.log(`Applied seasonal theme randomly: ${season}`);
-        console.log(`Applied: ${appliedCount} colors, Excluded (gray/black): ${excludedCount} colors`);
+        console.log(`Applied: ${appliedCount} colors, Excluded (gray/black): ${excludedCount} colors, Gray exclusion: ${shouldExcludeGray ? 'ON' : 'OFF'}`);
         console.log('Color mappings:', Object.fromEntries(colorMappings));
     }
     
