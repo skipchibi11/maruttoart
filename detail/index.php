@@ -2782,21 +2782,7 @@ try {
                         </div>
                     </div>
                     
-                    <!-- 黒・グレー除外設定 -->
-                    <div class="exclude-colors-section mb-4">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <label class="form-label mb-0" for="excludeGraySwitch">
-                                <i class="bi bi-palette me-1"></i>黒・グレー系色の保護
-                            </label>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="excludeGraySwitch" checked>
-                                <label class="form-check-label" for="excludeGraySwitch"></label>
-                            </div>
-                        </div>
-                        <small class="text-muted d-block mt-1">
-                            ONの場合、季節テーマ適用時に黒・グレー系の色は変更されません
-                        </small>
-                    </div>
+                    
                     
                     <!-- 季節テーマ選択 -->
                     <div class="seasonal-themes-section">
@@ -2858,7 +2844,45 @@ try {
                                     </svg>
                                 </div>
                             </button>
+                            <button type="button" class="seasonal-btn" onclick="applySeasonalTheme('monochrome')" title="白黒の濃淡">
+                                <div class="seasonal-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panda-icon lucide-panda">
+                                        <path d="M11.25 17.25h1.5L12 18z"/>
+                                        <path d="m15 12 2 2"/>
+                                        <path d="M18 6.5a.5.5 0 0 0-.5-.5"/>
+                                        <path d="M20.69 9.67a4.5 4.5 0 1 0-7.04-5.5 8.35 8.35 0 0 0-3.3 0 4.5 4.5 0 1 0-7.04 5.5C2.49 11.2 2 12.88 2 14.5 2 19.47 6.48 22 12 22s10-2.53 10-7.5c0-1.62-.48-3.3-1.3-4.83"/>
+                                        <path d="M6 6.5a.495.495 0 0 1 .5-.5"/>
+                                        <path d="m9 12-2 2"/>
+                                    </svg>
+                                </div>
+                            </button>
+                            <button type="button" class="seasonal-btn" onclick="applySeasonalTheme('sepia')" title="セピアの温もり">
+                                <div class="seasonal-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coffee-icon lucide-coffee">
+                                        <path d="M10 2v2"/>
+                                        <path d="M14 2v2"/>
+                                        <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/>
+                                        <path d="M6 2v2"/>
+                                    </svg>
+                                </div>
+                            </button>
                         </div>
+                    </div>
+
+                    <!-- 黒・グレー除外設定 -->
+                    <div class="exclude-colors-section mt-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <label class="form-label mb-0" for="excludeGraySwitch">
+                                <i class="bi bi-palette me-1"></i>黒・グレー系色の保護
+                            </label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="excludeGraySwitch" checked>
+                                <label class="form-check-label" for="excludeGraySwitch"></label>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            ONの場合、季節テーマ適用時に黒・グレー系の色は変更されません
+                        </small>
                     </div>
                 </div>
 
@@ -3383,6 +3407,50 @@ const seasonalPalettes = {
             '#F2F2F0', // あたたか光
             '#E8EBEE', // 冷たい風
             '#F7F6F4'  // 雪明かり
+        ]
+    },
+    monochrome: {
+        name: 'やさしいモノクロ',
+        colors: [
+            '#FFFFFF', // 白
+            '#FAFAFA', // オフホワイト
+            '#F3F3F3', // ライトグレー
+            '#E6E6E6', // ソフトグレー
+            '#D8D8D8', // グレージュ
+            '#C8C8C8', // ミディアムグレー
+            '#B0B0B0', // 穏やかグレー
+            '#999999', // まろやかグレー
+            '#7F7F7F', // スモーキーグレー
+            '#666666'  // 最暗トーン（真っ黒は使わない）
+        ],
+        bgColors: [
+            '#FFFFFF', // 白背景
+            '#FAFAFA', // オフホワイト
+            '#F5F5F5', // 薄いグレー
+            '#EEEEEE', // ソフトグレー背景
+            '#E8E8E8'  // ニュートラルグレー
+        ]
+    },
+    sepia: {
+        name: 'やさしいセピア',
+        colors: [
+            '#FFFDF8', // ほぼ白
+            '#FBF4EA', // クリーム
+            '#F6EBDC', // ベージュ
+            '#F0E2CF', // ミルクティー
+            '#E8D7BD', // カフェオレ
+            '#E0C9A6', // ハニーベージュ
+            '#D1B68D', // キャメル
+            '#C19D72', // ミルクコーヒー
+            '#AD8C63', // モカ
+            '#937550'  // やわらかブラウン止まり（黒系なし）
+        ],
+        bgColors: [
+            '#FFFBF5', // ホワイトベージュ
+            '#FBF5EC', // クリームホワイト
+            '#F7EFE4', // ナチュラルベージュ
+            '#F2E6D5', // カフェラテ背景
+            '#EBDCC3'  // ソフトセピア
         ]
     }
 };
@@ -4419,7 +4487,16 @@ const seasonalPalettes = {
         
         // 黒・グレー除外設定を確認
         const excludeGraySwitch = document.getElementById('excludeGraySwitch');
-        const shouldExcludeGray = excludeGraySwitch ? excludeGraySwitch.checked : true;
+        let shouldExcludeGray = excludeGraySwitch ? excludeGraySwitch.checked : true;
+        
+        // モノクロームテーマの場合は自動的に除外設定をOFFにする
+        if (season === 'monochrome') {
+            shouldExcludeGray = false;
+            if (excludeGraySwitch) {
+                excludeGraySwitch.checked = false;
+            }
+            console.log('Monochrome theme: Gray exclusion automatically disabled');
+        }
         
         // 各抽出色に対してランダムな季節カラーを適用
         for (let i = 0; i < extractedColors.length; i++) {
