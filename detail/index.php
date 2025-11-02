@@ -1851,6 +1851,44 @@ try {
             color: #4285f4;
         }
 
+        /* スマホ用レスポンシブデザイン（季節テーマボタン） */
+        @media (max-width: 768px) {
+            .seasonal-themes {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.75rem;
+                justify-items: center;
+                margin: 0 auto;
+            }
+
+            .seasonal-btn {
+                min-width: 60px;
+                padding: 10px 8px;
+            }
+
+            .seasonal-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        /* 非常に小さいスマホ用 */
+        @media (max-width: 576px) {
+            .seasonal-themes {
+                gap: 0.5rem;
+            }
+
+            .seasonal-btn {
+                min-width: 50px;
+                padding: 8px 6px;
+            }
+
+            .seasonal-icon svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
+
         /* 移動コントロール用スタイル */
         .move-controls {
             display: flex;
