@@ -599,6 +599,36 @@ if (!empty($categoryIds)) {
             margin-bottom: 0.125rem;
         }
 
+        /* ローディングスピナー */
+        .spinner-border {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            vertical-align: -0.125em;
+            border: 0.25em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border 0.75s linear infinite;
+        }
+
+        @keyframes spinner-border {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
             .container {
@@ -727,7 +757,7 @@ if (!empty($categoryIds)) {
                                 </svg>
                                 素材を選択してキャンバスに追加
                             </label>
-                            <div class="materials-grid">
+                            <div class="materials-grid" id="materialsGrid">
                                 <?php foreach ($materials as $material): ?>
                                 <div class="material-item" 
                                      data-material-id="<?= h($material['id']) ?>"
@@ -1885,8 +1915,62 @@ if (!empty($categoryIds)) {
         // 素材を再読み込み
         function reloadMaterials() {
             if (confirm('新しい素材を読み込みますか？（現在の作業内容は保持されます）')) {
-                location.reload();
+                // ローディング表示
+                const materialsGrid = document.getElementById('materialsGrid');
+                materialsGrid.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">読み込み中...</span></div><div class="mt-2">新しい素材を読み込み中...</div></div>';
+                
+                // AJAXで新しい素材を取得
+                fetch('/compose/api/reload-materials.php', {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateMaterialsGrid(data.materials);
+                    } else {
+                        console.error('素材の読み込みに失敗しました:', data.error);
+                        materialsGrid.innerHTML = '<div class="text-center text-danger py-4">素材の読み込みに失敗しました。ページを再読み込みしてください。</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('エラー:', error);
+                    materialsGrid.innerHTML = '<div class="text-center text-danger py-4">通信エラーが発生しました。ページを再読み込みしてください。</div>';
+                });
             }
+        }
+
+        // 素材グリッドを更新
+        function updateMaterialsGrid(materials) {
+            const materialsGrid = document.getElementById('materialsGrid');
+            let html = '';
+            
+            materials.forEach(material => {
+                const imagePath = material.webp_medium_path || material.image_path;
+                html += `
+                    <div class="material-item" 
+                         data-material-id="${escapeHtml(material.id)}"
+                         data-svg-path="${escapeHtml(material.svg_path)}"
+                         data-title="${escapeHtml(material.title)}"
+                         onclick="addMaterialToCanvas(this)">
+                        <img src="/${escapeHtml(imagePath)}" 
+                             alt="${escapeHtml(material.title)}"
+                             loading="lazy">
+                    </div>
+                `;
+            });
+            
+            materialsGrid.innerHTML = html;
+        }
+
+        // HTMLエスケープユーティリティ関数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // ローカルストレージに保存
