@@ -1398,7 +1398,7 @@ if ($tileCount > 0) {
                     </p>
                     <div class="hero-buttons">
                         <a href="/list.php" class="hero-cta">素材を見る</a>
-                        <a href="/compose" class="hero-cta">あなたのアトリエ</a>
+                        <a href="/compose2" class="hero-cta" target="_blank">あなたのアトリエBeta</a>
                     </div>
                 </div>
                 <div class="hero-image">
