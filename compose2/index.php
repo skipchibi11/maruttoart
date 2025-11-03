@@ -90,6 +90,66 @@ $materials = $stmt->fetchAll();
             gap: 8px;
         }
 
+        /* 検索フォームのスタイル */
+        .search-form {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-form form {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: 100%;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #0d6efd;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #adb5bd;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 576px) {
+            .search-form {
+                padding: 1rem;
+                border-radius: 10px;
+            }
+            
+            .search-form form {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            
+            .search-input {
+                margin-bottom: 0;
+            }
+            
+            #clearSearch {
+                margin-left: 0 !important;
+                align-self: flex-start;
+                width: auto;
+            }
+        }
+
         .materials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -243,7 +303,7 @@ $materials = $stmt->fetchAll();
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 4;
+            order: 5;
         }
 
         .action-controls h3 {
@@ -319,6 +379,75 @@ $materials = $stmt->fetchAll();
             background: #e67e22;
             color: white;
         }
+
+        /* 背景パネルのスタイル */
+        .background-controls {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            order: 4;
+        }
+
+        .background-controls h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .bg-color-section {
+            margin-bottom: 15px;
+        }
+
+        .bg-color-palette {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bg-color-btn {
+            background: transparent;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 38px;
+        }
+
+        .bg-color-btn:hover {
+            border-color: #007bff;
+            transform: scale(1.05);
+        }
+
+        .bg-color-btn.active {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .bg-swatch {
+            width: 30px;
+            height: 22px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .transparent-bg {
+            background: linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                        linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #ccc 75%), 
+                        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+        }
+
+
 
         .btn-rotate:disabled {
             background: #bdc3c7;
@@ -738,6 +867,20 @@ $materials = $stmt->fetchAll();
             <div class="materials-panel">
                 <h3><i class="bi bi-collection"></i> 素材一覧</h3>
                 
+                <!-- 検索フォーム -->
+                <div class="search-form">
+                    <form class="d-flex align-items-center" onsubmit="return false;">
+                        <input type="text" 
+                               id="materialSearch" 
+                               placeholder="素材を検索（例：猫、花、食べ物など）" 
+                               class="search-input form-control me-2">
+                        <button type="button" 
+                                id="clearSearch" 
+                                class="btn btn-outline-secondary ms-2" 
+                                style="display: none;">クリア</button>
+                    </form>
+                </div>
+                
                 <div class="materials-grid">
                     <?php foreach ($materials as $material): ?>
                         <div class="material-item" 
@@ -772,9 +915,8 @@ $materials = $stmt->fetchAll();
                     </svg>
                 </div>
             </div>
-
-            <!-- 操作ボタンエリア -->
-            <div class="manipulation-controls">
+                <!-- 操作ボタンエリア -->
+                <div class="manipulation-controls">
                 <div class="manipulation-header">
                     <h3><i class="bi bi-gear"></i> レイヤー操作</h3>
                     <div class="selected-layer-info">
@@ -824,6 +966,27 @@ $materials = $stmt->fetchAll();
                 </div>
             </div>
 
+            <!-- 背景パネル -->
+            <div class="background-controls">
+                <h3><i class="bi bi-palette"></i> 背景</h3>
+                <div class="background-panel">
+                    <!-- 透明背景ボタン -->
+                    <div class="bg-color-section mb-3">
+                        <div class="bg-color-palette d-flex justify-content-center align-items-center gap-2">
+                            <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
+                                <div class="bg-swatch transparent-bg"></div>
+                            </button>
+                            
+                            <!-- カスタムカラーピッカー -->
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" id="customBgColor" class="form-control form-control-color" 
+                                       style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 出力・削除ボタンエリア -->
             <div class="action-controls">
                 <h3><i class="bi bi-tools"></i> 出力・削除</h3>
@@ -849,9 +1012,12 @@ $materials = $stmt->fetchAll();
         let isDragging = false;
         let dragStartPos = { x: 0, y: 0 };
         let dragStartTransform = { x: 0, y: 0 };
+        let currentBackgroundColor = 'transparent'; // 現在の背景色
         
         // タッチデバイス判定
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+
         
         // 素材をキャンバス中央に追加
         function addMaterialToCanvas(element) {
@@ -1703,6 +1869,7 @@ $materials = $stmt->fetchAll();
                     layers: layers,
                     selectedLayerId: selectedLayerId,
                     nextLayerId: nextLayerId,
+                    currentBackgroundColor: currentBackgroundColor,
                     timestamp: Date.now()
                 };
                 
@@ -1724,6 +1891,7 @@ $materials = $stmt->fetchAll();
                     layers = editorData.layers || [];
                     selectedLayerId = editorData.selectedLayerId || null;
                     nextLayerId = editorData.nextLayerId || 1;
+                    currentBackgroundColor = editorData.currentBackgroundColor || 'transparent';
                     
                     // レイヤーを再描画
                     layers.forEach(layer => {
@@ -1738,6 +1906,10 @@ $materials = $stmt->fetchAll();
                     updateLayerMoveButtonState();
                     updateDeleteButtonState();
                     updateSeasonalThemeButtonState();
+                    
+                    // 背景色を復元
+                    setBackgroundColor(currentBackgroundColor);
+                    updateBackgroundColorSelection(currentBackgroundColor);
                     
                     console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました`);
                     return true;
@@ -2012,6 +2184,82 @@ $materials = $stmt->fetchAll();
             setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
         }
 
+        // 背景色を設定する関数
+        function setBackgroundColor(color) {
+            currentBackgroundColor = color;
+            
+            const svg = document.getElementById('mainCanvas');
+            if (!svg) {
+                return;
+            }
+            
+            // 既存の背景rect要素を削除
+            const existingBg = svg.querySelector('#svg-background');
+            if (existingBg) {
+                existingBg.remove();
+            }
+            
+            // 既存のcanvasBackground要素を処理
+            const canvasBackground = svg.querySelector('#canvasBackground');
+            
+            if (color === 'transparent') {
+                // 透明背景の場合、canvasBackgroundを非表示にする
+                if (canvasBackground) {
+                    canvasBackground.style.display = 'none';
+                }
+            } else {
+                // 色が指定された場合、canvasBackgroundの色を変更
+                if (canvasBackground) {
+                    canvasBackground.setAttribute('fill', color);
+                    canvasBackground.style.display = 'block';
+                } else {
+                    // canvasBackgroundが存在しない場合は新規作成
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('id', 'canvasBackground');
+                    rect.setAttribute('x', '0');
+                    rect.setAttribute('y', '0');
+                    rect.setAttribute('width', '1024');
+                    rect.setAttribute('height', '1024');
+                    rect.setAttribute('fill', color);
+                    
+                    // 最初の子要素として挿入（背景として）
+                    svg.insertBefore(rect, svg.firstChild);
+                }
+            }
+            
+            // ローカルストレージに保存
+            saveToLocalStorage();
+            
+            console.log(`Background color set to: ${color}`);
+            console.log('canvasBackground element:', canvasBackground);
+        }
+
+        // 背景色選択状態を更新する関数
+        function updateBackgroundColorSelection(color) {
+            const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
+            const customBgColorInput = document.getElementById('customBgColor');
+            
+            if (color === 'transparent') {
+                // 透明背景ボタンをアクティブに
+                if (transparentBtn) {
+                    transparentBtn.classList.add('active');
+                }
+                // カスタムカラーピッカーをリセット
+                if (customBgColorInput) {
+                    customBgColorInput.value = '#ffffff';
+                }
+            } else {
+                // 透明背景ボタンを非アクティブに
+                if (transparentBtn) {
+                    transparentBtn.classList.remove('active');
+                }
+                // カスタムカラーピッカーに色を設定
+                if (customBgColorInput) {
+                    customBgColorInput.value = color;
+                }
+            }
+        }
+
         // 全削除機能
         function clearAll() {
             if (layers.length === 0) {
@@ -2028,10 +2276,159 @@ $materials = $stmt->fetchAll();
                 const layerElements = canvas.querySelectorAll('[id^="layer-"]');
                 layerElements.forEach(element => element.remove());
                 
+                // 背景色もリセット
+                currentBackgroundColor = 'transparent';
+                setBackgroundColor('transparent');
+                
                 console.log('全ての素材を削除しました');
                 
                 // ローカルストレージに保存（空の状態を保存）
                 saveToLocalStorage();
+            }
+        }
+
+        // 背景色パレットを生成する関数
+        function generateBackgroundColorPalette() {
+            const colorGrid = document.getElementById('backgroundColorGrid');
+            if (!colorGrid) return;
+            
+            backgroundColors.forEach(color => {
+                const colorItem = document.createElement('div');
+                colorItem.className = 'bg-color-item';
+                colorItem.style.backgroundColor = color;
+                colorItem.setAttribute('data-color', color);
+                colorItem.title = color;
+                
+                colorItem.addEventListener('click', function() {
+                    setBackgroundColor(color);
+                    updateBackgroundColorSelection(color);
+                });
+                
+                colorGrid.appendChild(colorItem);
+            });
+        }
+        
+        // 背景色選択状態を更新する関数
+        function updateBackgroundColorSelection(selectedColor) {
+            // パレット内のアクティブ状態をクリア
+            const bgColorItems = document.querySelectorAll('.bg-color-item');
+            bgColorItems.forEach(item => item.classList.remove('active'));
+            
+            // 透明ボタンのアクティブ状態をクリア
+            const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
+            if (transparentBtn) {
+                transparentBtn.classList.remove('active');
+            }
+            
+            if (selectedColor === 'transparent') {
+                // 透明背景が選択された場合
+                if (transparentBtn) {
+                    transparentBtn.classList.add('active');
+                }
+                // カスタムカラーピッカーをリセット
+                const customBgColorInput = document.getElementById('customBgColor');
+                if (customBgColorInput) {
+                    customBgColorInput.value = '#ffffff';
+                }
+            } else {
+                // 色が選択された場合、該当するパレット項目をアクティブに
+                const targetItem = document.querySelector(`.bg-color-item[data-color="${selectedColor}"]`);
+                if (targetItem) {
+                    targetItem.classList.add('active');
+                }
+                
+                // カスタムカラーピッカーを選択色に設定
+                const customBgColorInput = document.getElementById('customBgColor');
+                if (customBgColorInput) {
+                    customBgColorInput.value = selectedColor;
+                }
+            }
+        }
+
+        // 素材検索機能
+        function initializeMaterialSearch() {
+            const searchInput = document.getElementById('materialSearch');
+            const clearButton = document.getElementById('clearSearch');
+            const materialItems = document.querySelectorAll('.material-item');
+            
+            if (!searchInput) return;
+            
+            // 検索入力イベント
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                let visibleCount = 0;
+                
+                materialItems.forEach(item => {
+                    const title = item.dataset.title.toLowerCase();
+                    const isVisible = title.includes(searchTerm);
+                    
+                    item.style.display = isVisible ? 'block' : 'none';
+                    if (isVisible) visibleCount++;
+                });
+                
+                // クリアボタンの表示/非表示
+                clearButton.style.display = searchTerm ? 'block' : 'none';
+                
+                // 検索結果が0件の場合のメッセージ（オプション）
+                showSearchResultsMessage(visibleCount, searchTerm);
+            });
+            
+            // クリアボタンイベント
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                materialItems.forEach(item => {
+                    item.style.display = 'block';
+                });
+                this.style.display = 'none';
+                hideSearchResultsMessage();
+                searchInput.focus();
+            });
+            
+            // Enterキーでの検索実行を防ぐ
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // 検索結果メッセージの表示
+        function showSearchResultsMessage(count, searchTerm) {
+            let messageDiv = document.getElementById('searchResultsMessage');
+            
+            if (!messageDiv) {
+                messageDiv = document.createElement('div');
+                messageDiv.id = 'searchResultsMessage';
+                messageDiv.style.cssText = `
+                    text-align: center;
+                    padding: 1rem;
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                    margin-bottom: 1rem;
+                `;
+                
+                const materialsGrid = document.querySelector('.materials-grid');
+                materialsGrid.parentNode.insertBefore(messageDiv, materialsGrid);
+            }
+            
+            if (searchTerm) {
+                if (count === 0) {
+                    messageDiv.textContent = `「${searchTerm}」に一致する素材が見つかりませんでした。`;
+                    messageDiv.style.display = 'block';
+                } else {
+                    messageDiv.textContent = `「${searchTerm}」で${count}件の素材が見つかりました。`;
+                    messageDiv.style.display = 'block';
+                }
+            } else {
+                messageDiv.style.display = 'none';
+            }
+        }
+        
+        // 検索結果メッセージの非表示
+        function hideSearchResultsMessage() {
+            const messageDiv = document.getElementById('searchResultsMessage');
+            if (messageDiv) {
+                messageDiv.style.display = 'none';
             }
         }
 
@@ -2046,6 +2443,9 @@ $materials = $stmt->fetchAll();
             } else {
                 console.log('新規セッションを開始します');
             }
+            
+            // 検索機能を初期化
+            initializeMaterialSearch();
             
             // 素材にクリックイベントを追加
             const materialItems = document.querySelectorAll('.material-item');
@@ -2116,6 +2516,25 @@ $materials = $stmt->fetchAll();
                 e.stopPropagation();
                 clearAll();
             });
+            
+            // 背景色パネルのイベントリスナーを設定
+            const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
+            if (transparentBtn) {
+                transparentBtn.addEventListener('click', function() {
+                    setBackgroundColor('transparent');
+                    updateBackgroundColorSelection('transparent');
+                });
+            }
+            
+            // カスタム背景色ピッカーのイベントリスナーを設定（即座適用）
+            const customBgColorInput = document.getElementById('customBgColor');
+            if (customBgColorInput) {
+                customBgColorInput.addEventListener('input', function() {
+                    const color = this.value;
+                    setBackgroundColor(color);
+                    updateBackgroundColorSelection(color);
+                });
+            }
             
             // グローバルマウスイベントを追加
             document.addEventListener('mousemove', onDrag);
