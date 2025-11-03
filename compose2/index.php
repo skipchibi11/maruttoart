@@ -404,6 +404,84 @@ $materials = $stmt->fetchAll();
             opacity: 0.6;
         }
 
+        .btn-bring-front {
+            background: #3498db;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-bring-front:hover {
+            background: #2980b9;
+            color: white;
+        }
+
+        .btn-bring-front:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-send-back {
+            background: #95a5a6;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-send-back:hover {
+            background: #7f8c8d;
+            color: white;
+        }
+
+        .btn-send-back:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-delete:hover {
+            background: #c0392b;
+            color: white;
+        }
+
+        .btn-delete:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
             .canvas-container {
@@ -560,6 +638,15 @@ $materials = $stmt->fetchAll();
                     <button id="rotateBtn" class="btn btn-rotate" title="選択したレイヤーを30度右回転">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                     </button>
+                    <button id="bringFrontBtn" class="btn btn-bring-front" title="選択したレイヤーを1つ前面に移動">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bring-to-front-icon lucide-bring-to-front"><rect x="8" y="8" width="8" height="8" rx="2"/><path d="M4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2"/><path d="M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2"/></svg>
+                    </button>
+                    <button id="sendBackBtn" class="btn btn-send-back" title="選択したレイヤーを1つ背面に移動">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-to-back-icon lucide-send-to-back"><rect x="14" y="14" width="8" height="8" rx="2"/><rect x="2" y="2" width="8" height="8" rx="2"/><path d="M7 14v1a2 2 0 0 0 2 2h1"/><path d="M14 7h1a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                    <button id="deleteBtn" class="btn btn-delete" title="選択したレイヤーを削除">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
                 </div>
             </div>
 
@@ -688,7 +775,33 @@ $materials = $stmt->fetchAll();
             const transformString = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${layer.transform.scale}) rotate(${layer.transform.rotation}, ${centerX}, ${centerY})`;
             layerGroup.setAttribute('transform', transformString);
 
-            canvas.appendChild(layerGroup);
+            // layersの配列順に基づいて正しい位置に挿入
+            const layerIndex = layers.findIndex(l => l.id === layer.id);
+            const existingLayers = canvas.querySelectorAll('.layer-element');
+            
+            if (layerIndex === 0) {
+                // 最初のレイヤーの場合、backgroundの後に挿入
+                const background = canvas.getElementById('canvasBackground');
+                canvas.insertBefore(layerGroup, background.nextSibling);
+            } else if (layerIndex < existingLayers.length) {
+                // 指定されたインデックスの位置に挿入
+                let insertBefore = null;
+                for (let i = layerIndex; i < layers.length; i++) {
+                    const nextLayerElement = canvas.getElementById(`layer-${layers[i].id}`);
+                    if (nextLayerElement) {
+                        insertBefore = nextLayerElement;
+                        break;
+                    }
+                }
+                if (insertBefore) {
+                    canvas.insertBefore(layerGroup, insertBefore);
+                } else {
+                    canvas.appendChild(layerGroup);
+                }
+            } else {
+                // 最後のレイヤーの場合
+                canvas.appendChild(layerGroup);
+            }
 
             // レイヤークリックイベントを追加
             layerGroup.addEventListener('click', function(e) {
@@ -749,6 +862,8 @@ $materials = $stmt->fetchAll();
             updateRotateButtonState();
             updateScaleDownButtonState();
             updateScaleUpButtonState();
+            updateLayerMoveButtonState();
+            updateDeleteButtonState();
             
             console.log(`Selection complete - selectedLayerId: ${selectedLayerId}`);
         }
@@ -772,6 +887,8 @@ $materials = $stmt->fetchAll();
                 updateRotateButtonState();
                 updateScaleDownButtonState();
                 updateScaleUpButtonState();
+                updateLayerMoveButtonState();
+                updateDeleteButtonState();
             }
         }
 
@@ -999,6 +1116,119 @@ $materials = $stmt->fetchAll();
             }
         }
 
+        // 選択されたレイヤーを1つ前面に移動
+        function bringLayerToFront() {
+            if (selectedLayerId === null) {
+                alert('前面に移動させるレイヤーを選択してください。');
+                return;
+            }
+
+            // 現在のレイヤーのインデックスを取得
+            const currentIndex = layers.findIndex(l => l.id === selectedLayerId);
+            if (currentIndex === -1 || currentIndex === layers.length - 1) {
+                // レイヤーが見つからないか、既に最前面の場合
+                return;
+            }
+
+            // レイヤーを1つ前に移動（配列の後ろが前面）
+            const layer = layers[currentIndex];
+            layers.splice(currentIndex, 1);
+            layers.splice(currentIndex + 1, 0, layer);
+
+            // 現在の選択IDを保存
+            const currentSelectedId = selectedLayerId;
+            
+            // 全レイヤーを再描画（Z-order更新のため）
+            layers.forEach(l => {
+                renderLayer(l);
+            });
+            
+            // レイヤー移動ボタンの状態を更新
+            updateLayerMoveButtonState();
+            
+            // 選択中の素材タイトルを更新
+            updateSelectedLayerTitle();
+            
+            console.log(`Layer ${currentSelectedId} moved to front (index: ${currentIndex + 1})`);
+        }
+
+        // 選択されたレイヤーを1つ背面に移動
+        function sendLayerToBack() {
+            if (selectedLayerId === null) {
+                alert('背面に移動させるレイヤーを選択してください。');
+                return;
+            }
+
+            // 現在のレイヤーのインデックスを取得
+            const currentIndex = layers.findIndex(l => l.id === selectedLayerId);
+            if (currentIndex === -1 || currentIndex === 0) {
+                // レイヤーが見つからないか、既に最背面の場合
+                return;
+            }
+
+            // レイヤーを1つ後ろに移動（配列の前が背面）
+            const layer = layers[currentIndex];
+            layers.splice(currentIndex, 1);
+            layers.splice(currentIndex - 1, 0, layer);
+
+            // 現在の選択IDを保存
+            const currentSelectedId = selectedLayerId;
+            
+            // 全レイヤーを再描画（Z-order更新のため）
+            layers.forEach(l => {
+                renderLayer(l);
+            });
+            
+            // レイヤー移動ボタンの状態を更新
+            updateLayerMoveButtonState();
+            
+            // 選択中の素材タイトルを更新
+            updateSelectedLayerTitle();
+            
+            console.log(`Layer ${currentSelectedId} moved to back (index: ${currentIndex - 1})`);
+        }
+
+        // 選択されたレイヤーを削除
+        function deleteSelectedLayer() {
+            if (selectedLayerId === null) {
+                alert('削除するレイヤーを選択してください。');
+                return;
+            }
+
+            // 削除の確認
+            if (!confirm('選択したレイヤーを削除しますか？この操作は元に戻せません。')) {
+                return;
+            }
+
+            // 現在のレイヤーのインデックスを取得
+            const currentIndex = layers.findIndex(l => l.id === selectedLayerId);
+            if (currentIndex === -1) {
+                return;
+            }
+
+            // DOM要素を削除
+            const layerElement = document.getElementById(`layer-${selectedLayerId}`);
+            if (layerElement) {
+                layerElement.remove();
+            }
+
+            // レイヤー配列から削除
+            layers.splice(currentIndex, 1);
+
+            // 選択状態をリセット
+            selectedLayerId = null;
+            
+            // ボタンの状態を更新
+            updateRotateButtonState();
+            updateScaleDownButtonState();
+            updateScaleUpButtonState();
+            updateSelectedLayerTitle();
+            updateLayerMoveButtonState();
+            updateDeleteButtonState();
+            
+            console.log(`Layer deleted (was at index: ${currentIndex})`);
+        }
+
         // 回転ボタンの状態を更新
         function updateRotateButtonState() {
             const rotateBtn = document.getElementById('rotateBtn');
@@ -1054,6 +1284,52 @@ $materials = $stmt->fetchAll();
             } else {
                 scaleUpBtn.disabled = true;
                 scaleUpBtn.title = 'レイヤーを選択してから拡大できます';
+            }
+        }
+
+        // レイヤー移動ボタンの状態を更新
+        function updateLayerMoveButtonState() {
+            const bringFrontBtn = document.getElementById('bringFrontBtn');
+            const sendBackBtn = document.getElementById('sendBackBtn');
+            
+            if (selectedLayerId !== null) {
+                const currentIndex = layers.findIndex(l => l.id === selectedLayerId);
+                
+                // 前面移動ボタン（最前面でない場合は有効）
+                if (currentIndex >= 0 && currentIndex < layers.length - 1) {
+                    bringFrontBtn.disabled = false;
+                    bringFrontBtn.title = '選択したレイヤーを1つ前面に移動';
+                } else {
+                    bringFrontBtn.disabled = true;
+                    bringFrontBtn.title = '既に最前面です';
+                }
+                
+                // 背面移動ボタン（最背面でない場合は有効）
+                if (currentIndex > 0) {
+                    sendBackBtn.disabled = false;
+                    sendBackBtn.title = '選択したレイヤーを1つ背面に移動';
+                } else {
+                    sendBackBtn.disabled = true;
+                    sendBackBtn.title = '既に最背面です';
+                }
+            } else {
+                bringFrontBtn.disabled = true;
+                bringFrontBtn.title = 'レイヤーを選択してから移動できます';
+                sendBackBtn.disabled = true;
+                sendBackBtn.title = 'レイヤーを選択してから移動できます';
+            }
+        }
+
+        // 削除ボタンの状態を更新
+        function updateDeleteButtonState() {
+            const deleteBtn = document.getElementById('deleteBtn');
+            
+            if (selectedLayerId !== null) {
+                deleteBtn.disabled = false;
+                deleteBtn.title = '選択したレイヤーを削除';
+            } else {
+                deleteBtn.disabled = true;
+                deleteBtn.title = 'レイヤーを選択してから削除できます';
             }
         }
 
@@ -1191,6 +1467,18 @@ $materials = $stmt->fetchAll();
                 e.stopPropagation();
                 scaleUpSelectedLayer();
             });
+            document.getElementById('bringFrontBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                bringLayerToFront();
+            });
+            document.getElementById('sendBackBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                sendLayerToBack();
+            });
+            document.getElementById('deleteBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                deleteSelectedLayer();
+            });
             document.getElementById('exportBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
                 exportToPNG();
@@ -1255,13 +1543,14 @@ $materials = $stmt->fetchAll();
             updateRotateButtonState();
             updateScaleDownButtonState();
             updateScaleUpButtonState();
+            updateLayerMoveButtonState();
+            updateDeleteButtonState();
             updateSelectedLayerTitle();
 
             console.log(`${materialItems.length}個の素材を読み込み完了`);
             console.log('素材をクリックしてキャンバスに配置してください');
             console.log('レイヤーをクリック/タップして選択し、ドラッグで移動できます（デベロッパーツール対応）');
-            console.log('レイヤーを選択して回転ボタンをクリックすると30度ずつ左右回転します');
-            console.log('レイヤーを選択して縮小ボタンをクリックすると20%ずつ縮小し、拡大ボタンをクリックすると25%ずつ拡大します');
+            console.log('レイヤーを選択して各種操作ボタンで回転・拡大縮小・前面背面移動ができます');
         });
     </script>
 </body>
