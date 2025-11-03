@@ -6,14 +6,14 @@ setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
 $pdo = getDB();
 
-// ランダムに10個のSVG素材を取得
+// 新着10個のSVG素材を取得
 $stmt = $pdo->prepare("
-    SELECT id, title, slug, image_path, svg_path, webp_medium_path, category_id, structured_bg_color
+    SELECT DISTINCT id, title, slug, image_path, svg_path, webp_medium_path, category_id, structured_bg_color, created_at
     FROM materials 
     WHERE svg_path IS NOT NULL 
     AND svg_path != '' 
-    ORDER BY RAND() 
-    LIMIT 5
+    ORDER BY created_at DESC 
+    LIMIT 10
 ");
 $stmt->execute();
 $materials = $stmt->fetchAll();
@@ -250,6 +250,20 @@ if (!empty($categoryIds)) {
             box-shadow: 0 2px 4px rgba(0,123,255,0.3);
         }
 
+        .tab-icon:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        .tab-icon:disabled:hover {
+            background: #f8f9fa;
+            border-color: #e9ecef;
+            transform: none;
+        }
+
         .tab-icon-img {
             width: 24px;
             height: 24px;
@@ -297,13 +311,279 @@ if (!empty($categoryIds)) {
         /* 素材セクション */
         .materials-section {
             margin-bottom: 2rem;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        /* 検索フォームのスタイル */
+        .search-form {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 2rem;
+        }
+
+        .search-form form {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* フォームコントロールのスタイル */
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-image: none;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control:focus {
+            color: #212529;
+            background-color: #fff;
+            border-color: #4285f4;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25);
+        }
+
+        .form-control:hover {
+            border-color: #4285f4;
+        }
+
+        .form-control-sm {
+            min-height: calc(1.5em + 0.5rem + 4px);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 4px;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .input-group > .form-control {
+            position: relative;
+            flex: 1 1 auto;
+            width: 1%;
+            min-width: 0;
+        }
+
+        .input-group > .form-control:not(:last-child) {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .input-group > .btn:not(:first-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            margin-left: -2px;
+        }
+
+        .input-group .btn {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ボタンのスタイル */
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            color: #212529;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            background-color: transparent;
+            border: 2px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            color: #212529;
+            text-decoration: none;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 4px;
+        }
+
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-primary {
+            color: #4285f4;
+            border-color: #4285f4;
+        }
+
+        .btn-outline-primary:hover {
+            color: #fff;
+            background-color: #4285f4;
+            border-color: #4285f4;
+            transform: translateY(-1px);
+        }
+
+        /* プライマリ・サクセスボタンのスタイル */
+        .btn-primary, .btn-success {
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #4285f4;
+            border-color: #4285f4;
+        }
+
+        .btn-primary:hover {
+            background-color: #3367d6;
+            border-color: #3367d6;
+            transform: translateY(-1px);
+        }
+
+        .search-button {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .search-button:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+        }
+
+        .search-button:focus {
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
+        }
+
+        /* クリアボタンのスタイル */
+        .search-form .btn-outline-secondary {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 1.25em;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .search-form .btn-outline-secondary:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 576px) {
+            .search-form {
+                padding: 1.25rem;
+                border-radius: 10px;
+            }
+            
+            .search-form form {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            
+            .search-input {
+                margin-bottom: 0;
+            }
+            
+            .search-button,
+            .search-form .btn-outline-secondary {
+                width: 100%;
+            }
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #0d6efd;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #adb5bd;
         }
 
         .materials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
+            gap: 12px;
             margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .materials-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .materials-grid::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .materials-grid::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 3px;
         }
 
         .material-item {
@@ -330,10 +610,140 @@ if (!empty($categoryIds)) {
             background-color: #e7f3ff;
         }
 
+        .material-item.selected-for-placement {
+            border-color: #28a745;
+            background-color: #d4edda;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
         .material-item img {
             width: 100%;
             height: 100%;
             object-fit: contain;
+        }
+
+        /* 水平素材グリッドのスタイル */
+        .search-container {
+            max-width: 400px;
+        }
+
+        .materials-grid-horizontal {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+            scroll-behavior: smooth;
+        }
+
+        .materials-grid-horizontal::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .materials-grid-horizontal::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .materials-grid-horizontal::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 3px;
+        }
+
+        .material-item-horizontal {
+            flex-shrink: 0;
+            width: 100px;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .material-item-horizontal:hover {
+            border-color: #007bff;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,123,255,0.2);
+        }
+
+        .material-item-horizontal img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .material-title {
+            font-size: 0.75rem;
+            color: #495057;
+            font-weight: 500;
+            line-height: 1.2;
+            max-height: 2.4em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .material-item-horizontal.selected-for-placement {
+            border-color: #28a745;
+            background-color: #d4edda;
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        /* 検索結果なしの表示 */
+        #noSearchResults {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            background: white;
+        }
+
+        /* ドラッグ&ドロップ関連のスタイル */
+        .svg-image-wrapper {
+            transition: all 0.3s ease;
+        }
+
+        .svg-image-wrapper.drag-over {
+            background-color: rgba(0, 123, 255, 0.05) !important;
+            border: 2px dashed #007bff !important;
+        }
+
+        /* レイヤードラッグ関連のスタイル */
+        body.dragging {
+            cursor: grabbing !important;
+            user-select: none;
+        }
+
+        body.dragging * {
+            cursor: grabbing !important;
+        }
+
+        [id^="layer-"] {
+            cursor: grab;
+            transition: filter 0.2s ease;
+        }
+
+        [id^="layer-"]:hover {
+            filter: drop-shadow(0 0 3px rgba(0, 123, 255, 0.5));
+        }
+
+        [id^="layer-"].dragging {
+            cursor: grabbing;
+            opacity: 0.8;
+            transition: none; /* ドラッグ中はトランジションを無効化 */
+        }
+
+        /* スムーズな移動のための最適化 */
+        #mainCanvas [id^="layer-"] {
+            will-change: transform;
+            transform-origin: center;
         }
 
         /* レイヤーリスト */
@@ -400,7 +810,7 @@ if (!empty($categoryIds)) {
             background: #f8f9fa;
         }
 
-        /* 背景色パレット用スタイル */
+        /* 背景色パレット用スタイル（詳細画面と同一） */
         .bg-color-section {
             background: linear-gradient(135deg, #fff8f0 0%, #f8f9fa 100%);
             border-radius: 16px;
@@ -451,17 +861,6 @@ if (!empty($categoryIds)) {
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
-        .bg-color-btn small {
-            font-size: 0.7rem;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .bg-color-btn.active small {
-            color: #4285f4;
-            font-weight: 600;
-        }
-
         .transparent-bg {
             background: linear-gradient(45deg, #ddd 25%, transparent 25%), 
                         linear-gradient(-45deg, #ddd 25%, transparent 25%), 
@@ -471,45 +870,60 @@ if (!empty($categoryIds)) {
             background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
         }
 
-        /* PNG出力サイズ選択 */
-        .export-section {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-        }
-
-        .size-selector {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .size-btn {
-            padding: 8px 16px;
-            border: 2px solid #dee2e6;
-            background: white;
-            color: #495057;
-            border-radius: 8px;
+        /* カラーピッカー入力 */
+        .form-control-color {
+            width: 35px !important;
+            height: 35px !important;
+            border: 2px solid #dee2e6 !important;
+            border-radius: 50% !important;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            display: block;
+            flex-shrink: 0;
+            min-width: 35px;
+            padding: 0 !important;
+            overflow: hidden;
         }
 
-        .size-btn:hover {
-            border-color: #4285f4;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+        .form-control-color:hover {
+            border-color: #4285f4 !important;
+            transform: scale(1.05);
+            box-shadow: 0 3px 8px rgba(66, 133, 244, 0.2);
         }
 
-        .size-btn.active {
-            border-color: #4285f4;
-            background-color: rgba(66, 133, 244, 0.1);
-            color: #4285f4;
-            font-weight: 600;
+        .form-control-color:focus {
+            border-color: #4285f4 !important;
+            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25), 
+                        0 3px 8px rgba(66, 133, 244, 0.2) !important;
+            transform: scale(1.02);
+            outline: none;
+        }
+
+        .form-control-color::-webkit-color-swatch-wrapper {
+            padding: 0 !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .form-control-color::-webkit-color-swatch {
+            border: none !important;
+            border-radius: 50% !important;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Firefox対応 */
+        .form-control-color::-moz-color-swatch {
+            border: none !important;
+            border-radius: 50% !important;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         /* 操作ボタン */
@@ -682,10 +1096,63 @@ if (!empty($categoryIds)) {
         <div class="row">
             <div class="col-lg-6" style="margin: 0 auto;">
                 
+                <!-- 素材選択セクション -->
+                <div class="materials-section mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="mb-0">素材を選択</h5>
+                        <div class="search-form">
+                            <form class="d-flex align-items-center">
+                                <input type="text" 
+                                       id="materialSearch"
+                                       placeholder="素材を検索（例：猫、花、食べ物など）" 
+                                       class="search-input form-control me-2"
+                                       onkeydown="handleSearchKeydown(event)">
+                                <button type="button" class="search-button btn btn-primary" onclick="searchMaterials()">検索</button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" onclick="clearSearch()">クリア</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="materials-grid" id="materialsGrid">
+                        <?php 
+                        // デバッグ用: 素材IDの重複チェック
+                        $materialIds = array_column($materials, 'id');
+                        $duplicateIds = array_diff_assoc($materialIds, array_unique($materialIds));
+                        if (!empty($duplicateIds)) {
+                            echo "<!-- DEBUG: 重複ID検出: " . implode(', ', $duplicateIds) . " -->";
+                        }
+                        
+                        foreach ($materials as $material): ?>
+                        <div class="material-item" 
+                             draggable="true"
+                             data-material-id="<?= h($material['id']) ?>"
+                             data-svg-path="<?= h($material['svg_path']) ?>"
+                             data-title="<?= h($material['title']) ?>"
+                             onclick="addMaterialToCanvas(this)"
+                             ondragstart="startMaterialDrag(event, this)"
+                             ondragend="endMaterialDrag(event, this)">
+                            <!-- DEBUG: ID <?= h($material['id']) ?> - <?= h($material['title']) ?> -->
+                            <img src="/<?= h($material['webp_medium_path'] ?: $material['image_path']) ?>" 
+                                 alt="<?= h($material['title']) ?>"
+                                 loading="lazy"
+                                 draggable="false">
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    
+                    <div id="noSearchResults" class="text-center text-muted py-4" style="display: none;">
+                        検索結果がありません
+                    </div>
+                </div>
+
                 <!-- SVG表示セクション -->
                 <div class="svg-display-section">
                     <div class="svg-container">
-                        <div class="svg-image-wrapper">
+                        <div class="svg-image-wrapper" 
+                             id="canvasDropArea"
+                             ondragover="allowDrop(event)" 
+                             ondragleave="clearDragHighlight(event)"
+                             ondrop="dropMaterialOnCanvas(event)">
                             <svg id="mainCanvas" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
                                 <!-- 背景 -->
                                 <rect id="canvasBackground" width="100%" height="100%" fill="white"/>
@@ -695,50 +1162,139 @@ if (!empty($categoryIds)) {
                         
                         <!-- タブアイコン -->
                         <div class="tab-icons">
-                            <button type="button" class="tab-icon active" data-tab="materials" onclick="switchTab('materials')" title="素材選択">
+
+                            
+
+                            
+                            <!-- 変形操作ボタン -->
+                            <button type="button" class="tab-icon" id="zoomOutBtn" onclick="scaleSelectedLayer(0.9)" title="縮小" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
-                                    <rect width="7" height="7" x="3" y="3" rx="1"/>
-                                    <rect width="7" height="7" x="14" y="3" rx="1"/>
-                                    <rect width="7" height="7" x="14" y="14" rx="1"/>
-                                    <rect width="7" height="7" x="3" y="14" rx="1"/>
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.35-4.35"/>
+                                    <path d="M8 11h6"/>
                                 </svg>
                             </button>
                             
-                            <button type="button" class="tab-icon" data-tab="layers" onclick="switchTab('layers')" title="レイヤー管理">
+                            <button type="button" class="tab-icon" id="zoomInBtn" onclick="scaleSelectedLayer(1.1)" title="拡大" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
-                                    <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/>
-                                    <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/>
-                                    <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.35-4.35"/>
+                                    <path d="M11 8v6"/>
+                                    <path d="M8 11h6"/>
                                 </svg>
                             </button>
                             
-                            <button type="button" class="tab-icon" data-tab="color" onclick="switchTab('color')" title="色変更">
+                            <button type="button" class="tab-icon" id="rotateLeftBtn" onclick="rotateSelectedLayer(-15)" title="左回転" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
-                                    <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/>
-                                    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
-                                    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
-                                    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
-                                    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                                    <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"/>
                                 </svg>
                             </button>
                             
-                            <button type="button" class="tab-icon" data-tab="background" onclick="switchTab('background')" title="背景変更">
+                            <button type="button" class="tab-icon" id="rotateRightBtn" onclick="rotateSelectedLayer(15)" title="右回転" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
-                                    <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/>
-                                    <path d="m5 2 5 5"/>
-                                    <path d="M2 13h15"/>
-                                    <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/>
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"/>
                                 </svg>
                             </button>
                             
-                            <button type="button" class="tab-icon" data-tab="transform" onclick="switchTab('transform')" title="変形">
+                            <!-- テーマボタン -->
+                            <button type="button" class="tab-icon" id="springThemeBtn" onclick="applyColorTheme('spring')" title="春テーマ" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
-                                    <polyline points="5,9 2,12 5,15"></polyline>
-                                    <polyline points="9,5 12,2 15,5"></polyline>
-                                    <polyline points="15,19 12,22 9,19"></polyline>
-                                    <polyline points="19,9 22,12 19,15"></polyline>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <line x1="12" y1="2" x2="12" y2="22"></line>
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/>
+                                    <path d="M12 7.5V9"/>
+                                    <path d="M7.5 12H9"/>
+                                    <path d="M16.5 12H15"/>
+                                    <path d="M12 16.5V15"/>
+                                    <path d="m8 8 1.88 1.88"/>
+                                    <path d="M14.12 9.88 16 8"/>
+                                    <path d="m8 16 1.88-1.88"/>
+                                    <path d="M14.12 14.12 16 16"/>
+                                </svg>
+                            </button>
+                            
+                            <button type="button" class="tab-icon" id="summerThemeBtn" onclick="applyColorTheme('summer')" title="夏テーマ" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <circle cx="12" cy="12" r="4"/>
+                                    <path d="M12 2v2"/>
+                                    <path d="M12 20v2"/>
+                                    <path d="m4.93 4.93 1.41 1.41"/>
+                                    <path d="m17.66 17.66 1.41 1.41"/>
+                                    <path d="M2 12h2"/>
+                                    <path d="M20 12h2"/>
+                                    <path d="m6.34 17.66-1.41 1.41"/>
+                                    <path d="m19.07 4.93-1.41 1.41"/>
+                                </svg>
+                            </button>
+                            
+                            <button type="button" class="tab-icon" id="autumnThemeBtn" onclick="applyColorTheme('autumn')" title="秋テーマ" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                                </svg>
+                            </button>
+                            
+                            <button type="button" class="tab-icon" id="winterThemeBtn" onclick="applyColorTheme('winter')" title="冬テーマ" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <path d="m10 20-1.25-2.5L6 18"/>
+                                    <path d="M10 4 8.75 6.5 6 6"/>
+                                    <path d="m14 20 1.25-2.5L18 18"/>
+                                    <path d="m14 4 1.25 2.5L18 6"/>
+                                    <path d="m17 21-3-6h-4"/>
+                                    <path d="m17 3-3 6 1.5 3"/>
+                                    <path d="M2 12h6.5L10 9"/>
+                                    <path d="m20 10-1.5 2 1.5 2"/>
+                                    <path d="M22 12h-6.5L14 15"/>
+                                    <path d="m4 10 1.5 2L4 14"/>
+                                    <path d="m7 21 3-6-1.5-3"/>
+                                    <path d="m7 3 3 6h4"/>
+                                </svg>
+                            </button>
+                            
+                            <button type="button" class="tab-icon" id="monochromeThemeBtn" onclick="applyColorTheme('monochrome')" title="白黒テーマ" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <path d="M11.25 17.25h1.5L12 18z"/>
+                                    <path d="m15 12 2 2"/>
+                                    <path d="M18 6.5a.5.5 0 0 0-.5-.5"/>
+                                    <path d="M20.69 9.67a4.5 4.5 0 1 0-7.04-5.5 8.35 8.35 0 0 0-3.3 0 4.5 4.5 0 1 0-7.04 5.5C2.49 11.2 2 12.88 2 14.5 2 19.47 6.48 22 12 22s10-2.53 10-7.5c0-1.62-.48-3.3-1.3-4.83"/>
+                                    <path d="M6 6.5a.495.495 0 0 1 .5-.5"/>
+                                    <path d="m9 12-2 2"/>
+                                </svg>
+                            </button>
+                            
+                            <button type="button" class="tab-icon" id="sepiaThemeBtn" onclick="applyColorTheme('sepia')" title="セピアテーマ" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <path d="M10 2v2"/>
+                                    <path d="M14 2v2"/>
+                                    <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/>
+                                    <path d="M6 2v2"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- レイヤー操作ボタン -->
+                            <button type="button" class="tab-icon" id="bringToFrontBtn" onclick="bringLayerToFront()" title="最前面に移動" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <rect x="8" y="8" width="8" height="8" rx="2"/>
+                                    <path d="M4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2"/>
+                                    <path d="M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2"/>
+                                </svg>
+                            </button>
+                            
+                            <button type="button" class="tab-icon" id="sendToBackBtn" onclick="sendLayerToBack()" title="最背面に移動" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <rect x="14" y="14" width="8" height="8" rx="2"/>
+                                    <rect x="2" y="2" width="8" height="8" rx="2"/>
+                                    <path d="M7 14v1a2 2 0 0 0 2 2h1"/>
+                                    <path d="M14 7h1a2 2 0 0 1 2 2v1"/>
+                                </svg>
+                            </button>
+                            
+                            <button type="button" class="tab-icon" id="deleteLayerBtn" onclick="deleteSelectedLayer()" title="レイヤー削除" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tab-icon-img">
+                                    <path d="M10 11v6"/>
+                                    <path d="M14 11v6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                                    <path d="M3 6h18"/>
+                                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                                 </svg>
                             </button>
                         </div>
@@ -748,284 +1304,28 @@ if (!empty($categoryIds)) {
                 <!-- コントロールパネル -->
                 <div class="card">
                     <div class="card-body">
-                        <!-- 素材選択パネル -->
-                        <div class="svg-controls" id="materialsTab">
-                            <label class="form-label">
-                                <svg width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16">
-                                    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
-                                    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
-                                </svg>
-                                素材を選択してキャンバスに追加
-                            </label>
-                            <div class="materials-grid" id="materialsGrid">
-                                <?php foreach ($materials as $material): ?>
-                                <div class="material-item" 
-                                     data-material-id="<?= h($material['id']) ?>"
-                                     data-svg-path="<?= h($material['svg_path']) ?>"
-                                     data-title="<?= h($material['title']) ?>"
-                                     onclick="addMaterialToCanvas(this)">
-                                    <img src="/<?= h($material['webp_medium_path'] ?: $material['image_path']) ?>" 
-                                         alt="<?= h($material['title']) ?>"
-                                         loading="lazy">
-                                </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
 
-                        <!-- レイヤー管理パネル -->
-                        <div class="svg-controls" id="layersTab" style="display: none;">
-                            <label class="form-label">
-                                <svg width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16">
-                                    <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/>
-                                    <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/>
-                                    <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
-                                </svg>
-                                レイヤー一覧
-                            </label>
-                            <div class="layers-list" id="layersList">
-                                <div class="text-center text-muted py-4">
-                                    まだレイヤーがありません<br>
-                                    素材を追加してください
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- 色変更パネル -->
-                        <div class="svg-controls" id="colorTab" style="display: none;">
-                            <div id="colorControls" style="display: none;">
-                                <label class="form-label">選択中のレイヤー: <span id="selectedColorLayerName"></span></label>
+                        <!-- 背景色選択（常時表示） -->
+                        <div class="bg-color-section mb-4">
+                            <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
+                                <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）" onclick="changeBackground('transparent'); updateBackgroundUI('transparent');">
+                                    <div class="bg-swatch transparent-bg"></div>
+                                </button>
                                 
-                                <!-- 季節テーマ -->
-                            <div class="mb-3">
-                                <label class="form-label">季節テーマ</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <button class="btn" onclick="applyColorTheme('spring')" title="春のパステルカラー">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="3"/>
-                                            <path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/>
-                                            <path d="M12 7.5V9"/>
-                                            <path d="M7.5 12H9"/>
-                                            <path d="M16.5 12H15"/>
-                                            <path d="M12 16.5V15"/>
-                                            <path d="m8 8 1.88 1.88"/>
-                                            <path d="M14.12 9.88 16 8"/>
-                                            <path d="m8 16 1.88-1.88"/>
-                                            <path d="M14.12 14.12 16 16"/>
-                                        </svg>
-                                    </button>
-                                    <button class="btn" onclick="applyColorTheme('summer')" title="夏のパステルカラー">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="4"/>
-                                            <path d="M12 2v2"/>
-                                            <path d="M12 20v2"/>
-                                            <path d="m4.93 4.93 1.41 1.41"/>
-                                            <path d="m17.66 17.66 1.41 1.41"/>
-                                            <path d="M2 12h2"/>
-                                            <path d="M20 12h2"/>
-                                            <path d="m6.34 17.66-1.41 1.41"/>
-                                            <path d="m19.07 4.93-1.41 1.41"/>
-                                        </svg>
-                                    </button>
-                                    <button class="btn" onclick="applyColorTheme('autumn')" title="秋のパステルカラー">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-                                            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-                                        </svg>
-                                    </button>
-                                    <button class="btn" onclick="applyColorTheme('winter')" title="冬のパステルカラー">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="m10 20-1.25-2.5L6 18"/>
-                                            <path d="M10 4 8.75 6.5 6 6"/>
-                                            <path d="m14 20 1.25-2.5L18 18"/>
-                                            <path d="m14 4 1.25 2.5L18 6"/>
-                                            <path d="m17 21-3-6h-4"/>
-                                            <path d="m17 3-3 6 1.5 3"/>
-                                            <path d="M2 12h6.5L10 9"/>
-                                            <path d="m20 10-1.5 2 1.5 2"/>
-                                            <path d="M22 12h-6.5L14 15"/>
-                                            <path d="m4 10 1.5 2L4 14"/>
-                                            <path d="m7 21 3-6-1.5-3"/>
-                                            <path d="m7 3 3 6h4"/>
-                                        </svg>
-                                    </button>
-                                    <button class="btn" onclick="applyColorTheme('monochrome')" title="白黒の濃淡">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M11.25 17.25h1.5L12 18z"/>
-                                            <path d="m15 12 2 2"/>
-                                            <path d="M18 6.5a.5.5 0 0 0-.5-.5"/>
-                                            <path d="M20.69 9.67a4.5 4.5 0 1 0-7.04-5.5 8.35 8.35 0 0 0-3.3 0 4.5 4.5 0 1 0-7.04 5.5C2.49 11.2 2 12.88 2 14.5 2 19.47 6.48 22 12 22s10-2.53 10-7.5c0-1.62-.48-3.3-1.3-4.83"/>
-                                            <path d="M6 6.5a.495.495 0 0 1 .5-.5"/>
-                                            <path d="m9 12-2 2"/>
-                                        </svg>
-                                    </button>
-                                    <button class="btn" onclick="applyColorTheme('sepia')" title="セピアの温もり">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M10 2v2"/>
-                                            <path d="M14 2v2"/>
-                                            <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/>
-                                            <path d="M6 2v2"/>
-                                        </svg>
-                                    </button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="color" id="customBgColor" class="form-control form-control-color" 
+                                           title="カスタم背景色を選択" value="#ffffff" 
+                                           oninput="changeBackground(this.value)" 
+                                           onchange="changeBackground(this.value)">
                                 </div>
-                            </div>
-
-                            <!-- ランダム配色・リセット -->
-                            <div class="d-flex gap-2 mb-3">
-                                <button class="btn flex-fill" onclick="randomizeColors()">ランダム配色</button>
-                                <button class="btn flex-fill" onclick="resetColors()">色をリセット</button>
-                            </div>
-
-                            <!-- 黒・グレー除外設定 -->
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="excludeGrayBlack" checked>
-                                <label class="form-check-label" for="excludeGrayBlack">
-                                    黒・グレー系の色を除外
-                                </label>
-                            </div>
-                            </div>
-                            
-                            <div id="noColorSelected" class="text-center text-muted">
-                                レイヤーを選択してください
-                            </div>
-                        </div>
-
-                        <!-- 背景変更パネル -->
-                        <div class="svg-controls" id="backgroundTab" style="display: none;">
-                            <!-- 背景色選択 -->
-                            <div class="bg-color-section mb-4">
-                                <div class="bg-color-palette d-flex justify-content-center align-items-center gap-3">
-                                    <button type="button" class="bg-color-btn" data-color="transparent" title="透明（背景なし）" onclick="changeBackground('transparent')">
-                                        <div class="bg-swatch transparent-bg"></div>
-                                        <small>透明</small>
-                                    </button>
-                                    
-                                    <button type="button" class="bg-color-btn" data-color="white" title="白色背景" onclick="changeBackground('white')">
-                                        <div class="bg-swatch" style="background-color: white;"></div>
-                                        <small>白</small>
-                                    </button>
-                                    
-                                    <button type="button" class="bg-color-btn" data-color="#f8f9fa" title="グレー背景" onclick="changeBackground('#f8f9fa')">
-                                        <div class="bg-swatch" style="background-color: #f8f9fa;"></div>
-                                        <small>グレー</small>
-                                    </button>
-                                    
-                                    <button type="button" class="bg-color-btn" data-color="#000000" title="黒色背景" onclick="changeBackground('#000000')">
-                                        <div class="bg-swatch" style="background-color: #000000;"></div>
-                                        <small>黒</small>
-                                    </button>
-                                    
-                                    <div class="d-flex align-items-center gap-2">
-                                        <input type="color" id="customBgColor" class="form-control form-control-color" 
-                                               style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff" onchange="changeBackground(this.value)">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 変形パネル -->
-                        <div class="svg-controls" id="transformTab" style="display: none;">
-                            <div id="transformControls" style="display: none;">
-                                <label class="form-label">選択中のレイヤー: <span id="selectedLayerName"></span></label>
-                                
-                                <!-- 移動ボタン -->
-                                <div class="mb-3">
-                                    <label class="form-label">位置調整</label>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button class="btn" onclick="moveLayer('left')" title="左に移動">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M13 9a1 1 0 0 1-1-1V5.061a1 1 0 0 0-1.811-.75l-6.835 6.836a1.207 1.207 0 0 0 0 1.707l6.835 6.835a1 1 0 0 0 1.811-.75V16a1 1 0 0 1 1-1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="moveLayer('up')" title="上に移動">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M9 13a1 1 0 0 0-1-1H5.061a1 1 0 0 1-.75-1.811l6.836-6.835a1.207 1.207 0 0 1 1.707 0l6.835 6.835a1 1 0 0 1-.75 1.811H16a1 1 0 0 0-1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="moveLayer('down')" title="下に移動">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M15 11a1 1 0 0 0 1 1h2.939a1 1 0 0 1 .75 1.811l-6.835 6.836a1.207 1.207 0 0 1-1.707 0L4.31 13.81a1 1 0 0 1 .75-1.811H8a1 1 0 0 0 1-1V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="moveLayer('right')" title="右に移動">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M11 9a1 1 0 0 0 1-1V5.061a1 1 0 0 1 1.811-.75l6.836 6.836a1.207 1.207 0 0 1 0 1.707l-6.836 6.835a1 1 0 0 1-1.811-.75V16a1 1 0 0 0-1-1H5a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="resetLayerPosition()" title="位置をリセット">リセット</button>
-                                    </div>
-                                </div>
-
-                                <!-- スケール調整 -->
-                                <div class="mb-3">
-                                    <label class="form-label">サイズ調整</label>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button class="btn" onclick="scaleLayerStep(-0.1)" title="縮小">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="11" cy="11" r="8"/>
-                                                <line x1="21" x2="16.65" y1="21" y2="16.65"/>
-                                                <line x1="8" x2="14" y1="11" y2="11"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="scaleLayerStep(0.1)" title="拡大">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="11" cy="11" r="8"/>
-                                                <line x1="21" x2="16.65" y1="21" y2="16.65"/>
-                                                <line x1="11" x2="11" y1="8" y2="14"/>
-                                                <line x1="8" x2="14" y1="11" y2="11"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="scaleLayer(1.0)" title="リセット">リセット</button>
-                                    </div>
-                                </div>
-
-                                <!-- 回転調整 -->
-                                <div class="mb-3">
-                                    <label class="form-label">回転調整</label>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button class="btn" onclick="rotateLayer(-15)" title="左回転">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                                                <path d="M3 3v5h5"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="rotateLayer(15)" title="右回転">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
-                                                <path d="M21 3v5h-5"/>
-                                            </svg>
-                                        </button>
-                                        <button class="btn" onclick="rotateLayer(0, true)" title="回転をリセット">リセット</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div id="noTransformSelected" class="text-center text-muted">
-                                レイヤーを選択してください
-                            </div>
-                        </div>
-
-                        <!-- PNG出力サイズ選択 -->
-                        <div class="export-section mt-4">
-                            <label class="form-label">PNG出力サイズ</label>
-                            <div class="size-selector mb-3">
-                                <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                    <button class="size-btn active" data-size="1000" onclick="selectSize(this, 1000)">1000px</button>
-                                    <button class="size-btn" data-size="1500" onclick="selectSize(this, 1500)">1500px</button>
-                                    <button class="size-btn" data-size="2000" onclick="selectSize(this, 2000)">2000px</button>
-                                    <button class="size-btn" data-size="2500" onclick="selectSize(this, 2500)">2500px</button>
-                                    <button class="size-btn" data-size="3000" onclick="selectSize(this, 3000)">3000px</button>
-                                </div>
-                            </div>
-                            <div class="text-center mb-3">
-                                <small class="text-muted">選択されたサイズ: <span id="selectedSize">1000</span>px × <span id="selectedSizeY">1000</span>px</small>
                             </div>
                         </div>
 
                         <!-- 操作ボタン -->
-                        <div class="action-buttons mt-4">
-                            <button class="action-btn" onclick="exportToPNG()">PNGで保存</button>
-                            <button class="action-btn" onclick="clearAll()">全て削除</button>
-                            <button class="action-btn" onclick="reloadMaterials()">素材を再読み込み</button>
+                        <div class="action-buttons mt-4 d-flex gap-2">
+                            <button class="btn btn-outline-secondary" onclick="exportToPNG()">PNGダウンロード</button>
+                            <button class="btn btn-outline-secondary" onclick="clearAll()">全て削除</button>
                         </div>
                     </div>
                 </div>
@@ -1039,30 +1339,64 @@ if (!empty($categoryIds)) {
         let activeLayerId = null;
         let layerIdCounter = 0;
         let currentBackground = 'white';
-        let selectedPngSize = 1000; // デフォルト1000px
+        let selectedPngSize = 2500; // 固定2500px
+        let centerOffsetCounter = 0; // 中央配置時のオフセット用
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
             loadFromStorage();
-            updateLayersList();
+            
             // 初期背景色の設定
             changeBackground(currentBackground);
+            
+            // ドラッグ&ドロップの初期化
+            initializeDragAndDrop();
         });
 
-        // タブ切り替え
-        function switchTab(tabName) {
-            // タブアイコンの状態更新
-            document.querySelectorAll('.tab-icon').forEach(icon => {
-                icon.classList.remove('active');
+        // ドラッグ&ドロップの初期化
+        function initializeDragAndDrop() {
+            console.log('ドラッグ&ドロップ初期化中...');
+            
+            // キャンバスドロップエリア
+            const canvasDropArea = document.getElementById('canvasDropArea');
+            if (canvasDropArea) {
+                console.log('キャンバスドロップエリア見つかりました');
+                
+                // 既存のイベントリスナーを削除して再追加
+                canvasDropArea.removeEventListener('dragover', allowDrop);
+                canvasDropArea.removeEventListener('drop', dropMaterialOnCanvas);
+                canvasDropArea.removeEventListener('dragleave', clearDragHighlight);
+                
+                canvasDropArea.addEventListener('dragover', allowDrop);
+                canvasDropArea.addEventListener('drop', dropMaterialOnCanvas);
+                canvasDropArea.addEventListener('dragleave', clearDragHighlight);
+                
+                console.log('キャンバスイベントリスナー設定完了');
+            } else {
+                console.log('キャンバスドロップエリアが見つかりません');
+            }
+            
+            // 素材アイテム
+            const materialItems = document.querySelectorAll('.material-item');
+            console.log('素材アイテム数:', materialItems.length);
+            
+            materialItems.forEach((item, index) => {
+                console.log(`素材${index + 1}にイベント設定:`, item.dataset.title);
+                
+                // 既存のイベントリスナーを削除
+                item.removeEventListener('dragstart', item._dragStartHandler);
+                item.removeEventListener('dragend', item._dragEndHandler);
+                
+                // 新しいイベントリスナーを追加（ドラッグのみ）
+                item._dragStartHandler = (e) => startMaterialDrag(e, item);
+                item._dragEndHandler = (e) => endMaterialDrag(e, item);
+                
+                item.addEventListener('dragstart', item._dragStartHandler);
+                item.addEventListener('dragend', item._dragEndHandler);
             });
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-
-            // パネルの表示切り替え
-            document.querySelectorAll('.svg-controls').forEach(panel => {
-                panel.style.display = 'none';
-            });
-            document.getElementById(`${tabName}Tab`).style.display = 'block';
         }
+
+
 
         // 素材をキャンバスに追加
         function addMaterialToCanvas(element) {
@@ -1089,8 +1423,8 @@ if (!empty($categoryIds)) {
                             originalSvgContent: svgElement.innerHTML, // 元の色情報を保持
                             svgPath: svgPath, // 元のSVGパスを保存
                             transform: {
-                                x: Math.random() * 200 + 100, // ランダム位置
-                                y: Math.random() * 200 + 100,
+                                x: 512 + (centerOffsetCounter * 20), // キャンバス中央 + 少しずつオフセット
+                                y: 512 + (centerOffsetCounter * 20), // キャンバス中央 + 少しずつオフセット
                                 scale: 1,
                                 rotation: 0
                             },
@@ -1099,11 +1433,17 @@ if (!empty($categoryIds)) {
 
                         layers.push(layer);
                         renderLayer(layer);
-                        updateLayersList();
+                        
                         saveToStorage();
 
+                        // デバッグ用ログ
+                        console.log(`素材追加: ${title} at (${layer.transform.x}, ${layer.transform.y})`);
+
+                        // オフセットカウンターを更新（10回で初期化）
+                        centerOffsetCounter = (centerOffsetCounter + 1) % 10;
+
                         // 素材タブから自動的にレイヤータブに切り替え
-                        setTimeout(() => switchTab('layers'), 100);
+                        
                     }
                 })
                 .catch(error => {
@@ -1155,18 +1495,40 @@ if (!empty($categoryIds)) {
                 }
             }
 
-            // オブジェクトの境界ボックスを取得してから変形を適用
+            // オブジェクトの境界ボックスを取得
             const bbox = layerGroup.getBBox();
             const centerX = bbox.x + bbox.width / 2;
             const centerY = bbox.y + bbox.height / 2;
 
-            // 変形を適用（回転の中心をオブジェクトの中心にする）
-            const transform = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${layer.transform.scale}) rotate(${layer.transform.rotation}, ${centerX}, ${centerY})`;
+            // オブジェクトをキャンバス上の指定位置に配置（元の位置をオフセット）
+            const translateX = layer.transform.x - centerX;
+            const translateY = layer.transform.y - centerY;
+
+            // 変形を適用
+            const transform = `translate(${translateX}, ${translateY}) scale(${layer.transform.scale}) rotate(${layer.transform.rotation}, ${layer.transform.x}, ${layer.transform.y})`;
             layerGroup.setAttribute('transform', transform);
 
-            // クリックイベントを追加
-            layerGroup.style.cursor = 'pointer';
-            layerGroup.addEventListener('click', () => selectLayer(layer.id));
+            // クリックとドラッグイベントを追加
+            layerGroup.style.cursor = 'move';
+            
+            // クリックイベント（ドラッグと干渉しないように）
+            let clickTimeout;
+            layerGroup.addEventListener('mousedown', (e) => {
+                clickTimeout = setTimeout(() => {
+                    selectLayer(layer.id);
+                }, 150); // ドラッグとクリックを区別するための遅延
+            });
+            
+            layerGroup.addEventListener('mouseup', () => {
+                clearTimeout(clickTimeout);
+            });
+            
+            layerGroup.addEventListener('mousemove', () => {
+                clearTimeout(clickTimeout);
+            });
+            
+            // ドラッグ機能を追加
+            addLayerDragFunctionality(layerGroup, layer.id);
         }
 
         // 全レイヤーを正しい順序で再レンダリング
@@ -1186,19 +1548,41 @@ if (!empty($categoryIds)) {
                     layerGroup.id = `layer-${layer.id}`;
                     layerGroup.innerHTML = layer.svgContent;
 
-                    // オブジェクトの境界ボックスを取得してから変形を適用
+                    // オブジェクトの境界ボックスを取得
                     canvas.appendChild(layerGroup);
                     const bbox = layerGroup.getBBox();
                     const centerX = bbox.x + bbox.width / 2;
                     const centerY = bbox.y + bbox.height / 2;
 
-                    // 変形を適用（回転の中心をオブジェクトの中心にする）
-                    const transform = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${layer.transform.scale}) rotate(${layer.transform.rotation}, ${centerX}, ${centerY})`;
+                    // オブジェクトをキャンバス上の指定位置に配置（元の位置をオフセット）
+                    const translateX = layer.transform.x - centerX;
+                    const translateY = layer.transform.y - centerY;
+
+                    // 変形を適用
+                    const transform = `translate(${translateX}, ${translateY}) scale(${layer.transform.scale}) rotate(${layer.transform.rotation}, ${layer.transform.x}, ${layer.transform.y})`;
                     layerGroup.setAttribute('transform', transform);
 
-                    // クリックイベントを追加
-                    layerGroup.style.cursor = 'pointer';
-                    layerGroup.addEventListener('click', () => selectLayer(layer.id));
+                    // クリックとドラッグイベントを追加
+                    layerGroup.style.cursor = 'move';
+                    
+                    // クリックイベント（ドラッグと干渉しないように）
+                    let clickTimeout;
+                    layerGroup.addEventListener('mousedown', (e) => {
+                        clickTimeout = setTimeout(() => {
+                            selectLayer(layer.id);
+                        }, 150); // ドラッグとクリックを区別するための遅延
+                    });
+                    
+                    layerGroup.addEventListener('mouseup', () => {
+                        clearTimeout(clickTimeout);
+                    });
+                    
+                    layerGroup.addEventListener('mousemove', () => {
+                        clearTimeout(clickTimeout);
+                    });
+                    
+                    // ドラッグ機能を追加
+                    addLayerDragFunctionality(layerGroup, layer.id);
                 });
         }
 
@@ -1220,167 +1604,126 @@ if (!empty($categoryIds)) {
                 selectedLayer.style.filter = 'drop-shadow(0 0 5px #007bff)';
             }
 
-            // レイヤーリストの選択状態を更新
-            updateLayersList();
-
             // 変形コントロールを表示
             updateTransformControls();
         }
 
-        // レイヤーリストを更新
-        function updateLayersList() {
-            const layersList = document.getElementById('layersList');
+        // 選択中のレイヤーを最前面に移動
+        function bringLayerToFront() {
+            if (!activeLayerId) return;
             
-            if (layers.length === 0) {
-                layersList.innerHTML = `
-                    <div class="text-center text-muted py-4">
-                        まだレイヤーがありません<br>
-                        素材を追加してください
-                    </div>
-                `;
-                return;
-            }
-
-            // レイヤーを逆順で表示（一番上が前面）
-            const reversedLayers = [...layers].reverse();
-            layersList.innerHTML = reversedLayers.map((layer, index) => {
-                const layerIndex = layers.length - 1 - index; // 元配列でのインデックス
-                const canMoveUp = layerIndex < layers.length - 1;
-                const canMoveDown = layerIndex > 0;
+            const layerIndex = layers.findIndex(l => l.id === activeLayerId);
+            if (layerIndex !== -1 && layerIndex < layers.length - 1) {
+                // 配列の最後に移動（表示上は最前面に移動）
+                const layer = layers[layerIndex];
+                layers.splice(layerIndex, 1);
+                layers.push(layer);
                 
-                return `
-                <div class="layer-item ${activeLayerId === layer.id ? 'active' : ''}" 
-                     onclick="selectLayer(${layer.id})">
-                    <div class="layer-info">
-                        <strong>${layer.title}</strong>
-                        <div class="text-muted" style="font-size: 0.75rem;">
-                            位置: (${Math.round(layer.transform.x)}, ${Math.round(layer.transform.y)}) | 
-                            サイズ: ${Math.round(layer.transform.scale * 100)}% | 
-                            回転: ${layer.transform.rotation}°
-                        </div>
-                    </div>
-                    <div class="layer-controls">
-                        <button class="layer-btn" onclick="event.stopPropagation(); moveLayerUp(${layer.id})" 
-                                title="前面に移動" ${!canMoveUp ? 'disabled' : ''}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-big-up"><path d="M9 13a1 1 0 0 0-1-1H5.061a1 1 0 0 1-.75-1.811l6.836-6.835a1.207 1.207 0 0 1 1.707 0l6.835 6.835a1 1 0 0 1-.75 1.811H16a1 1 0 0 0-1 1v6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/></svg>
-                        </button>
-                        <button class="layer-btn" onclick="event.stopPropagation(); moveLayerDown(${layer.id})" 
-                                title="背面に移動" ${!canMoveDown ? 'disabled' : ''}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-big-down"><path d="M15 11a1 1 0 0 0 1 1h2.939a1 1 0 0 1 .75 1.811l-6.835 6.836a1.207 1.207 0 0 1-1.707 0L4.31 13.81a1 1 0 0 1 .75-1.811H8a1 1 0 0 0 1-1V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1z"/></svg>
-                        </button>
-                        <button class="layer-btn" onclick="event.stopPropagation(); toggleLayerVisibility(${layer.id})" 
-                                title="${layer.visible ? '非表示' : '表示'}">
-                            ${layer.visible ? 
-                                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>' : 
-                                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-closed"><path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/></svg>'
-                            }
-                        </button>
-                        <button class="layer-btn" onclick="event.stopPropagation(); removeLayer(${layer.id})" 
-                                title="削除">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c0-1 1-2 2-2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        // レイヤーの表示/非表示切り替え
-        function toggleLayerVisibility(layerId) {
-            const layer = layers.find(l => l.id === layerId);
-            if (layer) {
-                layer.visible = !layer.visible;
-                renderLayer(layer);
-                updateLayersList();
+                renderAllLayers();
                 saveToStorage();
             }
         }
 
-        // レイヤー削除
-        function removeLayer(layerId) {
-            const layerIndex = layers.findIndex(l => l.id === layerId);
-            if (layerIndex !== -1) {
+        // 選択中のレイヤーを最背面に移動
+        function sendLayerToBack() {
+            if (!activeLayerId) return;
+            
+            const layerIndex = layers.findIndex(l => l.id === activeLayerId);
+            if (layerIndex !== -1 && layerIndex > 0) {
+                // 配列の最初に移動（表示上は最背面に移動）
+                const layer = layers[layerIndex];
                 layers.splice(layerIndex, 1);
+                layers.unshift(layer);
                 
-                // DOM要素も削除
-                const layerElement = document.getElementById(`layer-${layerId}`);
-                if (layerElement) {
-                    layerElement.remove();
-                }
+                renderAllLayers();
+                saveToStorage();
+            }
+        }
 
-                // アクティブレイヤーが削除された場合
-                if (activeLayerId === layerId) {
+        // 選択中のレイヤーを削除
+        function deleteSelectedLayer() {
+            if (!activeLayerId) return;
+            
+            if (confirm('選択中のレイヤーを削除しますか？')) {
+                const layerIndex = layers.findIndex(l => l.id === activeLayerId);
+                if (layerIndex !== -1) {
+                    // レイヤーをキャンバスから削除
+                    const layerElement = document.getElementById(`layer-${activeLayerId}`);
+                    if (layerElement) {
+                        layerElement.remove();
+                    }
+                    
+                    // 配列から削除
+                    layers.splice(layerIndex, 1);
+                    
+                    // アクティブレイヤーをリセット
                     activeLayerId = null;
+                    
                     updateTransformControls();
+                    saveToStorage();
                 }
-
-                updateLayersList();
-                saveToStorage();
-            }
-        }
-
-        // レイヤーを前面に移動
-        function moveLayerUp(layerId) {
-            const layerIndex = layers.findIndex(l => l.id === layerId);
-            if (layerIndex < layers.length - 1) {
-                // 配列内で1つ後ろに移動（表示上は前面に移動）
-                const layer = layers[layerIndex];
-                layers.splice(layerIndex, 1);
-                layers.splice(layerIndex + 1, 0, layer);
-                
-                renderAllLayers();
-                updateLayersList();
-                saveToStorage();
-            }
-        }
-
-        // レイヤーを背面に移動
-        function moveLayerDown(layerId) {
-            const layerIndex = layers.findIndex(l => l.id === layerId);
-            if (layerIndex > 0) {
-                // 配列内で1つ前に移動（表示上は背面に移動）
-                const layer = layers[layerIndex];
-                layers.splice(layerIndex, 1);
-                layers.splice(layerIndex - 1, 0, layer);
-                
-                renderAllLayers();
-                updateLayersList();
-                saveToStorage();
             }
         }
 
         // 変形コントロールを更新
         function updateTransformControls() {
-            const transformControls = document.getElementById('transformControls');
-            const noTransformSelected = document.getElementById('noTransformSelected');
-            const selectedLayerName = document.getElementById('selectedLayerName');
-            
-            // 色変更パネルの要素も取得
-            const colorControls = document.getElementById('colorControls');
-            const noColorSelected = document.getElementById('noColorSelected');
-            const selectedColorLayerName = document.getElementById('selectedColorLayerName');
+            // タブアイコンスタイルの変形ボタン
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const rotateLeftBtn = document.getElementById('rotateLeftBtn');
+            const rotateRightBtn = document.getElementById('rotateRightBtn');
+
+            // テーマボタン
+            const springThemeBtn = document.getElementById('springThemeBtn');
+            const summerThemeBtn = document.getElementById('summerThemeBtn');
+            const autumnThemeBtn = document.getElementById('autumnThemeBtn');
+            const winterThemeBtn = document.getElementById('winterThemeBtn');
+            const monochromeThemeBtn = document.getElementById('monochromeThemeBtn');
+            const sepiaThemeBtn = document.getElementById('sepiaThemeBtn');
+
+            // レイヤー操作ボタン
+            const bringToFrontBtn = document.getElementById('bringToFrontBtn');
+            const sendToBackBtn = document.getElementById('sendToBackBtn');
+            const deleteLayerBtn = document.getElementById('deleteLayerBtn');
 
             if (activeLayerId) {
-                const layer = layers.find(l => l.id === activeLayerId);
-                if (layer) {
-                    // 変形パネル
-                    transformControls.style.display = 'block';
-                    noTransformSelected.style.display = 'none';
-                    selectedLayerName.textContent = layer.title;
-                    
-                    // 色変更パネル
-                    colorControls.style.display = 'block';
-                    noColorSelected.style.display = 'none';
-                    selectedColorLayerName.textContent = layer.title;
-                }
+                // タブアイコンスタイルの変形ボタンを有効化
+                zoomOutBtn.disabled = false;
+                zoomInBtn.disabled = false;
+                rotateLeftBtn.disabled = false;
+                rotateRightBtn.disabled = false;
+
+                // テーマボタンを有効化
+                springThemeBtn.disabled = false;
+                summerThemeBtn.disabled = false;
+                autumnThemeBtn.disabled = false;
+                winterThemeBtn.disabled = false;
+                monochromeThemeBtn.disabled = false;
+                sepiaThemeBtn.disabled = false;
+
+                // レイヤー操作ボタンを有効化
+                bringToFrontBtn.disabled = false;
+                sendToBackBtn.disabled = false;
+                deleteLayerBtn.disabled = false;
             } else {
-                // 変形パネル
-                transformControls.style.display = 'none';
-                noTransformSelected.style.display = 'block';
-                
-                // 色変更パネル
-                colorControls.style.display = 'none';
-                noColorSelected.style.display = 'block';
+                // タブアイコンスタイルの変形ボタンを無効化
+                zoomOutBtn.disabled = true;
+                zoomInBtn.disabled = true;
+                rotateLeftBtn.disabled = true;
+                rotateRightBtn.disabled = true;
+
+                // テーマボタンを無効化
+                springThemeBtn.disabled = true;
+                summerThemeBtn.disabled = true;
+                autumnThemeBtn.disabled = true;
+                winterThemeBtn.disabled = true;
+                monochromeThemeBtn.disabled = true;
+                sepiaThemeBtn.disabled = true;
+
+                // レイヤー操作ボタンを無効化
+                bringToFrontBtn.disabled = true;
+                sendToBackBtn.disabled = true;
+                deleteLayerBtn.disabled = true;
             }
         }
 
@@ -1413,7 +1756,7 @@ if (!empty($categoryIds)) {
             }
 
             renderLayer(layer);
-            updateLayersList();
+            
             saveToStorage();
         }
 
@@ -1428,7 +1771,7 @@ if (!empty($categoryIds)) {
             layer.transform.y = 512;
 
             renderLayer(layer);
-            updateLayersList();
+            
             saveToStorage();
         }
 
@@ -1439,28 +1782,23 @@ if (!empty($categoryIds)) {
             const layer = layers.find(l => l.id === activeLayerId);
             if (!layer) return;
 
-            layer.transform.scale = Math.max(0.1, Math.min(3, scale));
+            // scaleが1未満の場合は相対的な変更、1以上の場合は絶対値
+            if (scale < 1) {
+                // 相対的な変更（例：0.9 = 現在の90%に）
+                layer.transform.scale = Math.max(0.1, Math.min(3, layer.transform.scale * scale));
+            } else {
+                // 絶対値指定（例：1.1 = 現在の110%に、ただし1より大きい場合）
+                if (scale > 1) {
+                    layer.transform.scale = Math.max(0.1, Math.min(3, layer.transform.scale * scale));
+                } else {
+                    // scale === 1の場合はリセット
+                    layer.transform.scale = 1;
+                }
+            }
 
             renderLayer(layer);
-            updateLayersList();
-            saveToStorage();
-        }
-
-        // レイヤースケール段階調整
-        function scaleLayerStep(step) {
-            if (!activeLayerId) return;
             
-            const layer = layers.find(l => l.id === activeLayerId);
-            if (!layer) return;
-
-            // 現在のスケールに段階的な調整を加算
-            const newScale = layer.transform.scale + step;
-            
-            // スケールの範囲制限（0.1〜3.0）
-            layer.transform.scale = Math.max(0.1, Math.min(3.0, newScale));
-
-            renderLayer(layer);
-            updateLayersList();
+            updateTransformControls();
             saveToStorage();
         }
 
@@ -1478,7 +1816,42 @@ if (!empty($categoryIds)) {
             }
 
             renderLayer(layer);
-            updateLayersList();
+            
+            updateTransformControls();
+            saveToStorage();
+        }
+
+        // タブアイコンボタン用のスケール関数
+        function scaleSelectedLayer(scale) {
+            if (!activeLayerId) return;
+            
+            const layer = layers.find(l => l.id === activeLayerId);
+            if (!layer) return;
+
+            layer.transform.scale *= scale;
+            
+            // スケールの最小値・最大値を制限
+            if (layer.transform.scale < 0.1) layer.transform.scale = 0.1;
+            if (layer.transform.scale > 5) layer.transform.scale = 5;
+
+            renderLayer(layer);
+            
+            updateTransformControls();
+            saveToStorage();
+        }
+
+        // タブアイコンボタン用の回転関数
+        function rotateSelectedLayer(degrees) {
+            if (!activeLayerId) return;
+            
+            const layer = layers.find(l => l.id === activeLayerId);
+            if (!layer) return;
+
+            layer.transform.rotation = (layer.transform.rotation + degrees) % 360;
+
+            renderLayer(layer);
+            
+            updateTransformControls();
             saveToStorage();
         }
 
@@ -1503,7 +1876,7 @@ if (!empty($categoryIds)) {
 
             const svgElements = layerElement.querySelectorAll('path, circle, rect, polygon, ellipse');
             console.log('svgElements count:', svgElements.length);
-            const excludeGrayBlack = document.getElementById('excludeGrayBlack').checked;
+            const excludeGrayBlack = true; // デフォルトで黒・グレー系を除外
             console.log('excludeGrayBlack:', excludeGrayBlack);
 
             const themeColors = {
@@ -1620,7 +1993,7 @@ if (!empty($categoryIds)) {
             if (!layerElement) return;
             
             const svgElements = layerElement.querySelectorAll('path, circle, rect, polygon, ellipse');
-            const excludeGrayBlack = document.getElementById('excludeGrayBlack').checked;
+            const excludeGrayBlack = true; // デフォルトで黒・グレー系を除外
             
             // カラーパレット
             let colors = [
@@ -1776,7 +2149,7 @@ if (!empty($categoryIds)) {
         }
 
         // 背景変更
-        function changeBackground(color) {
+        function changeBackground(color, skipUIUpdate = false) {
             currentBackground = color;
             const background = document.getElementById('canvasBackground');
             
@@ -1787,47 +2160,49 @@ if (!empty($categoryIds)) {
                 background.setAttribute('fill-opacity', '1');
             }
 
-            // ボタンの状態更新
-            const backgroundTab = document.getElementById('backgroundTab');
-            if (backgroundTab) {
+            // UI更新をスキップしない場合のみ実行（リアルタイム更新時のパフォーマンス向上）
+            if (!skipUIUpdate) {
+                updateBackgroundUI(color);
+            }
+
+            // ストレージ保存（リアルタイム更新時は頻度を制限）
+            if (!changeBackground._saveTimer) {
+                saveToStorage();
+                changeBackground._saveTimer = setTimeout(() => {
+                    changeBackground._saveTimer = null;
+                }, 100); // 100ms間隔で保存を制限
+            }
+        }
+
+        // 背景色UI更新を分離（パフォーマンス向上）
+        function updateBackgroundUI(color) {
+            const bgColorSection = document.querySelector('.bg-color-section');
+            if (bgColorSection) {
                 // 全てのボタンからactiveクラスを削除
-                backgroundTab.querySelectorAll('.bg-color-btn').forEach(btn => {
+                bgColorSection.querySelectorAll('.bg-color-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
                 
-                // 対応する色のボタンをアクティブに
-                const activeBtn = backgroundTab.querySelector(`[data-color="${color}"]`);
-                if (activeBtn) {
-                    activeBtn.classList.add('active');
+                // transparentボタンの状態更新
+                if (color === 'transparent') {
+                    const transparentBtn = bgColorSection.querySelector('[data-color="transparent"]');
+                    if (transparentBtn) {
+                        transparentBtn.classList.add('active');
+                    }
+                } else {
+                    // カスタム色の場合はtransparentボタンのactiveを解除
+                    const transparentBtn = bgColorSection.querySelector('[data-color="transparent"]');
+                    if (transparentBtn) {
+                        transparentBtn.classList.remove('active');
+                    }
                 }
                 
-                // カスタムカラーピッカーの値も更新
+                // カスタムカラーピッカーの値を更新（値が異なる場合のみ）
                 const customColorPicker = document.getElementById('customBgColor');
-                if (customColorPicker && color !== 'transparent') {
+                if (customColorPicker && color !== 'transparent' && customColorPicker.value !== color) {
                     customColorPicker.value = color;
                 }
             }
-
-            saveToStorage();
-        }
-
-        // PNG出力サイズ選択
-        function selectSize(buttonElement, size) {
-            selectedPngSize = size;
-            
-            // 全てのサイズボタンからactiveクラスを削除
-            document.querySelectorAll('.size-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // クリックされたボタンにactiveクラスを追加
-            buttonElement.classList.add('active');
-            
-            // 選択されたサイズを表示更新
-            document.getElementById('selectedSize').textContent = size;
-            document.getElementById('selectedSizeY').textContent = size;
-            
-            console.log('PNG出力サイズを変更:', size + 'px');
         }
 
         // PNG出力
@@ -1838,7 +2213,7 @@ if (!empty($categoryIds)) {
             }
 
             console.log('PNG出力開始 - 現在の背景色:', currentBackground);
-            console.log('PNG出力サイズ:', selectedPngSize + 'px');
+            console.log('PNG出力サイズ: 2500px (固定)');
 
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d', { alpha: true });
@@ -1906,71 +2281,228 @@ if (!empty($categoryIds)) {
                     element.remove();
                 });
                 
-                updateLayersList();
+                
                 updateTransformControls();
                 saveToStorage();
             }
         }
 
-        // 素材を再読み込み
-        function reloadMaterials() {
-            if (confirm('新しい素材を読み込みますか？（現在の作業内容は保持されます）')) {
-                // ローディング表示
-                const materialsGrid = document.getElementById('materialsGrid');
-                materialsGrid.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">読み込み中...</span></div><div class="mt-2">新しい素材を読み込み中...</div></div>';
+
+
+        // レイヤードラッグ機能を追加
+        function addLayerDragFunctionality(layerElement, layerId) {
+            let isDragging = false;
+            let startX, startY;
+            let initialTransform = { x: 0, y: 0 };
+            let currentDelta = { x: 0, y: 0 };
+            let animationId = null;
+
+            // マウスイベント
+            layerElement.addEventListener('mousedown', startDrag);
+            
+            // タッチイベント
+            layerElement.addEventListener('touchstart', startTouchDrag, { passive: false });
+
+            function startDrag(e) {
+                if (e.button !== 0) return; // 左クリックのみ
                 
-                // AJAXで新しい素材を取得
-                fetch('/compose/api/reload-materials.php', {
-                    method: 'GET',
-                    headers: {
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateMaterialsGrid(data.materials);
-                    } else {
-                        console.error('素材の読み込みに失敗しました:', data.error);
-                        materialsGrid.innerHTML = '<div class="text-center text-danger py-4">素材の読み込みに失敗しました。ページを再読み込みしてください。</div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('エラー:', error);
-                    materialsGrid.innerHTML = '<div class="text-center text-danger py-4">通信エラーが発生しました。ページを再読み込みしてください。</div>';
-                });
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                // 現在のレイヤーを選択
+                selectLayer(layerId);
+                
+                // レイヤーの現在のtransformを取得
+                const layer = layers.find(l => l.id === layerId);
+                if (layer) {
+                    initialTransform = { ...layer.transform };
+                }
+                
+                // console.log('レイヤードラッグ開始:', layerId);
+                
+                // グローバルイベントリスナー
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', endDrag);
+                
+                // ドラッグ中のスタイル
+                document.body.classList.add('dragging');
+                layerElement.classList.add('dragging');
             }
-        }
 
-        // 素材グリッドを更新
-        function updateMaterialsGrid(materials) {
-            const materialsGrid = document.getElementById('materialsGrid');
-            let html = '';
-            
-            materials.forEach(material => {
-                const imagePath = material.webp_medium_path || material.image_path;
-                html += `
-                    <div class="material-item" 
-                         data-material-id="${escapeHtml(material.id)}"
-                         data-svg-path="${escapeHtml(material.svg_path)}"
-                         data-title="${escapeHtml(material.title)}"
-                         onclick="addMaterialToCanvas(this)">
-                        <img src="/${escapeHtml(imagePath)}" 
-                             alt="${escapeHtml(material.title)}"
-                             loading="lazy">
-                    </div>
-                `;
-            });
-            
-            materialsGrid.innerHTML = html;
-        }
+            function startTouchDrag(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                
+                // 現在のレイヤーを選択
+                selectLayer(layerId);
+                
+                // レイヤーの現在のtransformを取得
+                const layer = layers.find(l => l.id === layerId);
+                if (layer) {
+                    initialTransform = { ...layer.transform };
+                }
+                
+                // console.log('レイヤータッチドラッグ開始:', layerId);
+                
+                // グローバルタッチイベントリスナー
+                document.addEventListener('touchmove', touchDrag, { passive: false });
+                document.addEventListener('touchend', endTouchDrag);
+                
+                // ドラッグ中のスタイル
+                document.body.classList.add('dragging');
+                layerElement.classList.add('dragging');
+            }
 
-        // HTMLエスケープユーティリティ関数
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            function drag(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                
+                currentDelta.x = e.clientX - startX;
+                currentDelta.y = e.clientY - startY;
+                
+                // フレーム更新をリクエスト
+                if (!animationId) {
+                    animationId = requestAnimationFrame(updateFrame);
+                }
+            }
+
+            function touchDrag(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                currentDelta.x = touch.clientX - startX;
+                currentDelta.y = touch.clientY - startY;
+                
+                // フレーム更新をリクエスト
+                if (!animationId) {
+                    animationId = requestAnimationFrame(updateFrame);
+                }
+            }
+
+            function updateFrame() {
+                if (isDragging) {
+                    updateLayerPosition(layerId, currentDelta.x, currentDelta.y);
+                }
+                animationId = null;
+            }
+
+            function endDrag() {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                // console.log('レイヤードラッグ終了:', layerId);
+                
+                // イベントリスナーを削除
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('mouseup', endDrag);
+                
+                // アニメーションフレームをキャンセル
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                
+                // スタイルを戻す
+                document.body.classList.remove('dragging');
+                layerElement.classList.remove('dragging');
+                
+                // 最終的な位置で完全レンダリング
+                const layer = layers.find(l => l.id === layerId);
+                if (layer) {
+                    renderLayer(layer);
+                }
+                
+                // 最終的な変更を保存
+                saveToStorage();
+            }
+
+            function endTouchDrag() {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                // console.log('レイヤータッチドラッグ終了:', layerId);
+                
+                // イベントリスナーを削除
+                document.removeEventListener('touchmove', touchDrag);
+                document.removeEventListener('touchend', endTouchDrag);
+                
+                // アニメーションフレームをキャンセル
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                
+                // スタイルを戻す
+                document.body.classList.remove('dragging');
+                layerElement.classList.remove('dragging');
+                
+                // 最終的な位置で完全レンダリング
+                const layer = layers.find(l => l.id === layerId);
+                if (layer) {
+                    renderLayer(layer);
+                }
+                
+                // 最終的な変更を保存
+                saveToStorage();
+            }
+
+            function updateLayerPosition(layerId, deltaX, deltaY) {
+                const layer = layers.find(l => l.id === layerId);
+                if (!layer) return;
+                
+                // SVGキャンバスのスケールを考慮した移動量を計算
+                const canvas = document.getElementById('mainCanvas');
+                const canvasRect = canvas.getBoundingClientRect();
+                const scaleX = 1024 / canvasRect.width;
+                const scaleY = 1024 / canvasRect.height;
+                
+                // 新しい位置を計算
+                const newX = initialTransform.x + (deltaX * scaleX);
+                const newY = initialTransform.y + (deltaY * scaleY);
+                
+                // 境界チェック（キャンバス内に制限）
+                layer.transform.x = Math.max(-400, Math.min(1424, newX));
+                layer.transform.y = Math.max(-400, Math.min(1424, newY));
+                
+                // 高速更新：transform属性のみを直接更新
+                updateLayerTransformFast(layerId, layer);
+                
+                // 変形コントロールも更新（リアルタイム）
+                if (activeLayerId === layerId) {
+                    updateTransformControls();
+                }
+            }
+
+            // 高速transform更新（再レンダリングなし）
+            function updateLayerTransformFast(layerId, layer) {
+                const layerElement = document.getElementById(`layer-${layerId}`);
+                if (!layerElement) return;
+                
+                // オブジェクトの境界ボックスを取得（変形前の状態）
+                const bbox = layerElement.getBBox();
+                const centerX = bbox.x + bbox.width / 2;
+                const centerY = bbox.y + bbox.height / 2;
+                
+                // オブジェクトをキャンバス上の指定位置に配置（元の位置をオフセット）
+                const translateX = layer.transform.x - centerX;
+                const translateY = layer.transform.y - centerY;
+                
+                // 変形を適用
+                const transform = `translate(${translateX}, ${translateY}) scale(${layer.transform.scale}) rotate(${layer.transform.rotation}, ${layer.transform.x}, ${layer.transform.y})`;
+                layerElement.setAttribute('transform', transform);
+            }
         }
 
         // ローカルストレージに保存
@@ -2002,13 +2534,260 @@ if (!empty($categoryIds)) {
                     // 背景を復元
                     changeBackground(currentBackground);
                     
-                    updateLayersList();
+                    
                     updateTransformControls();
                 }
             } catch (error) {
                 console.error('データ読み込みエラー:', error);
             }
         }
+
+        // ドラッグ&ドロップ関連の関数
+        let draggedMaterialData = null;
+
+        // 素材のドラッグ開始
+        function startMaterialDrag(event, element) {
+            console.log('ドラッグ開始:', element.dataset.title);
+            
+            draggedMaterialData = {
+                materialId: element.dataset.materialId,
+                svgPath: element.dataset.svgPath,
+                title: element.dataset.title
+            };
+            
+            // DataTransferにも同じデータを設定
+            try {
+                event.dataTransfer.setData('text/plain', JSON.stringify(draggedMaterialData));
+                event.dataTransfer.effectAllowed = 'copy';
+            } catch (e) {
+                console.log('DataTransfer設定エラー:', e);
+            }
+            
+            // ドラッグ中の視覚効果
+            element.style.opacity = '0.5';
+            
+            // ドラッグイメージをより小さく設定
+            try {
+                const dragImage = element.cloneNode(true);
+                dragImage.style.transform = 'scale(0.8)';
+                document.body.appendChild(dragImage);
+                event.dataTransfer.setDragImage(dragImage, 40, 40);
+                setTimeout(() => {
+                    if (document.body.contains(dragImage)) {
+                        document.body.removeChild(dragImage);
+                    }
+                }, 1);
+            } catch (e) {
+                console.log('ドラッグイメージ設定エラー:', e);
+            }
+        }
+
+        // 素材のドラッグ終了
+        function endMaterialDrag(event, element) {
+            element.style.opacity = '1';
+        }
+
+        // ドロップを許可
+        function allowDrop(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+            console.log('ドラッグオーバー検出');
+            
+            // ドロップエリアのハイライト効果
+            const dropArea = document.getElementById('canvasDropArea');
+            dropArea.classList.add('drag-over');
+        }
+
+        // ドラッグハイライトをクリア
+        function clearDragHighlight(event) {
+            // 子要素にドラッグが移動した場合はハイライトを維持
+            if (event.relatedTarget && event.currentTarget.contains(event.relatedTarget)) {
+                return;
+            }
+            
+            const dropArea = document.getElementById('canvasDropArea');
+            dropArea.classList.remove('drag-over');
+        }
+
+        // キャンバスに素材をドロップ
+        function dropMaterialOnCanvas(event) {
+            event.preventDefault();
+            console.log('ドロップ検出:', draggedMaterialData);
+            
+            // ドロップエリアのハイライトを解除
+            const dropArea = document.getElementById('canvasDropArea');
+            dropArea.classList.remove('drag-over');
+            
+            let materialData = draggedMaterialData;
+            
+            // DataTransferからもデータを取得を試行
+            if (!materialData) {
+                try {
+                    const transferData = event.dataTransfer.getData('text/plain');
+                    if (transferData) {
+                        materialData = JSON.parse(transferData);
+                        console.log('DataTransferからデータを取得:', materialData);
+                    }
+                } catch (e) {
+                    console.log('DataTransfer読み込みエラー:', e);
+                }
+            }
+            
+            if (!materialData) {
+                console.log('ドラッグデータなし');
+                return;
+            }
+            
+            // ドロップ位置を計算
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width) * 1024;
+            const y = ((event.clientY - rect.top) / rect.height) * 1024;
+            
+            console.log('ドロップ位置:', { x, y });
+            
+            // 指定位置に素材を追加
+            addMaterialToCanvasAtPosition(materialData, x, y);
+            
+            draggedMaterialData = null;
+        }
+
+        // 指定位置に素材を追加
+        function addMaterialToCanvasAtPosition(materialData, x, y) {
+            const { materialId, svgPath, title } = materialData;
+
+            // SVGファイルを読み込み
+            fetch('/' + svgPath)
+                .then(response => response.text())
+                .then(svgText => {
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+                    const svgElement = svgDoc.querySelector('svg');
+                    
+                    if (svgElement) {
+                        // レイヤーオブジェクトを作成（指定位置で）
+                        const layer = {
+                            id: ++layerIdCounter,
+                            materialId: materialId,
+                            svgId: materialId,
+                            title: title,
+                            svgContent: svgElement.innerHTML,
+                            originalSvgContent: svgElement.innerHTML,
+                            svgPath: svgPath,
+                            transform: {
+                                x: Math.max(50, Math.min(974, x)), // キャンバス境界内に制限
+                                y: Math.max(50, Math.min(974, y)),
+                                scale: 1,
+                                rotation: 0
+                            },
+                            visible: true
+                        };
+
+                        layers.push(layer);
+                        renderLayer(layer);
+                        
+                        saveToStorage();
+
+                        // 素材タブから自動的にレイヤータブに切り替え
+                        
+                    }
+                })
+                .catch(error => {
+                    console.error('SVG読み込みエラー:', error);
+                    alert('素材の読み込みに失敗しました');
+                });
+        }
+
+        // タッチデバイス対応（現在は無効化 - タッチでも中央配置）
+        let selectedMaterialForPlacement = null;
+        let touchPlacementActive = false;
+
+        // 素材のタッチ選択（スマートフォン/タブレット用）
+        function handleMaterialTouch(event, element) {
+            // タッチでも通常のクリック動作をする（中央配置）
+            if (event.type === 'touchstart') {
+                event.preventDefault();
+                
+                // 通常のaddMaterialToCanvas関数を呼び出し
+                addMaterialToCanvas(element);
+            }
+        }
+
+        // キャンバスでのタッチ配置（現在は無効化）
+        function handleCanvasTouch(event) {
+            // タッチ配置機能は無効化されています
+            // タッチでも通常のクリック動作（中央配置）を利用してください
+        }
+
+        // タッチ配置モードをリセット（現在は無効化）
+        function resetTouchPlacementMode() {
+            touchPlacementActive = false;
+            selectedMaterialForPlacement = null;
+            document.querySelectorAll('.material-item.selected-for-placement').forEach(item => {
+                item.classList.remove('selected-for-placement');
+            });
+            hideTouchPlacementGuide();
+        }
+
+        // 配置モードの案内を表示（現在は無効化）
+        function showTouchPlacementGuide() {
+            // タッチ配置機能は無効化されているため、案内を表示しません
+            return;
+        }
+
+        // 配置モードの案内を非表示
+        function hideTouchPlacementGuide() {
+            const guide = document.getElementById('touchPlacementGuide');
+            if (guide) {
+                guide.style.display = 'none';
+            }
+        }
+
+        // ページ初期化時にタッチイベントを設定（現在は無効化）
+        document.addEventListener('DOMContentLoaded', function() {
+            // タッチ配置機能は無効化されています
+            // タッチでも通常のクリック動作（中央配置）を使用します
+        });
+
+
+
+        // 素材検索機能
+        function searchMaterials() {
+            const searchTerm = document.getElementById('materialSearch').value.toLowerCase().trim();
+            const materials = document.querySelectorAll('.material-item');
+            const noResults = document.getElementById('noSearchResults');
+            let visibleCount = 0;
+
+            materials.forEach(material => {
+                const title = material.dataset.title.toLowerCase();
+                const shouldShow = !searchTerm || title.includes(searchTerm);
+                
+                material.style.display = shouldShow ? 'flex' : 'none';
+                if (shouldShow) visibleCount++;
+            });
+
+            // 検索結果がない場合のメッセージ表示
+            if (searchTerm && visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+
+        // 検索クリア
+        function clearSearch() {
+            document.getElementById('materialSearch').value = '';
+            searchMaterials();
+        }
+
+        // キーボード入力処理
+        function handleSearchKeydown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchMaterials();
+            }
+        }
+
+
     </script>
 </body>
 </html>
