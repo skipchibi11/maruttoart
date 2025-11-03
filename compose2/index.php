@@ -25,7 +25,7 @@ $materials = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
-    <title>シンプルSVG編集ツール - maruttoart</title>
+    <title>あなたのアトリエ - maruttoart</title>
     <meta name="description" content="SVG素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,19 +67,18 @@ $materials = $stmt->fetchAll();
 
         .main-content {
             display: flex;
+            flex-direction: column;
             gap: 20px;
             min-height: 600px;
         }
 
-        /* 左側：素材パネル */
+        /* 素材パネル */
         .materials-panel {
-            flex: 0 0 300px;
             background: white;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            max-height: 80vh;
-            overflow-y: auto;
+            order: 1;
         }
 
         .materials-panel h3 {
@@ -93,8 +92,9 @@ $materials = $stmt->fetchAll();
 
         .materials-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            max-width: 100%;
         }
 
         .material-item {
@@ -125,26 +125,15 @@ $materials = $stmt->fetchAll();
             border-radius: 4px;
         }
 
-        .material-item .title {
-            position: absolute;
-            bottom: -25px;
-            left: 0;
-            right: 0;
-            font-size: 10px;
-            text-align: center;
-            color: #666;
-            font-weight: 500;
-        }
-
-        /* 右側：キャンバスエリア */
+        /* キャンバスエリア */
         .canvas-area {
-            flex: 1;
             background: white;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
+            order: 2;
         }
 
         .canvas-header {
@@ -171,10 +160,11 @@ $materials = $stmt->fetchAll();
             background: #f8f9fa;
             border: 2px dashed #dee2e6;
             border-radius: 10px;
-            min-height: 500px;
+            min-height: 60vh;
             position: relative;
             /* タッチ操作の最適化 */
             touch-action: manipulation;
+            padding: 10px; /* 内側の余白を最小限に */
         }
 
         #mainCanvas {
@@ -185,6 +175,59 @@ $materials = $stmt->fetchAll();
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            aspect-ratio: 1; /* 正方形を保持 */
+        }
+
+        /* 操作ボタンエリア */
+        .manipulation-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            order: 3;
+        }
+
+        .manipulation-controls h3 {
+            color: #2c5aa0;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+
+        .manipulation-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* 出力・削除ボタンエリア */
+        .action-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            order: 4;
+        }
+
+        .action-controls h3 {
+            color: #2c5aa0;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .controls {
@@ -274,22 +317,52 @@ $materials = $stmt->fetchAll();
 
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
+            .canvas-container {
+                min-height: 45vh; /* スマホでは画面の45%に調整 */
+                margin-bottom: 15px;
+                padding: 5px; /* スマホでは内側余白をさらに減らす */
             }
             
-            .materials-panel {
-                flex: none;
-                max-height: none;
-                order: 2;
-            }
-            
-            .canvas-area {
-                order: 1;
+            #mainCanvas {
+                max-width: min(85vw, 450px); /* 画面幅の85%かつ最大450px */
+                max-height: min(40vh, 450px); /* 画面高の40%かつ最大450px */
+                width: auto;
+                height: auto;
             }
             
             .materials-grid {
-                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+                gap: 10px;
+            }
+            
+            /* スマホでのボタンサイズ最適化 */
+            .manipulation-buttons,
+            .action-buttons {
+                gap: 8px;
+            }
+            
+            .manipulation-buttons button,
+            .action-buttons button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            /* コンテンツ全体のパディング調整 */
+            .materials-panel,
+            .canvas-area,
+            .manipulation-controls,
+            .action-controls {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+
+            /* スマホでのセクションタイトルサイズ調整 */
+            .manipulation-controls h3,
+            .action-controls h3 {
+                font-size: 1rem;
             }
         }
 
@@ -314,13 +387,12 @@ $materials = $stmt->fetchAll();
     <div class="container">
         <!-- ヘッダー -->
         <div class="header">
-            <h1><i class="bi bi-palette"></i> シンプルSVG編集ツール</h1>
-            <p>SVG素材をクリックしてキャンバスに配置し、PNG画像として出力できます</p>
+            <h1>あなたのアトリエ</h1>
         </div>
 
         <!-- メインコンテンツ -->
         <div class="main-content">
-            <!-- 左側：素材パネル -->
+            <!-- 素材選択エリア -->
             <div class="materials-panel">
                 <h3><i class="bi bi-collection"></i> 素材一覧</h3>
                 
@@ -334,16 +406,15 @@ $materials = $stmt->fetchAll();
                             <img src="/<?= htmlspecialchars($material['webp_medium_path'] ?: $material['image_path']) ?>" 
                                  alt="<?= htmlspecialchars($material['title']) ?>"
                                  loading="lazy">
-                            <div class="title"><?= htmlspecialchars($material['title']) ?></div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </div>
 
-            <!-- 右側：キャンバスエリア -->
+            <!-- キャンバスエリア -->
             <div class="canvas-area">
                 <div class="canvas-header">
-                    <h3><i class="bi bi-easel"></i> 編集キャンバス</h3>
+                    <h3>あなたのキャンバス</h3>
                 </div>
                 
                 <div class="canvas-container">
@@ -358,17 +429,25 @@ $materials = $stmt->fetchAll();
                         <!-- レイヤーがここに追加されます -->
                     </svg>
                 </div>
+            </div>
 
-                <!-- コントロールボタン -->
-                <div class="controls">
-                    <button id="rotateBtn" class="btn btn-rotate" title="選択したレイヤーを30度右回転">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-cw-icon lucide-rotate-cw"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-                        回転
-                    </button>
+            <!-- 操作ボタンエリア -->
+            <div class="manipulation-controls">
+                <h3><i class="bi bi-gear"></i> レイヤー操作</h3>
+                <div class="manipulation-buttons">
                     <button id="scaleDownBtn" class="btn btn-scale-down" title="選択したレイヤーを20%縮小">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zoom-out-icon lucide-zoom-out"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
-                        縮小
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
                     </button>
+                    <button id="rotateBtn" class="btn btn-rotate" title="選択したレイヤーを30度右回転">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 出力・削除ボタンエリア -->
+            <div class="action-controls">
+                <h3><i class="bi bi-tools"></i> 出力・削除</h3>
+                <div class="action-buttons">
                     <button id="exportBtn" class="btn btn-export">
                         <i class="bi bi-download"></i> PNG出力
                     </button>
