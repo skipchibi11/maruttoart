@@ -187,14 +187,47 @@ $materials = $stmt->fetchAll();
             order: 3;
         }
 
+        .manipulation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
         .manipulation-controls h3 {
             color: #2c5aa0;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 1.1rem;
+        }
+
+        .selected-layer-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selected-title {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .selected-title.active {
+            color: #2c5aa0;
+            background: #e3f2fd;
+            border-color: #2c5aa0;
         }
 
         .manipulation-buttons {
@@ -271,13 +304,15 @@ $materials = $stmt->fetchAll();
             background: #f39c12;
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
         }
         
         .btn-rotate:hover {
@@ -291,17 +326,45 @@ $materials = $stmt->fetchAll();
             opacity: 0.6;
         }
 
-        .btn-scale-down {
-            background: #9b59b6;
+        .btn-rotate-left {
+            background: #e67e22;
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 12px;
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-rotate-left:hover {
+            background: #d35400;
+            color: white;
+        }
+
+        .btn-rotate-left:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-scale-down {
+            background: #9b59b6;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
         }
         
         .btn-scale-down:hover {
@@ -310,6 +373,32 @@ $materials = $stmt->fetchAll();
         }
 
         .btn-scale-down:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-scale-up {
+            background: #27ae60;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-scale-up:hover {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-scale-up:disabled {
             background: #bdc3c7;
             cursor: not-allowed;
             opacity: 0.6;
@@ -341,9 +430,16 @@ $materials = $stmt->fetchAll();
                 gap: 8px;
             }
             
-            .manipulation-buttons button,
+            /* 操作ボタンは指でタッチしやすいサイズを維持 */
+            .manipulation-buttons button {
+                min-width: 50px;
+                min-height: 50px;
+                padding: 14px;
+            }
+            
+            /* 出力・削除ボタンはテキストがあるのでサイズ調整 */
             .action-buttons button {
-                padding: 8px 16px;
+                padding: 10px 16px;
                 font-size: 14px;
             }
             
@@ -363,6 +459,18 @@ $materials = $stmt->fetchAll();
             .manipulation-controls h3,
             .action-controls h3 {
                 font-size: 1rem;
+            }
+
+            /* スマホでのヘッダー調整 */
+            .manipulation-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .selected-title {
+                font-size: 0.8rem;
+                min-width: 100px;
             }
         }
 
@@ -433,13 +541,24 @@ $materials = $stmt->fetchAll();
 
             <!-- 操作ボタンエリア -->
             <div class="manipulation-controls">
-                <h3><i class="bi bi-gear"></i> レイヤー操作</h3>
+                <div class="manipulation-header">
+                    <h3><i class="bi bi-gear"></i> レイヤー操作</h3>
+                    <div class="selected-layer-info">
+                        <span id="selectedLayerTitle" class="selected-title">レイヤーを選択してください</span>
+                    </div>
+                </div>
                 <div class="manipulation-buttons">
                     <button id="scaleDownBtn" class="btn btn-scale-down" title="選択したレイヤーを20%縮小">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
+                    </button>
+                    <button id="scaleUpBtn" class="btn btn-scale-up" title="選択したレイヤーを25%拡大">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/><line x1="11" x2="11" y1="8" y2="14"/></svg>
+                    </button>
+                    <button id="rotateLeftBtn" class="btn btn-rotate-left" title="選択したレイヤーを30度左回転">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw-icon lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                     </button>
                     <button id="rotateBtn" class="btn btn-rotate" title="選択したレイヤーを30度右回転">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                     </button>
                 </div>
             </div>
@@ -603,9 +722,11 @@ $materials = $stmt->fetchAll();
             if (selectedLayerId === layer.id) {
                 layerGroup.style.cursor = 'move';
                 layerGroup.style.filter = 'drop-shadow(0 0 3px rgba(0,123,255,0.8))';
+                console.log(`Layer ${layer.id} is SELECTED - applying blue glow`);
             } else {
                 layerGroup.style.cursor = 'pointer';
                 layerGroup.style.filter = '';
+                console.log(`Layer ${layer.id} is not selected (selectedLayerId: ${selectedLayerId})`);
             }
             
             console.log(`Layer ${layer.id} rendered: ${transformString} (center: ${centerX}, ${centerY})`);
@@ -614,7 +735,10 @@ $materials = $stmt->fetchAll();
         // レイヤー選択機能
         function selectLayer(layerId) {
             selectedLayerId = layerId;
-            console.log(`Layer ${layerId} selected`);
+            console.log(`Layer ${layerId} selected - selectedLayerId is now: ${selectedLayerId}`);
+            
+            // 選択中の素材タイトルを更新
+            updateSelectedLayerTitle();
             
             // 全レイヤーを再描画して選択状態を反映
             layers.forEach(layer => {
@@ -624,6 +748,9 @@ $materials = $stmt->fetchAll();
             // ボタンの状態を更新
             updateRotateButtonState();
             updateScaleDownButtonState();
+            updateScaleUpButtonState();
+            
+            console.log(`Selection complete - selectedLayerId: ${selectedLayerId}`);
         }
 
         // レイヤーの選択を解除
@@ -638,9 +765,13 @@ $materials = $stmt->fetchAll();
                     renderLayer(layer);
                 });
 
+                // 選択中の素材タイトルを更新
+                updateSelectedLayerTitle();
+
                 // ボタンの状態を更新
                 updateRotateButtonState();
                 updateScaleDownButtonState();
+                updateScaleUpButtonState();
             }
         }
 
@@ -744,8 +875,48 @@ $materials = $stmt->fetchAll();
                     layer.transform.rotation -= 360;
                 }
                 
-                renderLayer(layer);
-                console.log(`Layer ${selectedLayerId} rotated to ${layer.transform.rotation} degrees`);
+                // 現在の選択IDを保存
+                const currentSelectedId = selectedLayerId;
+                
+                // 全レイヤーを再描画（選択状態を保持）
+                layers.forEach(l => {
+                    renderLayer(l);
+                });
+                
+                // 選択中の素材タイトルを更新
+                updateSelectedLayerTitle();
+                
+                console.log(`Layer ${currentSelectedId} rotated right to ${layer.transform.rotation} degrees`);
+            }
+        }
+
+        // 選択されたレイヤーを30度左回転
+        function rotateLeftSelectedLayer() {
+            if (selectedLayerId === null) {
+                alert('回転させるレイヤーを選択してください。');
+                return;
+            }
+
+            const layer = layers.find(l => l.id === selectedLayerId);
+            if (layer) {
+                layer.transform.rotation -= 30;
+                // 0度未満の場合は360度から引く
+                if (layer.transform.rotation < 0) {
+                    layer.transform.rotation += 360;
+                }
+                
+                // 現在の選択IDを保存
+                const currentSelectedId = selectedLayerId;
+                
+                // 全レイヤーを再描画（選択状態を保持）
+                layers.forEach(l => {
+                    renderLayer(l);
+                });
+                
+                // 選択中の素材タイトルを更新
+                updateSelectedLayerTitle();
+                
+                console.log(`Layer ${currentSelectedId} rotated left to ${layer.transform.rotation} degrees`);
             }
         }
 
@@ -768,20 +939,85 @@ $materials = $stmt->fetchAll();
                     return;
                 }
                 
-                renderLayer(layer);
-                console.log(`Layer ${selectedLayerId} scaled down to ${(layer.transform.scale * 100).toFixed(1)}%`);
+                // 現在の選択IDを保存
+                const currentSelectedId = selectedLayerId;
+                
+                // 全レイヤーを再描画（選択状態を保持）
+                layers.forEach(l => {
+                    renderLayer(l);
+                });
+                
+                // ボタンの状態を更新（スケール変更後に制限チェック）
+                updateScaleDownButtonState();
+                updateScaleUpButtonState();
+                
+                // 選択中の素材タイトルを更新
+                updateSelectedLayerTitle();
+                
+                console.log(`Layer ${currentSelectedId} scaled down to ${(layer.transform.scale * 100).toFixed(1)}%`);
+            }
+        }
+
+        // 選択されたレイヤーを25%拡大
+        function scaleUpSelectedLayer() {
+            console.log(`scaleUpSelectedLayer called: selectedLayerId = ${selectedLayerId}`);
+            
+            if (selectedLayerId === null) {
+                console.log('selectedLayerId is null - showing alert');
+                alert('拡大させるレイヤーを選択してください。');
+                return;
+            }
+
+            const layer = layers.find(l => l.id === selectedLayerId);
+            if (layer) {
+                // 25%拡大（現在のサイズの125%にする）
+                layer.transform.scale *= 1.25;
+                
+                // 最大サイズ制限（500%まで）
+                if (layer.transform.scale > 5.0) {
+                    layer.transform.scale = 5.0;
+                    alert('これ以上拡大できません。（最大500%）');
+                    return;
+                }
+                
+                // 現在の選択IDを保存
+                const currentSelectedId = selectedLayerId;
+                
+                // 全レイヤーを再描画（選択状態を保持）
+                layers.forEach(l => {
+                    renderLayer(l);
+                });
+                
+                // ボタンの状態を更新（スケール変更後に制限チェック）
+                updateScaleDownButtonState();
+                updateScaleUpButtonState();
+                
+                // 選択中の素材タイトルを更新
+                updateSelectedLayerTitle();
+                
+                console.log(`Layer ${currentSelectedId} scaled up to ${(layer.transform.scale * 100).toFixed(1)}%`);
             }
         }
 
         // 回転ボタンの状態を更新
         function updateRotateButtonState() {
             const rotateBtn = document.getElementById('rotateBtn');
+            const rotateLeftBtn = document.getElementById('rotateLeftBtn');
+            
+            console.log(`updateRotateButtonState: selectedLayerId = ${selectedLayerId}`);
+            
             if (selectedLayerId !== null) {
                 rotateBtn.disabled = false;
                 rotateBtn.title = '選択したレイヤーを30度右回転';
+                rotateLeftBtn.disabled = false;
+                rotateLeftBtn.title = '選択したレイヤーを30度左回転';
+                console.log('Rotate buttons ENABLED');
             } else {
                 rotateBtn.disabled = true;
                 rotateBtn.title = 'レイヤーを選択してから回転できます';
+                rotateLeftBtn.disabled = true;
+                rotateLeftBtn.title = 'レイヤーを選択してから回転できます';
+                console.log('Rotate buttons DISABLED');
             }
         }
 
@@ -800,6 +1036,48 @@ $materials = $stmt->fetchAll();
             } else {
                 scaleDownBtn.disabled = true;
                 scaleDownBtn.title = 'レイヤーを選択してから縮小できます';
+            }
+        }
+
+        // 拡大ボタンの状態を更新
+        function updateScaleUpButtonState() {
+            const scaleUpBtn = document.getElementById('scaleUpBtn');
+            if (selectedLayerId !== null) {
+                const layer = layers.find(l => l.id === selectedLayerId);
+                if (layer && layer.transform.scale < 5.0) {
+                    scaleUpBtn.disabled = false;
+                    scaleUpBtn.title = '選択したレイヤーを25%拡大';
+                } else {
+                    scaleUpBtn.disabled = true;
+                    scaleUpBtn.title = 'これ以上拡大できません（最大500%）';
+                }
+            } else {
+                scaleUpBtn.disabled = true;
+                scaleUpBtn.title = 'レイヤーを選択してから拡大できます';
+            }
+        }
+
+        // 選択中の素材タイトルを更新
+        function updateSelectedLayerTitle() {
+            const titleElement = document.getElementById('selectedLayerTitle');
+            
+            console.log(`updateSelectedLayerTitle: selectedLayerId = ${selectedLayerId}`);
+            
+            if (selectedLayerId !== null) {
+                const layer = layers.find(l => l.id === selectedLayerId);
+                if (layer) {
+                    titleElement.textContent = layer.title;
+                    titleElement.classList.add('active');
+                    console.log(`Title updated to: ${layer.title}`);
+                } else {
+                    titleElement.textContent = 'レイヤーを選択してください';
+                    titleElement.classList.remove('active');
+                    console.log('Layer not found in layers array');
+                }
+            } else {
+                titleElement.textContent = 'レイヤーを選択してください';
+                titleElement.classList.remove('active');
+                console.log('selectedLayerId is null - showing default message');
             }
         }
 
@@ -897,10 +1175,30 @@ $materials = $stmt->fetchAll();
             });
             
             // ボタンイベントを追加
-            document.getElementById('rotateBtn').addEventListener('click', rotateSelectedLayer);
-            document.getElementById('scaleDownBtn').addEventListener('click', scaleDownSelectedLayer);
-            document.getElementById('exportBtn').addEventListener('click', exportToPNG);
-            document.getElementById('clearBtn').addEventListener('click', clearAll);
+            document.getElementById('rotateBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                rotateSelectedLayer();
+            });
+            document.getElementById('rotateLeftBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                rotateLeftSelectedLayer();
+            });
+            document.getElementById('scaleDownBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                scaleDownSelectedLayer();
+            });
+            document.getElementById('scaleUpBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                scaleUpSelectedLayer();
+            });
+            document.getElementById('exportBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                exportToPNG();
+            });
+            document.getElementById('clearBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                clearAll();
+            });
             
             // グローバルマウスイベントを追加
             document.addEventListener('mousemove', onDrag);
@@ -936,7 +1234,14 @@ $materials = $stmt->fetchAll();
             // キャンバス外をクリックしたときの選択解除
             document.addEventListener('click', function(e) {
                 const canvas = document.getElementById('mainCanvas');
-                if (!canvas.contains(e.target) && !e.target.closest('.layer-element')) {
+                const manipulationControls = document.querySelector('.manipulation-controls');
+                const actionControls = document.querySelector('.action-controls');
+                
+                // キャンバス、レイヤー要素、操作ボタンエリアのクリックは除外
+                if (!canvas.contains(e.target) && 
+                    !e.target.closest('.layer-element') && 
+                    !manipulationControls.contains(e.target) &&
+                    !actionControls.contains(e.target)) {
                     deselectLayer();
                 }
             });
@@ -949,12 +1254,14 @@ $materials = $stmt->fetchAll();
             // ボタンの初期状態を設定
             updateRotateButtonState();
             updateScaleDownButtonState();
+            updateScaleUpButtonState();
+            updateSelectedLayerTitle();
 
             console.log(`${materialItems.length}個の素材を読み込み完了`);
             console.log('素材をクリックしてキャンバスに配置してください');
             console.log('レイヤーをクリック/タップして選択し、ドラッグで移動できます（デベロッパーツール対応）');
-            console.log('レイヤーを選択して回転ボタンをクリックすると30度ずつ右回転します');
-            console.log('レイヤーを選択して縮小ボタンをクリックすると20%ずつ縮小します');
+            console.log('レイヤーを選択して回転ボタンをクリックすると30度ずつ左右回転します');
+            console.log('レイヤーを選択して縮小ボタンをクリックすると20%ずつ縮小し、拡大ボタンをクリックすると25%ずつ拡大します');
         });
     </script>
 </body>
