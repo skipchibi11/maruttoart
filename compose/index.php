@@ -13,7 +13,7 @@ $stmt = $pdo->prepare("
     WHERE svg_path IS NOT NULL 
     AND svg_path != '' 
     ORDER BY RAND() 
-    LIMIT 10
+    LIMIT 5
 ");
 $stmt->execute();
 $materials = $stmt->fetchAll();
