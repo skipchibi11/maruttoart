@@ -482,6 +482,162 @@ $materials = $stmt->fetchAll();
             opacity: 0.6;
         }
 
+        .btn-spring-theme {
+            background: #2ecc71;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-spring-theme:hover {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-spring-theme:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-summer-theme {
+            background: #3498db;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-summer-theme:hover {
+            background: #2980b9;
+            color: white;
+        }
+
+        .btn-summer-theme:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-autumn-theme {
+            background: #e67e22;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-autumn-theme:hover {
+            background: #d35400;
+            color: white;
+        }
+
+        .btn-autumn-theme:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-winter-theme {
+            background: #9b59b6;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-winter-theme:hover {
+            background: #8e44ad;
+            color: white;
+        }
+
+        .btn-winter-theme:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-monochrome-theme {
+            background: #34495e;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-monochrome-theme:hover {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn-monochrome-theme:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-sepia-theme {
+            background: #d68910;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-sepia-theme:hover {
+            background: #b7740f;
+            color: white;
+        }
+
+        .btn-sepia-theme:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
             .canvas-container {
@@ -647,6 +803,24 @@ $materials = $stmt->fetchAll();
                     <button id="deleteBtn" class="btn btn-delete" title="選択したレイヤーを削除">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
+                    <button id="springThemeBtn" class="btn btn-spring-theme" title="春テーマを適用">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flower-icon lucide-flower"><circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/><path d="M12 7.5V9"/><path d="M7.5 12H9"/><path d="M16.5 12H15"/><path d="M12 16.5V15"/><path d="m8 8 1.88 1.88"/><path d="M14.12 9.88 16 8"/><path d="m8 16 1.88-1.88"/><path d="M14.12 14.12 16 16"/></svg>
+                    </button>
+                    <button id="summerThemeBtn" class="btn btn-summer-theme" title="夏テーマを適用">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                    </button>
+                    <button id="autumnThemeBtn" class="btn btn-autumn-theme" title="秋テーマを適用">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-leaf"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+                    </button>
+                    <button id="winterThemeBtn" class="btn btn-winter-theme" title="冬テーマを適用">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-snowflake-icon lucide-snowflake"><path d="m10 20-1.25-2.5L6 18"/><path d="M10 4 8.75 6.5 6 6"/><path d="m14 20 1.25-2.5L18 18"/><path d="m14 4 1.25 2.5L18 6"/><path d="m17 21-3-6h-4"/><path d="m17 3-3 6 1.5 3"/><path d="M2 12h6.5L10 9"/><path d="m20 10-1.5 2 1.5 2"/><path d="M22 12h-6.5L14 15"/><path d="m4 10 1.5 2L4 14"/><path d="m7 21 3-6-1.5-3"/><path d="m7 3 3 6h4"/></svg>
+                    </button>
+                    <button id="monochromeThemeBtn" class="btn btn-monochrome-theme" title="白黒テーマを適用">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panda-icon lucide-panda"><path d="M11.25 17.25h1.5L12 18z"/><path d="m15 12 2 2"/><path d="M18 6.5a.5.5 0 0 0-.5-.5"/><path d="M20.69 9.67a4.5 4.5 0 1 0-7.04-5.5 8.35 8.35 0 0 0-3.3 0 4.5 4.5 0 1 0-7.04 5.5C2.49 11.2 2 12.88 2 14.5 2 19.47 6.48 22 12 22s10-2.53 10-7.5c0-1.62-.48-3.3-1.3-4.83"/><path d="M6 6.5a.495.495 0 0 1 .5-.5"/><path d="m9 12-2 2"/></svg>
+                    </button>
+                    <button id="sepiaThemeBtn" class="btn btn-sepia-theme" title="セピアテーマを適用">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coffee-icon lucide-coffee"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>
+                    </button>
                 </div>
             </div>
 
@@ -670,7 +844,7 @@ $materials = $stmt->fetchAll();
         
         // 基本変数
         let layers = [];
-        let layerIdCounter = 0;
+        let nextLayerId = 1;
         let selectedLayerId = null;
         let isDragging = false;
         let dragStartPos = { x: 0, y: 0 };
@@ -720,7 +894,7 @@ $materials = $stmt->fetchAll();
 
                         // レイヤーオブジェクトを作成
                         const layer = {
-                            id: ++layerIdCounter,
+                            id: nextLayerId++,
                             materialId: materialId,
                             title: title,
                             svgContent: svgElement.innerHTML,
@@ -738,6 +912,9 @@ $materials = $stmt->fetchAll();
                         layers.push(layer);
                         renderLayer(layer);
                         console.log(`素材「${title}」をキャンバス中央に追加`);
+                        
+                        // ローカルストレージに保存
+                        saveToLocalStorage();
                     } else {
                         throw new Error('SVG要素が見つかりません');
                     }
@@ -974,6 +1151,9 @@ $materials = $stmt->fetchAll();
             if (isDragging) {
                 isDragging = false;
                 console.log(`Drag ended for layer ${selectedLayerId}`);
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
             }
         }
 
@@ -1004,6 +1184,9 @@ $materials = $stmt->fetchAll();
                 updateSelectedLayerTitle();
                 
                 console.log(`Layer ${currentSelectedId} rotated right to ${layer.transform.rotation} degrees`);
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
             }
         }
 
@@ -1034,6 +1217,9 @@ $materials = $stmt->fetchAll();
                 updateSelectedLayerTitle();
                 
                 console.log(`Layer ${currentSelectedId} rotated left to ${layer.transform.rotation} degrees`);
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
             }
         }
 
@@ -1072,6 +1258,9 @@ $materials = $stmt->fetchAll();
                 updateSelectedLayerTitle();
                 
                 console.log(`Layer ${currentSelectedId} scaled down to ${(layer.transform.scale * 100).toFixed(1)}%`);
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
             }
         }
 
@@ -1113,6 +1302,9 @@ $materials = $stmt->fetchAll();
                 updateSelectedLayerTitle();
                 
                 console.log(`Layer ${currentSelectedId} scaled up to ${(layer.transform.scale * 100).toFixed(1)}%`);
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
             }
         }
 
@@ -1150,6 +1342,9 @@ $materials = $stmt->fetchAll();
             updateSelectedLayerTitle();
             
             console.log(`Layer ${currentSelectedId} moved to front (index: ${currentIndex + 1})`);
+            
+            // ローカルストレージに保存
+            saveToLocalStorage();
         }
 
         // 選択されたレイヤーを1つ背面に移動
@@ -1186,6 +1381,9 @@ $materials = $stmt->fetchAll();
             updateSelectedLayerTitle();
             
             console.log(`Layer ${currentSelectedId} moved to back (index: ${currentIndex - 1})`);
+            
+            // ローカルストレージに保存
+            saveToLocalStorage();
         }
 
         // 選択されたレイヤーを削除
@@ -1227,6 +1425,337 @@ $materials = $stmt->fetchAll();
             updateDeleteButtonState();
             
             console.log(`Layer deleted (was at index: ${currentIndex})`);
+            
+            // ローカルストレージに保存
+            saveToLocalStorage();
+        }
+
+        // 季節テーマを適用（選択されているレイヤーの色をランダムに変更）
+        function applySeasonalTheme(season) {
+            console.log(`=== applySeasonalTheme START (${season}) ===`);
+            console.log('selectedLayerId:', selectedLayerId);
+            
+            if (!selectedLayerId) {
+                alert('レイヤーを選択してください');
+                return;
+            }
+            
+            // 季節テーマのカラーパレット定義（detail/index.phpと同じ）
+            const seasonalPalettes = {
+                spring: {
+                    name: '春のやわらかパステル',
+                    colors: [
+                        '#F8CFCF', // 桜ピンク
+                        '#FFF2B7', // レモンイエロー
+                        '#D7EED1', // 若草グリーン
+                        '#D7E8F8', // 空のあお
+                        '#F3CFE8', // すみれピンク
+                        '#F5E2C8', // クリームベージュ
+                        '#D9EDD8', // 新芽グリーン
+                        '#F6DCC3', // 木漏れ日ベージュ
+                        '#F4C6D0', // 花びらピンク
+                        '#FAF3E7'  // 春霞ホワイト
+                    ]
+                },
+                summer: {
+                    name: '夏のやわらかパステル',
+                    colors: [
+                        '#BDE7F7', // 空と海
+                        '#FFF3A4', // ひまわりイエロー
+                        '#C9F3E1', // ミント
+                        '#D3EBFF', // そよ風ブルー
+                        '#F7D5E8', // ラムネピンク
+                        '#CFEAD2', // 木陰グリーン
+                        '#FAEFD8', // 白砂ベージュ
+                        '#FFF9D6', // ひだまり
+                        '#BCE1F2', // 水しぶき
+                        '#E3F2FA'  // 朝の空
+                    ]
+                },
+                autumn: {
+                    name: '秋のやわらかパステル',
+                    colors: [
+                        '#F7D6B3', // 木の実ベージュ
+                        '#FFD9A6', // くりオレンジ
+                        '#F2E0B9', // こがねいろ
+                        '#E7D5C1', // ベージュグレー
+                        '#E7B9A4', // 紅茶ピンク
+                        '#FAE9D2', // ミルクキャラメル
+                        '#E1C4A7', // ほうじ茶
+                        '#F5CDBB', // 秋風オレンジ
+                        '#EBC7A4', // 焼きたてパン
+                        '#F8E5D6'  // 秋霧ホワイト
+                    ]
+                },
+                winter: {
+                    name: '冬のやわらかパステル',
+                    colors: [
+                        '#E5EEF5', // 雪の青
+                        '#DAD7F0', // ラベンダー
+                        '#F1ECE6', // ミルクホワイト
+                        '#D3DDE0', // 氷の灰
+                        '#CBDDE1', // 冬の空
+                        '#F2EFE9', // 白銀
+                        '#E1DBD5', // ウールグレー
+                        '#D9E2EA', // 凍てつく風
+                        '#E8E1DC', // ココアベージュ
+                        '#F4F3F1'  // 冬霞
+                    ]
+                },
+                monochrome: {
+                    name: 'やさしいモノクロ',
+                    colors: [
+                        '#FFFFFF', // 白
+                        '#FAFAFA', // オフホワイト
+                        '#F3F3F3', // ライトグレー
+                        '#E6E6E6', // ソフトグレー
+                        '#D8D8D8', // グレージュ
+                        '#C8C8C8', // ミディアムグレー
+                        '#B0B0B0', // 穏やかグレー
+                        '#999999', // まろやかグレー
+                        '#7F7F7F', // スモーキーグレー
+                        '#666666'  // 最暗トーン（真っ黒は使わない）
+                    ]
+                },
+                sepia: {
+                    name: 'やさしいセピア',
+                    colors: [
+                        '#FFFDF8', // ほぼ白
+                        '#FBF4EA', // クリーム
+                        '#F6EBDC', // ベージュ
+                        '#F0E2CF', // ミルクティー
+                        '#E8D7BD', // カフェオレ
+                        '#E0C9A6', // ハニーベージュ
+                        '#D1B68D', // キャメル
+                        '#C19D72', // ミルクコーヒー
+                        '#AD8C63', // モカ
+                        '#937550'  // やわらかブラウン止まり（黒系なし）
+                    ]
+                }
+            };
+
+            if (!seasonalPalettes[season]) {
+                console.error(`Unknown season: ${season}`);
+                return;
+            }
+
+            const palette = seasonalPalettes[season];
+            const themeColors = palette.colors;
+            
+            const layer = layers.find(l => l.id === selectedLayerId);
+            console.log('layer found:', layer);
+            if (!layer) {
+                alert('選択されたレイヤーが見つかりません');
+                return;
+            }
+
+            const layerElement = document.getElementById(`layer-${layer.id}`);
+            console.log('layerElement:', layerElement);
+            if (!layerElement) {
+                alert('レイヤー要素が見つかりません');
+                return;
+            }
+
+            // SVG要素を取得（compose/index.phpと同じ方式）
+            const svgElements = layerElement.querySelectorAll('path, circle, rect, polygon, ellipse');
+            console.log('svgElements count:', svgElements.length);
+            
+            let colorChangedCount = 0;
+            const excludeGrayBlack = true; // 黒・グレー系を除外
+            
+            // 元の色とテーマ色のマッピングを作成（毎回ランダムに配置）
+            const colorMapping = new Map();
+            const shuffledColors = [...themeColors]; // 配列をコピー
+            
+            // Fisher-Yates アルゴリズムで配列をシャッフル
+            for (let i = shuffledColors.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
+            }
+            
+            let colorIndex = 0;
+
+            svgElements.forEach((element, index) => {
+                console.log(`Processing element ${index}:`, element);
+                
+                // 現在の色を取得（fillまたはstyleから）
+                let currentColor = element.getAttribute('fill');
+                const styleAttr = element.getAttribute('style');
+                
+                // style属性から色情報を抽出
+                if (styleAttr && styleAttr.includes('fill:')) {
+                    const fillMatch = styleAttr.match(/fill:\s*([^;]+)/);
+                    if (fillMatch) {
+                        const colorValue = fillMatch[1].trim();
+                        if (colorValue.startsWith('rgb(')) {
+                            const rgbMatch = colorValue.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                            if (rgbMatch) {
+                                const r = parseInt(rgbMatch[1]);
+                                const g = parseInt(rgbMatch[2]);
+                                const b = parseInt(rgbMatch[3]);
+                                currentColor = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                            }
+                        } else {
+                            currentColor = colorValue;
+                        }
+                    }
+                }
+                
+                // fallback to black if no color found
+                if (!currentColor) {
+                    currentColor = '#000000';
+                }
+                
+                console.log('Current color:', currentColor);
+                
+                // style属性を削除してfill属性を優先
+                if (styleAttr) {
+                    console.log('Removing style:', styleAttr);
+                    element.removeAttribute('style');
+                }
+                
+                // 黒・グレー除外チェック
+                if (excludeGrayBlack && (currentColor.includes('#000') || 
+                    currentColor.includes('gray') || currentColor.includes('grey'))) {
+                    console.log('Skipping gray/black color:', currentColor);
+                    return; // 変更しない
+                }
+
+                // 同じ色のオブジェクトには同じランダムテーマ色を適用
+                if (!colorMapping.has(currentColor)) {
+                    const newThemeColor = shuffledColors[colorIndex % shuffledColors.length];
+                    colorMapping.set(currentColor, newThemeColor);
+                    console.log(`Mapping: ${currentColor} -> ${newThemeColor}`);
+                    colorIndex++;
+                }
+
+                const newColor = colorMapping.get(currentColor);
+                console.log('Setting new color:', newColor);
+                element.setAttribute('fill', newColor);
+                colorChangedCount++;
+                
+                if (element.getAttribute('stroke') && element.getAttribute('stroke') !== 'none') {
+                    element.setAttribute('stroke', newColor);
+                    console.log('Also set stroke:', newColor);
+                }
+            });
+
+            console.log('Color mapping created:', colorMapping);
+
+            // 変更されたSVGコンテンツをレイヤーデータに保存
+            layer.svgContent = layerElement.innerHTML;
+            console.log('Updated layer svgContent');
+            
+            // 選択中のレイヤーを再描画
+            renderLayer(layer);
+            
+            // ローカルストレージに保存
+            saveToLocalStorage();
+            
+            console.log(`${palette.name}が適用されました: ${colorChangedCount}個の色要素を変更`);
+            console.log(`=== applySeasonalTheme END (${season}) ===`);
+        }
+
+        // グレー・黒系の色かどうかを判定
+        function isGrayOrBlackColor(color) {
+            if (!color) return false;
+            
+            const normalizedColor = color.toLowerCase().trim();
+            
+            // 基本的なグレー・黒系の色名
+            const grayKeywords = ['black', 'gray', 'grey', 'white', 'silver'];
+            if (grayKeywords.some(keyword => normalizedColor.includes(keyword))) {
+                return true;
+            }
+            
+            // HEX色の場合の判定
+            if (normalizedColor.startsWith('#')) {
+                const hex = normalizedColor.substring(1);
+                if (hex.length === 3) {
+                    // 3桁HEX (#333 -> #333333)
+                    const r = parseInt(hex[0] + hex[0], 16);
+                    const g = parseInt(hex[1] + hex[1], 16);
+                    const b = parseInt(hex[2] + hex[2], 16);
+                    return isGrayish(r, g, b);
+                } else if (hex.length === 6) {
+                    // 6桁HEX
+                    const r = parseInt(hex.substring(0, 2), 16);
+                    const g = parseInt(hex.substring(2, 4), 16);
+                    const b = parseInt(hex.substring(4, 6), 16);
+                    return isGrayish(r, g, b);
+                }
+            }
+            
+            return false;
+        }
+        
+        // RGB値がグレーっぽいかどうかを判定
+        function isGrayish(r, g, b) {
+            // RGBの差が小さい（グレーっぽい）かどうか
+            const maxDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
+            return maxDiff < 30; // 差が30未満ならグレーっぽいと判定
+        }
+
+        // ローカルストレージに編集内容を保存
+        function saveToLocalStorage() {
+            try {
+                const editorData = {
+                    layers: layers,
+                    selectedLayerId: selectedLayerId,
+                    nextLayerId: nextLayerId,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('compose2_editor_data', JSON.stringify(editorData));
+                console.log('編集内容をローカルストレージに保存しました');
+            } catch (error) {
+                console.error('ローカルストレージ保存エラー:', error);
+            }
+        }
+
+        // ローカルストレージから編集内容を読み込み
+        function loadFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('compose2_editor_data');
+                if (savedData) {
+                    const editorData = JSON.parse(savedData);
+                    
+                    // データの復元
+                    layers = editorData.layers || [];
+                    selectedLayerId = editorData.selectedLayerId || null;
+                    nextLayerId = editorData.nextLayerId || 1;
+                    
+                    // レイヤーを再描画
+                    layers.forEach(layer => {
+                        renderLayer(layer);
+                    });
+                    
+                    // UI状態を更新
+                    updateSelectedLayerTitle();
+                    updateRotateButtonState();
+                    updateScaleDownButtonState();
+                    updateScaleUpButtonState();
+                    updateLayerMoveButtonState();
+                    updateDeleteButtonState();
+                    updateSeasonalThemeButtonState();
+                    
+                    console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました`);
+                    return true;
+                }
+            } catch (error) {
+                console.error('ローカルストレージ読み込みエラー:', error);
+            }
+            return false;
+        }
+
+        // ローカルストレージをクリア
+        function clearLocalStorage() {
+            try {
+                localStorage.removeItem('compose2_editor_data');
+                console.log('ローカルストレージをクリアしました');
+            } catch (error) {
+                console.error('ローカルストレージクリアエラー:', error);
+            }
         }
 
         // 回転ボタンの状態を更新
@@ -1333,6 +1862,27 @@ $materials = $stmt->fetchAll();
             }
         }
 
+        // 季節テーマボタンの状態を更新
+        function updateSeasonalThemeButtonState() {
+            const themeButtons = [
+                { id: 'springThemeBtn', title: '春テーマを適用' },
+                { id: 'summerThemeBtn', title: '夏テーマを適用' },
+                { id: 'autumnThemeBtn', title: '秋テーマを適用' },
+                { id: 'winterThemeBtn', title: '冬テーマを適用' },
+                { id: 'monochromeThemeBtn', title: '白黒テーマを適用' },
+                { id: 'sepiaThemeBtn', title: 'セピアテーマを適用' }
+            ];
+            
+            themeButtons.forEach(buttonInfo => {
+                const button = document.getElementById(buttonInfo.id);
+                if (button) {
+                    // 季節テーマボタンは常に有効
+                    button.disabled = false;
+                    button.title = buttonInfo.title;
+                }
+            });
+        }
+
         // 選択中の素材タイトルを更新
         function updateSelectedLayerTitle() {
             const titleElement = document.getElementById('selectedLayerTitle');
@@ -1367,6 +1917,19 @@ $materials = $stmt->fetchAll();
             console.log('PNG出力開始 (2500px)');
 
             const canvas = document.getElementById('mainCanvas');
+            
+            // 選択状態を一時的に保存
+            const currentSelectedId = selectedLayerId;
+            
+            // 一時的に選択を解除して選択枠を非表示にする
+            if (selectedLayerId !== null) {
+                selectedLayerId = null;
+                layers.forEach(layer => {
+                    renderLayer(layer);
+                });
+            }
+            
+            // 選択枠なしでSVGを取得
             const svgData = new XMLSerializer().serializeToString(canvas);
             
             // 高解像度出力用のキャンバスを作成
@@ -1399,8 +1962,31 @@ $materials = $stmt->fetchAll();
                         
                         URL.revokeObjectURL(url);
                         console.log('PNG出力完了 (2500px)');
+                        
+                        // 選択状態を復元
+                        if (currentSelectedId !== null) {
+                            selectedLayerId = currentSelectedId;
+                            layers.forEach(layer => {
+                                renderLayer(layer);
+                            });
+                            updateSelectedLayerTitle();
+                            updateRotateButtonState();
+                            updateScaleDownButtonState();
+                            updateScaleUpButtonState();
+                            updateLayerMoveButtonState();
+                            updateDeleteButtonState();
+                            updateSeasonalThemeButtonState();
+                        }
                     } else {
                         alert('PNG変換に失敗しました。');
+                        
+                        // エラー時も選択状態を復元
+                        if (currentSelectedId !== null) {
+                            selectedLayerId = currentSelectedId;
+                            layers.forEach(layer => {
+                                renderLayer(layer);
+                            });
+                        }
                     }
                 }, 'image/png');
             };
@@ -1408,6 +1994,14 @@ $materials = $stmt->fetchAll();
             img.onerror = function(error) {
                 console.error('PNG出力エラー:', error);
                 alert('PNG出力に失敗しました。');
+                
+                // エラー時も選択状態を復元
+                if (currentSelectedId !== null) {
+                    selectedLayerId = currentSelectedId;
+                    layers.forEach(layer => {
+                        renderLayer(layer);
+                    });
+                }
             };
             
             // SVGデータをBlobとして作成
@@ -1427,7 +2021,7 @@ $materials = $stmt->fetchAll();
 
             if (confirm('全ての素材を削除しますか？')) {
                 layers = [];
-                layerIdCounter = 0;
+                nextLayerId = 1;
                 
                 // DOM要素も削除
                 const canvas = document.getElementById('mainCanvas');
@@ -1435,12 +2029,23 @@ $materials = $stmt->fetchAll();
                 layerElements.forEach(element => element.remove());
                 
                 console.log('全ての素材を削除しました');
+                
+                // ローカルストレージに保存（空の状態を保存）
+                saveToLocalStorage();
             }
         }
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
             console.log('ページ読み込み完了');
+            
+            // ローカルストレージから編集内容を復元
+            const restored = loadFromLocalStorage();
+            if (restored) {
+                console.log('編集内容を復元しました');
+            } else {
+                console.log('新規セッションを開始します');
+            }
             
             // 素材にクリックイベントを追加
             const materialItems = document.querySelectorAll('.material-item');
@@ -1478,6 +2083,30 @@ $materials = $stmt->fetchAll();
             document.getElementById('deleteBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
                 deleteSelectedLayer();
+            });
+            document.getElementById('springThemeBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                applySeasonalTheme('spring');
+            });
+            document.getElementById('summerThemeBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                applySeasonalTheme('summer');
+            });
+            document.getElementById('autumnThemeBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                applySeasonalTheme('autumn');
+            });
+            document.getElementById('winterThemeBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                applySeasonalTheme('winter');
+            });
+            document.getElementById('monochromeThemeBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                applySeasonalTheme('monochrome');
+            });
+            document.getElementById('sepiaThemeBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                applySeasonalTheme('sepia');
             });
             document.getElementById('exportBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -1545,6 +2174,7 @@ $materials = $stmt->fetchAll();
             updateScaleUpButtonState();
             updateLayerMoveButtonState();
             updateDeleteButtonState();
+            updateSeasonalThemeButtonState();
             updateSelectedLayerTitle();
 
             console.log(`${materialItems.length}個の素材を読み込み完了`);
