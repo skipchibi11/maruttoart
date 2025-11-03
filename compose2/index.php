@@ -24,6 +24,7 @@ $materials = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
     <title>シンプルSVG編集ツール - maruttoart</title>
     <meta name="description" content="SVG素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,6 +39,9 @@ $materials = $stmt->fetchAll();
             font-family: 'Noto Sans JP', sans-serif;
             background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
             min-height: 100vh;
+            /* スマホでのスクロールを改善 */
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: auto;
         }
 
         .container {
@@ -169,6 +173,8 @@ $materials = $stmt->fetchAll();
             border-radius: 10px;
             min-height: 500px;
             position: relative;
+            /* タッチ操作の最適化 */
+            touch-action: manipulation;
         }
 
         #mainCanvas {
@@ -296,6 +302,11 @@ $materials = $stmt->fetchAll();
             0% { transform: scale(1); }
             50% { transform: scale(0.95); }
             100% { transform: scale(1); }
+        }
+
+        /* レイヤー要素のタッチ制御 */
+        .layer-element {
+            touch-action: none; /* ドラッグ中はスクロールを無効 */
         }
     </style>
 </head>
@@ -496,7 +507,8 @@ $materials = $stmt->fetchAll();
             // タッチイベントを追加（スマホ対応）
             layerGroup.addEventListener('touchstart', function(e) {
                 e.stopPropagation();
-                e.preventDefault(); // デフォルトのスクロール等を防ぐ
+                // レイヤーをタッチした時のみスクロールを防ぐ
+                e.preventDefault();
                 startDrag(e.touches[0], layer.id); // 最初のタッチポイントを使用
             }, { passive: false });
 
@@ -817,10 +829,24 @@ $materials = $stmt->fetchAll();
             
             // グローバルタッチイベントを追加（スマホ対応）
             document.addEventListener('touchmove', function(e) {
-                e.preventDefault(); // スクロールを防ぐ
-                onDrag(e);
+                // ドラッグ中のみスクロールを防ぐ
+                if (isDragging) {
+                    e.preventDefault();
+                    onDrag(e);
+                }
             }, { passive: false });
             document.addEventListener('touchend', endDrag);
+            
+            // キャンバス領域でのタッチスクロール制御
+            const canvasContainer = document.querySelector('.canvas-container');
+            if (canvasContainer) {
+                canvasContainer.addEventListener('touchmove', function(e) {
+                    // キャンバス内でドラッグ中のみスクロールを防ぐ
+                    if (isDragging) {
+                        e.stopPropagation();
+                    }
+                }, { passive: true });
+            }
             
             // ポインターイベントも追加（デベロッパーツール対応）
             if ('onpointermove' in window) {
