@@ -6,16 +6,28 @@ setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
 $pdo = getDB();
 
-// 最大20個のSVG素材を取得
+// ページネーション設定
+$perPage = 20; // 1ページあたりの表示件数
+$page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
+$offset = ($page - 1) * $perPage;
+
+// 総件数を取得
+$countSql = "SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''";
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute();
+$totalItems = $countStmt->fetchColumn();
+$totalPages = ceil($totalItems / $perPage);
+
+// ページネーション付きでSVG素材を取得
 $stmt = $pdo->prepare("
     SELECT DISTINCT id, title, slug, image_path, svg_path, webp_medium_path, category_id, created_at
     FROM materials 
     WHERE svg_path IS NOT NULL 
     AND svg_path != '' 
     ORDER BY created_at DESC 
-    LIMIT 20
+    LIMIT ? OFFSET ?
 ");
-$stmt->execute();
+$stmt->execute([$perPage, $offset]);
 $materials = $stmt->fetchAll();
 ?>
 
@@ -148,6 +160,50 @@ $materials = $stmt->fetchAll();
                 align-self: flex-start;
                 width: auto;
             }
+        }
+
+        /* ページネーションのスタイル */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .pagination-btn {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .pagination-btn:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
+        }
+
+        .pagination-btn:focus {
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 1rem;
         }
 
         .materials-grid {
@@ -894,6 +950,37 @@ $materials = $stmt->fetchAll();
                         </div>
                     <?php endforeach; ?>
                 </div>
+                
+                <!-- ページネーション -->
+                <?php if ($totalPages > 1): ?>
+                <div class="pagination-container">
+                    <!-- 前のページ -->
+                    <?php if ($page > 1): ?>
+                        <a href="?page=<?= $page - 1 ?>" class="pagination-btn">
+                            前へ
+                        </a>
+                    <?php endif; ?>
+                    
+                    <!-- 次のページ -->
+                    <?php if ($page < $totalPages): ?>
+                        <a href="?page=<?= $page + 1 ?>" class="pagination-btn">
+                            次へ
+                        </a>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- ページ情報 -->
+                <div class="pagination-info">
+                    <?= $page ?> / <?= $totalPages ?> ページ （全 <?= $totalItems ?> 件）
+                </div>
+                <?php endif; ?>
+                
+                <?php if (empty($materials)): ?>
+                <!-- 素材が見つからない場合のメッセージ -->
+                <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                    <p>素材が見つかりませんでした。</p>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- キャンバスエリア -->
@@ -2431,6 +2518,44 @@ $materials = $stmt->fetchAll();
                 messageDiv.style.display = 'none';
             }
         }
+        
+        // ページネーション時の検索状態管理
+        function initializePaginationSearch() {
+            const paginationLinks = document.querySelectorAll('.pagination-btn');
+            const searchInput = document.getElementById('materialSearch');
+            
+            // ページ変更時は検索をリセット
+            paginationLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (searchInput && searchInput.value.trim()) {
+                        // 検索中の場合は確認ダイアログを表示
+                        const confirm = window.confirm('ページを移動すると検索がリセットされます。続行しますか？');
+                        if (!confirm) {
+                            event.preventDefault();
+                            return false;
+                        }
+                    }
+                });
+            });
+            
+            // 検索中はページネーションを非表示にする
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const paginationContainer = document.querySelector('.pagination-container');
+                    const paginationInfo = document.querySelector('.pagination-info');
+                    
+                    if (this.value.trim()) {
+                        // 検索中はページネーションを非表示
+                        if (paginationContainer) paginationContainer.style.display = 'none';
+                        if (paginationInfo) paginationInfo.style.display = 'none';
+                    } else {
+                        // 検索クリア時はページネーションを表示
+                        if (paginationContainer) paginationContainer.style.display = 'flex';
+                        if (paginationInfo) paginationInfo.style.display = 'block';
+                    }
+                });
+            }
+        }
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
@@ -2444,10 +2569,11 @@ $materials = $stmt->fetchAll();
                 console.log('新規セッションを開始します');
             }
             
-            // 検索機能を初期化
-            initializeMaterialSearch();
-            
-            // 素材にクリックイベントを追加
+        // 検索機能を初期化
+        initializeMaterialSearch();
+        
+        // ページネーション使用時の検索状態管理
+        initializePaginationSearch();            // 素材にクリックイベントを追加
             const materialItems = document.querySelectorAll('.material-item');
             materialItems.forEach(item => {
                 item.addEventListener('click', function() {
