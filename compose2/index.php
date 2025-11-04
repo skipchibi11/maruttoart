@@ -236,7 +236,9 @@ $materials = $stmt->fetchAll();
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
             border-radius: 12px;
             padding: 1.5rem;
-            min-height: 120px;
+            min-height: 160px;
+            max-height: 160px;
+            overflow-y: auto;
             display: flex;
             align-items: flex-start;
             justify-content: center;
@@ -2081,9 +2083,9 @@ $materials = $stmt->fetchAll();
                 return;
             }
             
-            // 古いカラーパレットをクリア
+            // 古いカラーパレットをクリア（固定サイズ維持）
             colorPalette.innerHTML = `
-                <div class="text-center text-muted">
+                <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
                     <div class="mb-2"><i class="bi bi-arrow-clockwise"></i> 色を更新中...</div>
                     <div>テーマ適用後の新しい色を取得しています</div>
                 </div>
@@ -2761,7 +2763,7 @@ $materials = $stmt->fetchAll();
             const colorPalette = document.getElementById('colorPalette');
             if (colorPalette) {
                 colorPalette.innerHTML = `
-                    <div class="text-center text-muted">
+                    <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
                         <div class="mb-2">素材を選択してください</div>
                         <div>選択した素材の色を変更できます</div>
                     </div>
@@ -2779,9 +2781,9 @@ $materials = $stmt->fetchAll();
                 return;
             }
             
-            // ローディング状態を表示
+            // ローディング状態を表示（固定サイズ）
             colorPalette.innerHTML = `
-                <div class="text-center text-muted">
+                <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
                     <div class="mb-2">読み込み中...</div>
                     <div>色を抽出しています...</div>
                     <small class="d-block mt-1">しばらくお待ちください</small>
@@ -2827,10 +2829,8 @@ $materials = $stmt->fetchAll();
                 }
             });
             
-            // カラーパレットを生成
-            setTimeout(() => {
-                generateColorPalette(Array.from(colors), layer);
-            }, 500);
+            // カラーパレットを生成（遅延なしで即座に）
+            generateColorPalette(Array.from(colors), layer);
         }
 
         // カラーパレットを生成
@@ -2847,7 +2847,7 @@ $materials = $stmt->fetchAll();
             
             if (colors.length === 0) {
                 colorPalette.innerHTML = `
-                    <div class="text-center text-muted">
+                    <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
                         <div>変更可能な色が見つかりませんでした</div>
                         <small class="d-block mt-1">この素材には色情報がないか、すべて透明です</small>
                     </div>
