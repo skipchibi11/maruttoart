@@ -49,63 +49,11 @@ $materials = $stmt->fetchAll();
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- レイアウト専用CSS -->
+    <link rel="stylesheet" href="assets/css/layout.css">
 
     <style>
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
-            min-height: 100vh;
-            /* スマホでのスクロールを改善 */
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: auto;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-
-        .header h1 {
-            color: #2c5aa0;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            min-height: 600px;
-        }
-
-        /* 素材パネル */
-        .materials-panel {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 1;
-        }
-
-        .materials-panel h3 {
-            color: #2c5aa0;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
         /* 検索フォームのスタイル */
         .search-form {
             background-color: #f8f9fa;
@@ -248,58 +196,7 @@ $materials = $stmt->fetchAll();
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
         }
 
-        .color-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .color-item:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: translateY(-2px);
-        }
-
-        .color-item.selected {
-            background: rgba(0, 123, 255, 0.1);
-            border: 2px solid #007bff;
-            transform: translateY(-2px);
-        }
-
-        .color-item.selected .color-swatch {
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* color-swatchは削除されました - シンプルなカラーピッカーのみ使用 */
-
-        .color-swatch-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            position: relative;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        
-        .color-picker-input {
-            width: 60px;
-            height: 45px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            -webkit-appearance: none;
+        /* カラー関連の基本スタイルはlayout.cssに移動 */
             -moz-appearance: none;
             appearance: none;
         }
@@ -405,49 +302,9 @@ $materials = $stmt->fetchAll();
             gap: 8px;
         }
 
-        .canvas-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 10px;
-            min-height: 60vh;
-            position: relative;
-            /* タッチ操作の最適化 */
-            touch-action: manipulation;
-            padding: 10px; /* 内側の余白を最小限に */
-        }
+        /* キャンバス関連の基本スタイルはlayout.cssに移動 */
 
-        #mainCanvas {
-            width: 100%;
-            height: 100%;
-            max-width: 500px;
-            max-height: 500px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            aspect-ratio: 1; /* 正方形を保持 */
-        }
-
-        /* 操作ボタンエリア */
-        .manipulation-controls {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 5;
-        }
-
-        .manipulation-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        /* 操作コントロール関連の基本スタイルはlayout.cssに移動 */
 
         .manipulation-controls h3 {
             color: #2c5aa0;
@@ -463,6 +320,7 @@ $materials = $stmt->fetchAll();
             display: flex;
             align-items: center;
             gap: 8px;
+            margin: 15px 0; /* 上下に適切な間隔を追加 */
         }
 
         .selected-title {
@@ -481,6 +339,15 @@ $materials = $stmt->fetchAll();
             color: #2c5aa0;
             background: #e3f2fd;
             border-color: #2c5aa0;
+        }
+
+        .manipulation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .manipulation-buttons {
@@ -958,6 +825,32 @@ $materials = $stmt->fetchAll();
             background: #bdc3c7;
             cursor: not-allowed;
             opacity: 0.6;
+        }
+
+        /* キャンバスエリアの基本スタイル */
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            min-height: 60vh;
+            position: relative;
+            touch-action: manipulation;
+            padding: 10px;
+        }
+
+        #mainCanvas {
+            width: 100%;
+            height: 100%;
+            max-width: 500px;
+            max-height: 500px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            aspect-ratio: 1;
         }
 
         /* レスポンシブ対応 */

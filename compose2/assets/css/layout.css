@@ -1,0 +1,176 @@
+/* layout.css - 基本レイアウト・パネル共通スタイル（約200行） */
+
+/* 基本レイアウト */
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+    min-height: 100vh;
+    /* スマホでのスクロールを改善 */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: auto;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.header h1 {
+    color: #2c5aa0;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 600px;
+}
+
+/* 共通パネルスタイル */
+.materials-panel {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    order: 1;
+}
+
+.materials-panel h3 {
+    color: #2c5aa0;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* カラーセクション */
+.color-section {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    order: 3;
+}
+
+.color-section h3 {
+    color: #2c5aa0;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* キャンバスエリア */
+.canvas-area {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    order: 4;
+}
+
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.canvas-header h3 {
+    color: #2c5aa0;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 操作ボタンエリア */
+.manipulation-controls {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    order: 5;
+}
+
+.manipulation-controls h3 {
+    color: #2c5aa0;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+}
+
+/* 出力・削除ボタンエリア */
+.action-controls {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    order: 7;
+}
+
+.action-controls h3 {
+    color: #2c5aa0;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+}
+
+/* 背景パネル */
+.background-controls {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    order: 6;
+}
+
+.background-controls h3 {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+/* レスポンシブ対応（基本レイアウト用） */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .materials-panel,
+    .canvas-area,
+    .manipulation-controls,
+    .action-controls {
+        padding: 15px;
+    }
+
+    /* スマホでのセクションタイトルサイズ調整 */
+    .manipulation-controls h3,
+    .action-controls h3 {
+        font-size: 1rem;
+    }
+}
