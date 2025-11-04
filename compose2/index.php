@@ -206,6 +206,127 @@ $materials = $stmt->fetchAll();
             margin-top: 1rem;
         }
 
+        /* カラーセクションのスタイル */
+        .color-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            order: 3;
+        }
+
+        .color-section h3 {
+            color: #2c5aa0;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-panel-content {
+            transition: all 0.3s ease;
+        }
+
+        .color-palette {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 120px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            border: 2px solid #e3f2fd;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .color-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .color-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .color-item.selected {
+            background: rgba(0, 123, 255, 0.1);
+            border: 2px solid #007bff;
+            transform: translateY(-2px);
+        }
+
+        .color-item.selected .color-swatch {
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .color-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .color-swatch-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            position: relative;
+        }
+
+        .hidden-color-picker {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+        }
+
+        .color-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            max-width: 60px;
+            word-break: break-all;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .color-palette.loaded {
+            animation: fadeIn 0.5s ease-out;
+        }
+
         .materials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -249,7 +370,7 @@ $materials = $stmt->fetchAll();
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
-            order: 2;
+            order: 4;
         }
 
         .canvas-header {
@@ -300,7 +421,7 @@ $materials = $stmt->fetchAll();
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 3;
+            order: 5;
         }
 
         .manipulation-header {
@@ -359,7 +480,7 @@ $materials = $stmt->fetchAll();
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 5;
+            order: 7;
         }
 
         .action-controls h3 {
@@ -443,7 +564,7 @@ $materials = $stmt->fetchAll();
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            order: 4;
+            order: 6;
         }
 
         .background-controls h3 {
@@ -983,6 +1104,19 @@ $materials = $stmt->fetchAll();
                 <?php endif; ?>
             </div>
 
+            <!-- カラーセクション -->
+            <div id="color-section" class="color-section">
+                <h3><i class="bi bi-palette"></i> 色を変更 <small class="text-muted">（色見本をクリックでカラーピッカー起動）</small></h3>
+                <div id="color-panel-content" class="color-panel-content">
+                    <div id="colorPalette" class="color-palette">
+                        <div class="text-center text-muted">
+                            <div class="mb-2">素材を選択してください</div>
+                            <div>選択した素材の色を変更できます</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- キャンバスエリア -->
             <div class="canvas-area">
                 <div class="canvas-header">
@@ -1295,6 +1429,12 @@ $materials = $stmt->fetchAll();
             updateLayerMoveButtonState();
             updateDeleteButtonState();
             
+            // カラーパネルを表示
+            const selectedLayer = layers.find(layer => layer.id === layerId);
+            if (selectedLayer) {
+                showColorPanel(selectedLayer);
+            }
+            
             console.log(`Selection complete - selectedLayerId: ${selectedLayerId}`);
         }
 
@@ -1319,6 +1459,9 @@ $materials = $stmt->fetchAll();
                 updateScaleUpButtonState();
                 updateLayerMoveButtonState();
                 updateDeleteButtonState();
+                
+                // カラーパネルを非表示
+                hideColorPanel();
             }
         }
 
@@ -1905,8 +2048,37 @@ $materials = $stmt->fetchAll();
             // ローカルストレージに保存
             saveToLocalStorage();
             
+            // カラーパレットを更新（色見本に変更を反映）
+            updateColorPaletteAfterThemeChange(layer);
+            
             console.log(`${palette.name}が適用されました: ${colorChangedCount}個の色要素を変更`);
+            console.log('カラーパレットも更新されました');
             console.log(`=== applySeasonalTheme END (${season}) ===`);
+        }
+
+        // テーマ適用後にカラーパレットを更新
+        function updateColorPaletteAfterThemeChange(layer) {
+            console.log(`Updating color palette after theme change for layer ${layer.id}`);
+            
+            // 現在のカラーパレットを取得
+            const colorPalette = document.getElementById('colorPalette');
+            if (!colorPalette || !colorPalette.classList.contains('loaded')) {
+                console.log('Color palette not loaded, skipping update');
+                return;
+            }
+            
+            // 古いカラーパレットをクリア
+            colorPalette.innerHTML = `
+                <div class="text-center text-muted">
+                    <div class="mb-2"><i class="bi bi-arrow-clockwise"></i> 色を更新中...</div>
+                    <div>テーマ適用後の新しい色を取得しています</div>
+                </div>
+            `;
+            
+            // 少し遅延してから新しい色を抽出
+            setTimeout(() => {
+                extractColorsFromLayer(layer);
+            }, 300);
         }
 
         // グレー・黒系の色かどうかを判定
@@ -2557,6 +2729,317 @@ $materials = $stmt->fetchAll();
             }
         }
 
+        // カラーパネル表示
+        function showColorPanel(layer) {
+            console.log(`showColorPanel called for layer ${layer.id}`);
+            const colorPanelContent = document.getElementById('color-panel-content');
+            if (!colorPanelContent) {
+                console.log('color-panel-content element not found');
+                return;
+            }
+            
+            console.log('Extracting colors from layer...');
+            extractColorsFromLayer(layer);
+        }
+
+        // カラーパネル非表示（デフォルトメッセージを表示）
+        function hideColorPanel() {
+            const colorPalette = document.getElementById('colorPalette');
+            if (colorPalette) {
+                colorPalette.innerHTML = `
+                    <div class="text-center text-muted">
+                        <div class="mb-2">素材を選択してください</div>
+                        <div>選択した素材の色を変更できます</div>
+                    </div>
+                `;
+                colorPalette.classList.remove('loaded');
+            }
+        }
+
+        // レイヤーから色を抽出
+        function extractColorsFromLayer(layer) {
+            console.log(`extractColorsFromLayer called for layer ${layer.id}`);
+            const colorPalette = document.getElementById('colorPalette');
+            if (!colorPalette) {
+                console.log('colorPalette element not found');
+                return;
+            }
+            
+            // ローディング状態を表示
+            colorPalette.innerHTML = `
+                <div class="text-center text-muted">
+                    <div class="mb-2">読み込み中...</div>
+                    <div>色を抽出しています...</div>
+                    <small class="d-block mt-1">しばらくお待ちください</small>
+                </div>
+            `;
+            
+            // レイヤーのSVG要素を取得
+            const layerElement = document.getElementById(`layer-${layer.id}`);
+            console.log(`Looking for layer element with id: layer-${layer.id}`);
+            if (!layerElement) {
+                console.log(`Layer element layer-${layer.id} not found`);
+                return;
+            }
+            console.log(`Found layer element:`, layerElement);
+            
+            // SVG内の全要素から色を抽出
+            const colors = new Set();
+            const allElements = layerElement.querySelectorAll('*');
+            
+            allElements.forEach(element => {
+                const fill = element.getAttribute('fill');
+                const stroke = element.getAttribute('stroke');
+                
+                if (fill && fill !== 'none' && fill !== 'transparent') {
+                    colors.add(convertToHex(fill));
+                }
+                if (stroke && stroke !== 'none' && stroke !== 'transparent') {
+                    colors.add(convertToHex(stroke));
+                }
+                
+                // style属性からも抽出
+                const style = element.getAttribute('style');
+                if (style) {
+                    const fillMatch = style.match(/fill\s*:\s*([^;]+)/);
+                    const strokeMatch = style.match(/stroke\s*:\s*([^;]+)/);
+                    
+                    if (fillMatch && fillMatch[1] !== 'none' && fillMatch[1] !== 'transparent') {
+                        colors.add(convertToHex(fillMatch[1].trim()));
+                    }
+                    if (strokeMatch && strokeMatch[1] !== 'none' && strokeMatch[1] !== 'transparent') {
+                        colors.add(convertToHex(strokeMatch[1].trim()));
+                    }
+                }
+            });
+            
+            // カラーパレットを生成
+            setTimeout(() => {
+                generateColorPalette(Array.from(colors), layer);
+            }, 500);
+        }
+
+        // カラーパレットを生成
+        function generateColorPalette(colors, layer) {
+            const colorPalette = document.getElementById('colorPalette');
+            if (!colorPalette) return;
+            
+            // 既存の隠しカラーピッカーを全てクリア（テーマ変更後の古い参照を削除）
+            const existingHiddenPickers = document.querySelectorAll('.hidden-color-picker');
+            existingHiddenPickers.forEach(picker => {
+                picker.remove();
+            });
+            console.log(`Removed ${existingHiddenPickers.length} existing hidden color pickers`);
+            
+            if (colors.length === 0) {
+                colorPalette.innerHTML = `
+                    <div class="text-center text-muted">
+                        <div>変更可能な色が見つかりませんでした</div>
+                        <small class="d-block mt-1">この素材には色情報がないか、すべて透明です</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            colorPalette.innerHTML = '';
+            colorPalette.classList.add('loaded');
+            
+            colors.forEach((originalColor, index) => {
+                const colorItem = document.createElement('div');
+                colorItem.className = 'color-item';
+                
+                colorItem.innerHTML = `
+                    <div class="color-swatch-container" data-original-color="${originalColor}" data-layer-id="${layer.id}">
+                        <div class="color-swatch" 
+                             style="background-color: ${originalColor}" 
+                             onclick="showColorToolDynamic(${layer.id}, this)"
+                             title="クリックして色を変更">
+                        </div>
+                        <div class="color-label">${originalColor}</div>
+                    </div>
+                `;
+                
+                colorPalette.appendChild(colorItem);
+            });
+            
+            // デバッグ: 生成されたカラーピッカーの数を確認
+            const generatedPickers = colorPalette.querySelectorAll('.color-picker');
+            console.log(`Generated ${generatedPickers.length} color pickers for layer ${layer.id}`);
+        }
+
+        // 色を16進数に変換
+        function convertToHex(color) {
+            if (color.startsWith('#')) {
+                return color.toUpperCase();
+            }
+            
+            if (color.startsWith('rgb')) {
+                const matches = color.match(/\d+/g);
+                if (matches && matches.length >= 3) {
+                    const r = parseInt(matches[0]);
+                    const g = parseInt(matches[1]);
+                    const b = parseInt(matches[2]);
+                    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+                }
+            }
+            
+            return color;
+        }
+
+        // レイヤーの色を変更
+        function changeLayerColor(oldColor, newColor, layerId) {
+            const layer = layers.find(l => l.id === layerId);
+            if (!layer) return;
+            
+            const layerElement = document.getElementById(`layer-${layerId}`);
+            if (!layerElement) return;
+            
+            // SVG内の該当する色を全て変更
+            const allElements = layerElement.querySelectorAll('*');
+            let changeCount = 0;
+            
+            allElements.forEach(element => {
+                // fill属性をチェック
+                const fillAttr = element.getAttribute('fill');
+                if (fillAttr && convertToHex(fillAttr) === convertToHex(oldColor)) {
+                    element.setAttribute('fill', newColor);
+                    changeCount++;
+                }
+                
+                // stroke属性をチェック
+                const strokeAttr = element.getAttribute('stroke');
+                if (strokeAttr && convertToHex(strokeAttr) === convertToHex(oldColor)) {
+                    element.setAttribute('stroke', newColor);
+                    changeCount++;
+                }
+                
+                // style属性をチェック
+                const styleAttr = element.getAttribute('style');
+                if (styleAttr) {
+                    let newStyle = styleAttr;
+                    let styleChanged = false;
+                    
+                    const fillMatch = styleAttr.match(/fill\s*:\s*([^;]+)/);
+                    const strokeMatch = styleAttr.match(/stroke\s*:\s*([^;]+)/);
+                    
+                    if (fillMatch && convertToHex(fillMatch[1].trim()) === convertToHex(oldColor)) {
+                        newStyle = newStyle.replace(/fill\s*:\s*[^;]+/, `fill: ${newColor}`);
+                        styleChanged = true;
+                        changeCount++;
+                    }
+                    
+                    if (strokeMatch && convertToHex(strokeMatch[1].trim()) === convertToHex(oldColor)) {
+                        newStyle = newStyle.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newColor}`);
+                        styleChanged = true;
+                        changeCount++;
+                    }
+                    
+                    if (styleChanged) {
+                        element.setAttribute('style', newStyle);
+                    }
+                }
+            });
+            
+            // レイヤーデータを更新
+            const parser = new DOMParser();
+            const layerSvg = layerElement.cloneNode(true);
+            layer.svgContent = layerSvg.innerHTML;
+            
+            // ローカルストレージに保存
+            saveToLocalStorage();
+            
+            console.log(`Color changed from ${oldColor} to ${newColor}, ${changeCount} elements updated`);
+        }
+
+        // 動的な色取得でカラーピッカーを表示
+        function showColorToolDynamic(layerId, swatchElement) {
+            // コンテナから現在の色を動的に取得
+            const container = swatchElement.closest('.color-swatch-container');
+            if (!container) return;
+            
+            const currentColor = container.getAttribute('data-original-color');
+            console.log(`Dynamic color tool called with current color: ${currentColor} for layer ${layerId}`);
+            
+            showColorTool(currentColor, layerId, swatchElement);
+        }
+
+        // 色変更ツールを表示（直接カラーピッカーを開く）
+        function showColorTool(originalColor, layerId, swatchElement) {
+            console.log(`Opening color picker for ${originalColor} on layer ${layerId}`);
+            
+            // クリックされたswatchの親コンテナを取得
+            const container = swatchElement.closest('.color-swatch-container');
+            if (container) {
+                // 現在の色を取得（data-original-colorから最新の色を取得）
+                const currentColor = container.getAttribute('data-original-color') || originalColor;
+                console.log(`Current color for this swatch: ${currentColor}`);
+                
+                // 非表示のカラーピッカーを作成または取得
+                let hiddenColorPicker = container.querySelector('.hidden-color-picker');
+                if (!hiddenColorPicker) {
+                    hiddenColorPicker = document.createElement('input');
+                    hiddenColorPicker.type = 'color';
+                    hiddenColorPicker.className = 'hidden-color-picker';
+                    hiddenColorPicker.style.position = 'absolute';
+                    hiddenColorPicker.style.opacity = '0';
+                    hiddenColorPicker.style.pointerEvents = 'none';
+                    hiddenColorPicker.style.width = '1px';
+                    hiddenColorPicker.style.height = '1px';
+                    
+                    container.appendChild(hiddenColorPicker);
+                }
+                
+                // イベントリスナーを毎回更新（現在の色を動的に参照）
+                hiddenColorPicker.replaceWith(hiddenColorPicker.cloneNode(true));
+                hiddenColorPicker = container.querySelector('.hidden-color-picker');
+                
+                // リアルタイム色変更イベントを設定（現在の色を使用）
+                hiddenColorPicker.addEventListener('input', function() {
+                    const latestCurrentColor = container.getAttribute('data-original-color') || currentColor;
+                    changeColorRealtime(latestCurrentColor, this.value, layerId);
+                });
+                
+                // カラーピッカーの値を現在の色に設定してクリック
+                hiddenColorPicker.value = currentColor;
+                hiddenColorPicker.click();
+            }
+        }
+
+
+
+        // リアルタイム色変更
+        function changeColorRealtime(originalColor, newColor, layerId) {
+            console.log(`Changing color from ${originalColor} to ${newColor} on layer ${layerId}`);
+            
+            // 即座に色を変更
+            changeLayerColor(originalColor, newColor, layerId);
+            
+            // 対応するcolor-swatchとラベルの色も更新
+            const allContainers = document.querySelectorAll('.color-swatch-container');
+            allContainers.forEach(container => {
+                const containerOriginalColor = container.getAttribute('data-original-color');
+                const containerLayerId = container.getAttribute('data-layer-id');
+                
+                // 正確に同じ色と同じレイヤーの要素のみ更新
+                if (convertToHex(containerOriginalColor) === convertToHex(originalColor) && containerLayerId == layerId) {
+                    const swatch = container.querySelector('.color-swatch');
+                    const label = container.querySelector('.color-label');
+                    
+                    if (swatch) {
+                        swatch.style.backgroundColor = newColor;
+                    }
+                    if (label) {
+                        label.textContent = newColor.toUpperCase();
+                    }
+                    
+                    // データ属性を新しい色に更新（次回変更時の参照用）
+                    container.setAttribute('data-original-color', newColor);
+                    
+                    console.log(`Updated swatch from ${originalColor} to ${newColor} for layer ${layerId}`);
+                }
+            });
+        }
+
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
             console.log('ページ読み込み完了');
@@ -2573,7 +3056,16 @@ $materials = $stmt->fetchAll();
         initializeMaterialSearch();
         
         // ページネーション使用時の検索状態管理
-        initializePaginationSearch();            // 素材にクリックイベントを追加
+        initializePaginationSearch();
+        
+        // カラーセクションを初期化
+        const colorSection = document.getElementById('color-section');
+        if (colorSection) {
+            // カラーセクションを常に表示状態にする
+            colorSection.style.display = 'block';
+        }
+        
+        // 素材にクリックイベントを追加
             const materialItems = document.querySelectorAll('.material-item');
             materialItems.forEach(item => {
                 item.addEventListener('click', function() {
@@ -2698,12 +3190,16 @@ $materials = $stmt->fetchAll();
                 const canvas = document.getElementById('mainCanvas');
                 const manipulationControls = document.querySelector('.manipulation-controls');
                 const actionControls = document.querySelector('.action-controls');
+                const colorSection = document.getElementById('color-section');
                 
-                // キャンバス、レイヤー要素、操作ボタンエリアのクリックは除外
+
+                
+                // キャンバス、レイヤー要素、操作ボタンエリア、カラーセクションのクリックは除外
                 if (!canvas.contains(e.target) && 
                     !e.target.closest('.layer-element') && 
                     !manipulationControls.contains(e.target) &&
-                    !actionControls.contains(e.target)) {
+                    !actionControls.contains(e.target) &&
+                    !(colorSection && colorSection.contains(e.target))) {
                     deselectLayer();
                 }
             });
