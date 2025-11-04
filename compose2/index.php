@@ -1029,6 +1029,32 @@ $materials = $stmt->fetchAll();
                 min-width: 100px;
             }
         }
+        
+        /* 検索スピナーアニメーション */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* 検索結果のスタイリング */
+        .material-category {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .material-tags {
+            font-size: 0.75rem;
+            color: #007bff;
+            margin-top: 0.25rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
         /* 素材がクリックされた時の視覚的フィードバック */
         .material-item.clicked {
@@ -1065,7 +1091,7 @@ $materials = $stmt->fetchAll();
                     <form class="d-flex align-items-center" onsubmit="return false;">
                         <input type="text" 
                                id="materialSearch" 
-                               placeholder="素材を検索（例：猫、花、食べ物など）" 
+                               placeholder="全ての素材から検索（スペース区切りでOR検索可）" 
                                class="search-input form-control me-2">
                         <button type="button" 
                                 id="clearSearch" 
@@ -2620,43 +2646,45 @@ $materials = $stmt->fetchAll();
             }
         }
 
-        // 素材検索機能
+        // 素材検索機能（全件Ajax検索対応）
         function initializeMaterialSearch() {
             const searchInput = document.getElementById('materialSearch');
             const clearButton = document.getElementById('clearSearch');
-            const materialItems = document.querySelectorAll('.material-item');
             
             if (!searchInput) return;
             
-            // 検索入力イベント
+            let searchTimeout = null;
+            
+            // 検索入力イベント（デバウンス付き）
             searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase().trim();
-                let visibleCount = 0;
-                
-                materialItems.forEach(item => {
-                    const title = item.dataset.title.toLowerCase();
-                    const isVisible = title.includes(searchTerm);
-                    
-                    item.style.display = isVisible ? 'block' : 'none';
-                    if (isVisible) visibleCount++;
-                });
+                const searchTerm = this.value.trim();
                 
                 // クリアボタンの表示/非表示
                 clearButton.style.display = searchTerm ? 'block' : 'none';
                 
-                // 検索結果が0件の場合のメッセージ（オプション）
-                showSearchResultsMessage(visibleCount, searchTerm);
+                // デバウンス処理（300ms）
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    if (searchTerm) {
+                        // Ajax全件検索を実行
+                        performGlobalSearch(searchTerm);
+                    } else {
+                        // 検索クリア時はページリロード
+                        window.location.reload();
+                    }
+                }, 300);
             });
             
             // クリアボタンイベント
             clearButton.addEventListener('click', function() {
                 searchInput.value = '';
-                materialItems.forEach(item => {
-                    item.style.display = 'block';
-                });
                 this.style.display = 'none';
                 hideSearchResultsMessage();
-                searchInput.focus();
+                // ページリロードで元の状態に戻す
+                window.location.reload();
             });
             
             // Enterキーでの検索実行を防ぐ
@@ -2665,6 +2693,133 @@ $materials = $stmt->fetchAll();
                     e.preventDefault();
                 }
             });
+        }
+        
+        // Ajax全件検索を実行
+        function performGlobalSearch(searchTerm) {
+            console.log(`Performing global search for: ${searchTerm}`);
+            
+            // ローディング表示
+            showSearchLoadingMessage();
+            
+            // Ajax検索APIを呼び出し
+            fetch(`/admin/api/search-materials.php?q=${encodeURIComponent(searchTerm)}`)
+                .then(response => {
+                    console.log('API Response status:', response.status);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTPエラー: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    // レスポンスのテキストを取得してJSONパース前に確認
+                    return response.text();
+                })
+                .then(responseText => {
+                    console.log('API Response text:', responseText.substring(0, 200));
+                    
+                    try {
+                        const data = JSON.parse(responseText);
+                        
+                        if (data.success) {
+                            // 検索結果で素材グリッドを更新
+                            updateMaterialsGrid(data.materials, data.query, data.total);
+                            console.log(`Search completed: ${data.total} materials found`);
+                        } else {
+                            throw new Error(data.error || '検索エラーが発生しました');
+                        }
+                    } catch (jsonError) {
+                        console.error('JSON parse error:', jsonError);
+                        console.error('Response text:', responseText);
+                        
+                        // HTMLエラーページが返された場合の処理
+                        if (responseText.includes('<br />') || responseText.includes('<b>')) {
+                            throw new Error('サーバーでPHPエラーが発生しました。管理システムの設定を確認してください。');
+                        } else {
+                            throw new Error('サーバーから無効なJSONレスポンスが返されました');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    showSearchErrorMessage(error.message);
+                });
+        }
+        
+        // 検索結果で素材グリッドを更新
+        function updateMaterialsGrid(materials, searchQuery, totalCount) {
+            const materialsGrid = document.querySelector('.materials-grid');
+            if (!materialsGrid) {
+                console.error('Materials grid not found');
+                return;
+            }
+            
+            // グリッドを空にする
+            materialsGrid.innerHTML = '';
+            
+            if (materials.length === 0) {
+                // 検索結果が0件の場合
+                materialsGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #6c757d;">
+                        <div style="font-size: 1.2rem; margin-bottom: 1rem;">
+                            「${searchQuery}」に一致する素材が見つかりませんでした
+                        </div>
+                        <div style="font-size: 0.9rem;">
+                            キーワードを変更して再検索してください
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 検索結果を表示
+                materials.forEach(material => {
+                    const materialItem = createMaterialItem(material);
+                    materialsGrid.appendChild(materialItem);
+                });
+            }
+            
+            // 検索結果メッセージを更新
+            showSearchResultsMessage(totalCount, searchQuery);
+            
+            // ページネーションを非表示
+            hidePageNavigation();
+        }
+        
+        // 素材アイテムのDOM要素を作成
+        function createMaterialItem(material) {
+            const item = document.createElement('div');
+            item.className = 'material-item';
+            item.setAttribute('data-material-id', material.id);
+            item.setAttribute('data-svg-path', material.svg_path);
+            item.setAttribute('data-title', material.title);
+            
+            // WebP優先で画像パスを選択
+            let previewPath = '';
+            if (material.webp_medium_path) {
+                previewPath = material.webp_medium_path;
+            } else if (material.image_path) {
+                previewPath = material.image_path;
+            } else {
+                // フォールバック: SVGプレビューのパスを生成
+                previewPath = material.svg_path.replace('.svg', '_preview.webp');
+            }
+            
+            item.innerHTML = `
+                <div class="material-image">
+                    <img src="/${previewPath}" 
+                         alt="${material.title}" 
+                         loading="lazy"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="svg-fallback" style="display: none;">
+                        <i class="bi bi-image"></i>
+                    </div>
+                </div>
+            `;
+            
+            // クリックイベントを追加
+            item.addEventListener('click', function() {
+                addMaterialToCanvas(this);
+            });
+            
+            return item;
         }
         
         // 検索結果メッセージの表示
@@ -2680,6 +2835,9 @@ $materials = $stmt->fetchAll();
                     color: #6c757d;
                     font-size: 0.9rem;
                     margin-bottom: 1rem;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                    border: 1px solid #e9ecef;
                 `;
                 
                 const materialsGrid = document.querySelector('.materials-grid');
@@ -2688,14 +2846,55 @@ $materials = $stmt->fetchAll();
             
             if (searchTerm) {
                 if (count === 0) {
-                    messageDiv.textContent = `「${searchTerm}」に一致する素材が見つかりませんでした。`;
-                    messageDiv.style.display = 'block';
+                    messageDiv.innerHTML = `
+                        <i class="bi bi-search"></i> 
+                        「<strong>${searchTerm}</strong>」の検索結果: <strong>0件</strong>
+                        <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+                            タイトル、カテゴリ、タグ、キーワードから検索しています
+                        </div>
+                    `;
                 } else {
-                    messageDiv.textContent = `「${searchTerm}」で${count}件の素材が見つかりました。`;
-                    messageDiv.style.display = 'block';
+                    messageDiv.innerHTML = `
+                        <i class="bi bi-search"></i> 
+                        「<strong>${searchTerm}</strong>」の検索結果: <strong>${count}件</strong>
+                        <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+                            スペース区切りでOR検索できます
+                        </div>
+                    `;
                 }
+                messageDiv.style.display = 'block';
             } else {
                 messageDiv.style.display = 'none';
+            }
+        }
+        
+        // ローディングメッセージの表示
+        function showSearchLoadingMessage() {
+            showSearchResultsMessage(0, '検索中...');
+            const messageDiv = document.getElementById('searchResultsMessage');
+            if (messageDiv) {
+                messageDiv.innerHTML = `
+                    <i class="bi bi-arrow-clockwise spin"></i> 
+                    検索中...
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+                        全ての素材から検索しています
+                    </div>
+                `;
+            }
+        }
+        
+        // エラーメッセージの表示
+        function showSearchErrorMessage(errorMessage) {
+            const messageDiv = document.getElementById('searchResultsMessage');
+            if (messageDiv) {
+                messageDiv.innerHTML = `
+                    <i class="bi bi-exclamation-triangle text-warning"></i> 
+                    検索エラー: ${errorMessage}
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+                        しばらく待ってから再度お試しください
+                    </div>
+                `;
+                messageDiv.style.display = 'block';
             }
         }
         
@@ -2704,6 +2903,32 @@ $materials = $stmt->fetchAll();
             const messageDiv = document.getElementById('searchResultsMessage');
             if (messageDiv) {
                 messageDiv.style.display = 'none';
+            }
+        }
+        
+        // ページネーションを非表示
+        function hidePageNavigation() {
+            const paginationContainer = document.querySelector('.pagination-container');
+            const paginationInfo = document.querySelector('.pagination-info');
+            
+            if (paginationContainer) {
+                paginationContainer.style.display = 'none';
+            }
+            if (paginationInfo) {
+                paginationInfo.style.display = 'none';
+            }
+        }
+        
+        // ページネーションを表示
+        function showPageNavigation() {
+            const paginationContainer = document.querySelector('.pagination-container');
+            const paginationInfo = document.querySelector('.pagination-info');
+            
+            if (paginationContainer) {
+                paginationContainer.style.display = 'flex';
+            }
+            if (paginationInfo) {
+                paginationInfo.style.display = 'block';
             }
         }
         
