@@ -65,7 +65,7 @@ try {
                 m.webp_medium_path,
                 c.title as category_name,
                 GROUP_CONCAT(DISTINCT t.name) as tags,
-                m.search_keywords_jp as keywords,
+                m.search_keywords as keywords,
                 m.created_at
             FROM materials m
             LEFT JOIN categories c ON m.category_id = c.id
@@ -116,7 +116,7 @@ try {
             m.title LIKE :{$titleParam} OR 
             c.title LIKE :{$categoryParam} OR 
             t.name LIKE :{$tagParam} OR 
-            m.search_keywords_jp LIKE :{$keywordParam}
+            m.search_keywords LIKE :{$keywordParam}
         )";
         
         $params[$titleParam] = '%' . $term . '%';
@@ -141,7 +141,7 @@ try {
             m.webp_medium_path,
             c.title as category_name,
             GROUP_CONCAT(DISTINCT t.name) as tags,
-            m.search_keywords_jp as keywords,
+            m.search_keywords as keywords,
             m.created_at
         FROM materials m
         LEFT JOIN categories c ON m.category_id = c.id
