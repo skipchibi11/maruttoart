@@ -39,6 +39,10 @@ $materials = $stmt->fetchAll();
     <meta name="format-detection" content="telephone=no">
     <title>あなたのアトリエ - maruttoart</title>
     <meta name="description" content="SVG素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
+    
+    <!-- カノニカルURL設定（アトリエツール用 - 1つのツールとして統一） -->
+    <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose2/">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -273,36 +277,46 @@ $materials = $stmt->fetchAll();
             50% { transform: scale(1.1); }
         }
 
-        .color-swatch {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .color-swatch:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-        }
+        /* color-swatchは削除されました - シンプルなカラーピッカーのみ使用 */
 
         .color-swatch-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.5rem;
             position: relative;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .color-picker-input {
+            width: 60px;
+            height: 45px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        .color-picker-input:hover {
+            border-color: #007bff;
+            transform: scale(1.05);
+        }
+        
+        .color-picker-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        .color-picker-input::-webkit-color-swatch {
+            border: none;
+            border-radius: 6px;
         }
 
-        .hidden-color-picker {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-            width: 1px;
-            height: 1px;
-        }
+        /* 旧実装のCSSは削除（背景色仕様に合わせるため） */
 
         .color-label {
             font-size: 0.75rem;
@@ -1106,7 +1120,7 @@ $materials = $stmt->fetchAll();
 
             <!-- カラーセクション -->
             <div id="color-section" class="color-section">
-                <h3><i class="bi bi-palette"></i> 色を変更 <small class="text-muted">（色見本をクリックでカラーピッカー起動）</small></h3>
+                <h3><i class="bi bi-palette"></i> 色を変更 <small class="text-muted">（リアルタイム即時反映）</small></h3>
                 <div id="color-panel-content" class="color-panel-content">
                     <div id="colorPalette" class="color-palette">
                         <div class="text-center text-muted">
@@ -2824,12 +2838,12 @@ $materials = $stmt->fetchAll();
             const colorPalette = document.getElementById('colorPalette');
             if (!colorPalette) return;
             
-            // 既存の隠しカラーピッカーを全てクリア（テーマ変更後の古い参照を削除）
-            const existingHiddenPickers = document.querySelectorAll('.hidden-color-picker');
-            existingHiddenPickers.forEach(picker => {
-                picker.remove();
-            });
-            console.log(`Removed ${existingHiddenPickers.length} existing hidden color pickers`);
+            // 既存のグローバル隠しカラーピッカーをクリア（テーマ変更後の古い参照を削除）
+            const globalHiddenPicker = document.getElementById('global-hidden-color-picker');
+            if (globalHiddenPicker) {
+                globalHiddenPicker.remove();
+                console.log('Removed existing global hidden color picker');
+            }
             
             if (colors.length === 0) {
                 colorPalette.innerHTML = `
@@ -2850,11 +2864,11 @@ $materials = $stmt->fetchAll();
                 
                 colorItem.innerHTML = `
                     <div class="color-swatch-container" data-original-color="${originalColor}" data-layer-id="${layer.id}">
-                        <div class="color-swatch" 
-                             style="background-color: ${originalColor}" 
-                             onclick="showColorToolDynamic(${layer.id}, this)"
-                             title="クリックして色を変更">
-                        </div>
+                        <input type="color" 
+                               class="color-picker-input" 
+                               value="${originalColor}" 
+                               oninput="changeColorDirectly('${originalColor}', this.value, ${layer.id}, this)"
+                               title="色を選択: ${originalColor}">
                         <div class="color-label">${originalColor}</div>
                     </div>
                 `;
@@ -2951,94 +2965,108 @@ $materials = $stmt->fetchAll();
             console.log(`Color changed from ${oldColor} to ${newColor}, ${changeCount} elements updated`);
         }
 
-        // 動的な色取得でカラーピッカーを表示
-        function showColorToolDynamic(layerId, swatchElement) {
-            // コンテナから現在の色を動的に取得
-            const container = swatchElement.closest('.color-swatch-container');
-            if (!container) return;
+        // デバウンス用のタイマー管理
+        let colorChangeTimeout = null;
+        let lastColorChange = null;
+        
+        // 直接色変更（即時反映・デバウンス対応）
+        function changeColorDirectly(originalColor, newColor, layerId, inputElement) {
+            console.log(`Changing color directly from ${originalColor} to ${newColor} on layer ${layerId}`);
             
-            const currentColor = container.getAttribute('data-original-color');
-            console.log(`Dynamic color tool called with current color: ${currentColor} for layer ${layerId}`);
+            // 現在の色を取得（連続変更時は前回の新色が基準）
+            const container = inputElement.closest('.color-swatch-container');
+            const currentOriginalColor = container ? container.getAttribute('data-original-color') : originalColor;
             
-            showColorTool(currentColor, layerId, swatchElement);
+            // UI は即座に更新
+            updateColorUI(currentOriginalColor, newColor, layerId, inputElement);
+            
+            // レイヤーの色変更はデバウンスして実行
+            if (colorChangeTimeout) {
+                clearTimeout(colorChangeTimeout);
+            }
+            
+            // 最新の色変更情報を保存
+            lastColorChange = {
+                originalColor: currentOriginalColor,
+                newColor: newColor,
+                layerId: layerId
+            };
+            
+            colorChangeTimeout = setTimeout(() => {
+                if (lastColorChange) {
+                    changeLayerColor(lastColorChange.originalColor, lastColorChange.newColor, lastColorChange.layerId);
+                    lastColorChange = null;
+                }
+                colorChangeTimeout = null;
+            }, 100); // 100ms のデバウンス（スムーズな操作感）
         }
-
-        // 色変更ツールを表示（直接カラーピッカーを開く）
-        function showColorTool(originalColor, layerId, swatchElement) {
-            console.log(`Opening color picker for ${originalColor} on layer ${layerId}`);
+        
+        // UI の即座更新
+        function updateColorUI(originalColor, newColor, layerId, inputElement) {
             
-            // クリックされたswatchの親コンテナを取得
-            const container = swatchElement.closest('.color-swatch-container');
+            // コンテナを取得して情報を更新
+            const container = inputElement.closest('.color-swatch-container');
             if (container) {
-                // 現在の色を取得（data-original-colorから最新の色を取得）
-                const currentColor = container.getAttribute('data-original-color') || originalColor;
-                console.log(`Current color for this swatch: ${currentColor}`);
+                const label = container.querySelector('.color-label');
                 
-                // 非表示のカラーピッカーを作成または取得
-                let hiddenColorPicker = container.querySelector('.hidden-color-picker');
-                if (!hiddenColorPicker) {
-                    hiddenColorPicker = document.createElement('input');
-                    hiddenColorPicker.type = 'color';
-                    hiddenColorPicker.className = 'hidden-color-picker';
-                    hiddenColorPicker.style.position = 'absolute';
-                    hiddenColorPicker.style.opacity = '0';
-                    hiddenColorPicker.style.pointerEvents = 'none';
-                    hiddenColorPicker.style.width = '1px';
-                    hiddenColorPicker.style.height = '1px';
-                    
-                    container.appendChild(hiddenColorPicker);
+                // ラベルを更新
+                if (label) {
+                    label.textContent = newColor.toUpperCase();
                 }
                 
-                // イベントリスナーを毎回更新（現在の色を動的に参照）
-                hiddenColorPicker.replaceWith(hiddenColorPicker.cloneNode(true));
-                hiddenColorPicker = container.querySelector('.hidden-color-picker');
+                // カラーピッカーのタイトルを更新
+                inputElement.title = `色を選択: ${newColor}`;
                 
-                // リアルタイム色変更イベントを設定（現在の色を使用）
-                hiddenColorPicker.addEventListener('input', function() {
-                    const latestCurrentColor = container.getAttribute('data-original-color') || currentColor;
-                    changeColorRealtime(latestCurrentColor, this.value, layerId);
-                });
+                // データ属性を更新
+                container.setAttribute('data-original-color', newColor);
                 
-                // カラーピッカーの値を現在の色に設定してクリック
-                hiddenColorPicker.value = currentColor;
-                hiddenColorPicker.click();
+                // 他の同じ色のカラーピッカーも更新（同期）
+                updateOtherPickersOfSameColor(originalColor, newColor, layerId);
+                
+                console.log(`Color picker updated from ${originalColor} to ${newColor} for layer ${layerId}`);
             }
         }
-
-
-
-        // リアルタイム色変更
-        function changeColorRealtime(originalColor, newColor, layerId) {
-            console.log(`Changing color from ${originalColor} to ${newColor} on layer ${layerId}`);
-            
-            // 即座に色を変更
-            changeLayerColor(originalColor, newColor, layerId);
-            
-            // 対応するcolor-swatchとラベルの色も更新
+        
+        // 同じ色の他のカラーピッカーを同期更新
+        function updateOtherPickersOfSameColor(originalColor, newColor, layerId) {
             const allContainers = document.querySelectorAll('.color-swatch-container');
             allContainers.forEach(container => {
                 const containerOriginalColor = container.getAttribute('data-original-color');
                 const containerLayerId = container.getAttribute('data-layer-id');
                 
-                // 正確に同じ色と同じレイヤーの要素のみ更新
-                if (convertToHex(containerOriginalColor) === convertToHex(originalColor) && containerLayerId == layerId) {
-                    const swatch = container.querySelector('.color-swatch');
-                    const label = container.querySelector('.color-label');
+                if (convertToHex(containerOriginalColor) === convertToHex(originalColor) && 
+                    containerLayerId == layerId && 
+                    container.getAttribute('data-original-color') !== newColor) {
                     
-                    if (swatch) {
-                        swatch.style.backgroundColor = newColor;
-                    }
+                    const label = container.querySelector('.color-label');
+                    const input = container.querySelector('.color-picker-input');
+                    
                     if (label) {
                         label.textContent = newColor.toUpperCase();
                     }
+                    if (input) {
+                        input.value = newColor;
+                        input.title = `色を選択: ${newColor}`;
+                    }
                     
-                    // データ属性を新しい色に更新（次回変更時の参照用）
                     container.setAttribute('data-original-color', newColor);
-                    
-                    console.log(`Updated swatch from ${originalColor} to ${newColor} for layer ${layerId}`);
                 }
             });
         }
+
+        // 旧実装（背景色仕様に合わせるため無効化）
+        // function showColorTool() { /* 新実装では不要 */ }
+        
+        // 旧デスクトップ実装（背景色仕様に合わせるため無効化）
+        // function showDesktopColorPicker() { /* 新実装では不要 */ }
+        
+        // 旧モバイル実装（背景色仕様に合わせるため無効化）
+        // function showMobileColorPicker() { /* 新実装では不要 */ }
+
+
+
+        // 旧リアルタイム色変更実装（背景色仕様に合わせるため無効化）
+        // function changeColorRealtime() { /* 新実装では changeColorDirectly を使用 */ }
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
@@ -3192,7 +3220,7 @@ $materials = $stmt->fetchAll();
                 const actionControls = document.querySelector('.action-controls');
                 const colorSection = document.getElementById('color-section');
                 
-
+                // 旧モバイルピッカー関連の処理は削除（新実装では不要）
                 
                 // キャンバス、レイヤー要素、操作ボタンエリア、カラーセクションのクリックは除外
                 if (!canvas.contains(e.target) && 
