@@ -348,6 +348,11 @@ if ($_POST) {
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/artworks.php">
+                                <i class="bi bi-palette"></i> みんなのアトリエ
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/">
                                 <i class="bi bi-globe"></i> 公式サイト
                             </a>

@@ -63,6 +63,7 @@ $categories = getAllCategories($pdo);
                 <a class="nav-link" href="index.php">ダッシュボード</a>
                 <a class="nav-link" href="categories.php">カテゴリ</a>
                 <a class="nav-link" href="tags.php">タグ</a>
+                <a class="nav-link" href="artworks.php">みんなのアトリエ</a>
                 <a class="nav-link" href="logout.php">ログアウト</a>
             </div>
         </div>

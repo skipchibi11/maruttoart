@@ -51,6 +51,9 @@ $tags = getAllTags($pdo);
                     <a class="nav-link active" href="tags.php">タグ管理</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="artworks.php">みんなのアトリエ</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="logout.php">ログアウト</a>
                 </li>
             </ul>

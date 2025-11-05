@@ -115,8 +115,17 @@ $stats = $statsStmt->fetchAll(PDO::FETCH_KEY_PAIR);
     <!-- ヘッダー -->
     <div class="admin-header">
         <div class="container">
-            <h1><i class="bi bi-palette2"></i> 作品管理</h1>
-            <p class="mb-0">コミュニティ投稿作品の承認・管理</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="bi bi-palette2"></i> 作品管理</h1>
+                    <p class="mb-0">コミュニティ投稿作品の承認・管理</p>
+                </div>
+                <div>
+                    <a href="/admin/" class="btn btn-outline-light">
+                        <i class="bi bi-house"></i> ダッシュボードに戻る
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
     
