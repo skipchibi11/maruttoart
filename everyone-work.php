@@ -1,0 +1,1245 @@
+<?php
+require_once 'config.php';
+
+// 公開ページなのでキャッシュを有効化
+setPublicCache(3600, 7200); // 1時間 / CDN 2時間
+
+$id = intval($_GET['id'] ?? 0);
+
+if (empty($id)) {
+    http_response_code(404);
+    header('Location: /404.php');
+    exit;
+}
+
+$pdo = getDB();
+
+// 作品情報を取得（承認済みのみ）
+$stmt = $pdo->prepare("
+    SELECT * FROM community_artworks 
+    WHERE id = ? AND status = 'approved'
+");
+$stmt->execute([$id]);
+$artwork = $stmt->fetch();
+
+if (!$artwork) {
+    http_response_code(404);
+    header('Location: /404.php');
+    exit;
+}
+
+// 閲覧数を増加
+$updateViewStmt = $pdo->prepare("UPDATE community_artworks SET view_count = view_count + 1 WHERE id = ?");
+$updateViewStmt->execute([$id]);
+
+// 作品画像のURLを取得（優先順位: WebP > 通常画像）
+function getArtworkImageUrl($artwork) {
+    $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'https';
+    $host = $_SERVER['HTTP_HOST'];
+    
+    // WebP画像が存在する場合は優先使用
+    if (!empty($artwork['webp_path'])) {
+        return "{$scheme}://{$host}/{$artwork['webp_path']}";
+    }
+    
+    // 通常の画像パス（original_filenameを使用）
+    if (!empty($artwork['original_filename'])) {
+        return "{$scheme}://{$host}/uploads/everyone-works/{$artwork['original_filename']}";
+    }
+    
+    return '';
+}
+
+// ダウンロード用の画像パスを取得（オリジナルファイルを優先）
+function getDownloadImagePath($artwork) {
+    $basePath = __DIR__ . '/uploads/everyone-works/';
+    
+    // オリジナルファイルが存在する場合は優先
+    if (!empty($artwork['original_filename'])) {
+        $filePath = $basePath . $artwork['original_filename'];
+        if (file_exists($filePath)) {
+            return "/uploads/everyone-works/{$artwork['original_filename']}";
+        }
+    }
+    
+    // image_pathも確認
+    if (!empty($artwork['image_path'])) {
+        // 年/月のディレクトリ構造も確認
+        $year = date('Y', strtotime($artwork['created_at']));
+        $month = date('m', strtotime($artwork['created_at']));
+        $filePath = $basePath . $year . '/' . $month . '/' . $artwork['image_path'];
+        if (file_exists($filePath)) {
+            return "/uploads/everyone-works/{$year}/{$month}/{$artwork['image_path']}";
+        }
+        
+        // 直接パスも確認
+        $filePath = $basePath . $artwork['image_path'];
+        if (file_exists($filePath)) {
+            return "/uploads/everyone-works/{$artwork['image_path']}";
+        }
+    }
+    
+    // WebPファイルを代替として使用
+    if (!empty($artwork['webp_path'])) {
+        $filePath = __DIR__ . '/' . $artwork['webp_path'];
+        if (file_exists($filePath)) {
+            return "/{$artwork['webp_path']}";
+        }
+    }
+    
+    return '';
+}
+
+$artworkImageUrl = getArtworkImageUrl($artwork);
+$downloadImagePath = getDownloadImagePath($artwork);
+
+// 使用素材の情報を取得
+$usedMaterials = [];
+if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids'])) {
+    try {
+        $materialIds = explode(',', $artwork['used_material_ids']);
+        $materialIds = array_map('intval', $materialIds);
+        $materialIds = array_filter($materialIds); // 0や空の値を除去
+        
+        if (!empty($materialIds)) {
+            $placeholders = str_repeat('?,', count($materialIds) - 1) . '?';
+            $materialStmt = $pdo->prepare("
+                SELECT m.*, c.slug as category_slug 
+                FROM materials m 
+                LEFT JOIN categories c ON m.category_id = c.id 
+                WHERE m.id IN ($placeholders)
+            ");
+            $materialStmt->execute($materialIds);
+            $usedMaterials = $materialStmt->fetchAll();
+        }
+    } catch (Exception $e) {
+        // カラムが存在しない場合やその他のエラーの場合は空配列を維持
+        error_log("Used materials query error: " . $e->getMessage());
+        $usedMaterials = [];
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <!-- Google Tag Manager - GDPR対応 -->
+    <script>
+    // GDPR同意状況をチェックしてGTMを条件付き読み込み
+    (function() {
+        function getGdprConsent() {
+            try {
+                return localStorage.getItem('gdpr_consent_v1');
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        function loadGTM() {
+            if (window.gtmLoaded) return; // 重複読み込み防止
+            window.gtmLoaded = true;
+            
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-579HN546');
+        }
+        
+        // 同意状況を確認
+        const consent = getGdprConsent();
+        if (consent === 'accepted') {
+            // 既に同意済みの場合は即座に読み込み
+            loadGTM();
+        }
+        
+        // GDPR同意イベントを監視（将来の同意に対応）
+        window.addEventListener('gdpr-consent-accepted', loadGTM);
+    })();
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="c5fko6zCuEianJGT3hyZsHgvNx5QAuuHKZ4TWgvV6J0">
+    <title><?= h($artwork['title']) ?> - みんなのアトリエ｜marutto.art</title>
+    <meta name="description" content="<?= h($artwork['title']) ?>のコミュニティ作品。フリー素材として自由にご利用いただけます。">
+
+    <!-- Site Icons -->
+    <link rel="icon" href="/favicon.ico">
+    
+    <!-- Canonical tag -->
+    <link rel="canonical" href="https://marutto.art/everyone-work.php?id=<?= $artwork['id'] ?>">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/everyone-work.php?id=<?= $artwork['id'] ?>">
+    <meta property="og:title" content="<?= h($artwork['title']) ?> - みんなのアトリエ">
+    <meta property="og:description" content="<?= h($artwork['title']) ?>のコミュニティ作品。フリー素材として自由にご利用いただけます。">
+    <meta property="og:image" content="<?= h($artworkImageUrl) ?>">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/everyone-work.php?id=<?= $artwork['id'] ?>">
+    <meta property="twitter:title" content="<?= h($artwork['title']) ?> - みんなのアトリエ">
+    <meta property="twitter:description" content="<?= h($artwork['title']) ?>のコミュニティ作品。フリー素材として自由にご利用いただけます。">
+    <meta property="twitter:image" content="<?= h($artworkImageUrl) ?>">
+
+    <style>
+        /* リセットCSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            line-height: 1.5;
+            color: #222;
+        }
+
+        /* コンテナシステム */
+        .container {
+            width: 100%;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /* ヘッダー */
+        .site-header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .site-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #222;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: #222;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            color: #007bff;
+        }
+
+        /* パンくずリスト */
+        .breadcrumb {
+            padding: 1rem 0;
+            background-color: #f8f9fa;
+        }
+
+        .breadcrumb-list {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .breadcrumb-item {
+            color: #6c757d;
+        }
+
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item:not(:last-child)::after {
+            content: ">";
+            margin-left: 0.5rem;
+            color: #6c757d;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            padding: 2rem 0;
+        }
+
+        .artwork-detail {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .artwork-image-container {
+            text-align: center;
+            padding: 2rem;
+            background-color: #f8f9fa;
+        }
+
+        .artwork-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+
+
+        /* セクションスタイル */
+        .artwork-image-section {
+            margin-bottom: 3rem;
+        }
+
+        .artwork-detail-section {
+            margin-bottom: 3rem;
+        }
+
+        .download-section {
+            margin: 3rem 0;
+            padding: 2rem 0;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .share-section {
+            margin: 3rem 0;
+            padding: 2rem 0;
+        }
+
+        .used-materials-section {
+            margin: 3rem 0;
+            padding: 2rem 0;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .used-materials-section h3 {
+            margin-bottom: 2rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .material-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .material-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .material-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .material-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .material-thumbnail {
+            aspect-ratio: 1;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .material-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .material-placeholder {
+            width: 40px;
+            height: 40px;
+            color: #6c757d;
+        }
+
+        .material-placeholder svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .material-title {
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.3;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .materials-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 1rem;
+                padding: 0 0.5rem;
+            }
+            
+            .material-title {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 詳細セクションのスタイル */
+        .artwork-info {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .artwork-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .artwork-description {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .artwork-description h3 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .artwork-description p {
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .artwork-meta {
+            text-align: left;
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .meta-item {
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta-item strong {
+            color: #333;
+            margin-right: 0.5rem;
+        }
+
+        /* ボタン */
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            color: #212529;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .btn:hover {
+            color: #212529;
+            text-decoration: none;
+        }
+
+        .btn-lg {
+            padding: 0.5rem 1rem;
+            font-size: 1.25rem;
+            line-height: 1.5;
+            border-radius: 0.3rem;
+        }
+
+        /* Download Button Style (same as load-more-button) */
+        .download-section .btn {
+            background-color: #ffffff;
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 0.75em 2em;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .download-section .btn:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #444;
+            text-decoration: none;
+        }
+
+        /* ナビゲーション */
+        .navbar {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            background-color: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+
+        .navbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .navbar-brand {
+            display: inline-block;
+            padding-top: 0.3125rem;
+            padding-bottom: 0.3125rem;
+            margin-right: 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .navbar-brand:hover {
+            color: #333;
+            text-decoration: none;
+        }
+
+        /* SNSリンク */
+        .social-links {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .social-link:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        .social-link.twitter {
+            color: #1da1f2;
+        }
+
+        .social-link.twitter:hover {
+            background-color: #1da1f2;
+            color: white;
+            border-color: #1da1f2;
+        }
+
+        .social-link.youtube {
+            color: #ff0000;
+        }
+
+        .social-link.youtube:hover {
+            background-color: #ff0000;
+            color: white;
+            border-color: #ff0000;
+        }
+
+        .social-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* フッターのスタイル */
+        .footer-custom {
+            background-color: #fef9e7 !important;
+        }
+
+        .footer-custom .footer-text {
+            color: #1a1a1a !important;
+        }
+
+        .footer-custom .footer-text:hover {
+            color: #000000 !important;
+        }
+
+        .footer-custom a.footer-text {
+            transition: color 0.2s ease;
+        }
+
+        .footer-custom a.footer-text:hover {
+            color: #0d6efd !important;
+            text-decoration: underline !important;
+        }
+
+        /* 言語切替のスタイル */
+        .language-switcher {
+            margin-top: 10px;
+        }
+
+        /* ユーティリティクラス */
+        .text-center {
+            text-align: center !important;
+        }
+
+        .mt-5 {
+            margin-top: 3rem !important;
+        }
+
+        .py-4 {
+            padding-top: 1.5rem !important;
+            padding-bottom: 1.5rem !important;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem !important;
+        }
+
+        .mb-0 {
+            margin-bottom: 0 !important;
+        }
+
+        .text-decoration-none {
+            text-decoration: none !important;
+        }
+
+        .me-3 {
+            margin-right: 1rem !important;
+        }
+
+        /* GDPR Cookie Banner のスタイル */
+        #gdpr-banner {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            padding: 1rem !important;
+            z-index: 1050 !important;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
+        }
+        
+        #gdpr-banner.hidden,
+        .gdpr-cookie-banner.hidden {
+            display: none !important;
+        }
+        
+        .gdpr-text {
+            font-size: 0.9rem !important;
+            line-height: 1.4 !important;
+            color: #ffffff !important;
+        }
+        
+        .gdpr-text a {
+            color: #ffffff !important;
+            text-decoration: underline !important;
+        }
+        
+        .gdpr-text a:hover {
+            color: #e9ecef !important;
+        }
+        
+        .gdpr-buttons {
+            margin-top: 1rem !important;
+            display: flex !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap !important;
+        }
+        
+        .gdpr-buttons .btn {
+            flex: 0 0 auto !important;
+            white-space: nowrap !important;
+        }
+        
+        /* GDPR専用のボタンスタイル（より強力な優先度） */
+        #gdpr-banner .btn-outline-light {
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+            background-color: transparent !important;
+            border-width: 1px !important;
+            border-style: solid !important;
+        }
+
+        #gdpr-banner .btn-outline-light:hover {
+            color: #212529 !important;
+            background-color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+
+        #gdpr-banner .btn-success {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+
+        #gdpr-banner .btn-success:hover {
+            color: #000000 !important;
+            background-color: #f8f9fa !important;
+            border-color: #f8f9fa !important;
+        }
+        
+        @media (min-width: 768px) {
+            .gdpr-buttons {
+                margin-top: 0 !important;
+                justify-content: flex-end !important;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .gdpr-buttons {
+                justify-content: center !important;
+            }
+        }
+
+        /* シェアボタンのスタイル */
+        .share-section .text-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .share-section .text-center h3 {
+            margin-bottom: 0;
+        }
+
+        .share-buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .share-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white !important;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .share-button.twitter {
+            background-color: #1da1f2;
+        }
+        
+        .share-button.twitter:hover {
+            background-color: #0d8bd9;
+            box-shadow: 0 2px 4px rgba(29, 161, 242, 0.3);
+        }
+        
+        .share-button.pinterest {
+            background-color: #bd081c;
+        }
+        
+        .share-button.pinterest:hover {
+            background-color: #a50718;
+            box-shadow: 0 2px 4px rgba(189, 8, 28, 0.3);
+        }
+        
+        .share-button:hover {
+            color: white !important;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .share-button svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* フッター */
+        .site-footer {
+            background-color: #222;
+            color: #fff;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                gap: 1rem;
+            }
+
+            .breadcrumb-list {
+                font-size: 0.9rem;
+            }
+
+            .artwork-info {
+                padding: 1.5rem;
+            }
+
+            .artwork-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .share-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) - GDPR対応 -->
+    <script>
+    // グローバルGDPR同意チェック関数
+    window.getGdprConsent = function() {
+        try {
+            return localStorage.getItem('gdpr_consent_v1');
+        } catch (e) {
+            return null;
+        }
+    };
+    
+    // GDPR同意状況をチェックしてnoscript GTMを条件付き表示
+    (function() {
+        function getGdprConsent() {
+            try {
+                return localStorage.getItem('gdpr_consent_v1');
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        const consent = getGdprConsent();
+        if (consent === 'accepted') {
+            // 同意済みの場合はnoscript GTMを挿入
+            document.write('<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-579HN546" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>');
+        }
+    })();
+    </script>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">maruttoart</a>
+            <div class="social-links">
+                <a href="https://x.com/marutto_art" class="social-link twitter" target="_blank" rel="noopener noreferrer" title="X (Twitter)">
+                    <svg class="social-icon" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                </a>
+                <a href="https://youtube.com/@marutto_art" class="social-link youtube" target="_blank" rel="noopener noreferrer" title="YouTube">
+                    <svg class="social-icon" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- パンくずリスト -->
+    <section class="breadcrumb">
+        <div class="container">
+            <ul class="breadcrumb-list">
+                <li class="breadcrumb-item"><a href="/">ホーム</a></li>
+                <li class="breadcrumb-item"><a href="/everyone-works.php">みんなのアトリエ</a></li>
+                <li class="breadcrumb-item"><?= h($artwork['title']) ?></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 作品画像 -->
+            <section class="artwork-image-section">
+                <div class="artwork-image-container">
+                    <?php if (!empty($artworkImageUrl)): ?>
+                    <img src="<?= h($artworkImageUrl) ?>" 
+                         alt="<?= h($artwork['title']) ?>"
+                         class="artwork-image"
+                         loading="lazy">
+                    <?php else: ?>
+                    <div style="padding: 2rem; text-align: center; color: #6c757d;">
+                        画像が見つかりません
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </section>
+
+            <!-- 詳細セクション -->
+            <section class="artwork-detail-section">
+                <div class="artwork-info">
+                    <h1 class="artwork-title"><?= h($artwork['title']) ?></h1>
+                    
+                    <?php if (!empty($artwork['description'])): ?>
+                    <div class="artwork-description">
+                        <p><?= nl2br(h($artwork['description'])) ?></p>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="artwork-meta">
+                        <div class="meta-item">
+                            <strong>作：</strong><?= h($artwork['pen_name'] ?? 'ゲスト') ?>
+                        </div>
+                        <div class="meta-item">
+                            <strong>素材提供：</strong>marutto.art
+                        </div>
+                        <div class="meta-item">
+                            <strong>投稿日：</strong><?= date('Y-m-d', strtotime($artwork['created_at'])) ?>
+                        </div>
+                        <div class="meta-item">
+                            <strong>閲覧数：</strong><?= number_format($artwork['view_count']) ?>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ダウンロードセクション -->
+            <section class="download-section">
+                <div class="text-center">
+                    <?php if (!empty($downloadImagePath)): ?>
+                    <a href="/download-artwork.php?id=<?= $artwork['id'] ?>" 
+                       class="btn btn-outline-primary btn-lg">
+                        PNGダウンロード
+                    </a>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #6c757d;">
+                        フリー素材として商用・非商用問わずご利用いただけます
+                    </p>
+                    <?php else: ?>
+                    <p style="color: #dc3545;">ダウンロードファイルが見つかりません</p>
+                    <?php endif; ?>
+                </div>
+            </section>
+
+            <!-- シェアセクション -->
+            <section class="share-section">
+                <div class="text-center">
+                    <?php
+                    $currentUrl = urlencode(($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+                    $shareText = urlencode($artwork['title'] . ' - みんなのアトリエ作品 #フリー素材 #無料素材 #イラスト #みんなのアトリエ');
+                    $twitterShareUrl = "https://twitter.com/intent/tweet?url={$currentUrl}&text={$shareText}";
+                    
+                    $pinterestDescription = urlencode($artwork['title'] . ' - みんなのアトリエ作品（商用利用OK）');
+                    $pinterestImageUrl = urlencode($artworkImageUrl);
+                    $pinterestShareUrl = "https://pinterest.com/pin/create/button/?url={$currentUrl}&media={$pinterestImageUrl}&description={$pinterestDescription}";
+                    ?>
+                    
+                    <div class="share-buttons-container">
+                        <!-- Xシェアボタン -->
+                        <a href="<?= h($twitterShareUrl) ?>" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="share-button twitter"
+                           onclick="gtag('event', 'share', { 'method': 'twitter', 'content_type': 'image', 'item_id': '<?= h($artwork['id']) ?>' });">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                            Xでシェア
+                        </a>
+                        
+                        <!-- Pinterestシェアボタン -->
+                        <a href="<?= h($pinterestShareUrl) ?>" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="share-button pinterest"
+                           onclick="gtag('event', 'share', { 'method': 'pinterest', 'content_type': 'image', 'item_id': '<?= h($artwork['id']) ?>' });">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.097.118.110.221.082.343-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.017 0z"/>
+                            </svg>
+                            Pinterestでシェア
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 使用素材セクション -->
+            <?php if (!empty($usedMaterials)): ?>
+            <section class="used-materials-section">
+                <div class="text-center">
+                    <h3>使用した素材</h3>
+                    <div class="materials-grid">
+                        <?php foreach ($usedMaterials as $material): ?>
+                        <div class="material-item">
+                            <a href="<?= !empty($material['category_slug']) ? '/' . h($material['category_slug']) . '/' . h($material['slug']) . '/' : '/detail/' . h($material['slug']) ?>" class="material-link">
+                                <div class="material-thumbnail">
+                                    <?php 
+                                    $thumbnailPath = '';
+                                    if (!empty($material['webp_small_path'])) {
+                                        $thumbnailPath = $material['webp_small_path'];
+                                    } elseif (!empty($material['image_path'])) {
+                                        $thumbnailPath = $material['image_path'];
+                                    }
+                                    ?>
+                                    <?php if (!empty($thumbnailPath)): ?>
+                                    <img src="/<?= h($thumbnailPath) ?>" 
+                                         alt="<?= h($material['title']) ?>"
+                                         class="material-image"
+                                         loading="lazy">
+                                    <?php else: ?>
+                                    <div class="material-placeholder">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="currentColor"/>
+                                        </svg>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="material-title">
+                                    <?= h($material['title']) ?>
+                                </div>
+                            </a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+            <?php endif; ?>
+        </div>
+    </main>
+
+    <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
+    <div id="gdpr-banner" class="gdpr-cookie-banner hidden" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #212529; color: #ffffff; padding: 1rem; z-index: 1050; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-8">
+                    <div class="gdpr-text" style="color: #ffffff;">
+                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                        <a href="/terms-of-use.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">利用規約</a>・
+                        <a href="/privacy-policy.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
+                        をご確認ください。
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="gdpr-buttons text-md-end" style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button id="gdpr-accept" class="btn btn-success btn-sm" style="color: #000000; background-color: #ffffff; border-color: #ffffff;">同意する</button>
+                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm" style="color: #ffffff; border-color: #ffffff; background-color: transparent;">拒否する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom mt-5 py-4">
+        <div class="container">
+            <div class="text-center">
+                <div class="mb-2">
+                    <a href="/terms-of-use.php" class="footer-text text-decoration-none me-3">利用規約</a>
+                    <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
+                </div>
+                <div class="language-switcher mb-2">
+                    <div class="gtranslate_wrapper"></div>
+                    <script>window.gtranslateSettings = {"default_language":"ja","native_language_names":true,"url_structure":"sub_directory","languages":["ja","en","fr","es","nl"],"wrapper_selector":".gtranslate_wrapper"}</script>
+                    <script src="https://cdn.gtranslate.net/widgets/latest/ln.js" defer></script>
+                </div>
+                <div>
+                    <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
+    <script>
+    // GDPR Cookie Consent (セッション・Cookie不使用版)
+    (function() {
+        const GDPR_KEY = 'gdpr_consent_v1';
+        let isInitialized = false;
+        
+        // 初期化関数
+        function initGDPR() {
+            if (isInitialized) return;
+            isInitialized = true;
+            
+            const banner = document.getElementById('gdpr-banner');
+            const acceptBtn = document.getElementById('gdpr-accept');
+            const declineBtn = document.getElementById('gdpr-decline');
+            
+            if (!banner || !acceptBtn || !declineBtn) {
+                console.error('GDPR elements not found');
+                return;
+            }
+            
+            // localStorage から同意状況をチェック
+            function getGdprConsent() {
+                try {
+                    return localStorage.getItem(GDPR_KEY);
+                } catch (e) {
+                    console.warn('localStorage not available:', e);
+                    return null;
+                }
+            }
+            
+            // 同意状況を保存
+            function setGdprConsent(value) {
+                try {
+                    localStorage.setItem(GDPR_KEY, value);
+                    return true;
+                } catch (e) {
+                    console.warn('localStorage save failed:', e);
+                    return false;
+                }
+            }
+            
+            // バナーを表示
+            function showBanner() {
+                if (banner) {
+                    banner.classList.remove('hidden');
+                }
+            }
+            
+            // バナーを非表示
+            function hideBanner() {
+                if (banner) {
+                    banner.classList.add('hidden');
+                }
+            }
+            
+            // 同意処理
+            function acceptConsent() {
+                const success = setGdprConsent('accepted');
+                hideBanner();
+                enableAnalytics();
+                
+                // GTM読み込みイベントを発火
+                const event = new CustomEvent('gdpr-consent-accepted');
+                window.dispatchEvent(event);
+                console.log('gdpr-consent-accepted event dispatched');
+            }
+            
+            // 拒否処理
+            function declineConsent() {
+                setGdprConsent('declined');
+                hideBanner();
+                disableAnalytics();
+                
+                // 拒否イベントを発火
+                const event = new CustomEvent('gdpr-consent-declined');
+                window.dispatchEvent(event);
+            }
+            
+            // アナリティクス有効化（プレースホルダー）
+            function enableAnalytics() {
+                // GTMが未読み込みの場合は読み込み
+                if (!window.gtmLoaded) {
+                    const event = new CustomEvent('gdpr-consent-accepted');
+                    window.dispatchEvent(event);
+                }
+            }
+            
+            // アナリティクス無効化（プレースホルダー）
+            function disableAnalytics() {
+                console.log('Analytics disabled');
+                // アナリティクス無効化のコードをここに追加
+            }
+            
+            // イベントリスナーを設定
+            acceptBtn.addEventListener('click', acceptConsent);
+            declineBtn.addEventListener('click', declineConsent);
+            
+            // 同意状況をチェックして初期化
+            const consent = getGdprConsent();
+            
+            if (consent === null) {
+                // 未設定の場合はバナーを表示
+                showBanner();
+            } else if (consent === 'accepted') {
+                // 同意済みの場合はアナリティクスを有効化
+                hideBanner();
+                enableAnalytics();
+            } else if (consent === 'declined') {
+                // 拒否済みの場合はアナリティクスを無効化
+                hideBanner();
+                disableAnalytics();
+            }
+        }
+        
+        // 複数の初期化方法を試行
+        function tryInit() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initGDPR);
+            } else {
+                // DOMが既に読み込まれている場合は即座に実行
+                setTimeout(initGDPR, 0);
+            }
+            
+            // フォールバック: window.onloadでも試行
+            window.addEventListener('load', function() {
+                if (!isInitialized) {
+                    initGDPR();
+                }
+            });
+        }
+        
+        tryInit();
+    })();
+    </script>
+</body>
+</html>

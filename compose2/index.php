@@ -420,6 +420,21 @@ $materials = $stmt->fetchAll();
             color: white;
         }
 
+        .btn-upload {
+            background: #28a745;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-upload:hover {
+            background: #218838;
+            color: white;
+        }
+
         .btn-rotate {
             background: #f39c12;
             border: none;
@@ -964,9 +979,215 @@ $materials = $stmt->fetchAll();
         .layer-element {
             touch-action: none; /* ドラッグ中はスクロールを無効 */
         }
+
+        /* ナビゲーション */
+        .navbar {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            background-color: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+
+        .navbar-brand {
+            display: inline-block;
+            padding-top: 0.3125rem;
+            padding-bottom: 0.3125rem;
+            margin-right: 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .navbar-brand:hover {
+            color: #333;
+            text-decoration: none;
+        }
+
+        /* フッターのスタイル */
+        .footer-custom {
+            background-color: #fef9e7 !important;
+            margin-top: 3rem;
+        }
+
+        /* フッター文字色の改善（コントラスト対応） */
+        .footer-custom .footer-text {
+            color: #1a1a1a !important;
+        }
+
+        .footer-custom .footer-text:hover {
+            color: #000000 !important;
+        }
+
+        /* 作品アップロードモーダルのスタイル */
+        .upload-preview-section {
+            text-align: center;
+        }
+        
+        .upload-preview-container {
+            border: 2px dashed #28a745;
+            border-radius: 12px;
+            padding: 20px;
+            background: #f8fff9;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-preview-container:hover {
+            border-color: #218838;
+            background: #f0fff0;
+        }
+        
+        .upload-preview-container img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .preview-placeholder {
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .preview-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .upload-file-info {
+            background: #e8f5e8;
+            border: 1px solid #c3e6c3;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        
+        .upload-progress {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .upload-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        .upload-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            
+            .modal-body .row {
+                flex-direction: column-reverse;
+            }
+            
+            .upload-preview-container {
+                min-height: 150px;
+                margin-top: 1rem;
+            }
+        }
+
+        /* GDPR Cookie Banner のスタイル */
+        #gdpr-banner {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            padding: 1rem !important;
+            z-index: 1050 !important;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
+        }
+        
+        #gdpr-banner.hidden,
+        .gdpr-cookie-banner.hidden {
+            display: none !important;
+        }
+        
+        .gdpr-text {
+            font-size: 0.9rem !important;
+            line-height: 1.4 !important;
+            color: #ffffff !important;
+        }
+        
+        .gdpr-text a {
+            color: #ffffff !important;
+            text-decoration: underline !important;
+        }
+        
+        .gdpr-text a:hover {
+            color: #e9ecef !important;
+        }
+        
+        .gdpr-buttons {
+            margin-top: 1rem !important;
+            display: flex !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap !important;
+        }
+        
+        .gdpr-buttons .btn {
+            flex: 0 0 auto !important;
+            white-space: nowrap !important;
+        }
+        
+        /* GDPR専用のボタンスタイル（より強力な優先度） */
+        #gdpr-banner .btn-outline-light {
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+            background-color: transparent !important;
+            border-width: 1px !important;
+            border-style: solid !important;
+        }
+
+        #gdpr-banner .btn-outline-light:hover {
+            color: #212529 !important;
+            background-color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+
+        #gdpr-banner .btn-success {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+
+        #gdpr-banner .btn-success:hover {
+            color: #000000 !important;
+            background-color: #f8f9fa !important;
+            border-color: #f8f9fa !important;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">maruttoart</a>
+        </div>
+    </nav>
+
     <div class="container">
         <!-- ヘッダー -->
         <div class="header">
@@ -1150,6 +1371,9 @@ $materials = $stmt->fetchAll();
                     <button id="exportBtn" class="btn btn-export">
                         <i class="bi bi-download"></i> PNG出力
                     </button>
+                    <button id="uploadBtn" class="btn btn-upload">
+                        <i class="bi bi-cloud-upload"></i> みんなの作品集に投稿
+                    </button>
                     <button id="clearBtn" class="btn btn-clear">
                         <i class="bi bi-trash"></i> 全て削除
                     </button>
@@ -1263,6 +1487,7 @@ $materials = $stmt->fetchAll();
             const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             layerGroup.id = `layer-${layer.id}`;
             layerGroup.classList.add('layer-element');
+            layerGroup.setAttribute('data-material-id', layer.materialId);
             layerGroup.innerHTML = layer.svgContent;
 
             // スケール変換後の実際の中心点を計算
@@ -2378,6 +2603,345 @@ $materials = $stmt->fetchAll();
             setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
         }
 
+        // 作品アップロード機能
+        function openUploadModal() {
+            if (layers.length === 0) {
+                alert('素材を追加してから作品を投稿してください。');
+                return;
+            }
+
+            // プレビュー画像を生成
+            generateUploadPreview();
+            
+            // モーダルを表示
+            const modal = new bootstrap.Modal(document.getElementById('uploadArtworkModal'));
+            modal.show();
+        }
+
+        // アップロード用プレビュー生成
+        function generateUploadPreview() {
+            const canvas = document.getElementById('mainCanvas');
+            
+            // 選択状態を一時的に保存・解除
+            const currentSelectedId = selectedLayerId;
+            if (selectedLayerId !== null) {
+                selectedLayerId = null;
+                layers.forEach(layer => renderLayer(layer));
+            }
+            
+            // プレビュー用小サイズキャンバス作成
+            const previewCanvas = document.createElement('canvas');
+            const previewSize = 300;
+            previewCanvas.width = previewSize;
+            previewCanvas.height = previewSize;
+            const ctx = previewCanvas.getContext('2d');
+            
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            const svgData = new XMLSerializer().serializeToString(canvas);
+            const img = new Image();
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, previewCanvas.width, previewCanvas.height);
+                
+                // プレビューコンテナに画像を表示
+                const previewContainer = document.getElementById('uploadPreviewContainer');
+                previewContainer.innerHTML = '';
+                
+                const previewImg = document.createElement('img');
+                previewImg.src = previewCanvas.toDataURL('image/png');
+                previewContainer.appendChild(previewImg);
+                
+                // 選択状態を復元
+                if (currentSelectedId !== null) {
+                    selectedLayerId = currentSelectedId;
+                    layers.forEach(layer => renderLayer(layer));
+                    updateSelectedLayerTitle();
+                    updateRotateButtonState();
+                    updateScaleDownButtonState();
+                    updateScaleUpButtonState();
+                    updateLayerMoveButtonState();
+                    updateDeleteButtonState();
+                }
+            };
+            
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const svgUrl = URL.createObjectURL(svgBlob);
+            img.src = svgUrl;
+            
+            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
+        }
+
+        // 高解像度PNG生成（アップロード用）
+        function generatePNGForUpload(callback) {
+            const canvas = document.getElementById('mainCanvas');
+            
+            // 選択状態を一時的に解除
+            const currentSelectedId = selectedLayerId;
+            if (selectedLayerId !== null) {
+                selectedLayerId = null;
+                layers.forEach(layer => renderLayer(layer));
+            }
+            
+            // 高解像度出力用キャンバス作成（1024px）
+            const outputCanvas = document.createElement('canvas');
+            const outputSize = 1024;
+            outputCanvas.width = outputSize;
+            outputCanvas.height = outputSize;
+            const ctx = outputCanvas.getContext('2d');
+            
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            const svgData = new XMLSerializer().serializeToString(canvas);
+            const img = new Image();
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+                
+                outputCanvas.toBlob(function(blob) {
+                    // 選択状態を復元
+                    if (currentSelectedId !== null) {
+                        selectedLayerId = currentSelectedId;
+                        layers.forEach(layer => renderLayer(layer));
+                        updateSelectedLayerTitle();
+                        updateRotateButtonState();
+                        updateScaleDownButtonState();
+                        updateScaleUpButtonState();
+                        updateLayerMoveButtonState();
+                        updateDeleteButtonState();
+                    }
+                    
+                    if (callback) callback(blob);
+                }, 'image/png');
+            };
+            
+            img.onerror = function(error) {
+                console.error('PNG生成エラー:', error);
+                if (callback) callback(null);
+            };
+            
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const svgUrl = URL.createObjectURL(svgBlob);
+            img.src = svgUrl;
+            
+            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
+        }
+
+        // 使用されている素材IDを収集する関数
+        function getUsedMaterialIds() {
+            const usedIds = new Set();
+            
+            // 正しいキャンバス要素IDを使用（mainCanvasが正しいID）
+            const canvas = document.getElementById('mainCanvas');
+            if (canvas) {
+                const materialElements = canvas.querySelectorAll('[data-material-id]');
+                console.log(`Found ${materialElements.length} material elements on canvas`);
+                
+                materialElements.forEach(element => {
+                    const materialId = element.getAttribute('data-material-id');
+                    console.log(`Material element found with ID: ${materialId}`);
+                    if (materialId && materialId !== '' && materialId !== 'null') {
+                        usedIds.add(parseInt(materialId, 10));
+                    }
+                });
+            } else {
+                console.error('mainCanvas element not found');
+            }
+            
+            const result = Array.from(usedIds).filter(id => !isNaN(id) && id > 0);
+            console.log('Used material IDs detected:', result);
+            
+            return result;
+        }
+
+        // 作品アップロード実行
+        function submitArtwork() {
+            const form = document.getElementById('uploadArtworkForm');
+            const formData = new FormData(form);
+            
+            // バリデーション
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const agreeTerms = document.getElementById('agreeUploadTerms').checked;
+            if (!agreeTerms) {
+                alert('利用規約への同意が必要です。');
+                return;
+            }
+            
+            // アップロード処理開始
+            const submitBtn = document.getElementById('submitUploadBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> アップロード中...';
+            
+            // プログレスバー表示
+            showUploadProgress();
+            
+            generatePNGForUpload(function(blob) {
+                if (!blob) {
+                    showUploadError('PNG変換に失敗しました。');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+                
+                // FormDataに画像を追加
+                formData.append('artwork', blob, `artwork-${Date.now()}.png`);
+                
+                // 投稿=フリー素材提供同意とみなす
+                formData.append('free_material_consent', '1');
+                
+                // 使用素材IDを収集してFormDataに追加
+                const usedMaterialIds = getUsedMaterialIds();
+                if (usedMaterialIds.length > 0) {
+                    formData.append('used_material_ids', usedMaterialIds.join(','));
+                }
+                
+                // サーバーにアップロード
+                fetch('/api/upload-artwork.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(responseText => {
+                    console.log('Server response:', responseText);
+                    
+                    let data;
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error('JSON parse error:', parseError);
+                        console.error('Response text:', responseText);
+                        throw new Error('サーバーレスポンスの解析に失敗しました');
+                    }
+                    
+                    if (data.success) {
+                        showUploadSuccess(data.data);
+                        
+                        // 3秒後にモーダルを閉じる
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('uploadArtworkModal'));
+                            modal.hide();
+                            
+                            // フォームリセット
+                            form.reset();
+                            resetUploadModal();
+                        }, 3000);
+                        
+                        console.log('作品アップロード完了:', data);
+                    } else {
+                        let errorMsg = data.error || 'アップロードに失敗しました';
+                        if (data.details) {
+                            console.error('Error details:', data.details);
+                        }
+                        showUploadError(errorMsg);
+                    }
+                })
+                .catch(error => {
+                    console.error('アップロードエラー:', error);
+                    let errorMessage = 'アップロードに失敗しました';
+                    if (error.message.includes('JSON')) {
+                        errorMessage += '（サーバーエラーが発生しています）';
+                    } else {
+                        errorMessage += ': ' + error.message;
+                    }
+                    showUploadError(errorMessage);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+            });
+        }
+
+        // アップロード進捗表示
+        function showUploadProgress() {
+            const progressHtml = `
+                <div class="upload-progress">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 100%">アップロード中...</div>
+                    </div>
+                </div>
+            `;
+            
+            const container = document.getElementById('uploadPreviewContainer');
+            container.insertAdjacentHTML('afterend', progressHtml);
+        }
+
+        // アップロード成功表示
+        function showUploadSuccess(data) {
+            // 既存のメッセージを削除
+            removeUploadMessages();
+            
+            const successHtml = `
+                <div class="upload-success">
+                    <h6><i class="bi bi-check-circle-fill"></i> アップロード完了</h6>
+                    <p class="mb-1">作品「${data.title}」のアップロードが完了しました！</p>
+                    <small class="text-muted">
+                        管理者による承認後に公開されます。<br>
+                        本日の残り投稿可能数: ${data.remaining_uploads}件
+                    </small>
+                </div>
+            `;
+            
+            const container = document.getElementById('uploadPreviewContainer');
+            container.insertAdjacentHTML('afterend', successHtml);
+        }
+
+        // アップロードエラー表示
+        function showUploadError(errorMessage) {
+            // 既存のメッセージを削除
+            removeUploadMessages();
+            
+            const errorHtml = `
+                <div class="upload-error">
+                    <h6><i class="bi bi-exclamation-triangle-fill"></i> アップロードエラー</h6>
+                    <p class="mb-0">${errorMessage}</p>
+                </div>
+            `;
+            
+            const container = document.getElementById('uploadPreviewContainer');
+            container.insertAdjacentHTML('afterend', errorHtml);
+        }
+
+        // アップロードメッセージを削除
+        function removeUploadMessages() {
+            const progress = document.querySelector('.upload-progress');
+            const success = document.querySelector('.upload-success');
+            const error = document.querySelector('.upload-error');
+            
+            if (progress) progress.remove();
+            if (success) success.remove();
+            if (error) error.remove();
+        }
+
+        // アップロードモーダルリセット
+        function resetUploadModal() {
+            removeUploadMessages();
+            
+            const previewContainer = document.getElementById('uploadPreviewContainer');
+            previewContainer.innerHTML = `
+                <div class="preview-placeholder">
+                    <i class="bi bi-image"></i>
+                    <p>作品のプレビューがここに表示されます</p>
+                </div>
+            `;
+            
+            document.getElementById('descriptionCount').textContent = '0';
+            document.getElementById('submitUploadBtn').disabled = true;
+        }
+
         // 背景色を設定する関数
         function setBackgroundColor(color) {
             currentBackgroundColor = color;
@@ -3281,6 +3845,54 @@ $materials = $stmt->fetchAll();
                 clearAll();
             });
             
+            // アップロードボタンのイベントリスナー
+            document.getElementById('uploadBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                openUploadModal();
+            });
+            
+            // アップロードモーダルのイベントリスナー
+            document.getElementById('submitUploadBtn').addEventListener('click', submitArtwork);
+            
+            // フォームバリデーション
+            const artworkTitle = document.getElementById('artworkTitle');
+            const penName = document.getElementById('penName');
+            const agreeUploadTerms = document.getElementById('agreeUploadTerms');
+            const submitUploadBtn = document.getElementById('submitUploadBtn');
+            
+            function validateUploadForm() {
+                const titleValid = artworkTitle.value.trim().length > 0 && artworkTitle.value.trim().length <= 100;
+                const penNameValid = penName.value.trim().length > 0 && penName.value.trim().length <= 50;
+                const termsAgreed = agreeUploadTerms.checked;
+                
+                submitUploadBtn.disabled = !(titleValid && penNameValid && termsAgreed);
+            }
+            
+            artworkTitle.addEventListener('input', validateUploadForm);
+            penName.addEventListener('input', validateUploadForm);
+            agreeUploadTerms.addEventListener('change', validateUploadForm);
+            
+            // 文字数カウンター
+            const descriptionTextarea = document.getElementById('artworkDescription');
+            const descriptionCount = document.getElementById('descriptionCount');
+            
+            descriptionTextarea.addEventListener('input', function() {
+                const count = this.value.length;
+                descriptionCount.textContent = count;
+                
+                if (count > 1000) {
+                    descriptionCount.style.color = '#dc3545';
+                } else {
+                    descriptionCount.style.color = '#6c757d';
+                }
+            });
+            
+            // モーダル表示時にフォームリセット
+            document.getElementById('uploadArtworkModal').addEventListener('show.bs.modal', function() {
+                resetUploadModal();
+                validateUploadForm();
+            });
+            
             // 背景色パネルのイベントリスナーを設定
             const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
             if (transparentBtn) {
@@ -3370,5 +3982,289 @@ $materials = $stmt->fetchAll();
             console.log('レイヤーを選択して各種操作ボタンで回転・拡大縮小・前面背面移動ができます');
         });
     </script>
+
+    <!-- 作品アップロードモーダル -->
+    <div class="modal fade" id="uploadArtworkModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="uploadModalLabel">
+                        <i class="bi bi-cloud-upload"></i> みんなの作品集に投稿
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="閉じる"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="upload-preview-section">
+                                <h6><i class="bi bi-image"></i> 作品プレビュー</h6>
+                                <div id="uploadPreviewContainer" class="upload-preview-container">
+                                    <div class="preview-placeholder">
+                                        <i class="bi bi-image"></i>
+                                        <p>作品のプレビューがここに表示されます</p>
+                                    </div>
+                                </div>
+                                <div class="upload-file-info mt-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i> 
+                                        PNG形式で出力された作品が投稿されます。最大2MB、1024px以内に自動調整されます。
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <form id="uploadArtworkForm" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="artworkTitle" class="form-label">作品タイトル <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="artworkTitle" name="title" required maxlength="100" 
+                                           placeholder="例：春の花畑">
+                                    <div class="form-text">100文字以内で入力してください</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="penName" class="form-label">ペンネーム <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="penName" name="pen_name" required maxlength="50" 
+                                           placeholder="例：花子">
+                                    <div class="form-text">50文字以内で入力してください</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="artworkDescription" class="form-label">作品説明（任意）</label>
+                                    <textarea class="form-control" id="artworkDescription" name="description" rows="3" 
+                                              maxlength="1000" placeholder="作品について簡単に説明してください（1000文字以内）"></textarea>
+                                    <div class="form-text">
+                                        <span id="descriptionCount">0</span>/1000文字
+                                    </div>
+                                </div>
+                                
+                                <!-- フリー素材同意は投稿時に自動的に同意したものとみなす -->
+                                
+                                <div class="alert alert-warning">
+                                    <h6><i class="bi bi-info-circle"></i> 重要：投稿に関する同意事項</h6>
+                                    <ul class="mb-0 small">
+                                        <li><strong>投稿すると、作品をフリー素材として公開することに同意したものとみなします</strong></li>
+                                        <li>他のユーザーがあなたの作品をダウンロード・利用できるようになります</li>
+                                        <li>CC BY 4.0ライセンスが適用されます（作者名の表示が必要）</li>
+                                        <li>投稿された作品は管理者による承認後に公開されます</li>
+                                        <li>marutto素材を使用した作品のみ投稿可能です</li>
+                                        <li>不適切な内容は削除される場合があります</li>
+                                        <li>1日3件まで投稿可能です</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="agreeUploadTerms" required>
+                                    <label class="form-check-label" for="agreeUploadTerms">
+                                        <a href="/terms-of-use.php" target="_blank">利用規約</a>に同意し、作品をフリー素材として公開することを許諾します <span class="text-danger">*</span>
+                                    </label>
+                                </div>
+
+                                <!-- 隠しファイル入力 -->
+                                <input type="file" id="artworkFile" name="artwork" accept="image/png,image/webp,image/svg+xml" style="display: none;">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> キャンセル
+                    </button>
+                    <button type="button" class="btn btn-success" id="submitUploadBtn" disabled>
+                        <i class="bi bi-cloud-upload"></i> 作品を投稿
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
+    <div id="gdpr-banner" class="gdpr-cookie-banner hidden" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #212529; color: #ffffff; padding: 1rem; z-index: 1050; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-8">
+                    <div class="gdpr-text" style="color: #ffffff;">
+                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                        <a href="/terms-of-use.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">利用規約</a>・
+                        <a href="/privacy-policy.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
+                        をご確認ください。
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="gdpr-buttons text-md-end" style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button id="gdpr-accept" class="btn btn-success btn-sm" style="color: #000000; background-color: #ffffff; border-color: #ffffff;">同意する</button>
+                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm" style="color: #ffffff; border-color: #ffffff; background-color: transparent;">拒否する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-custom mt-5 py-4">
+        <div class="container">
+            <div class="text-center">
+                <div class="mb-2">
+                    <a href="/terms-of-use.php" class="footer-text text-decoration-none me-3">利用規約</a>
+                    <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
+                </div>
+                <div>
+                    <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
+    <script>
+    // GDPR Cookie Consent (セッション・Cookie不使用版)
+    (function() {
+        const GDPR_KEY = 'gdpr_consent_v1';
+        let isInitialized = false;
+        
+        // 初期化関数
+        function initGDPR() {
+            if (isInitialized) return;
+            isInitialized = true;
+            
+            const banner = document.getElementById('gdpr-banner');
+            const acceptBtn = document.getElementById('gdpr-accept');
+            const declineBtn = document.getElementById('gdpr-decline');
+            
+            console.log('GDPR initialization started');
+            console.log('Banner element:', banner);
+            console.log('Accept button:', acceptBtn);
+            console.log('Decline button:', declineBtn);
+            
+            if (!banner || !acceptBtn || !declineBtn) {
+                console.error('GDPR elements not found');
+                return;
+            }
+            
+            // localStorage から同意状況をチェック
+            function getGdprConsent() {
+                try {
+                    return localStorage.getItem(GDPR_KEY);
+                } catch (e) {
+                    console.warn('localStorage not available:', e);
+                    return null;
+                }
+            }
+            
+            // 同意状況を保存
+            function setGdprConsent(value) {
+                try {
+                    localStorage.setItem(GDPR_KEY, value);
+                    console.log('GDPR consent saved:', value);
+                    return true;
+                } catch (e) {
+                    console.warn('localStorage save failed:', e);
+                    return false;
+                }
+            }
+            
+            // バナーを表示
+            function showBanner() {
+                if (banner) {
+                    banner.classList.remove('hidden');
+                    console.log('GDPR banner shown');
+                }
+            }
+            
+            // バナーを非表示
+            function hideBanner() {
+                if (banner) {
+                    banner.classList.add('hidden');
+                    console.log('GDPR banner hidden');
+                }
+            }
+            
+            // 同意処理
+            function acceptConsent() {
+                console.log('Accept consent clicked');
+                setGdprConsent('accepted');
+                hideBanner();
+                enableAnalytics();
+                
+                // GTM読み込みイベントを発火
+                const event = new CustomEvent('gdpr-consent-accepted');
+                window.dispatchEvent(event);
+            }
+            
+            // 拒否処理
+            function declineConsent() {
+                console.log('Decline consent clicked');
+                setGdprConsent('declined');
+                hideBanner();
+                disableAnalytics();
+            }
+            
+            // アナリティクス有効化（プレースホルダー）
+            function enableAnalytics() {
+                console.log('Analytics enabled');
+                
+                // GTMが未読み込みの場合は読み込み
+                if (!window.gtmLoaded) {
+                    const event = new CustomEvent('gdpr-consent-accepted');
+                    window.dispatchEvent(event);
+                }
+            }
+            
+            // アナリティクス無効化（プレースホルダー）
+            function disableAnalytics() {
+                console.log('Analytics disabled');
+                // アナリティクス無効化のコードをここに追加
+            }
+            
+            // イベントリスナーを設定
+            acceptBtn.addEventListener('click', acceptConsent);
+            declineBtn.addEventListener('click', declineConsent);
+            console.log('GDPR event listeners attached');
+            
+            // 同意状況をチェックして初期化
+            const consent = getGdprConsent();
+            console.log('Current GDPR consent:', consent);
+            
+            if (consent === null) {
+                // 未設定の場合はバナーを表示
+                console.log('No consent found, showing banner');
+                showBanner();
+            } else if (consent === 'accepted') {
+                // 同意済みの場合はアナリティクスを有効化
+                console.log('Consent already accepted');
+                hideBanner();
+                enableAnalytics();
+            } else if (consent === 'declined') {
+                // 拒否済みの場合はアナリティクスを無効化
+                console.log('Consent declined');
+                hideBanner();
+                disableAnalytics();
+            }
+        }
+        
+        // 複数の初期化方法を試行
+        function tryInit() {
+            console.log('Document ready state:', document.readyState);
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initGDPR);
+            } else {
+                // DOMが既に読み込まれている場合は即座に実行
+                setTimeout(initGDPR, 0);
+            }
+            
+            // フォールバック: window.onloadでも試行
+            window.addEventListener('load', function() {
+                if (!isInitialized) {
+                    console.log('Fallback initialization on window load');
+                    initGDPR();
+                }
+            });
+        }
+        
+        tryInit();
+    })();
+    </script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

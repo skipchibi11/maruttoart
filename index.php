@@ -26,6 +26,16 @@ $categoryStmt = $pdo->prepare($categorySql);
 $categoryStmt->execute();
 $categories = $categoryStmt->fetchAll();
 
+// みんなのアトリエの最新承認済み作品6件を取得
+$communityArtworksSql = "SELECT id, title, pen_name, webp_path, file_path, created_at 
+                        FROM community_artworks 
+                        WHERE status = 'approved' 
+                        ORDER BY created_at DESC 
+                        LIMIT 6";
+$communityArtworksStmt = $pdo->prepare($communityArtworksSql);
+$communityArtworksStmt->execute();
+$communityArtworks = $communityArtworksStmt->fetchAll();
+
 // タイル表示用のランダム素材を取得
 // 1. 素材の総数と最大IDを取得
 $totalMaterialsForTile = $pdo->query("SELECT COUNT(*) FROM materials")->fetchColumn();
@@ -1398,7 +1408,8 @@ if ($tileCount > 0) {
                     </p>
                     <div class="hero-buttons">
                         <a href="/list.php" class="hero-cta">素材を見る</a>
-                        <a href="/compose2" class="hero-cta" target="_blank">あなたのアトリエBeta</a>
+                        <a href="/compose2" class="hero-cta">あなたのアトリエ</a>
+                        <a href="/everyone-works.php" class="hero-cta">みんなのアトリエ</a>
                     </div>
                 </div>
                 <div class="hero-image">
@@ -1537,6 +1548,66 @@ if ($tileCount > 0) {
             <div class="col-12 text-center">
                 <p class="text-muted">
                     カテゴリが登録されていません。管理画面からカテゴリを作成してください。
+                </p>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- みんなのアトリエセクション -->
+    <div class="container mt-5" id="community-artworks">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-2">みんなのアトリエ</h2>
+                <p class="text-muted mb-4">
+                    みんなが作った最新の作品をご紹介
+                </p>
+            </div>
+        </div>
+
+        <?php if (!empty($communityArtworks)): ?>
+        <div class="row">
+            <?php foreach ($communityArtworks as $artwork): ?>
+            <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
+                <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>" 
+                   class="card material-card h-100" 
+                   role="button" 
+                   tabindex="0" 
+                   aria-label="<?= h($artwork['title']) ?>の詳細を見る">
+                    <?php
+                    // レスポンシブ画像の設定
+                    $imageUrl = !empty($artwork['webp_path']) ? $artwork['webp_path'] : $artwork['file_path'];
+                    ?>
+                    <img src="/<?= h($imageUrl) ?>" 
+                         class="material-image" 
+                         alt="<?= h($artwork['title']) ?>の作品"
+                         loading="lazy"
+                         decoding="async"
+                         style="background-color: #f8f9fa;">
+                    
+                    <div class="card-body">
+                        <h3 class="card-title"><?= h($artwork['title']) ?></h3>
+                        <p class="card-text text-muted small">by <?= h($artwork['pen_name']) ?></p>
+                    </div>
+                </a>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- もっと見るボタン -->
+        <div class="row mt-5">
+            <div class="col-12 text-center load-more-button">
+                <a href="/everyone-works.php" class="btn btn-outline-primary btn-lg">
+                    もっと見る
+                </a>
+            </div>
+        </div>
+        <?php else: ?>
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="text-muted">
+                    まだ作品が投稿されていません。<br>
+                    <a href="/compose2" class="text-decoration-none">あなたのアトリエ</a>で作品を作ってみませんか？
                 </p>
             </div>
         </div>
