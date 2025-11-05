@@ -341,8 +341,8 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
 
         .materials-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
             max-width: 800px;
             margin: 0 auto;
             padding: 0 1rem;
@@ -350,10 +350,12 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
 
         .material-item {
             background: white;
-            border-radius: 8px;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            max-width: 120px;
+            margin: 0 auto;
         }
 
         .material-item:hover {
@@ -399,24 +401,28 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
         }
 
         .material-title {
-            padding: 0.75rem;
-            font-size: 0.875rem;
+            padding: 0.5rem;
+            font-size: 0.75rem;
             font-weight: 500;
             text-align: center;
-            line-height: 1.3;
+            line-height: 1.2;
             color: #333;
         }
 
         @media (max-width: 768px) {
             .materials-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                gap: 1rem;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.75rem;
                 padding: 0 0.5rem;
             }
             
+            .material-item {
+                max-width: 100px;
+            }
+            
             .material-title {
-                padding: 0.5rem;
-                font-size: 0.8rem;
+                padding: 0.3rem;
+                font-size: 0.7rem;
             }
         }
 
@@ -969,10 +975,10 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
                     <?php if (!empty($downloadImagePath)): ?>
                     <a href="/download-artwork.php?id=<?= $artwork['id'] ?>" 
                        class="btn btn-outline-primary btn-lg">
-                        PNGダウンロード
+                        <i class="bi bi-download"></i> PNG形式でダウンロード
                     </a>
                     <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #6c757d;">
-                        フリー素材として商用・非商用問わずご利用いただけます
+                        フリー素材として商用・非商用問わずご利用いただけます（PNG形式）
                     </p>
                     <?php else: ?>
                     <p style="color: #dc3545;">ダウンロードファイルが見つかりません</p>
