@@ -975,7 +975,7 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
                     <?php if (!empty($downloadImagePath)): ?>
                     <a href="/download-artwork.php?id=<?= $artwork['id'] ?>" 
                        class="btn btn-outline-primary btn-lg">
-                        <i class="bi bi-download"></i> PNG形式でダウンロード
+                        <i class="bi bi-download"></i> PNGダウンロード
                     </a>
                     <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #6c757d;">
                         フリー素材として商用・非商用問わずご利用いただけます（PNG形式）
