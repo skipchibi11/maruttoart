@@ -240,6 +240,18 @@ $materials = $stmt->fetchAll();
             animation: fadeIn 0.5s ease-out;
         }
 
+        /* SVG描画品質のみ設定（線形属性はJavaScriptで制御） */
+        svg path, svg circle, svg rect, svg polygon, svg ellipse, svg line, svg polyline {
+            shape-rendering: geometricPrecision;
+        }
+        
+        /* SVGコンテナの高品質レンダリング */
+        .layer-content svg {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+
         .materials-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -1566,6 +1578,12 @@ $materials = $stmt->fetchAll();
                 console.log(`Layer ${layer.id} is not selected (selectedLayerId: ${selectedLayerId})`);
             }
             
+            // SVG線形品質の属性を自動設定
+            ensureSVGLineQuality(layerGroup);
+            
+            // 元の色情報をdata属性として保存（初回のみ）
+            initializeOriginalColors(layerGroup);
+            
             console.log(`Layer ${layer.id} rendered: ${transformString} (center: ${centerX}, ${centerY})`);
         }
 
@@ -2134,65 +2152,127 @@ $materials = $stmt->fetchAll();
             svgElements.forEach((element, index) => {
                 console.log(`Processing element ${index}:`, element);
                 
-                // 現在の色を取得（fillまたはstyleから）
-                let currentColor = element.getAttribute('fill');
-                const styleAttr = element.getAttribute('style');
+                // 初回のみ元の色情報をdata属性として保存
+                const fillAttr = element.getAttribute('fill');
+                const strokeAttr = element.getAttribute('stroke');
                 
-                // style属性から色情報を抽出
-                if (styleAttr && styleAttr.includes('fill:')) {
+                if (fillAttr && !element.getAttribute('data-original-fill')) {
+                    element.setAttribute('data-original-fill', fillAttr);
+                }
+                if (strokeAttr && strokeAttr !== 'none' && !element.getAttribute('data-original-stroke')) {
+                    element.setAttribute('data-original-stroke', strokeAttr);
+                }
+                
+                // style属性からも色情報を保存
+                const styleAttr = element.getAttribute('style');
+                if (styleAttr) {
                     const fillMatch = styleAttr.match(/fill:\s*([^;]+)/);
-                    if (fillMatch) {
-                        const colorValue = fillMatch[1].trim();
-                        if (colorValue.startsWith('rgb(')) {
-                            const rgbMatch = colorValue.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-                            if (rgbMatch) {
-                                const r = parseInt(rgbMatch[1]);
-                                const g = parseInt(rgbMatch[2]);
-                                const b = parseInt(rgbMatch[3]);
-                                currentColor = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-                            }
-                        } else {
-                            currentColor = colorValue;
-                        }
+                    const strokeMatch = styleAttr.match(/stroke:\s*([^;]+)/);
+                    
+                    if (fillMatch && !element.getAttribute('data-original-style-fill')) {
+                        element.setAttribute('data-original-style-fill', fillMatch[1].trim());
+                    }
+                    if (strokeMatch && strokeMatch[1].trim() !== 'none' && !element.getAttribute('data-original-style-stroke')) {
+                        element.setAttribute('data-original-style-stroke', strokeMatch[1].trim());
                     }
                 }
                 
-                // fallback to black if no color found
-                if (!currentColor) {
-                    currentColor = '#000000';
+                // 元の色情報を取得（data-original-*属性から）
+                let originalColor = element.getAttribute('data-original-fill') || 
+                                  element.getAttribute('data-original-style-fill');
+                
+                if (!originalColor) {
+                    originalColor = '#000000'; // fallback
                 }
                 
-                console.log('Current color:', currentColor);
+                console.log('Original color:', originalColor);
                 
-                // style属性を削除してfill属性を優先
-                if (styleAttr) {
-                    console.log('Removing style:', styleAttr);
-                    element.removeAttribute('style');
+                // noneの場合は特別処理（fillはnone保持、strokeにテーマカラー適用）
+                if (originalColor === 'none') {
+                    console.log('Processing none fill element - applying theme to stroke only');
+                    
+                    // strokeの元の色を取得
+                    let strokeOriginalColor = element.getAttribute('data-original-stroke') || 
+                                            element.getAttribute('data-original-style-stroke');
+                    
+                    if (strokeOriginalColor && strokeOriginalColor !== 'none') {
+                        // strokeにテーマカラーを適用
+                        if (!colorMapping.has(strokeOriginalColor)) {
+                            const newThemeColor = shuffledColors[colorIndex % shuffledColors.length];
+                            colorMapping.set(strokeOriginalColor, newThemeColor);
+                            console.log(`Stroke mapping: ${strokeOriginalColor} -> ${newThemeColor}`);
+                            colorIndex++;
+                        }
+                        
+                        const newStrokeColor = colorMapping.get(strokeOriginalColor);
+                        
+                        // stroke属性の更新
+                        if (element.getAttribute('data-original-stroke')) {
+                            element.setAttribute('stroke', newStrokeColor);
+                        }
+                        
+                        // style属性のstrokeを更新、fillはnoneのまま保持
+                        const styleAttr = element.getAttribute('style');
+                        if (styleAttr && element.getAttribute('data-original-style-stroke')) {
+                            let newStyle = styleAttr.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newStrokeColor}`);
+                            // fillがnoneでない場合はnoneに設定
+                            if (!newStyle.includes('fill:none')) {
+                                newStyle = newStyle.replace(/fill\s*:\s*[^;]+/, 'fill: none');
+                            }
+                            element.setAttribute('style', newStyle);
+                        }
+                    }
+                    return; 
                 }
                 
                 // 黒・グレー除外チェック
-                if (excludeGrayBlack && (currentColor.includes('#000') || 
-                    currentColor.includes('gray') || currentColor.includes('grey'))) {
-                    console.log('Skipping gray/black color:', currentColor);
+                if (excludeGrayBlack && (originalColor.includes('#000') || 
+                    originalColor.includes('gray') || originalColor.includes('grey'))) {
+                    console.log('Skipping gray/black color:', originalColor);
                     return; // 変更しない
                 }
 
-                // 同じ色のオブジェクトには同じランダムテーマ色を適用
-                if (!colorMapping.has(currentColor)) {
+                // 同じ元の色のオブジェクトには同じランダムテーマ色を適用
+                if (!colorMapping.has(originalColor)) {
                     const newThemeColor = shuffledColors[colorIndex % shuffledColors.length];
-                    colorMapping.set(currentColor, newThemeColor);
-                    console.log(`Mapping: ${currentColor} -> ${newThemeColor}`);
+                    colorMapping.set(originalColor, newThemeColor);
+                    console.log(`Mapping: ${originalColor} -> ${newThemeColor}`);
                     colorIndex++;
                 }
 
-                const newColor = colorMapping.get(currentColor);
+                const newColor = colorMapping.get(originalColor);
                 console.log('Setting new color:', newColor);
-                element.setAttribute('fill', newColor);
-                colorChangedCount++;
                 
-                if (element.getAttribute('stroke') && element.getAttribute('stroke') !== 'none') {
+                // fill属性の更新（data-original-fillがある場合のみ）
+                if (element.getAttribute('data-original-fill')) {
+                    element.setAttribute('fill', newColor);
+                    colorChangedCount++;
+                }
+                
+                // stroke属性の更新（data-original-strokeがある場合のみ）
+                if (element.getAttribute('data-original-stroke')) {
                     element.setAttribute('stroke', newColor);
                     console.log('Also set stroke:', newColor);
+                }
+                
+                // style属性の更新
+                if (styleAttr) {
+                    let newStyle = styleAttr;
+                    let styleChanged = false;
+                    
+                    if (element.getAttribute('data-original-style-fill')) {
+                        newStyle = newStyle.replace(/fill\s*:\s*[^;]+/, `fill: ${newColor}`);
+                        styleChanged = true;
+                    }
+                    
+                    if (element.getAttribute('data-original-style-stroke')) {
+                        newStyle = newStyle.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newColor}`);
+                        styleChanged = true;
+                    }
+                    
+                    if (styleChanged) {
+                        element.setAttribute('style', newStyle);
+                    }
                 }
             });
 
@@ -2239,6 +2319,77 @@ $materials = $stmt->fetchAll();
             setTimeout(() => {
                 extractColorsFromLayer(layer);
             }, 300);
+        }
+
+        // SVG線形品質を確保する関数（現在は無効化 - 線が太くなる問題のため）
+        function ensureSVGLineQuality(element) {
+            // 一時的に機能を無効化して線が太くなる問題を調査
+            console.log('ensureSVGLineQuality: 一時的に無効化中（線が太くなる問題の調査のため）');
+            return;
+            
+            const svgElements = element.querySelectorAll('path, circle, rect, polygon, ellipse, line, polyline');
+            
+            svgElements.forEach(svgEl => {
+                // shape-renderingのみ設定（線形属性は設定しない）
+                if (!svgEl.getAttribute('shape-rendering')) {
+                    svgEl.setAttribute('shape-rendering', 'geometricPrecision');
+                }
+            });
+            
+            console.log('SVG shape-rendering only applied for', svgElements.length, 'elements');
+        }
+
+        // 元の色情報をdata属性として保存する関数
+        function initializeOriginalColors(element) {
+            const svgElements = element.querySelectorAll('path, circle, rect, polygon, ellipse, line, polyline');
+            
+            svgElements.forEach((svgEl) => {
+                // fill属性の保存
+                const fillAttr = svgEl.getAttribute('fill');
+                if (fillAttr && fillAttr !== 'none' && !svgEl.getAttribute('data-original-fill')) {
+                    svgEl.setAttribute('data-original-fill', fillAttr);
+                }
+                
+                // stroke属性の保存
+                const strokeAttr = svgEl.getAttribute('stroke');
+                if (strokeAttr && strokeAttr !== 'none' && !svgEl.getAttribute('data-original-stroke')) {
+                    svgEl.setAttribute('data-original-stroke', strokeAttr);
+                }
+                
+                // style属性からの色情報の保存
+                const styleAttr = svgEl.getAttribute('style');
+                if (styleAttr) {
+                    const fillMatch = styleAttr.match(/fill:\s*([^;]+)/);
+                    const strokeMatch = styleAttr.match(/stroke:\s*([^;]+)/);
+                    
+                    if (fillMatch && fillMatch[1].trim() !== 'none' && !svgEl.getAttribute('data-original-style-fill')) {
+                        svgEl.setAttribute('data-original-style-fill', fillMatch[1].trim());
+                    }
+                    if (strokeMatch && strokeMatch[1].trim() !== 'none' && !svgEl.getAttribute('data-original-style-stroke')) {
+                        svgEl.setAttribute('data-original-style-stroke', strokeMatch[1].trim());
+                        // 線の終端と接続部分を滑らかに
+                        if (!svgEl.getAttribute('stroke-linecap')) {
+                            svgEl.setAttribute('stroke-linecap', 'round');
+                        }
+                        if (!svgEl.getAttribute('stroke-linejoin')) {
+                            svgEl.setAttribute('stroke-linejoin', 'round');
+                        }
+                    }
+                }
+                
+                // stroke属性がある場合も同様にチェック
+                if (strokeAttr && strokeAttr !== 'none') {
+                    // 線の終端と接続部分を滑らかに
+                    if (!svgEl.getAttribute('stroke-linecap')) {
+                        svgEl.setAttribute('stroke-linecap', 'round');
+                    }
+                    if (!svgEl.getAttribute('stroke-linejoin')) {
+                        svgEl.setAttribute('stroke-linejoin', 'round');
+                    }
+                }
+            });
+            
+            console.log('Original colors initialized and line caps applied for', svgElements.length, 'elements');
         }
 
         // グレー・黒系の色かどうかを判定
@@ -3761,6 +3912,16 @@ $materials = $stmt->fetchAll();
             } else {
                 console.log('新規セッションを開始します');
             }
+            
+            // 既存のすべてのレイヤーにSVG線形品質を適用し、元の色情報を保存
+            setTimeout(() => {
+                const allLayerElements = document.querySelectorAll('.layer-element');
+                allLayerElements.forEach(layerElement => {
+                    ensureSVGLineQuality(layerElement);
+                    initializeOriginalColors(layerElement);
+                });
+                console.log('既存レイヤーのSVG線形品質と元の色情報を確保しました:', allLayerElements.length, 'レイヤー');
+            }, 100);
             
         // 検索機能を初期化
         initializeMaterialSearch();
