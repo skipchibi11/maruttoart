@@ -2387,9 +2387,27 @@ $materials = $stmt->fetchAll();
                         svgEl.setAttribute('stroke-linejoin', 'round');
                     }
                 }
+                
+                // パスの複数の閉じた領域がある場合、fill-ruleを確実に設定
+                if (svgEl.tagName === 'path') {
+                    const pathData = svgEl.getAttribute('d');
+                    if (pathData && pathData.includes('Z') && pathData.indexOf('Z') !== pathData.lastIndexOf('Z')) {
+                        // 複数のZ（閉じたパス）がある場合はevenoddルールを適用
+                        svgEl.setAttribute('fill-rule', 'evenodd');
+                    }
+                }
             });
             
-            console.log('Original colors initialized and line caps applied for', svgElements.length, 'elements');
+            console.log('=== Original colors initialized for', svgElements.length, 'elements ===');
+            svgElements.forEach((el, i) => {
+                console.log(`Element ${i} (${el.tagName}):`, {
+                    fill: el.getAttribute('fill'),
+                    stroke: el.getAttribute('stroke'),
+                    'stroke-width': el.getAttribute('stroke-width'),
+                    style: el.getAttribute('style'),
+                    'd': el.getAttribute('d')?.substring(0, 50) + '...'
+                });
+            });
         }
 
         // グレー・黒系の色かどうかを判定
