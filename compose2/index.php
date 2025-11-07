@@ -568,6 +568,58 @@ $materials = $stmt->fetchAll();
             opacity: 0.6;
         }
 
+        .btn-flip-horizontal {
+            background: #8e44ad;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-flip-horizontal:hover {
+            background: #732d91;
+            color: white;
+        }
+
+        .btn-flip-horizontal:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-flip-vertical {
+            background: #9b59b6;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-flip-vertical:hover {
+            background: #8e44ad;
+            color: white;
+        }
+
+        .btn-flip-vertical:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         .btn-scale-down {
             background: #9b59b6;
             border: none;
@@ -1325,6 +1377,12 @@ $materials = $stmt->fetchAll();
                     <button id="rotateBtn" class="btn btn-rotate" title="選択したレイヤーを15度右回転">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                     </button>
+                    <button id="flipHorizontalBtn" class="btn btn-flip-horizontal" title="選択したレイヤーを水平反転">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-horizontal2-icon lucide-flip-horizontal-2"><path d="m3 7 5 5-5 5V7"/><path d="m21 7-5 5 5 5V7"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/></svg>
+                    </button>
+                    <button id="flipVerticalBtn" class="btn btn-flip-vertical" title="選択したレイヤーを上下反転">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-vertical2-icon lucide-flip-vertical-2"><path d="m17 3-5 5-5-5h10"/><path d="m17 21-5-5-5 5h10"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/></svg>
+                    </button>
                     <button id="bringFrontBtn" class="btn btn-bring-front" title="選択したレイヤーを1つ前面に移動">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bring-to-front-icon lucide-bring-to-front"><rect x="8" y="8" width="8" height="8" rx="2"/><path d="M4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2"/><path d="M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2"/></svg>
                     </button>
@@ -1462,7 +1520,9 @@ $materials = $stmt->fetchAll();
                                 x: 0, // 左上角（0,0）
                                 y: 0, // 左上角（0,0）
                                 scale: 0.7, // 70%サイズ
-                                rotation: 0
+                                rotation: 0,
+                                flipHorizontal: false, // 水平反転フラグ
+                                flipVertical: false // 上下反転フラグ
                             },
                             visible: true
                         };
@@ -1507,8 +1567,22 @@ $materials = $stmt->fetchAll();
             const centerX = layer.originalCenter.x;
             const centerY = layer.originalCenter.y;
             
-            // 変換を適用: 移動→スケール→中心回転
-            const transformString = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${layer.transform.scale}) rotate(${layer.transform.rotation}, ${centerX}, ${centerY})`;
+            // 変換を適用: 移動→スケール→反転→中心回転
+            let scaleX = layer.transform.scale;
+            let scaleY = layer.transform.scale;
+            
+            // 水平反転の場合はscaleXを負にする
+            if (layer.transform.flipHorizontal) {
+                scaleX = -scaleX;
+            }
+            
+            // 上下反転の場合はscaleYを負にする
+            if (layer.transform.flipVertical) {
+                scaleY = -scaleY;
+            }
+            
+            // 統一された処理: すべて同じ順序で処理
+            const transformString = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${scaleX}, ${scaleY}) rotate(${layer.transform.rotation}, ${centerX}, ${centerY})`;
             layerGroup.setAttribute('transform', transformString);
 
             // layersの配列順に基づいて正しい位置に挿入
@@ -1791,6 +1865,90 @@ $materials = $stmt->fetchAll();
                 updateSelectedLayerTitle();
                 
                 console.log(`Layer ${currentSelectedId} rotated left to ${layer.transform.rotation} degrees`);
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
+            }
+        }
+
+        // 選択されたレイヤーを水平反転
+        function flipHorizontalSelectedLayer() {
+            if (selectedLayerId === null) {
+                alert('反転させるレイヤーを選択してください。');
+                return;
+            }
+
+            const layer = layers.find(l => l.id === selectedLayerId);
+            if (layer) {
+                // 反転前の状態を保存
+                const wasFlipped = layer.transform.flipHorizontal;
+                
+                // 水平反転フラグを切り替え
+                layer.transform.flipHorizontal = !layer.transform.flipHorizontal;
+                
+                // 反転による位置のズレを補正
+                if (!wasFlipped && layer.transform.flipHorizontal) {
+                    // 通常→反転: 中心を基準とした位置補正
+                    layer.transform.x += 2 * layer.originalCenter.x * layer.transform.scale;
+                } else if (wasFlipped && !layer.transform.flipHorizontal) {
+                    // 反転→通常: 位置を元に戻す
+                    layer.transform.x -= 2 * layer.originalCenter.x * layer.transform.scale;
+                }
+                
+                // 現在の選択IDを保存
+                const currentSelectedId = selectedLayerId;
+                
+                // 全レイヤーを再描画（選択状態を保持）
+                layers.forEach(l => {
+                    renderLayer(l);
+                });
+                
+                // 選択中の素材タイトルを更新
+                updateSelectedLayerTitle();
+                
+                console.log(`Layer ${currentSelectedId} horizontal flip: ${layer.transform.flipHorizontal}`);
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
+            }
+        }
+
+        // 選択されたレイヤーを上下反転
+        function flipVerticalSelectedLayer() {
+            if (selectedLayerId === null) {
+                alert('反転させるレイヤーを選択してください。');
+                return;
+            }
+
+            const layer = layers.find(l => l.id === selectedLayerId);
+            if (layer) {
+                // 反転前の状態を保存
+                const wasFlipped = layer.transform.flipVertical;
+                
+                // 上下反転フラグを切り替え
+                layer.transform.flipVertical = !layer.transform.flipVertical;
+                
+                // 反転による位置のズレを補正
+                if (!wasFlipped && layer.transform.flipVertical) {
+                    // 通常→反転: 中心を基準とした位置補正
+                    layer.transform.y += 2 * layer.originalCenter.y * layer.transform.scale;
+                } else if (wasFlipped && !layer.transform.flipVertical) {
+                    // 反転→通常: 位置を元に戻す
+                    layer.transform.y -= 2 * layer.originalCenter.y * layer.transform.scale;
+                }
+                
+                // 現在の選択IDを保存
+                const currentSelectedId = selectedLayerId;
+                
+                // 全レイヤーを再描画（選択状態を保持）
+                layers.forEach(l => {
+                    renderLayer(l);
+                });
+                
+                // 選択中の素材タイトルを更新
+                updateSelectedLayerTitle();
+                
+                console.log(`Layer ${currentSelectedId} vertical flip: ${layer.transform.flipVertical}`);
                 
                 // ローカルストレージに保存
                 saveToLocalStorage();
@@ -2522,6 +2680,8 @@ $materials = $stmt->fetchAll();
         function updateRotateButtonState() {
             const rotateBtn = document.getElementById('rotateBtn');
             const rotateLeftBtn = document.getElementById('rotateLeftBtn');
+            const flipHorizontalBtn = document.getElementById('flipHorizontalBtn');
+            const flipVerticalBtn = document.getElementById('flipVerticalBtn');
             
             console.log(`updateRotateButtonState: selectedLayerId = ${selectedLayerId}`);
             
@@ -2530,12 +2690,20 @@ $materials = $stmt->fetchAll();
                 rotateBtn.title = '選択したレイヤーを15度右回転';
                 rotateLeftBtn.disabled = false;
                 rotateLeftBtn.title = '選択したレイヤーを15度左回転';
+                flipHorizontalBtn.disabled = false;
+                flipHorizontalBtn.title = '選択したレイヤーを水平反転';
+                flipVerticalBtn.disabled = false;
+                flipVerticalBtn.title = '選択したレイヤーを上下反転';
                 console.log('Rotate buttons ENABLED');
             } else {
                 rotateBtn.disabled = true;
                 rotateBtn.title = 'レイヤーを選択してから回転できます';
                 rotateLeftBtn.disabled = true;
                 rotateLeftBtn.title = 'レイヤーを選択してから回転できます';
+                flipHorizontalBtn.disabled = true;
+                flipHorizontalBtn.title = 'レイヤーを選択してから反転できます';
+                flipVerticalBtn.disabled = true;
+                flipVerticalBtn.title = 'レイヤーを選択してから反転できます';
                 console.log('Rotate buttons DISABLED');
             }
         }
@@ -3970,6 +4138,14 @@ $materials = $stmt->fetchAll();
             document.getElementById('rotateLeftBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
                 rotateLeftSelectedLayer();
+            });
+            document.getElementById('flipHorizontalBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                flipHorizontalSelectedLayer();
+            });
+            document.getElementById('flipVerticalBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                flipVerticalSelectedLayer();
             });
             document.getElementById('scaleDownBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
