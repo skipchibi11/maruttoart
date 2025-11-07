@@ -1,0 +1,93 @@
+/* GDPR Cookie Banner */
+#gdpr-banner {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background-color: #212529 !important;
+    color: #ffffff !important;
+    padding: 1rem !important;
+    z-index: 1050 !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
+}
+
+#gdpr-banner.hidden,
+.gdpr-cookie-banner.hidden {
+    display: none !important;
+}
+
+.gdpr-text {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+    color: #ffffff !important;
+}
+
+.gdpr-text a {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+}
+
+.gdpr-text a:hover {
+    color: #e9ecef !important;
+}
+
+.gdpr-buttons {
+    margin-top: 1rem !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+}
+
+.gdpr-buttons .btn {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+}
+
+/* GDPR専用のボタンスタイル */
+#gdpr-banner .btn-outline-light {
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+    background-color: transparent !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+}
+
+#gdpr-banner .btn-outline-light:hover {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+#gdpr-banner .btn-success {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+#gdpr-banner .btn-success:hover {
+    color: #000000 !important;
+    background-color: #f8f9fa !important;
+    border-color: #f8f9fa !important;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    #gdpr-banner {
+        padding: 0.75rem !important;
+    }
+    
+    .gdpr-text {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .gdpr-buttons {
+        margin-top: 0.75rem !important;
+        justify-content: center !important;
+    }
+    
+    .gdpr-buttons .btn {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+}

@@ -50,6 +50,9 @@ $materials = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     
+    <!-- 外部CSSファイル -->
+    <link rel="stylesheet" href="/assets/css/gdpr.css">
+    
     <!-- レイアウト専用CSS -->
     <link rel="stylesheet" href="assets/css/layout.css">
 
@@ -1172,77 +1175,7 @@ $materials = $stmt->fetchAll();
             }
         }
 
-        /* GDPR Cookie Banner のスタイル */
-        #gdpr-banner {
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            background-color: #212529 !important;
-            color: #ffffff !important;
-            padding: 1rem !important;
-            z-index: 1050 !important;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
-        }
-        
-        #gdpr-banner.hidden,
-        .gdpr-cookie-banner.hidden {
-            display: none !important;
-        }
-        
-        .gdpr-text {
-            font-size: 0.9rem !important;
-            line-height: 1.4 !important;
-            color: #ffffff !important;
-        }
-        
-        .gdpr-text a {
-            color: #ffffff !important;
-            text-decoration: underline !important;
-        }
-        
-        .gdpr-text a:hover {
-            color: #e9ecef !important;
-        }
-        
-        .gdpr-buttons {
-            margin-top: 1rem !important;
-            display: flex !important;
-            gap: 0.5rem !important;
-            flex-wrap: wrap !important;
-        }
-        
-        .gdpr-buttons .btn {
-            flex: 0 0 auto !important;
-            white-space: nowrap !important;
-        }
-        
-        /* GDPR専用のボタンスタイル（より強力な優先度） */
-        #gdpr-banner .btn-outline-light {
-            color: #ffffff !important;
-            border-color: #ffffff !important;
-            background-color: transparent !important;
-            border-width: 1px !important;
-            border-style: solid !important;
-        }
-
-        #gdpr-banner .btn-outline-light:hover {
-            color: #212529 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success {
-            color: #000000 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success:hover {
-            color: #000000 !important;
-            background-color: #f8f9fa !important;
-            border-color: #f8f9fa !important;
-        }
+        /* GDPR Cookie Banner は外部CSS (assets/css/gdpr.css) で管理 */
     </style>
 </head>
 <body>
@@ -4432,21 +4365,21 @@ $materials = $stmt->fetchAll();
     </div>
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
-    <div id="gdpr-banner" class="gdpr-cookie-banner hidden" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #212529; color: #ffffff; padding: 1rem; z-index: 1050; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
+    <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-12 col-md-8">
-                    <div class="gdpr-text" style="color: #ffffff;">
+                    <div class="gdpr-text">
                         当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                        <a href="/terms-of-use.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">利用規約</a>・
-                        <a href="/privacy-policy.php" class="text-white text-decoration-underline" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
+                        <a href="/terms-of-use.php" class="text-white text-decoration-underline">利用規約</a>・
+                        <a href="/privacy-policy.php" class="text-white text-decoration-underline">プライバシーポリシー</a>
                         をご確認ください。
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
-                    <div class="gdpr-buttons text-md-end" style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button id="gdpr-accept" class="btn btn-success btn-sm" style="color: #000000; background-color: #ffffff; border-color: #ffffff;">同意する</button>
-                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm" style="color: #ffffff; border-color: #ffffff; background-color: transparent;">拒否する</button>
+                    <div class="gdpr-buttons text-md-end">
+                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
+                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
                     </div>
                 </div>
             </div>
