@@ -32,19 +32,24 @@ if (!$artwork) {
 $updateViewStmt = $pdo->prepare("UPDATE community_artworks SET view_count = view_count + 1 WHERE id = ?");
 $updateViewStmt->execute([$id]);
 
-// 作品画像のURLを取得（優先順位: WebP > 通常画像）
+// 作品画像のURLを取得（PNG優先）
 function getArtworkImageUrl($artwork) {
     $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'https';
     $host = $_SERVER['HTTP_HOST'];
     
-    // WebP画像が存在する場合は優先使用
-    if (!empty($artwork['webp_path'])) {
-        return "{$scheme}://{$host}/{$artwork['webp_path']}";
+    // PNG画像を優先使用（file_pathを使用）
+    if (!empty($artwork['file_path'])) {
+        return "{$scheme}://{$host}/{$artwork['file_path']}";
     }
     
-    // 通常の画像パス（original_filenameを使用）
+    // original_filenameをフォールバック
     if (!empty($artwork['original_filename'])) {
         return "{$scheme}://{$host}/uploads/everyone-works/{$artwork['original_filename']}";
+    }
+    
+    // WebP画像を最後のフォールバック（互換性のため）
+    if (!empty($artwork['webp_path'])) {
+        return "{$scheme}://{$host}/{$artwork['webp_path']}";
     }
     
     return '';
@@ -1039,10 +1044,13 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
                                 <div class="material-thumbnail">
                                     <?php 
                                     $thumbnailPath = '';
-                                    if (!empty($material['webp_small_path'])) {
-                                        $thumbnailPath = $material['webp_small_path'];
+                                    // PNG画像を優先使用（file_path）
+                                    if (!empty($material['file_path'])) {
+                                        $thumbnailPath = $material['file_path'];
                                     } elseif (!empty($material['image_path'])) {
                                         $thumbnailPath = $material['image_path'];
+                                    } elseif (!empty($material['webp_small_path'])) {
+                                        $thumbnailPath = $material['webp_small_path'];
                                     }
                                     ?>
                                     <?php if (!empty($thumbnailPath)): ?>
