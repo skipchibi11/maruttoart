@@ -3120,11 +3120,20 @@ $materials = $stmt->fetchAll();
                 .catch(error => {
                     console.error('アップロードエラー:', error);
                     let errorMessage = 'アップロードに失敗しました';
-                    if (error.message.includes('JSON')) {
+                    
+                    // HTTP 429エラー（投稿制限）の場合
+                    if (error.message.includes('429')) {
+                        errorMessage = '1日の投稿制限（1件）に達しています。明日再度お試しください。';
+                    } 
+                    // JSONパースエラーの場合
+                    else if (error.message.includes('JSON')) {
                         errorMessage += '（サーバーエラーが発生しています）';
-                    } else {
+                    } 
+                    // その他のエラー
+                    else {
                         errorMessage += ': ' + error.message;
                     }
+                    
                     showUploadError(errorMessage);
                 })
                 .finally(() => {
@@ -4335,7 +4344,7 @@ $materials = $stmt->fetchAll();
                                         <li>投稿された作品は管理者による承認後に公開されます</li>
                                         <li>marutto素材を使用した作品のみ投稿可能です</li>
                                         <li>不適切な内容は削除される場合があります</li>
-                                        <li>1日3件まで投稿可能です</li>
+                                        <li>1日1件まで投稿可能です</li>
                                     </ul>
                                 </div>
                                 

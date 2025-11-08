@@ -4,6 +4,11 @@
  * 安全・軽量・やさしいUXを優先した実装
  */
 
+// デバッグ用：エラーログを有効化
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', '../logs/upload_errors.log');
+
 require_once '../config.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -130,6 +135,13 @@ try {
     $clientIP = getClientIP();
     $today = date('Y-m-d');
 
+    // セッション開始（管理者判定用）
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    $isAdmin = isset($_SESSION['admin_id']);
+
+    // 今日のアップロード数を取得（管理者・一般共通）
     $stmt = $pdo->prepare("
         SELECT upload_count FROM artwork_upload_limits 
         WHERE ip_address = ? AND upload_date = ?
@@ -137,9 +149,12 @@ try {
     $stmt->execute([$clientIP, $today]);
     $todayCount = $stmt->fetchColumn() ?: 0;
 
-    // 1日5件まで
-    if ($todayCount >= 5) {
-        sendError('1日の投稿上限（5件）に達しています', 429);
+    // 管理者以外は1日1件制限
+    if (!$isAdmin) {
+        // 1日1件まで
+        if ($todayCount >= 1) {
+            sendError('1日の投稿上限（1件）に達しています。明日再度お試しください。', 429);
+        }
     }
 
     // ファイル保存処理
@@ -212,8 +227,10 @@ try {
 
         $artworkId = $pdo->lastInsertId();
 
-        // 投稿制限カウンター更新
-        updateUploadLimit($pdo, $clientIP, $today);
+        // 投稿制限カウンター更新（管理者以外）
+        if (!$isAdmin) {
+            updateUploadLimit($pdo, $clientIP, $today);
+        }
 
         // 成功レスポンス
         sendSuccess([
@@ -222,7 +239,7 @@ try {
             'pen_name' => $penName,
             'file_path' => $relativePath,
             'webp_path' => $webpPath,
-            'remaining_uploads' => max(0, 5 - ($todayCount + 1)),
+            'remaining_uploads' => $isAdmin ? 999 : max(0, 1 - ($todayCount + 1)), // 管理者は999、一般は1日1件
             'used_material_ids' => $usedMaterialIds
         ]);
 
