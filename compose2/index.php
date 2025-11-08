@@ -2954,9 +2954,9 @@ $materials = $stmt->fetchAll();
                 layers.forEach(layer => renderLayer(layer));
             }
             
-            // 高解像度出力用キャンバス作成（1024px）
+            // 高解像度出力用キャンバス作成（2500px）
             const outputCanvas = document.createElement('canvas');
-            const outputSize = 1024;
+            const outputSize = 2500;
             outputCanvas.width = outputSize;
             outputCanvas.height = outputSize;
             const ctx = outputCanvas.getContext('2d');
@@ -4295,7 +4295,7 @@ $materials = $stmt->fetchAll();
                                 <div class="upload-file-info mt-3">
                                     <small class="text-muted">
                                         <i class="bi bi-info-circle"></i> 
-                                        PNG形式で出力された作品が投稿されます。最大2MB、1024px以内に自動調整されます。
+                                        PNG形式で出力された作品が投稿されます。最大2MB、2500px以内に自動調整されます。
                                     </small>
                                 </div>
                             </div>
