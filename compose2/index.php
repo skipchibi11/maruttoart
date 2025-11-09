@@ -1175,6 +1175,26 @@ $materials = $stmt->fetchAll();
             }
         }
 
+        /* 一括色変更設定 */
+        .bulk-color-settings {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .bulk-color-settings .form-check-label {
+            font-size: 0.9rem;
+            color: #495057;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .bulk-color-settings .form-check-input {
+            margin-top: 0.1rem;
+        }
+
         /* GDPR Cookie Banner は外部CSS (assets/css/gdpr.css) で管理 */
     </style>
 </head>
@@ -1343,6 +1363,16 @@ $materials = $stmt->fetchAll();
                     <button id="sepiaThemeBtn" class="btn btn-sepia-theme" title="セピアテーマを適用">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coffee-icon lucide-coffee"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>
                     </button>
+                </div>
+                
+                <!-- 一括色変更設定 -->
+                <div class="bulk-color-settings">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="bulkColorChange">
+                        <label class="form-check-label" for="bulkColorChange">
+                            一括色変更許可
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -2100,10 +2130,42 @@ $materials = $stmt->fetchAll();
             console.log(`=== applySeasonalTheme START (${season}) ===`);
             console.log('selectedLayerId:', selectedLayerId);
             
+            const bulkColorChange = document.getElementById('bulkColorChange').checked;
+            console.log('bulkColorChange:', bulkColorChange);
+            
+            // レイヤー未選択時の処理分岐
             if (!selectedLayerId) {
-                alert('レイヤーを選択してください');
-                return;
+                if (bulkColorChange) {
+                    // 一括色変更許可：全レイヤーに適用
+                    console.log('Bulk color change mode: applying to all layers');
+                    if (layers.length === 0) {
+                        alert('素材を追加してからテーマを適用してください');
+                        return;
+                    }
+                    applyThemeToAllLayers(season);
+                    
+                    // ユーザーに通知
+                    const seasonNames = {
+                        spring: '春のやわらかパステル',
+                        summer: '夏のやわらかパステル', 
+                        autumn: '秋のやわらかパステル',
+                        winter: '冬のやわらかパステル',
+                        monochrome: 'やさしいモノクロ',
+                        sepia: 'やさしいセピア'
+                    };
+                    
+                    const message = `${seasonNames[season]}を全レイヤーに適用しました！`;
+                    console.log(message);
+                    
+                    return;
+                } else {
+                    // 従来モード：レイヤー選択要求
+                    alert('レイヤーを選択してください（一括適用する場合は「一括色変更許可」をONにしてください）');
+                    return;
+                }
             }
+            
+            // レイヤーが選択されている場合：選択レイヤーのみに適用
             
             // 季節テーマのカラーパレット定義（detail/index.phpと同じ）
             const seasonalPalettes = {
@@ -2385,6 +2447,188 @@ $materials = $stmt->fetchAll();
             console.log(`${palette.name}が適用されました: ${colorChangedCount}個の色要素を変更`);
             console.log('カラーパレットも更新されました');
             console.log(`=== applySeasonalTheme END (${season}) ===`);
+        }
+
+        // 全レイヤーに季節テーマを一括適用
+        function applyThemeToAllLayers(season) {
+            console.log(`=== applyThemeToAllLayers START (${season}) ===`);
+            
+            // 季節テーマのカラーパレット定義
+            const seasonalPalettes = {
+                spring: {
+                    name: '春のやわらかパステル',
+                    colors: [
+                        '#F8CFCF', '#FFF2B7', '#D7EED1', '#D7E8F8', '#F3CFE8', 
+                        '#F5E2C8', '#D9EDD8', '#F6DCC3', '#F4C6D0', '#FAF3E7'
+                    ]
+                },
+                summer: {
+                    name: '夏のやわらかパステル',
+                    colors: [
+                        '#BDE7F7', '#FFF3A4', '#C9F3E1', '#D3EBFF', '#F7D5E8', 
+                        '#CFEAD2', '#FAEFD8', '#FFF9D6', '#BCE1F2', '#E3F2FA'
+                    ]
+                },
+                autumn: {
+                    name: '秋のやわらかパステル',
+                    colors: [
+                        '#F7D6B3', '#FFD9A6', '#F2E0B9', '#E7D5C1', '#E7B9A4', 
+                        '#FAE9D2', '#E1C4A7', '#F5CDBB', '#EBC7A4', '#F8E5D6'
+                    ]
+                },
+                winter: {
+                    name: '冬のやわらかパステル',
+                    colors: [
+                        '#E5EEF5', '#DAD7F0', '#F1ECE6', '#D3DDE0', '#CBDDE1', 
+                        '#F2EFE9', '#E1DBD5', '#D9E2EA', '#E8E1DC', '#F4F3F1'
+                    ]
+                },
+                monochrome: {
+                    name: 'やさしいモノクロ',
+                    colors: [
+                        '#FFFFFF', '#FAFAFA', '#F3F3F3', '#E6E6E6', '#D8D8D8', 
+                        '#C8C8C8', '#B0B0B0', '#999999', '#7F7F7F', '#666666'
+                    ]
+                },
+                sepia: {
+                    name: 'やさしいセピア',
+                    colors: [
+                        '#FFFDF8', '#FBF4EA', '#F6EBDC', '#F0E2CF', '#E8D7BD', 
+                        '#E0C9A6', '#D1B68D', '#C19D72', '#AD8C63', '#937550'
+                    ]
+                }
+            };
+
+            if (!seasonalPalettes[season]) {
+                console.error(`Unknown season: ${season}`);
+                return;
+            }
+
+            const palette = seasonalPalettes[season];
+            const themeColors = palette.colors;
+            
+            // シャッフルされたテーマカラー
+            const shuffledColors = [...themeColors];
+            for (let i = shuffledColors.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
+            }
+            
+            // グローバルな色マッピング（全レイヤー共通）
+            const globalColorMapping = new Map();
+            let colorIndex = 0;
+            let totalColorChangedCount = 0;
+
+            // 全レイヤーに適用
+            layers.forEach(layer => {
+                const layerElement = document.getElementById(`layer-${layer.id}`);
+                if (!layerElement) return;
+
+                const svgElements = layerElement.querySelectorAll('path, circle, rect, polygon, ellipse');
+                let layerColorChangedCount = 0;
+                
+                svgElements.forEach(element => {
+                    // 元の色情報を保存・取得
+                    const fillAttr = element.getAttribute('fill');
+                    const strokeAttr = element.getAttribute('stroke');
+                    
+                    if (fillAttr && !element.getAttribute('data-original-fill')) {
+                        element.setAttribute('data-original-fill', fillAttr);
+                    }
+                    if (strokeAttr && strokeAttr !== 'none' && !element.getAttribute('data-original-stroke')) {
+                        element.setAttribute('data-original-stroke', strokeAttr);
+                    }
+                    
+                    const styleAttr = element.getAttribute('style');
+                    if (styleAttr) {
+                        const fillMatch = styleAttr.match(/fill:\s*([^;]+)/);
+                        const strokeMatch = styleAttr.match(/stroke:\s*([^;]+)/);
+                        
+                        if (fillMatch && !element.getAttribute('data-original-style-fill')) {
+                            element.setAttribute('data-original-style-fill', fillMatch[1].trim());
+                        }
+                        if (strokeMatch && strokeMatch[1].trim() !== 'none' && !element.getAttribute('data-original-style-stroke')) {
+                            element.setAttribute('data-original-style-stroke', strokeMatch[1].trim());
+                        }
+                    }
+                    
+                    // 元の色情報を取得（fillとstrokeの両方をチェック）
+                    const originalFillColor = element.getAttribute('data-original-fill') || 
+                                            element.getAttribute('data-original-style-fill');
+                    const originalStrokeColor = element.getAttribute('data-original-stroke') || 
+                                              element.getAttribute('data-original-style-stroke');
+                    
+                    // Fill色の処理
+                    if (originalFillColor && originalFillColor !== 'none') {
+                        // 黒・グレー除外
+                        if (!originalFillColor.includes('#000') && !originalFillColor.includes('gray') && !originalFillColor.includes('grey')) {
+                            // グローバル色マッピング
+                            if (!globalColorMapping.has(originalFillColor)) {
+                                const newThemeColor = shuffledColors[colorIndex % shuffledColors.length];
+                                globalColorMapping.set(originalFillColor, newThemeColor);
+                                colorIndex++;
+                            }
+                            
+                            const newColor = globalColorMapping.get(originalFillColor);
+                            
+                            // 色を適用
+                            if (element.getAttribute('data-original-fill')) {
+                                element.setAttribute('fill', newColor);
+                                layerColorChangedCount++;
+                            }
+                            
+                            if (styleAttr && element.getAttribute('data-original-style-fill')) {
+                                let newStyle = styleAttr.replace(/fill\s*:\s*[^;]+/, `fill: ${newColor}`);
+                                element.setAttribute('style', newStyle);
+                                layerColorChangedCount++;
+                            }
+                        }
+                    }
+                    
+                    // Stroke色の処理
+                    if (originalStrokeColor && originalStrokeColor !== 'none') {
+                        // 黒・グレー除外
+                        if (!originalStrokeColor.includes('#000') && !originalStrokeColor.includes('gray') && !originalStrokeColor.includes('grey')) {
+                            // グローバル色マッピング
+                            if (!globalColorMapping.has(originalStrokeColor)) {
+                                const newThemeColor = shuffledColors[colorIndex % shuffledColors.length];
+                                globalColorMapping.set(originalStrokeColor, newThemeColor);
+                                colorIndex++;
+                            }
+                            
+                            const newColor = globalColorMapping.get(originalStrokeColor);
+                            
+                            // Stroke色を適用
+                            if (element.getAttribute('data-original-stroke')) {
+                                element.setAttribute('stroke', newColor);
+                            }
+                            
+                            if (styleAttr && element.getAttribute('data-original-style-stroke')) {
+                                let currentStyle = element.getAttribute('style');
+                                let newStyle = currentStyle.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newColor}`);
+                                element.setAttribute('style', newStyle);
+                            }
+                        }
+                    }
+                });
+                
+                totalColorChangedCount += layerColorChangedCount;
+                
+                // SVGContentを更新（重要：データの永続化）
+                const updatedSvgContent = layerElement.innerHTML;
+                layer.svgContent = updatedSvgContent;
+                
+                // レイヤー更新
+                renderLayer(layer);
+            });
+            
+            console.log(`${palette.name}を全レイヤーに適用完了: ${totalColorChangedCount}個の色要素を変更`);
+            console.log(`色マッピング: `, globalColorMapping);
+            
+            // データを保存
+            saveToLocalStorage();
+            
+            console.log(`=== applyThemeToAllLayers END (${season}) ===`);
         }
 
         // テーマ適用後にカラーパレットを更新
