@@ -128,41 +128,8 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager - GDPR対応 -->
-    <script>
-    // GDPR同意状況をチェックしてGTMを条件付き読み込み
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        function loadGTM() {
-            if (window.gtmLoaded) return; // 重複読み込み防止
-            window.gtmLoaded = true;
-            
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-579HN546');
-        }
-        
-        // 同意状況を確認
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 既に同意済みの場合は即座に読み込み
-            loadGTM();
-        }
-        
-        // GDPR同意イベントを監視（将来の同意に対応）
-        window.addEventListener('gdpr-consent-accepted', loadGTM);
-    })();
-    </script>
-    <!-- End Google Tag Manager -->
+    <!-- Google Tag Manager & GDPR -->
+    <script src="/assets/js/gdpr-gtm.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -172,6 +139,9 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
+    
+    <!-- GDPR CSS -->
+    <link rel="stylesheet" href="/assets/css/gdpr.css">
     
     <!-- Canonical tag -->
     <link rel="canonical" href="https://marutto.art/everyone-work.php?id=<?= $artwork['id'] ?>">
@@ -868,35 +838,6 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
     </style>
 </head>
 <body>
-    <!-- Google Tag Manager (noscript) - GDPR対応 -->
-    <script>
-    // グローバルGDPR同意チェック関数
-    window.getGdprConsent = function() {
-        try {
-            return localStorage.getItem('gdpr_consent_v1');
-        } catch (e) {
-            return null;
-        }
-    };
-    
-    // GDPR同意状況をチェックしてnoscript GTMを条件付き表示
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 同意済みの場合はnoscript GTMを挿入
-            document.write('<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-579HN546" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>');
-        }
-    })();
-    </script>
-    <!-- End Google Tag Manager (noscript) -->
 
     <nav class="navbar">
         <div class="container">
@@ -1255,5 +1196,26 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
         tryInit();
     })();
     </script>
+
+    <!-- GDPR Cookie Banner -->
+    <div id="gdpr-banner" class="hidden">
+        <div class="container">
+            <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="gdpr-text">
+                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                        <a href="/privacy-policy.php" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
+                        をご確認ください。
+                    </div>
+                </div>
+                <div style="margin-left: auto;">
+                    <div class="gdpr-buttons">
+                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
+                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

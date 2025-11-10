@@ -8,46 +8,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager - GDPR対応 -->
-    <script>
-    // GDPR同意状況をチェックしてGTMを条件付き読み込み
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        function loadGTM() {
-            if (window.gtmLoaded) return; // 重複読み込み防止
-            window.gtmLoaded = true;
-            
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-579HN546');
-            
-            console.log('GTM loaded after GDPR consent');
-        }
-        
-        // 同意状況を確認
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 既に同意済みの場合は即座に読み込み
-            loadGTM();
-        } else {
-            // 同意していない場合は読み込まない
-            console.log('GTM not loaded - GDPR consent required');
-        }
-        
-        // GDPR同意イベントを監視（将来の同意に対応）
-        window.addEventListener('gdpr-consent-accepted', loadGTM);
-    })();
-    </script>
-    <!-- End Google Tag Manager -->
+    <!-- Google Tag Manager & GDPR -->
+    <script src="/assets/js/gdpr-gtm.js"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,6 +18,9 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
+    
+    <!-- GDPR CSS -->
+    <link rel="stylesheet" href="/assets/css/gdpr.css">
     
     <!-- Canonical tag -->
     <link rel="canonical" href="https://marutto.art/terms-of-use.php">
@@ -66,7 +31,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/terms-of-use.php" />
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/terms-of-use.php" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/terms-of-use.php" />
-    <link rel="alternate" hreflang="x-default" href="https://marutto.art/terms-of-use.php" />>
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/terms-of-use.php" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -443,26 +408,6 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     </style>
 </head>
 <body>
-    <!-- Google Tag Manager (noscript) - GDPR対応 -->
-    <script>
-    // GDPR同意状況をチェックしてnoscript GTMを条件付き表示
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 同意済みの場合はnoscript GTMを挿入
-            document.write('<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-579HN546" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>');
-        }
-    })();
-    </script>
-    <!-- End Google Tag Manager (noscript) -->
     
     <nav class="navbar">
         <div class="container">
@@ -648,7 +593,6 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <p class="mt-4"><small>最終更新日：2025年8月29日</small></p>
             </div>
         </div>
-    </div>
 
     <footer class="footer-custom mt-5 py-4">
         <div class="container">
@@ -678,96 +622,5 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             </div>
         </div>
     </div>
-    
-    <!-- GDPR Cookie Consent Script -->
-    <script>
-    // GDPR Cookie Consent
-    (function() {
-        const GDPR_KEY = 'gdpr_consent_v1';
-        const banner = document.getElementById('gdpr-banner');
-        const acceptBtn = document.getElementById('gdpr-accept');
-        const declineBtn = document.getElementById('gdpr-decline');
-        
-        // localStorage から同意状況をチェック
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem(GDPR_KEY);
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        // 同意状況を保存
-        function setGdprConsent(value) {
-            try {
-                localStorage.setItem(GDPR_KEY, value);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        }
-        
-        // バナーを表示
-        function showBanner() {
-            if (banner) {
-                banner.classList.remove('hidden');
-            }
-        }
-        
-        // バナーを非表示
-        function hideBanner() {
-            if (banner) {
-                banner.classList.add('hidden');
-            }
-        }
-        
-        // 同意処理
-        function acceptConsent() {
-            setGdprConsent('accepted');
-            hideBanner();
-            
-            // GTM読み込みイベントを発火
-            const event = new CustomEvent('gdpr-consent-accepted');
-            window.dispatchEvent(event);
-            console.log('gdpr-consent-accepted event dispatched');
-        }
-        
-        // 拒否処理
-        function declineConsent() {
-            setGdprConsent('declined');
-            hideBanner();
-            
-            // 拒否イベントを発火
-            const event = new CustomEvent('gdpr-consent-declined');
-            window.dispatchEvent(event);
-        }
-        
-        // 初期化
-        function init() {
-            const consent = getGdprConsent();
-            
-            if (consent === null) {
-                // 未設定の場合はバナーを表示
-                showBanner();
-            }
-        }
-        
-        // イベントリスナーを設定
-        if (acceptBtn) {
-            acceptBtn.addEventListener('click', acceptConsent);
-        }
-        
-        if (declineBtn) {
-            declineBtn.addEventListener('click', declineConsent);
-        }
-        
-        // DOMContentLoaded で初期化
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    })();
-    </script>
 </body>
 </html>
