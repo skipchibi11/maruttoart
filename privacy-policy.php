@@ -158,6 +158,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     <h4>Cookieおよび類似技術による情報</h4>
                     <ul>
                         <li><strong>Google Analytics Cookie</strong>: _ga, _ga_*, _gid等（同意した場合のみ）</li>
+                        <li><strong>Google AdSense Cookie</strong>: _gads, _gac_*, __gpi, IDE, test_cookie等（同意した場合のみ）</li>
                         <li><strong>YouTube Cookie</strong>: 動画視聴に関する設定・履歴（動画閲覧時のみ）</li>
                         <li><strong>同意管理Cookie</strong>: GDPR同意状況の記録（localStorage使用）</li>
                     </ul>
@@ -179,10 +180,11 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                         <li><strong>サイトの利用状況分析</strong>: Google Analytics 4を使用したアクセス解析、ユーザー行動分析</li>
                         <li><strong>検索エンジン最適化</strong>: Google Search Consoleを使用した検索パフォーマンス分析</li>
                         <li><strong>マーケティング・改善施策</strong>: Google Tag Managerを使用したデータ収集と分析</li>
+                        <li><strong>広告配信・最適化</strong>: Google AdSenseを使用した関連性の高い広告配信、広告効果の測定</li>
                         <li><strong>セキュリティの維持・向上</strong>: 不正アクセスの検知・防止</li>
                         <li><strong>法的要件への対応</strong>: 法令に基づく情報開示等</li>
                     </ul>
-                    <p><strong>データの処理根拠：</strong>当サイトは、正当な利益（サイト運営・改善）およびユーザーの同意に基づいて情報を処理します。</p>
+                    <p><strong>データの処理根拠：</strong>当サイトは、正当な利益（サイト運営・改善・収益化）およびユーザーの同意に基づいて情報を処理します。</p>
                 </div>
 
                 <div class="policy-section">
@@ -201,6 +203,13 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                         <li><strong>Google Tag Manager</strong>: 各種分析ツールの管理・配信</li>
                         <li>これらは匿名化されたデータを収集し、個人を特定することはありません</li>
                         <li>Cookie同意バナーで拒否することができます</li>
+                    </ul>
+                    
+                    <h4>広告Cookie（同意が必要）</h4>
+                    <ul>
+                        <li><strong>Google AdSense</strong>: 興味に基づく広告配信、広告効果測定</li>
+                        <li>これらのCookieにより、ユーザーの興味に関連する広告が表示されます</li>
+                        <li>Cookie同意バナーで拒否することができます（コンテキスト広告が代わりに表示されます）</li>
                     </ul>
                     
                     <h4>機能性Cookie（同意が必要）</h4>
@@ -250,6 +259,42 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     <h4>その他のサービス</h4>
                     <ul>
                         <li><strong>YouTube</strong>: 動画コンテンツの埋め込み表示（Cookieに同意した場合のみ）</li>
+                        <li><strong>Google AdSense</strong>: 興味に基づく広告配信サービス（Cookieに同意した場合のみ）</li>
+                    </ul>
+                    
+                    <h4>Google AdSense について</h4>
+                    <ul>
+                        <li><strong>提供会社</strong>: Google LLC</li>
+                        <li><strong>利用目的</strong>: 当サイトの運営費をサポートするための広告配信</li>
+                        <li><strong>広告の仕組み</strong>: ユーザーの興味や関心、ウェブ閲覧履歴に基づいた関連性の高い広告を表示</li>
+                        <li><strong>収集される情報</strong>: 
+                            <ul>
+                                <li>ブラウザ情報、デバイス情報</li>
+                                <li>サイト訪問履歴、閲覧パターン</li>
+                                <li>地理的位置情報（国、地域レベル）</li>
+                                <li>興味・関心カテゴリー</li>
+                            </ul>
+                        </li>
+                        <li><strong>Cookie情報</strong>: 
+                            <ul>
+                                <li>Google AdSense Cookie: _gads, _gac_*, __gpi等</li>
+                                <li>DoubleClick Cookie: IDE, test_cookie等</li>
+                                <li>これらのCookieは広告配信の最適化と頻度制御に使用されます</li>
+                            </ul>
+                        </li>
+                        <li><strong>広告のパーソナライゼーション</strong>: 
+                            <ul>
+                                <li>Cookieに同意した場合、ユーザーの興味に基づいた広告が表示されます</li>
+                                <li>同意しない場合は、コンテキスト広告（ページ内容に基づく広告）が表示されます</li>
+                            </ul>
+                        </li>
+                        <li><strong>広告設定の変更</strong>: 
+                            <ul>
+                                <li><a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google広告設定</a>でパーソナライズ広告をオフにできます</li>
+                                <li><a href="https://optout.aboutads.info/" target="_blank" rel="noopener">Digital Advertising Alliance</a>でオプトアウト可能です</li>
+                                <li>当サイトのCookie設定でAdSense Cookieを拒否できます</li>
+                            </ul>
+                        </li>
                     </ul>
                     
                     <p><strong>重要な注意事項：</strong></p>
@@ -275,6 +320,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     <ul>
                         <li><strong>Google Analytics</strong>: 匿名化されたアクセス解析データ</li>
                         <li><strong>Google Tag Manager</strong>: タグ管理・配信のためのデータ</li>
+                        <li><strong>Google AdSense</strong>: 広告配信最適化のための匿名化されたデータ</li>
                         <li><strong>Google Search Console</strong>: 検索パフォーマンスの集計データ</li>
                         <li><strong>YouTube</strong>: 動画視聴データ（動画閲覧時のみ）</li>
                     </ul>
