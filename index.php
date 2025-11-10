@@ -72,46 +72,9 @@ if ($tileCount > 0) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager - GDPR対応 -->
-    <script>
-    // GDPR同意状況をチェックしてGTMを条件付き読み込み
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        function loadGTM() {
-            if (window.gtmLoaded) return; // 重複読み込み防止
-            window.gtmLoaded = true;
-            
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-579HN546');
-            
-            console.log('GTM loaded after GDPR consent');
-        }
-        
-        // 同意状況を確認
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 既に同意済みの場合は即座に読み込み
-            loadGTM();
-        } else {
-            // 同意していない場合は読み込まない
-            console.log('GTM not loaded - GDPR consent required');
-        }
-        
-        // GDPR同意イベントを監視（将来の同意に対応）
-        window.addEventListener('gdpr-consent-accepted', loadGTM);
-    })();
-    </script>
-    <!-- End Google Tag Manager -->
+    <!-- Google Tag Manager & GDPR -->
+    <script src="/assets/js/gdpr-gtm.js"></script>
+    
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

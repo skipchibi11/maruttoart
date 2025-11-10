@@ -34,6 +34,9 @@ $materials = $stmt->fetchAll();
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- Google Tag Manager & GDPR -->
+    <script src="/assets/js/gdpr-gtm.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
@@ -4653,157 +4656,6 @@ $materials = $stmt->fetchAll();
         </div>
     </footer>
 
-    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
-    <script>
-    // GDPR Cookie Consent (セッション・Cookie不使用版)
-    (function() {
-        const GDPR_KEY = 'gdpr_consent_v1';
-        let isInitialized = false;
-        
-        // 初期化関数
-        function initGDPR() {
-            if (isInitialized) return;
-            isInitialized = true;
-            
-            const banner = document.getElementById('gdpr-banner');
-            const acceptBtn = document.getElementById('gdpr-accept');
-            const declineBtn = document.getElementById('gdpr-decline');
-            
-            console.log('GDPR initialization started');
-            console.log('Banner element:', banner);
-            console.log('Accept button:', acceptBtn);
-            console.log('Decline button:', declineBtn);
-            
-            if (!banner || !acceptBtn || !declineBtn) {
-                console.error('GDPR elements not found');
-                return;
-            }
-            
-            // localStorage から同意状況をチェック
-            function getGdprConsent() {
-                try {
-                    return localStorage.getItem(GDPR_KEY);
-                } catch (e) {
-                    console.warn('localStorage not available:', e);
-                    return null;
-                }
-            }
-            
-            // 同意状況を保存
-            function setGdprConsent(value) {
-                try {
-                    localStorage.setItem(GDPR_KEY, value);
-                    console.log('GDPR consent saved:', value);
-                    return true;
-                } catch (e) {
-                    console.warn('localStorage save failed:', e);
-                    return false;
-                }
-            }
-            
-            // バナーを表示
-            function showBanner() {
-                if (banner) {
-                    banner.classList.remove('hidden');
-                    console.log('GDPR banner shown');
-                }
-            }
-            
-            // バナーを非表示
-            function hideBanner() {
-                if (banner) {
-                    banner.classList.add('hidden');
-                    console.log('GDPR banner hidden');
-                }
-            }
-            
-            // 同意処理
-            function acceptConsent() {
-                console.log('Accept consent clicked');
-                setGdprConsent('accepted');
-                hideBanner();
-                enableAnalytics();
-                
-                // GTM読み込みイベントを発火
-                const event = new CustomEvent('gdpr-consent-accepted');
-                window.dispatchEvent(event);
-            }
-            
-            // 拒否処理
-            function declineConsent() {
-                console.log('Decline consent clicked');
-                setGdprConsent('declined');
-                hideBanner();
-                disableAnalytics();
-            }
-            
-            // アナリティクス有効化（プレースホルダー）
-            function enableAnalytics() {
-                console.log('Analytics enabled');
-                
-                // GTMが未読み込みの場合は読み込み
-                if (!window.gtmLoaded) {
-                    const event = new CustomEvent('gdpr-consent-accepted');
-                    window.dispatchEvent(event);
-                }
-            }
-            
-            // アナリティクス無効化（プレースホルダー）
-            function disableAnalytics() {
-                console.log('Analytics disabled');
-                // アナリティクス無効化のコードをここに追加
-            }
-            
-            // イベントリスナーを設定
-            acceptBtn.addEventListener('click', acceptConsent);
-            declineBtn.addEventListener('click', declineConsent);
-            console.log('GDPR event listeners attached');
-            
-            // 同意状況をチェックして初期化
-            const consent = getGdprConsent();
-            console.log('Current GDPR consent:', consent);
-            
-            if (consent === null) {
-                // 未設定の場合はバナーを表示
-                console.log('No consent found, showing banner');
-                showBanner();
-            } else if (consent === 'accepted') {
-                // 同意済みの場合はアナリティクスを有効化
-                console.log('Consent already accepted');
-                hideBanner();
-                enableAnalytics();
-            } else if (consent === 'declined') {
-                // 拒否済みの場合はアナリティクスを無効化
-                console.log('Consent declined');
-                hideBanner();
-                disableAnalytics();
-            }
-        }
-        
-        // 複数の初期化方法を試行
-        function tryInit() {
-            console.log('Document ready state:', document.readyState);
-            
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initGDPR);
-            } else {
-                // DOMが既に読み込まれている場合は即座に実行
-                setTimeout(initGDPR, 0);
-            }
-            
-            // フォールバック: window.onloadでも試行
-            window.addEventListener('load', function() {
-                if (!isInitialized) {
-                    console.log('Fallback initialization on window load');
-                    initGDPR();
-                }
-            });
-        }
-        
-        tryInit();
-    })();
-    </script>
-    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
