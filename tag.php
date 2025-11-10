@@ -61,13 +61,8 @@ $materials = $materialsStmt->fetchAll();
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-579HN546');</script>
-    <!-- End Google Tag Manager -->
+    <!-- Google Tag Manager & GDPR -->
+    <script src="/assets/js/gdpr-gtm.js"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -76,6 +71,9 @@ $materials = $materialsStmt->fetchAll();
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="/assets/css/gdpr.css">
     
     <!-- カノニカルタグ -->
     <?php
@@ -423,11 +421,6 @@ $materials = $materialsStmt->fetchAll();
     </style>
 </head>
 <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-579HN546"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    
     <header class="navbar">
         <div class="container">
             <a class="navbar-brand" href="/">maruttoart</a>
@@ -569,6 +562,22 @@ $materials = $materialsStmt->fetchAll();
             </div>
         </div>
     </footer>
+
+    <!-- GDPR Cookie Banner -->
+    <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
+        <div class="gdpr-content">
+            <div class="gdpr-text">
+                当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
+                <a href="/terms-of-use.php">利用規約</a>・
+                <a href="/privacy-policy.php">プライバシーポリシー</a>
+                をご確認ください。
+            </div>
+            <div class="gdpr-buttons">
+                <button id="gdpr-accept" class="btn btn-success">同意する</button>
+                <button id="gdpr-decline" class="btn btn-outline-light">拒否する</button>
+            </div>
+        </div>
+    </div>
 
     <script>
     // カードのキーボードナビゲーション対応
