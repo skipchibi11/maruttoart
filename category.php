@@ -49,46 +49,8 @@ $materials = $materialsStmt->fetchAll();
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager - GDPR対応 -->
-    <script>
-    // GDPR同意状況をチェックしてGTMを条件付き読み込み
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        function loadGTM() {
-            if (window.gtmLoaded) return; // 重複読み込み防止
-            window.gtmLoaded = true;
-            
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-579HN546');
-            
-            console.log('GTM loaded after GDPR consent');
-        }
-        
-        // 同意状況を確認
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 既に同意済みの場合は即座に読み込み
-            loadGTM();
-        } else {
-            // 同意していない場合は読み込まない
-            console.log('GTM not loaded - GDPR consent required');
-        }
-        
-        // GDPR同意イベントを監視（将来の同意に対応）
-        window.addEventListener('gdpr-consent-accepted', loadGTM);
-    })();
-    </script>
-    <!-- End Google Tag Manager -->
+    <!-- Google Tag Manager & GDPR -->
+    <script src="/assets/js/gdpr-gtm.js"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,6 +58,10 @@ $materials = $materialsStmt->fetchAll();
     
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="/assets/css/gdpr.css">
+    
     <meta name="description" content="<?= h($category['title']) ?>のフリーイラスト素材一覧。ミニマルなフリーイラスト素材を商用利用OK">
 
     <!-- カノニカルタグ -->
@@ -356,96 +322,6 @@ $materials = $materialsStmt->fetchAll();
             margin: 0;
         }
 
-        /* GDPR Cookie Banner のスタイル */
-        #gdpr-banner {
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            background-color: #212529 !important;
-            color: #ffffff !important;
-            padding: 1rem !important;
-            z-index: 1050 !important;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
-        }
-        
-        #gdpr-banner.hidden,
-        .gdpr-cookie-banner.hidden {
-            display: none !important;
-        }
-        
-        .gdpr-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .gdpr-text {
-            font-size: 0.9rem !important;
-            line-height: 1.4 !important;
-            color: #ffffff !important;
-            flex: 1;
-            min-width: 280px;
-        }
-        
-        .gdpr-text a {
-            color: #ffffff !important;
-            text-decoration: underline !important;
-        }
-        
-        .gdpr-text a:hover {
-            color: #e9ecef !important;
-        }
-        
-        .gdpr-buttons {
-            display: flex !important;
-            gap: 0.5rem !important;
-            flex-wrap: wrap !important;
-        }
-        
-        .gdpr-buttons .btn {
-            flex: 0 0 auto !important;
-            white-space: nowrap !important;
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid;
-            cursor: pointer;
-            font-size: 0.875rem;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-        
-        /* GDPR専用のボタンスタイル（より強力な優先度） */
-        #gdpr-banner .btn-outline-light {
-            color: #ffffff !important;
-            border-color: #ffffff !important;
-            background-color: transparent !important;
-        }
-
-        #gdpr-banner .btn-outline-light:hover {
-            color: #212529 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success {
-            color: #000000 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success:hover {
-            color: #000000 !important;
-            background-color: #f8f9fa !important;
-            border-color: #f8f9fa !important;
-        }
-
         /* レスポンシブ */
         @media (max-width: 768px) {
             .container {
@@ -559,36 +435,6 @@ $materials = $materialsStmt->fetchAll();
     </style>
 </head>
 <body>
-    <!-- Google Tag Manager (noscript) - GDPR対応 -->
-    <script>
-    // グローバルGDPR同意チェック関数
-    window.getGdprConsent = function() {
-        try {
-            return localStorage.getItem('gdpr_consent_v1');
-        } catch (e) {
-            return null;
-        }
-    };
-    
-    // GDPR同意状況をチェックしてnoscript GTMを条件付き表示
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 同意済みの場合はnoscript GTMを挿入
-            document.write('<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-579HN546" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>');
-        }
-    })();
-    </script>
-    <!-- End Google Tag Manager (noscript) -->
-    
     <header class="header">
         <div class="container">
             <div class="header-content">
@@ -769,127 +615,5 @@ $materials = $materialsStmt->fetchAll();
         </div>
     </div>
     
-    <script>
-    // グローバルGDPR同意チェック関数
-    window.getGdprConsent = function() {
-        try {
-            return localStorage.getItem('gdpr_consent_v1');
-        } catch (e) {
-            return null;
-        }
-    };
-
-    // GDPR Cookie Consent
-    (function() {
-        const GDPR_KEY = 'gdpr_consent_v1';
-        let isInitialized = false;
-        
-        // 初期化関数
-        function initGDPR() {
-            if (isInitialized) return;
-            isInitialized = true;
-            
-            const banner = document.getElementById('gdpr-banner');
-            const acceptBtn = document.getElementById('gdpr-accept');
-            const declineBtn = document.getElementById('gdpr-decline');
-            
-            if (!banner || !acceptBtn || !declineBtn) {
-                console.error('GDPR elements not found');
-                return;
-            }
-            
-            // localStorage から同意状況をチェック
-            function getGdprConsent() {
-                try {
-                    return localStorage.getItem(GDPR_KEY);
-                } catch (e) {
-                    console.warn('localStorage not available:', e);
-                    return null;
-                }
-            }
-            
-            // 同意状況を保存
-            function setGdprConsent(value) {
-                try {
-                    localStorage.setItem(GDPR_KEY, value);
-                    return true;
-                } catch (e) {
-                    console.warn('localStorage save failed:', e);
-                    return false;
-                }
-            }
-            
-            // バナーを表示
-            function showBanner() {
-                if (banner) {
-                    banner.classList.remove('hidden');
-                }
-            }
-            
-            // バナーを非表示
-            function hideBanner() {
-                if (banner) {
-                    banner.classList.add('hidden');
-                }
-            }
-            
-            // 同意処理
-            function acceptConsent() {
-                const success = setGdprConsent('accepted');
-                hideBanner();
-                
-                // GTM読み込みイベントを発火
-                const event = new CustomEvent('gdpr-consent-accepted');
-                window.dispatchEvent(event);
-                console.log('gdpr-consent-accepted event dispatched');
-            }
-            
-            // 拒否処理
-            function declineConsent() {
-                setGdprConsent('declined');
-                hideBanner();
-                
-                // 拒否イベントを発火
-                const event = new CustomEvent('gdpr-consent-declined');
-                window.dispatchEvent(event);
-            }
-            
-            // イベントリスナーを設定
-            acceptBtn.addEventListener('click', acceptConsent);
-            declineBtn.addEventListener('click', declineConsent);
-            
-            // 同意状況をチェックして初期化
-            const consent = getGdprConsent();
-            
-            if (consent === null) {
-                // 未設定の場合はバナーを表示
-                showBanner();
-            } else {
-                // 既に設定済みの場合はバナーを非表示
-                hideBanner();
-            }
-        }
-        
-        // 複数の初期化方法を試行
-        function tryInit() {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initGDPR);
-            } else {
-                // DOMが既に読み込まれている場合は即座に実行
-                setTimeout(initGDPR, 0);
-            }
-            
-            // フォールバック: window.onloadでも試行
-            window.addEventListener('load', function() {
-                if (!isInitialized) {
-                    initGDPR();
-                }
-            });
-        }
-        
-        tryInit();
-    })();
-
-    </script>
 </body>
 </html>
