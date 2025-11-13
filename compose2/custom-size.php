@@ -40,11 +40,11 @@ $materials = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
-    <title>あなたのアトリエ - maruttoart</title>
-    <meta name="description" content="SVG素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
+    <title>カスタムサイズアトリエ - maruttoart</title>
+    <meta name="description" content="任意のサイズでSVG素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
     
-    <!-- カノニカルURL設定（アトリエツール用 - 1つのツールとして統一） -->
-    <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose2/">
+    <!-- カノニカルURL設定 -->
+    <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose2/custom-size.php">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,24 +60,6 @@ $materials = $stmt->fetchAll();
     <link rel="stylesheet" href="assets/css/layout.css">
 
     <style>
-        /* コンテナシステム - list.phpと統一 */
-        .container {
-            width: 100%;
-            max-width: 1140px;
-            margin: 0 auto;
-            padding-top: 0px;
-            padding-bottom: 0px;
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-
-        /* 1400px以上: コンテナの最大幅を拡張 */
-        @media (min-width: 1400px) {
-            .container {
-                max-width: 1320px;
-            }
-        }
-
         /* 検索フォームのスタイル */
         .search-form {
             background-color: #f8f9fa;
@@ -112,6 +94,121 @@ $materials = $stmt->fetchAll();
 
         .search-input::placeholder {
             color: #adb5bd;
+        }
+
+        /* カスタムサイズ設定パネルのスタイル */
+        .canvas-size-controls {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            margin-bottom: 1.5rem;
+        }
+
+        .canvas-size-controls h4 {
+            color: #2c5aa0;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .size-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .size-input {
+            width: 70px;
+            padding: 6px 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: border-color 0.2s ease;
+        }
+
+        .size-input:focus {
+            border-color: #2c5aa0;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+        }
+
+        .size-label {
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .size-separator {
+            font-weight: bold;
+            color: #6c757d;
+        }
+
+        .size-unit {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .size-presets {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .size-presets strong {
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        .preset-btn {
+            padding: 4px 8px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            background: white;
+            color: #495057;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            border-color: #2c5aa0;
+            background: #e3f2fd;
+            color: #2c5aa0;
+        }
+
+        .apply-size-btn {
+            background: #2c5aa0;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .apply-size-btn:hover {
+            background: #1e4086;
+            transform: translateY(-1px);
+        }
+
+        .current-size-info {
+            background: #fff;
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 0.8rem;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
         }
 
         /* レスポンシブ対応 */
@@ -946,14 +1043,13 @@ $materials = $stmt->fetchAll();
         }
 
         #mainCanvas {
-            width: 100%;
-            height: 100%;
-            max-width: 500px;
-            max-height: 500px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            aspect-ratio: 1;
+            max-width: min(70vw, 50vh);
+            max-height: min(50vh, 70vw);
+            width: auto;
+            height: auto;
         }
 
         /* レスポンシブ対応 */
@@ -965,8 +1061,8 @@ $materials = $stmt->fetchAll();
             }
             
             #mainCanvas {
-                max-width: min(85vw, 450px); /* 画面幅の85%かつ最大450px */
-                max-height: min(40vh, 450px); /* 画面高の40%かつ最大450px */
+                max-width: min(85vw, 35vh);
+                max-height: min(35vh, 85vw);
                 width: auto;
                 height: auto;
             }
@@ -1068,14 +1164,14 @@ $materials = $stmt->fetchAll();
             touch-action: none; /* ドラッグ中はスクロールを無効 */
         }
 
-        /* ナビゲーション - Bootstrap標準に合わせる */
+        /* ナビゲーション */
         .navbar {
             position: relative;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            padding: 0.5rem 0rem;
+            padding: 0.5rem 0;
             background-color: #ffffff;
             border-bottom: 1px solid rgba(0,0,0,.125);
         }
@@ -1094,16 +1190,6 @@ $materials = $stmt->fetchAll();
         .navbar-brand:hover {
             color: #333;
             text-decoration: none;
-        }
-
-        @media (max-width: 768px) {
-            .navbar-brand {
-                font-size: 1.5rem;
-            }
-            .container {
-                padding-left: 15px;
-                padding-right: 15px;
-            }
         }
 
         /* フッターのスタイル */
@@ -1226,54 +1312,6 @@ $materials = $stmt->fetchAll();
             margin-top: 0.1rem;
         }
 
-        /* ナビバー内のツールナビゲーション */
-        .navbar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 0px;
-            padding-bottom: 0px;
-        }
-
-        .tool-navigation {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .tool-nav-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #6c757d;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.2s ease;
-        }
-
-        .tool-nav-link:hover {
-            color: #495057;
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
-            text-decoration: none;
-        }
-
-        .tool-nav-link svg {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
-
-        /* ヘッダーをシンプルに */
-        .header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-
         /* GDPR Cookie Banner は外部CSS (assets/css/gdpr.css) で管理 */
     </style>
 </head>
@@ -1281,45 +1319,17 @@ $materials = $stmt->fetchAll();
     <nav class="navbar">
         <div class="container">
             <a class="navbar-brand" href="/">maruttoart</a>
-            <div class="tool-navigation">
-                <a href="/list.php" class="tool-nav-link" title="作品一覧">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-list-icon lucide-layout-list">
-                        <rect width="7" height="7" x="3" y="3" rx="1"/>
-                        <rect width="7" height="7" x="3" y="14" rx="1"/>
-                        <path d="M14 4h7"/>
-                        <path d="M14 9h7"/>
-                        <path d="M14 15h7"/>
-                        <path d="M14 20h7"/>
-                    </svg>
-                </a>
-                <a href="/everyone-works.php" class="tool-nav-link" title="みんなのアトリエ">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake-icon lucide-handshake">
-                        <path d="m11 17 2 2a1 1 0 1 0 3-3"/>
-                        <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/>
-                        <path d="m21 3 1 11h-2"/>
-                        <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/>
-                        <path d="M3 4h8"/>
-                    </svg>
-                </a>
-                <a href="index.php" class="tool-nav-link active" title="標準編集">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-icon lucide-pencil">
-                        <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-                        <path d="m15 5 4 4"/>
-                    </svg>
-                </a>
-                <a href="custom-size.php" class="tool-nav-link" title="カスタムサイズ編集">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scaling-icon lucide-scaling">
-                        <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M14 15H9v-5"/>
-                        <path d="M16 3h5v5"/>
-                        <path d="M21 3 9 15"/>
-                    </svg>
-                </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/compose2/">標準アトリエ</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
+        <!-- ヘッダー -->
+        <div class="header">
+            <h1>カスタムサイズアトリエ</h1>
+        </div>
 
         <!-- メインコンテンツ -->
         <div class="main-content">
@@ -1339,6 +1349,37 @@ $materials = $stmt->fetchAll();
                                 class="btn btn-outline-secondary ms-2" 
                                 style="display: none;">クリア</button>
                     </form>
+                </div>
+
+                <!-- キャンバスサイズ設定パネル -->
+                <div class="canvas-size-controls">
+                    <h4><i class="bi bi-aspect-ratio"></i> キャンバスサイズ設定</h4>
+                    
+                    <div class="size-input-group">
+                        <span class="size-label">幅:</span>
+                        <input type="number" id="canvasWidth" class="size-input" value="1024" min="100" max="2000">
+                        <span class="size-unit">px</span>
+                        
+                        <span class="size-separator">×</span>
+                        
+                        <span class="size-label">高さ:</span>
+                        <input type="number" id="canvasHeight" class="size-input" value="1024" min="100" max="2000">
+                        <span class="size-unit">px</span>
+                        
+                        <button class="apply-size-btn" onclick="applyCanvasSize()">適用</button>
+                    </div>
+                    
+                    <div class="size-presets">
+                        <strong>プリセット:</strong>
+                        <button class="preset-btn" onclick="setCanvasSize(1000, 1500)">1000×1500</button>
+                        <button class="preset-btn" onclick="setCanvasSize(1080, 1080)">1080×1080</button>
+                        <button class="preset-btn" onclick="setCanvasSize(1280, 670)">1280×670</button>
+                        <button class="preset-btn" onclick="setCanvasSize(1920, 1006)">1920×1006</button>
+                    </div>
+                    
+                    <div class="current-size-info">
+                        現在のサイズ: <span id="currentSizeDisplay">1024 × 1024 px</span>
+                    </div>
                 </div>
                 
                 <div class="materials-grid">
@@ -1513,9 +1554,6 @@ $materials = $stmt->fetchAll();
                 <div class="action-buttons">
                     <button id="exportBtn" class="btn btn-export">
                         <i class="bi bi-download"></i> PNG出力
-                    </button>
-                    <button id="uploadBtn" class="btn btn-upload">
-                        <i class="bi bi-cloud-upload"></i> みんなの作品集に投稿
                     </button>
                     <button id="clearBtn" class="btn btn-clear">
                         <i class="bi bi-trash"></i> 全て削除
@@ -3129,7 +3167,7 @@ $materials = $stmt->fetchAll();
                 return;
             }
 
-            console.log('PNG出力開始 (2500px)');
+            console.log(`PNG出力開始 (${currentCanvasWidth}x${currentCanvasHeight}px)`);
 
             const canvas = document.getElementById('mainCanvas');
             
@@ -3149,9 +3187,9 @@ $materials = $stmt->fetchAll();
             
             // 高解像度出力用のキャンバスを作成
             const outputCanvas = document.createElement('canvas');
-            const outputSize = 2500; // 2500px出力
-            outputCanvas.width = outputSize;
-            outputCanvas.height = outputSize;
+            // 現在のキャンバスサイズを使用
+            outputCanvas.width = currentCanvasWidth;
+            outputCanvas.height = currentCanvasHeight;
             const ctx = outputCanvas.getContext('2d');
             
             // 高品質設定
@@ -3169,14 +3207,14 @@ $materials = $stmt->fetchAll();
                         const url = URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
-                        link.download = `svg-composition-2500px-${Date.now()}.png`;
+                        link.download = `svg-composition-${currentCanvasWidth}x${currentCanvasHeight}-${Date.now()}.png`;
                         
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
                         
                         URL.revokeObjectURL(url);
-                        console.log('PNG出力完了 (2500px)');
+                        console.log(`PNG出力完了 (${currentCanvasWidth}x${currentCanvasHeight}px)`);
                         
                         // 選択状態を復元
                         if (currentSelectedId !== null) {
@@ -3227,353 +3265,7 @@ $materials = $stmt->fetchAll();
             setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
         }
 
-        // 作品アップロード機能
-        function openUploadModal() {
-            if (layers.length === 0) {
-                alert('素材を追加してから作品を投稿してください。');
-                return;
-            }
 
-            // プレビュー画像を生成
-            generateUploadPreview();
-            
-            // モーダルを表示
-            const modal = new bootstrap.Modal(document.getElementById('uploadArtworkModal'));
-            modal.show();
-        }
-
-        // アップロード用プレビュー生成
-        function generateUploadPreview() {
-            const canvas = document.getElementById('mainCanvas');
-            
-            // 選択状態を一時的に保存・解除
-            const currentSelectedId = selectedLayerId;
-            if (selectedLayerId !== null) {
-                selectedLayerId = null;
-                layers.forEach(layer => renderLayer(layer));
-            }
-            
-            // プレビュー用小サイズキャンバス作成
-            const previewCanvas = document.createElement('canvas');
-            const previewSize = 300;
-            previewCanvas.width = previewSize;
-            previewCanvas.height = previewSize;
-            const ctx = previewCanvas.getContext('2d');
-            
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            
-            const svgData = new XMLSerializer().serializeToString(canvas);
-            const img = new Image();
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, previewCanvas.width, previewCanvas.height);
-                
-                // プレビューコンテナに画像を表示
-                const previewContainer = document.getElementById('uploadPreviewContainer');
-                previewContainer.innerHTML = '';
-                
-                const previewImg = document.createElement('img');
-                previewImg.src = previewCanvas.toDataURL('image/png');
-                previewContainer.appendChild(previewImg);
-                
-                // 選択状態を復元
-                if (currentSelectedId !== null) {
-                    selectedLayerId = currentSelectedId;
-                    layers.forEach(layer => renderLayer(layer));
-                    updateSelectedLayerTitle();
-                    updateRotateButtonState();
-                    updateScaleDownButtonState();
-                    updateScaleUpButtonState();
-                    updateLayerMoveButtonState();
-                    updateDeleteButtonState();
-                }
-            };
-            
-            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const svgUrl = URL.createObjectURL(svgBlob);
-            img.src = svgUrl;
-            
-            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
-        }
-
-        // 高解像度PNG生成（アップロード用）
-        function generatePNGForUpload(callback) {
-            const canvas = document.getElementById('mainCanvas');
-            
-            // 選択状態を一時的に解除
-            const currentSelectedId = selectedLayerId;
-            if (selectedLayerId !== null) {
-                selectedLayerId = null;
-                layers.forEach(layer => renderLayer(layer));
-            }
-            
-            // 高解像度出力用キャンバス作成（2500px）
-            const outputCanvas = document.createElement('canvas');
-            const outputSize = 2500;
-            outputCanvas.width = outputSize;
-            outputCanvas.height = outputSize;
-            const ctx = outputCanvas.getContext('2d');
-            
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            
-            const svgData = new XMLSerializer().serializeToString(canvas);
-            const img = new Image();
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
-                
-                outputCanvas.toBlob(function(blob) {
-                    // 選択状態を復元
-                    if (currentSelectedId !== null) {
-                        selectedLayerId = currentSelectedId;
-                        layers.forEach(layer => renderLayer(layer));
-                        updateSelectedLayerTitle();
-                        updateRotateButtonState();
-                        updateScaleDownButtonState();
-                        updateScaleUpButtonState();
-                        updateLayerMoveButtonState();
-                        updateDeleteButtonState();
-                    }
-                    
-                    if (callback) callback(blob);
-                }, 'image/png');
-            };
-            
-            img.onerror = function(error) {
-                console.error('PNG生成エラー:', error);
-                if (callback) callback(null);
-            };
-            
-            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const svgUrl = URL.createObjectURL(svgBlob);
-            img.src = svgUrl;
-            
-            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
-        }
-
-        // 使用されている素材IDを収集する関数
-        function getUsedMaterialIds() {
-            const usedIds = new Set();
-            
-            // 正しいキャンバス要素IDを使用（mainCanvasが正しいID）
-            const canvas = document.getElementById('mainCanvas');
-            if (canvas) {
-                const materialElements = canvas.querySelectorAll('[data-material-id]');
-                console.log(`Found ${materialElements.length} material elements on canvas`);
-                
-                materialElements.forEach(element => {
-                    const materialId = element.getAttribute('data-material-id');
-                    console.log(`Material element found with ID: ${materialId}`);
-                    if (materialId && materialId !== '' && materialId !== 'null') {
-                        usedIds.add(parseInt(materialId, 10));
-                    }
-                });
-            } else {
-                console.error('mainCanvas element not found');
-            }
-            
-            const result = Array.from(usedIds).filter(id => !isNaN(id) && id > 0);
-            console.log('Used material IDs detected:', result);
-            
-            return result;
-        }
-
-        // 作品アップロード実行
-        function submitArtwork() {
-            const form = document.getElementById('uploadArtworkForm');
-            const formData = new FormData(form);
-            
-            // バリデーション
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            
-            const agreeTerms = document.getElementById('agreeUploadTerms').checked;
-            if (!agreeTerms) {
-                alert('利用規約への同意が必要です。');
-                return;
-            }
-            
-            // アップロード処理開始
-            const submitBtn = document.getElementById('submitUploadBtn');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> アップロード中...';
-            
-            // プログレスバー表示
-            showUploadProgress();
-            
-            generatePNGForUpload(function(blob) {
-                if (!blob) {
-                    showUploadError('PNG変換に失敗しました。');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                    return;
-                }
-                
-                // FormDataに画像を追加
-                formData.append('artwork', blob, `artwork-${Date.now()}.png`);
-                
-                // 投稿=フリー素材提供同意とみなす
-                formData.append('free_material_consent', '1');
-                
-                // 使用素材IDを収集してFormDataに追加
-                const usedMaterialIds = getUsedMaterialIds();
-                if (usedMaterialIds.length > 0) {
-                    formData.append('used_material_ids', usedMaterialIds.join(','));
-                }
-                
-                // サーバーにアップロード
-                fetch('/api/upload-artwork.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    return response.text();
-                })
-                .then(responseText => {
-                    console.log('Server response:', responseText);
-                    
-                    let data;
-                    try {
-                        data = JSON.parse(responseText);
-                    } catch (parseError) {
-                        console.error('JSON parse error:', parseError);
-                        console.error('Response text:', responseText);
-                        throw new Error('サーバーレスポンスの解析に失敗しました');
-                    }
-                    
-                    if (data.success) {
-                        showUploadSuccess(data.data);
-                        
-                        // 3秒後にモーダルを閉じる
-                        setTimeout(() => {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('uploadArtworkModal'));
-                            modal.hide();
-                            
-                            // フォームリセット
-                            form.reset();
-                            resetUploadModal();
-                        }, 3000);
-                        
-                        console.log('作品アップロード完了:', data);
-                    } else {
-                        let errorMsg = data.error || 'アップロードに失敗しました';
-                        if (data.details) {
-                            console.error('Error details:', data.details);
-                        }
-                        showUploadError(errorMsg);
-                    }
-                })
-                .catch(error => {
-                    console.error('アップロードエラー:', error);
-                    let errorMessage = 'アップロードに失敗しました';
-                    
-                    // HTTP 429エラー（投稿制限）の場合
-                    if (error.message.includes('429')) {
-                        errorMessage = '1日の投稿制限（1件）に達しています。明日再度お試しください。';
-                    } 
-                    // JSONパースエラーの場合
-                    else if (error.message.includes('JSON')) {
-                        errorMessage += '（サーバーエラーが発生しています）';
-                    } 
-                    // その他のエラー
-                    else {
-                        errorMessage += ': ' + error.message;
-                    }
-                    
-                    showUploadError(errorMessage);
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                });
-            });
-        }
-
-        // アップロード進捗表示
-        function showUploadProgress() {
-            const progressHtml = `
-                <div class="upload-progress">
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                             role="progressbar" style="width: 100%">アップロード中...</div>
-                    </div>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', progressHtml);
-        }
-
-        // アップロード成功表示
-        function showUploadSuccess(data) {
-            // 既存のメッセージを削除
-            removeUploadMessages();
-            
-            const successHtml = `
-                <div class="upload-success">
-                    <h6><i class="bi bi-check-circle-fill"></i> アップロード完了</h6>
-                    <p class="mb-1">作品「${data.title}」のアップロードが完了しました！</p>
-                    <small class="text-muted">
-                        管理者による承認後に公開されます。<br>
-                        本日の残り投稿可能数: ${data.remaining_uploads}件
-                    </small>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', successHtml);
-        }
-
-        // アップロードエラー表示
-        function showUploadError(errorMessage) {
-            // 既存のメッセージを削除
-            removeUploadMessages();
-            
-            const errorHtml = `
-                <div class="upload-error">
-                    <h6><i class="bi bi-exclamation-triangle-fill"></i> アップロードエラー</h6>
-                    <p class="mb-0">${errorMessage}</p>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', errorHtml);
-        }
-
-        // アップロードメッセージを削除
-        function removeUploadMessages() {
-            const progress = document.querySelector('.upload-progress');
-            const success = document.querySelector('.upload-success');
-            const error = document.querySelector('.upload-error');
-            
-            if (progress) progress.remove();
-            if (success) success.remove();
-            if (error) error.remove();
-        }
-
-        // アップロードモーダルリセット
-        function resetUploadModal() {
-            removeUploadMessages();
-            
-            const previewContainer = document.getElementById('uploadPreviewContainer');
-            previewContainer.innerHTML = `
-                <div class="preview-placeholder">
-                    <i class="bi bi-image"></i>
-                    <p>作品のプレビューがここに表示されます</p>
-                </div>
-            `;
-            
-            document.getElementById('descriptionCount').textContent = '0';
-            document.getElementById('submitUploadBtn').disabled = true;
-        }
 
         // 背景色を設定する関数
         function setBackgroundColor(color) {
@@ -4496,53 +4188,11 @@ $materials = $stmt->fetchAll();
                 clearAll();
             });
             
-            // アップロードボタンのイベントリスナー
-            document.getElementById('uploadBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                openUploadModal();
-            });
+
             
-            // アップロードモーダルのイベントリスナー
-            document.getElementById('submitUploadBtn').addEventListener('click', submitArtwork);
+
             
-            // フォームバリデーション
-            const artworkTitle = document.getElementById('artworkTitle');
-            const penName = document.getElementById('penName');
-            const agreeUploadTerms = document.getElementById('agreeUploadTerms');
-            const submitUploadBtn = document.getElementById('submitUploadBtn');
-            
-            function validateUploadForm() {
-                const titleValid = artworkTitle.value.trim().length > 0 && artworkTitle.value.trim().length <= 100;
-                const penNameValid = penName.value.trim().length > 0 && penName.value.trim().length <= 50;
-                const termsAgreed = agreeUploadTerms.checked;
-                
-                submitUploadBtn.disabled = !(titleValid && penNameValid && termsAgreed);
-            }
-            
-            artworkTitle.addEventListener('input', validateUploadForm);
-            penName.addEventListener('input', validateUploadForm);
-            agreeUploadTerms.addEventListener('change', validateUploadForm);
-            
-            // 文字数カウンター
-            const descriptionTextarea = document.getElementById('artworkDescription');
-            const descriptionCount = document.getElementById('descriptionCount');
-            
-            descriptionTextarea.addEventListener('input', function() {
-                const count = this.value.length;
-                descriptionCount.textContent = count;
-                
-                if (count > 1000) {
-                    descriptionCount.style.color = '#dc3545';
-                } else {
-                    descriptionCount.style.color = '#6c757d';
-                }
-            });
-            
-            // モーダル表示時にフォームリセット
-            document.getElementById('uploadArtworkModal').addEventListener('show.bs.modal', function() {
-                resetUploadModal();
-                validateUploadForm();
-            });
+
             
             // 背景色パネルのイベントリスナーを設定
             const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
@@ -4634,98 +4284,9 @@ $materials = $stmt->fetchAll();
         });
     </script>
 
-    <!-- 作品アップロードモーダル -->
-    <div class="modal fade" id="uploadArtworkModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="uploadModalLabel">
-                        <i class="bi bi-cloud-upload"></i> みんなの作品集に投稿
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="閉じる"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="upload-preview-section">
-                                <h6><i class="bi bi-image"></i> 作品プレビュー</h6>
-                                <div id="uploadPreviewContainer" class="upload-preview-container">
-                                    <div class="preview-placeholder">
-                                        <i class="bi bi-image"></i>
-                                        <p>作品のプレビューがここに表示されます</p>
-                                    </div>
-                                </div>
-                                <div class="upload-file-info mt-3">
-                                    <small class="text-muted">
-                                        <i class="bi bi-info-circle"></i> 
-                                        PNG形式で出力された作品が投稿されます。最大2MB、2500px以内に自動調整されます。
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <form id="uploadArtworkForm" enctype="multipart/form-data">
-                                <div class="mb-3">
-                                    <label for="artworkTitle" class="form-label">作品タイトル <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="artworkTitle" name="title" required maxlength="100" 
-                                           placeholder="例：春の花畑">
-                                    <div class="form-text">100文字以内で入力してください</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="penName" class="form-label">ペンネーム <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="penName" name="pen_name" required maxlength="50" 
-                                           placeholder="例：花子">
-                                    <div class="form-text">50文字以内で入力してください</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="artworkDescription" class="form-label">作品説明（任意）</label>
-                                    <textarea class="form-control" id="artworkDescription" name="description" rows="3" 
-                                              maxlength="1000" placeholder="作品について簡単に説明してください（1000文字以内）"></textarea>
-                                    <div class="form-text">
-                                        <span id="descriptionCount">0</span>/1000文字
-                                    </div>
-                                </div>
-                                
-                                <!-- フリー素材同意は投稿時に自動的に同意したものとみなす -->
-                                
-                                <div class="alert alert-warning">
-                                    <h6><i class="bi bi-info-circle"></i> 重要：投稿に関する同意事項</h6>
-                                    <ul class="mb-0 small">
-                                        <li><strong>投稿すると、作品をフリー素材として公開することに同意したものとみなします</strong></li>
-                                        <li>他のユーザーがあなたの作品をダウンロード・利用できるようになります</li>
-                                        <li>投稿された作品は管理者による承認後に公開されます</li>
-                                        <li>marutto素材を使用した作品のみ投稿可能です</li>
-                                        <li>不適切な内容は削除される場合があります</li>
-                                        <li>1日1件まで投稿可能です</li>
-                                    </ul>
-                                </div>
-                                
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="agreeUploadTerms" required>
-                                    <label class="form-check-label" for="agreeUploadTerms">
-                                        <a href="/terms-of-use.php" target="_blank">利用規約</a>に同意し、作品をフリー素材として公開することを許諾します <span class="text-danger">*</span>
-                                    </label>
-                                </div>
 
-                                <!-- 隠しファイル入力 -->
-                                <input type="file" id="artworkFile" name="artwork" accept="image/png,image/webp,image/svg+xml" style="display: none;">
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> キャンセル
-                    </button>
-                    <button type="button" class="btn btn-success" id="submitUploadBtn" disabled>
-                        <i class="bi bi-cloud-upload"></i> 作品を投稿
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
+
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
     <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
@@ -4765,5 +4326,86 @@ $materials = $stmt->fetchAll();
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- カスタムサイズ機能のJavaScript -->
+    <script>
+        // カスタムサイズ機能の追加
+        let currentCanvasWidth = 1024;
+        let currentCanvasHeight = 1024;
+        
+        // プリセットサイズを設定
+        function setCanvasSize(width, height) {
+            document.getElementById('canvasWidth').value = width;
+            document.getElementById('canvasHeight').value = height;
+            applyCanvasSize();
+        }
+        
+        // キャンバスサイズを適用
+        function applyCanvasSize() {
+            const widthInput = document.getElementById('canvasWidth');
+            const heightInput = document.getElementById('canvasHeight');
+            
+            let width = parseInt(widthInput.value);
+            let height = parseInt(heightInput.value);
+            
+            // 値の検証
+            if (isNaN(width) || width < 100 || width > 2000) {
+                alert('幅は100px〜2000pxの範囲で入力してください');
+                widthInput.value = currentCanvasWidth;
+                return;
+            }
+            
+            if (isNaN(height) || height < 100 || height > 2000) {
+                alert('高さは100px〜2000pxの範囲で入力してください');
+                heightInput.value = currentCanvasHeight;
+                return;
+            }
+            
+            // キャンバスサイズを更新
+            currentCanvasWidth = width;
+            currentCanvasHeight = height;
+            
+            const svgCanvas = document.getElementById('mainCanvas');
+            if (svgCanvas) {
+                svgCanvas.setAttribute('width', width);
+                svgCanvas.setAttribute('height', height);
+                svgCanvas.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                
+                // キャンバス背景の更新
+                const canvasBackground = document.getElementById('canvasBackground');
+                if (canvasBackground) {
+                    canvasBackground.setAttribute('width', width);
+                    canvasBackground.setAttribute('height', height);
+                }
+            }
+            
+            // 現在のサイズ表示を更新
+            document.getElementById('currentSizeDisplay').textContent = `${width} × ${height} px`;
+            
+            console.log(`キャンバスサイズを ${width}×${height} に変更しました`);
+        }
+        
+        // Enterキーでサイズ適用
+        document.addEventListener('DOMContentLoaded', function() {
+            const widthInput = document.getElementById('canvasWidth');
+            const heightInput = document.getElementById('canvasHeight');
+            
+            if (widthInput) {
+                widthInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        applyCanvasSize();
+                    }
+                });
+            }
+            
+            if (heightInput) {
+                heightInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        applyCanvasSize();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
