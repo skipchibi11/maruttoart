@@ -20,18 +20,12 @@ $totalCountStmt = $pdo->prepare($totalCountSql);
 $totalCountStmt->execute();
 $totalMaterialsCount = $totalCountStmt->fetchColumn();
 
-// カテゴリ一覧を取得（カテゴリ画像も含める）
-$categorySql = "SELECT id, title, slug, category_image_path FROM categories ORDER BY sort_order ASC, title ASC";
-$categoryStmt = $pdo->prepare($categorySql);
-$categoryStmt->execute();
-$categories = $categoryStmt->fetchAll();
-
 // みんなのアトリエの最新承認済み作品6件を取得
 $communityArtworksSql = "SELECT id, title, pen_name, webp_path, file_path, created_at 
                         FROM community_artworks 
                         WHERE status = 'approved' 
                         ORDER BY created_at DESC 
-                        LIMIT 6";
+                        LIMIT 12";
 $communityArtworksStmt = $pdo->prepare($communityArtworksSql);
 $communityArtworksStmt->execute();
 $communityArtworks = $communityArtworksStmt->fetchAll();
@@ -42,7 +36,7 @@ $totalMaterialsForTile = $pdo->query("SELECT COUNT(*) FROM materials")->fetchCol
 $maxId = $pdo->query("SELECT MAX(id) FROM materials")->fetchColumn();
 
 // 2. 表示する件数を決定（最大40件、実際の素材数が少ない場合はその数）
-$tileCount = min(40, $totalMaterialsForTile);
+$tileCount = min(12, $totalMaterialsForTile);
 
 // 3. 素材数が0の場合は空配列
 $tileMaterials = [];
@@ -671,103 +665,7 @@ if ($tileCount > 0) {
             background-position: 0 0, 10px 10px;
         }
 
-        /* カテゴリカードのスタイル */
-        .category-card-link {
-            display: block;
-            transition: transform 0.3s ease;
-        }
 
-        .category-card-link:hover {
-            transform: translateY(-5px);
-        }
-
-        .category-card {
-            background-color: #f8f9fa;
-            border-radius: 20px;
-            padding: 25px 20px;
-            text-align: center;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: box-shadow 0.3s ease;
-            border: 1px solid #e9ecef;
-        }
-
-        .category-card:hover {
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .category-image-wrapper {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 15px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(255,255,255,0.8);
-            overflow: hidden;
-        }
-
-        .category-image {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            border-radius: 50%;
-        }
-
-        .category-default-icon {
-            width: 80px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .category-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .category-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin: 0;
-            color: #333;
-            line-height: 1.3;
-        }
-
-        @media (max-width: 768px) {
-            .category-card {
-                min-height: 180px;
-                padding: 20px 15px;
-            }
-
-            .category-image-wrapper {
-                width: 80px;
-                height: 80px;
-                margin-bottom: 12px;
-            }
-
-            .category-image {
-                width: 60px;
-                height: 60px;
-            }
-
-            .category-default-icon {
-                width: 60px;
-                height: 60px;
-            }
-
-            .category-title {
-                font-size: 1.1rem;
-            }
-        }
 
         /* ユーティリティクラス */
         .mt-4 { margin-top: 1.5rem !important; }
@@ -1528,59 +1426,6 @@ if ($tileCount > 0) {
             <div class="col-12 text-center">
                 <p class="text-muted">
                     素材が見つかりませんでした。
-                </p>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-
-    <!-- カテゴリから探すセクション -->
-    <div class="container mt-5" id="categories">
-        <div class="row">
-            <div class="col-12">
-                <h2 class="mb-2 text-center">カテゴリから探す</h2>
-                <p class="text-muted mb-4 text-center">
-                    素材をカテゴリごとにまとめました
-                </p>
-            </div>
-        </div>
-
-        <?php if (!empty($categories)): ?>
-        <div class="row justify-content-center">
-            <?php foreach ($categories as $category): ?>
-            <div class="col-6 col-md-4 col-lg-3 mb-4">
-                <a href="/<?= h($category['slug']) ?>/" class="category-card-link text-decoration-none">
-                    <div class="category-card">
-                        <div class="category-image-wrapper">
-                            <?php if (!empty($category['category_image_path'])): ?>
-                                <img src="/<?= h($category['category_image_path']) ?>" 
-                                     class="category-image" 
-                                     alt="<?= h($category['title']) ?>カテゴリのイラスト"
-                                     loading="lazy"
-                                     decoding="async">
-                            <?php else: ?>
-                                <!-- デフォルトアイコン -->
-                                <div class="category-default-icon">
-                                    <i class="bi bi-folder" style="font-size: 2.5rem; color: #6c757d;"></i>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="category-content">
-                            <h3 class="category-title">
-                                <?= h($category['title']) ?>
-                            </h3>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <?php else: ?>
-        <div class="row">
-            <div class="col-12 text-center">
-                <p class="text-muted">
-                    カテゴリが登録されていません。管理画面からカテゴリを作成してください。
                 </p>
             </div>
         </div>
