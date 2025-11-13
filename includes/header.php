@@ -1,5 +1,5 @@
 <style>
-/* コンテナシステム - compose2統一スタイル */
+/* コンテナシステム - compose2統一スタイル test */
 .container {
     width: 100%;
     max-width: 1140px;
