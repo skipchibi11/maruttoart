@@ -30,36 +30,42 @@ $communityArtworksStmt = $pdo->prepare($communityArtworksSql);
 $communityArtworksStmt->execute();
 $communityArtworks = $communityArtworksStmt->fetchAll();
 
-// タイル表示用のランダム素材を取得
-// 1. 素材の総数と最大IDを取得
-$totalMaterialsForTile = $pdo->query("SELECT COUNT(*) FROM materials")->fetchColumn();
-$maxId = $pdo->query("SELECT MAX(id) FROM materials")->fetchColumn();
+// タイル表示用のランダムベクター素材を取得
+// 1. ベクター素材（svg_pathがある）の総数と最大IDを取得
+$totalVectorMaterials = $pdo->query("SELECT COUNT(*) FROM materials WHERE svg_path IS NOT NULL")->fetchColumn();
+$maxVectorId = $pdo->query("SELECT MAX(id) FROM materials WHERE svg_path IS NOT NULL")->fetchColumn();
 
-// 2. 表示する件数を決定（最大40件、実際の素材数が少ない場合はその数）
-$tileCount = min(12, $totalMaterialsForTile);
+// 2. 表示する件数を決定（最大12件、実際のベクター素材数が少ない場合はその数）
+$tileCount = min(12, $totalVectorMaterials);
 
-// 3. 素材数が0の場合は空配列
+// 3. ベクター素材数が0の場合は空配列
 $tileMaterials = [];
-if ($tileCount > 0) {
-    // 4. 1〜maxIdの中からランダムに選出
-    $randomIds = [];
-    while (count($randomIds) < $tileCount) {
-        $rand = rand(1, $maxId);
-        $randomIds[$rand] = true; // 重複排除
+if ($tileCount > 0 && $maxVectorId > 0) {
+    // 4. ベクター素材のIDリストを取得
+    $vectorIdsStmt = $pdo->query("SELECT id FROM materials WHERE svg_path IS NOT NULL ORDER BY id");
+    $vectorIds = $vectorIdsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // 5. ベクター素材からランダムに選出
+    $selectedIds = [];
+    $vectorIdsCopy = $vectorIds; // コピーを作成
+    for ($i = 0; $i < $tileCount && count($vectorIdsCopy) > 0; $i++) {
+        $randomIndex = array_rand($vectorIdsCopy);
+        $selectedIds[] = $vectorIdsCopy[$randomIndex];
+        unset($vectorIdsCopy[$randomIndex]); // 重複排除
+        $vectorIdsCopy = array_values($vectorIdsCopy); // インデックスを再設定
     }
-    $randomIds = array_keys($randomIds);
 
-    // 5. IN句と並び順
-    $placeholders = implode(',', array_fill(0, count($randomIds), '?'));
-    $fieldOrder = implode(',', $randomIds);
-
-    $tileSql = "SELECT m.*, c.slug as category_slug FROM materials m 
-                LEFT JOIN categories c ON m.category_id = c.id 
-                WHERE m.id IN ($placeholders) 
-                ORDER BY FIELD(m.id, $fieldOrder)";
-    $tileStmt = $pdo->prepare($tileSql);
-    $tileStmt->execute($randomIds);
-    $tileMaterials = $tileStmt->fetchAll();
+    // 6. 選択されたIDで素材を取得
+    if (!empty($selectedIds)) {
+        $placeholders = implode(',', array_fill(0, count($selectedIds), '?'));
+        $tileSql = "SELECT m.*, c.slug as category_slug FROM materials m 
+                    LEFT JOIN categories c ON m.category_id = c.id 
+                    WHERE m.id IN ($placeholders) AND m.svg_path IS NOT NULL 
+                    ORDER BY RAND()";
+        $tileStmt = $pdo->prepare($tileSql);
+        $tileStmt->execute($selectedIds);
+        $tileMaterials = $tileStmt->fetchAll();
+    }
 }
 ?>
 
@@ -1291,9 +1297,7 @@ if ($tileCount > 0) {
             <div class="col-12">
                 <h2 class="mb-2">みんなのアトリエ</h2>
                 <p class="text-muted mb-4">
-                    marutto.art の素材を組み合わせて生まれた、やさしい世界が広がっています。<br />
-                    投稿してくれたみなさん、ありがとう。<br />
-                    気に入った作品は自由にダウンロードしてお楽しみください。
+                    marutto.art の素材で生まれた、みんなのやさしい作品を自由にお楽しみください。
                 </p>
             </div>
         </div>
