@@ -102,40 +102,6 @@ $materials = $materialsStmt->fetchAll();
             padding: 0 20px;
         }
 
-        /* ヘッダー */
-        .header {
-            background-color: #fff;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 15px 0;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .header-logo:hover {
-            color: #333;
-        }
-
-        .header-nav a {
-            color: #666;
-            text-decoration: none;
-            font-size: 1rem;
-        }
-
-        .header-nav a:hover {
-            color: #333;
-        }
-
         /* パンくずリスト */
         .breadcrumb {
             padding: 15px 0;
@@ -435,13 +401,10 @@ $materials = $materialsStmt->fetchAll();
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a class="header-logo" href="/">maruttoart</a>
-            </div>
-        </div>
-    </header>
+    <?php 
+    $currentPage = 'category';
+    include 'includes/header.php'; 
+    ?>
     
     <!-- パンくずリスト -->
     <div class="container">

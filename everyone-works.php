@@ -229,33 +229,7 @@ $artworks = $stmt->fetchAll();
             }
         }
 
-        /* ナビゲーション */
-        .navbar {
-            position: relative;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            background-color: #ffffff;
-            border-bottom: 1px solid rgba(0,0,0,.125);
-        }
 
-        .navbar-brand {
-            display: inline-block;
-            padding-top: 0.3125rem;
-            padding-bottom: 0.3125rem;
-            margin-right: 1rem;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .navbar-brand:hover {
-            color: #333;
-            text-decoration: none;
-        }
 
         /* カードコンポーネント */
         .card {
@@ -768,12 +742,10 @@ $artworks = $stmt->fetchAll();
     </style>
 </head>
 <body>
-    
-    <nav class="navbar">
-        <div class="container">
-            <a class="navbar-brand" href="/">maruttoart</a>
-        </div>
-    </nav>
+    <?php 
+    $currentPage = 'everyone-works';
+    include 'includes/header.php'; 
+    ?>
 
     <div class="container mt-4" id="materials">
         <div class="row">

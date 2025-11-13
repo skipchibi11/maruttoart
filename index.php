@@ -484,91 +484,7 @@ if ($tileCount > 0 && $maxVectorId > 0) {
             }
         }
 
-        /* ナビゲーション */
-        .navbar {
-            position: relative;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            background-color: #ffffff;
-            border-bottom: 1px solid rgba(0,0,0,.125);
-        }
 
-        .navbar .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .navbar-brand {
-            display: inline-block;
-            padding-top: 0.3125rem;
-            padding-bottom: 0.3125rem;
-            margin-right: 1rem;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .navbar-brand:hover {
-            color: #333;
-            text-decoration: none;
-        }
-
-        /* SNSリンク */
-        .social-links {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .social-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-        }
-
-        .social-link:hover {
-            transform: translateY(-2px);
-            text-decoration: none;
-        }
-
-        .social-link.twitter {
-            color: #1da1f2;
-        }
-
-        .social-link.twitter:hover {
-            background-color: #1da1f2;
-            color: white;
-            border-color: #1da1f2;
-        }
-
-        .social-link.youtube {
-            color: #ff0000;
-        }
-
-        .social-link.youtube:hover {
-            background-color: #ff0000;
-            color: white;
-            border-color: #ff0000;
-        }
-
-        .social-icon {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
 
         /* カードコンポーネント */
         .card {
@@ -1246,23 +1162,10 @@ if ($tileCount > 0 && $maxVectorId > 0) {
     </script>
     <!-- End Google Tag Manager (noscript) -->
     
-    <nav class="navbar">
-        <div class="container">
-            <a class="navbar-brand" href="/">maruttoart</a>
-            <div class="social-links">
-                <a href="https://x.com/marutto_art" class="social-link twitter" target="_blank" rel="noopener noreferrer" title="X (Twitter)">
-                    <svg class="social-icon" viewBox="0 0 24 24">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                </a>
-                <a href="https://youtube.com/@marutto_art" class="social-link youtube" target="_blank" rel="noopener noreferrer" title="YouTube">
-                    <svg class="social-icon" viewBox="0 0 24 24">
-                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                </a>
-            </div>
-        </div>
-    </nav>
+    <?php 
+    $currentPage = 'home';
+    include 'includes/header.php'; 
+    ?>
 
     <!-- ヒーローセクション -->
     <section class="hero-section">

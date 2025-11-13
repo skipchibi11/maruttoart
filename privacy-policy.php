@@ -41,11 +41,6 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         body {
             background-color: #ffffff;
         }
-        .header-logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-        }
         .policy-section {
             margin-bottom: 2rem;
         }
@@ -125,12 +120,10 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-        <div class="container">
-            <a class="navbar-brand header-logo" href="/">maruttoart</a>
-            
-        </div>
-    </nav>
+    <?php 
+    $currentPage = 'privacy-policy';
+    include 'includes/header.php'; 
+    ?>
 
     <div class="container mt-5">
         <div class="row">

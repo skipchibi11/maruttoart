@@ -142,45 +142,6 @@ $materials = $materialsStmt->fetchAll();
         .text-muted { color: #6c757d; }
         .text-decoration-none { text-decoration: none; }
 
-        /* ヘッダー・ナビゲーション */
-        .navbar {
-            padding: 1rem 0;
-            background-color: #fff !important;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .navbar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: #333 !important;
-            text-decoration: none;
-        }
-
-        .navbar-brand:hover {
-            color: #555 !important;
-        }
-
-        .navbar-nav {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: #6c757d !important;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-        }
-
-        .nav-link:hover {
-            color: #495057 !important;
-        }
-
         /* パンくずリスト */
         .breadcrumb {
             display: flex;
@@ -421,14 +382,10 @@ $materials = $materialsStmt->fetchAll();
     </style>
 </head>
 <body>
-    <header class="navbar">
-        <div class="container">
-            <a class="navbar-brand" href="/">maruttoart</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="/">戻る</a>
-            </div>
-        </div>
-    </header>
+    <?php 
+    $currentPage = 'tag';
+    include 'includes/header.php'; 
+    ?>
     
     <!-- パンくずリスト -->
     <div class="container mt-3">

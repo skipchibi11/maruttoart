@@ -1164,33 +1164,7 @@ $materials = $stmt->fetchAll();
             touch-action: none; /* ドラッグ中はスクロールを無効 */
         }
 
-        /* ナビゲーション */
-        .navbar {
-            position: relative;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            background-color: #ffffff;
-            border-bottom: 1px solid rgba(0,0,0,.125);
-        }
 
-        .navbar-brand {
-            display: inline-block;
-            padding-top: 0.3125rem;
-            padding-bottom: 0.3125rem;
-            margin-right: 1rem;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .navbar-brand:hover {
-            color: #333;
-            text-decoration: none;
-        }
 
         /* フッターのスタイル */
         .footer-custom {
@@ -1316,14 +1290,10 @@ $materials = $stmt->fetchAll();
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a class="navbar-brand" href="/">maruttoart</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="/compose2/">標準アトリエ</a>
-            </div>
-        </div>
-    </nav>
+    <?php 
+    $currentPage = 'custom-size';
+    include '../includes/header.php'; 
+    ?>
 
     <div class="container">
         <!-- ヘッダー -->

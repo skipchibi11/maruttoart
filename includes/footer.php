@@ -11,7 +11,7 @@
                 <script src="https://cdn.gtranslate.net/widgets/latest/ln.js" defer></script>
             </div>
             <div>
-                <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
+                <p class="footer-text mb-0">&copy; 2025 maruttoart. All rights reserved.</p>
             </div>
         </div>
     </div>
