@@ -594,13 +594,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             </div>
         </div>
 
-    <footer class="footer-custom mt-5 py-4">
-        <div class="container">
-            <div style="text-align: center;">
-                <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'includes/footer.php'; ?>
 
     <!-- GDPR Cookie Banner -->
     <div id="gdpr-banner" class="hidden">

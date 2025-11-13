@@ -4310,19 +4310,7 @@ $materials = $stmt->fetchAll();
         </div>
     </div>
 
-    <footer class="footer-custom mt-5 py-4">
-        <div class="container">
-            <div class="text-center">
-                <div class="mb-2">
-                    <a href="/terms-of-use.php" class="footer-text text-decoration-none me-3">利用規約</a>
-                    <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
-                </div>
-                <div>
-                    <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <?php include '../includes/footer.php'; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

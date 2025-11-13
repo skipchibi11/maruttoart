@@ -838,18 +838,7 @@ $categories = $categoryStmt->fetchAll();
         <?php endif; ?>
     </div>
 
-    <footer class="footer-custom mt-5 py-4">
-        <div class="container">
-            <div class="text-center">
-                <div class="mb-2">
-                    <a href="/privacy-policy.php" class="footer-text text-decoration-none">プライバシーポリシー</a>
-                </div>
-                <div>
-                    <p class="footer-text mb-0">&copy; 2024 maruttoart. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <?php include 'includes/footer.php'; ?>
 
     <!-- GDPR Cookie Banner -->
     <div id="gdprBanner" class="gdpr-banner">
