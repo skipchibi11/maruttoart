@@ -2911,11 +2911,13 @@ $materials = $stmt->fetchAll();
                     selectedLayerId: selectedLayerId,
                     nextLayerId: nextLayerId,
                     currentBackgroundColor: currentBackgroundColor,
+                    canvasWidth: currentCanvasWidth,
+                    canvasHeight: currentCanvasHeight,
                     timestamp: Date.now()
                 };
                 
-                localStorage.setItem('compose2_editor_data', JSON.stringify(editorData));
-                console.log('編集内容をローカルストレージに保存しました');
+                localStorage.setItem('compose2_custom_size_editor_data', JSON.stringify(editorData));
+                console.log('編集内容をローカルストレージに保存しました (カスタムサイズ版)');
             } catch (error) {
                 console.error('ローカルストレージ保存エラー:', error);
             }
@@ -2924,7 +2926,7 @@ $materials = $stmt->fetchAll();
         // ローカルストレージから編集内容を読み込み
         function loadFromLocalStorage() {
             try {
-                const savedData = localStorage.getItem('compose2_editor_data');
+                const savedData = localStorage.getItem('compose2_custom_size_editor_data');
                 if (savedData) {
                     const editorData = JSON.parse(savedData);
                     
@@ -2933,6 +2935,32 @@ $materials = $stmt->fetchAll();
                     selectedLayerId = editorData.selectedLayerId || null;
                     nextLayerId = editorData.nextLayerId || 1;
                     currentBackgroundColor = editorData.currentBackgroundColor || 'transparent';
+                    
+                    // キャンバスサイズを復元
+                    if (editorData.canvasWidth && editorData.canvasHeight) {
+                        currentCanvasWidth = editorData.canvasWidth;
+                        currentCanvasHeight = editorData.canvasHeight;
+                        
+                        // 入力欄とキャンバスに反映
+                        document.getElementById('canvasWidth').value = currentCanvasWidth;
+                        document.getElementById('canvasHeight').value = currentCanvasHeight;
+                        
+                        const svgCanvas = document.getElementById('mainCanvas');
+                        if (svgCanvas) {
+                            svgCanvas.setAttribute('width', currentCanvasWidth);
+                            svgCanvas.setAttribute('height', currentCanvasHeight);
+                            svgCanvas.setAttribute('viewBox', `0 0 ${currentCanvasWidth} ${currentCanvasHeight}`);
+                            
+                            const canvasBackground = document.getElementById('canvasBackground');
+                            if (canvasBackground) {
+                                canvasBackground.setAttribute('width', currentCanvasWidth);
+                                canvasBackground.setAttribute('height', currentCanvasHeight);
+                            }
+                        }
+                        
+                        // 現在のサイズ表示を更新
+                        document.getElementById('currentSizeDisplay').textContent = `${currentCanvasWidth} × ${currentCanvasHeight} px`;
+                    }
                     
                     // レイヤーを再描画
                     layers.forEach(layer => {
@@ -2952,7 +2980,7 @@ $materials = $stmt->fetchAll();
                     setBackgroundColor(currentBackgroundColor);
                     updateBackgroundColorSelection(currentBackgroundColor);
                     
-                    console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました`);
+                    console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました (カスタムサイズ版: ${currentCanvasWidth}×${currentCanvasHeight})`);
                     return true;
                 }
             } catch (error) {
@@ -2964,8 +2992,8 @@ $materials = $stmt->fetchAll();
         // ローカルストレージをクリア
         function clearLocalStorage() {
             try {
-                localStorage.removeItem('compose2_editor_data');
-                console.log('ローカルストレージをクリアしました');
+                localStorage.removeItem('compose2_custom_size_editor_data');
+                console.log('ローカルストレージをクリアしました (カスタムサイズ版)');
             } catch (error) {
                 console.error('ローカルストレージクリアエラー:', error);
             }
@@ -4339,6 +4367,9 @@ $materials = $stmt->fetchAll();
             
             // 現在のサイズ表示を更新
             document.getElementById('currentSizeDisplay').textContent = `${width} × ${height} px`;
+            
+            // キャンバスサイズ変更をローカルストレージに保存
+            saveToLocalStorage();
             
             console.log(`キャンバスサイズを ${width}×${height} に変更しました`);
         }
