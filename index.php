@@ -72,9 +72,8 @@ if ($tileCount > 0 && $maxVectorId > 0) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager & GDPR -->
-    <script src="/assets/js/gdpr-gtm.js"></script>
-    
+    <!-- Google Tag Manager & GDPR (Inline for Speed Optimization) -->
+    <?php include 'includes/gdpr-gtm-inline.php'; ?>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1132,35 +1131,7 @@ if ($tileCount > 0 && $maxVectorId > 0) {
     </style>
 </head>
 <body>
-    <!-- Google Tag Manager (noscript) - GDPR対応 -->
-    <script>
-    // グローバルGDPR同意チェック関数
-    window.getGdprConsent = function() {
-        try {
-            return localStorage.getItem('gdpr_consent_v1');
-        } catch (e) {
-            return null;
-        }
-    };
-    
-    // GDPR同意状況をチェックしてnoscript GTMを条件付き表示
-    (function() {
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem('gdpr_consent_v1');
-            } catch (e) {
-                return null;
-            }
-        }
-        
-        const consent = getGdprConsent();
-        if (consent === 'accepted') {
-            // 同意済みの場合はnoscript GTMを挿入
-            document.write('<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-579HN546" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>');
-        }
-    })();
-    </script>
-    <!-- End Google Tag Manager (noscript) -->
+    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
     
     <?php 
     $currentPage = 'home';
