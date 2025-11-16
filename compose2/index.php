@@ -60,6 +60,63 @@ $materials = $stmt->fetchAll();
     <link rel="stylesheet" href="assets/css/layout.css">
 
     <style>
+        /* YouTube Shortsセクション */
+        .youtube-shorts-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .shorts-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .shorts-content {
+            flex: 1;
+            min-width: 250px;
+            color: white;
+        }
+
+        .shorts-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .shorts-content p {
+            font-size: 1.1rem;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .shorts-video {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .shorts-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .shorts-content {
+                width: 100%;
+            }
+
+            .shorts-video iframe {
+                max-width: 280px !important;
+                height: 498px !important;
+            }
+        }
 
         /* 検索フォームのスタイル */
         .search-form {
@@ -191,16 +248,39 @@ $materials = $stmt->fetchAll();
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
             border-radius: 12px;
             padding: 1.5rem;
-            min-height: 160px;
-            max-height: 160px;
-            overflow-y: auto;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 0.75rem;
+            gap: 1.5rem;
             border: 2px solid #e3f2fd;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            overflow: visible;
+        }
+
+        .color-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-swatch-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .color-picker-input {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
         }
 
         /* カラー関連の基本スタイルはlayout.cssに移動 */
@@ -1197,6 +1277,28 @@ $materials = $stmt->fetchAll();
     include '../includes/header.php'; 
     ?>
 
+    <!-- YouTube Shorts紹介セクション -->
+    <div class="youtube-shorts-section">
+        <div class="container">
+            <div class="shorts-container">
+                <div class="shorts-content">
+                    <h2><i class="bi bi-play-circle"></i> 使い方動画</h2>
+                    <p>このツールの使い方をショート動画で確認できます</p>
+                </div>
+                <div class="shorts-video">
+                    <iframe 
+                        src="https://www.youtube.com/embed/yH6RVpKp9Zw" 
+                        title="maruttoart 使い方ショート動画" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen
+                        style="width: 100%; max-width: 315px; height: 560px; border-radius: 12px;">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
 
         <!-- メインコンテンツ -->
@@ -1263,19 +1365,6 @@ $materials = $stmt->fetchAll();
                     <p>素材が見つかりませんでした。</p>
                 </div>
                 <?php endif; ?>
-            </div>
-
-            <!-- カラーセクション -->
-            <div id="color-section" class="color-section">
-                <h3><i class="bi bi-palette"></i> 色を変更 <small class="text-muted">（リアルタイム即時反映）</small></h3>
-                <div id="color-panel-content" class="color-panel-content">
-                    <div id="colorPalette" class="color-palette">
-                        <div class="text-center text-muted">
-                            <div class="mb-2">素材を選択してください</div>
-                            <div>選択した素材の色を変更できます</div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- キャンバスエリア -->
@@ -1352,6 +1441,9 @@ $materials = $stmt->fetchAll();
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coffee-icon lucide-coffee"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>
                     </button>
                 </div>
+                
+                <!-- カラーパレット（レイヤー編集内：レイヤー選択時のみ表示） -->
+                <div id="colorPalette" class="color-palette mt-3" style="display: none;"></div>
                 
                 <!-- 一括色変更設定 -->
                 <div class="bulk-color-settings">
@@ -3941,11 +4033,14 @@ $materials = $stmt->fetchAll();
         // カラーパネル表示
         function showColorPanel(layer) {
             console.log(`showColorPanel called for layer ${layer.id}`);
-            const colorPanelContent = document.getElementById('color-panel-content');
-            if (!colorPanelContent) {
-                console.log('color-panel-content element not found');
+            const colorPalette = document.getElementById('colorPalette');
+            if (!colorPalette) {
+                console.log('colorPalette element not found');
                 return;
             }
+            
+            // カラーパレットを表示（Flexレイアウトを維持）
+            colorPalette.style.display = 'flex';
             
             console.log('Extracting colors from layer...');
             extractColorsFromLayer(layer);
@@ -3955,8 +4050,12 @@ $materials = $stmt->fetchAll();
         function hideColorPanel() {
             const colorPalette = document.getElementById('colorPalette');
             if (colorPalette) {
+                // カラーパレットを非表示にする
+                colorPalette.style.display = 'none';
+                
+                // 内容をリセット
                 colorPalette.innerHTML = `
-                    <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
+                    <div class="text-center text-muted">
                         <div class="mb-2">素材を選択してください</div>
                         <div>選択した素材の色を変更できます</div>
                     </div>
@@ -3973,6 +4072,9 @@ $materials = $stmt->fetchAll();
                 console.log('colorPalette element not found');
                 return;
             }
+            
+            // カラーパレットを確実に表示（Flexレイアウトを維持）
+            colorPalette.style.display = 'flex';
             
             // ローディング状態を表示（固定サイズ）
             colorPalette.innerHTML = `
@@ -4030,6 +4132,9 @@ $materials = $stmt->fetchAll();
         function generateColorPalette(colors, layer) {
             const colorPalette = document.getElementById('colorPalette');
             if (!colorPalette) return;
+            
+            // カラーパレットを確実に表示（Flexレイアウトを維持）
+            colorPalette.style.display = 'flex';
             
             // 既存のグローバル隠しカラーピッカーをクリア（テーマ変更後の古い参照を削除）
             const globalHiddenPicker = document.getElementById('global-hidden-color-picker');
@@ -4289,11 +4394,11 @@ $materials = $stmt->fetchAll();
         // ページネーション使用時の検索状態管理
         initializePaginationSearch();
         
-        // カラーセクションを初期化
-        const colorSection = document.getElementById('color-section');
-        if (colorSection) {
-            // カラーセクションを常に表示状態にする
-            colorSection.style.display = 'block';
+        // カラーパレットを初期化（初期状態は非表示）
+        const colorPalette = document.getElementById('colorPalette');
+        if (colorPalette) {
+            // レイヤー未選択時は非表示
+            colorPalette.style.display = 'none';
         }
         
         // 素材にクリックイベントを追加
@@ -4477,16 +4582,16 @@ $materials = $stmt->fetchAll();
                 const canvas = document.getElementById('mainCanvas');
                 const manipulationControls = document.querySelector('.manipulation-controls');
                 const actionControls = document.querySelector('.action-controls');
-                const colorSection = document.getElementById('color-section');
+                const colorPalette = document.getElementById('colorPalette');
                 
                 // 旧モバイルピッカー関連の処理は削除（新実装では不要）
                 
-                // キャンバス、レイヤー要素、操作ボタンエリア、カラーセクションのクリックは除外
+                // キャンバス、レイヤー要素、操作ボタンエリア、カラーパレットのクリックは除外
                 if (!canvas.contains(e.target) && 
                     !e.target.closest('.layer-element') && 
                     !manipulationControls.contains(e.target) &&
                     !actionControls.contains(e.target) &&
-                    !(colorSection && colorSection.contains(e.target))) {
+                    !(colorPalette && colorPalette.contains(e.target))) {
                     deselectLayer();
                 }
             });
