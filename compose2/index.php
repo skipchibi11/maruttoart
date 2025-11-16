@@ -29,6 +29,35 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$perPage, $offset]);
 $materials = $stmt->fetchAll();
+
+// AJAX リクエストの場合はJSONを返す
+if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+    header('Content-Type: application/json');
+    
+    // ページネーションHTMLを生成
+    $paginationHtml = '';
+    if ($totalPages > 1) {
+        if ($page > 1) {
+            $paginationHtml .= '<a href="?page=' . ($page - 1) . '#materials" class="pagination-btn">前へ</a>';
+        }
+        if ($page < $totalPages) {
+            $paginationHtml .= '<a href="?page=' . ($page + 1) . '#materials" class="pagination-btn">次へ</a>';
+        }
+    }
+    
+    // ページ情報テキスト
+    $pageInfo = $page . ' / ' . $totalPages . ' ページ （全 ' . $totalItems . ' 件）';
+    
+    // JSONレスポンス
+    echo json_encode([
+        'materials' => $materials,
+        'pagination' => $paginationHtml,
+        'pageInfo' => $pageInfo,
+        'currentPage' => $page,
+        'totalPages' => $totalPages
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -1311,8 +1340,6 @@ $materials = $stmt->fetchAll();
         <div class="main-content">
             <!-- 素材選択エリア -->
             <div id="materials" class="materials-panel">
-                <h3><i class="bi bi-collection"></i> 素材一覧</h3>
-                
                 <!-- 検索フォーム -->
                 <div class="search-form">
                     <form class="d-flex align-items-center" onsubmit="return false;">
@@ -3998,22 +4025,22 @@ $materials = $stmt->fetchAll();
             }
         }
         
-        // ページネーション時の検索状態管理
+        // ページネーション非同期読み込み
         function initializePaginationSearch() {
             const paginationLinks = document.querySelectorAll('.pagination-btn');
             const searchInput = document.getElementById('materialSearch');
             
-            // ページ変更時は検索をリセット
+            // ページ変更を非同期で処理
             paginationLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (searchInput && searchInput.value.trim()) {
-                        // 検索中の場合は確認ダイアログを表示
-                        const confirm = window.confirm('ページを移動すると検索がリセットされます。続行しますか？');
-                        if (!confirm) {
-                            event.preventDefault();
-                            return false;
-                        }
-                    }
+                link.addEventListener('click', function(event) {
+                    event.preventDefault(); // デフォルトのリンク動作を防止
+                    
+                    const url = this.href;
+                    const pageMatch = url.match(/[?&]page=(\d+)/);
+                    const page = pageMatch ? pageMatch[1] : 1;
+                    
+                    // 非同期で素材を読み込む
+                    loadMaterialsPage(page);
                 });
             });
             
@@ -4033,6 +4060,69 @@ $materials = $stmt->fetchAll();
                         if (paginationInfo) paginationInfo.style.display = 'block';
                     }
                 });
+            }
+        }
+
+        // 素材ページを非同期で読み込む
+        async function loadMaterialsPage(page) {
+            const materialsGrid = document.querySelector('.materials-grid');
+            const paginationContainer = document.querySelector('.pagination-container');
+            const paginationInfo = document.querySelector('.pagination-info');
+            
+            if (!materialsGrid) return;
+            
+            // ローディング表示
+            materialsGrid.innerHTML = '<div style="text-align: center; padding: 3rem; color: #6c757d;"><div class="spinner-border" role="status"><span class="visually-hidden">読み込み中...</span></div><p class="mt-3">素材を読み込んでいます...</p></div>';
+            
+            try {
+                // 素材データを取得
+                const response = await fetch(`?page=${page}&ajax=1`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                
+                // 素材グリッドを更新
+                if (data.materials && data.materials.length > 0) {
+                    materialsGrid.innerHTML = data.materials.map(material => `
+                        <div class="material-item" 
+                             data-material-id="${material.id}"
+                             data-svg-path="${material.svg_path}"
+                             data-title="${material.title}"
+                             title="${material.title}">
+                            <img src="/${material.webp_medium_path || material.image_path}" 
+                                 alt="${material.title}"
+                                 loading="lazy">
+                        </div>
+                    `).join('');
+                    
+                    // クリックイベントを再設定
+                    materialsGrid.querySelectorAll('.material-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            addMaterialToCanvas(this);
+                        });
+                    });
+                } else {
+                    materialsGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6c757d;"><p>素材が見つかりませんでした。</p></div>';
+                }
+                
+                // ページネーションを更新
+                if (paginationContainer && data.pagination) {
+                    paginationContainer.innerHTML = data.pagination;
+                    // ページネーションイベントを再初期化
+                    initializePaginationSearch();
+                }
+                
+                // ページ情報を更新
+                if (paginationInfo && data.pageInfo) {
+                    paginationInfo.textContent = data.pageInfo;
+                }
+                
+                // 素材一覧の位置にスムーススクロール
+                document.getElementById('materials').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+            } catch (error) {
+                console.error('Error loading materials:', error);
+                materialsGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #dc3545;"><p>素材の読み込みに失敗しました。ページをリロードしてください。</p></div>';
             }
         }
 
