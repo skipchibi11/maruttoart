@@ -1268,6 +1268,12 @@ $materials = $stmt->fetchAll();
             border-bottom: 2px solid #e9ecef;
         }
 
+        /* スムーススクロール */
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px; /* ヘッダー分の余白 */
+        }
+
         /* GDPR Cookie Banner は外部CSS (assets/css/gdpr.css) で管理 */
     </style>
 </head>
@@ -1304,7 +1310,7 @@ $materials = $stmt->fetchAll();
         <!-- メインコンテンツ -->
         <div class="main-content">
             <!-- 素材選択エリア -->
-            <div class="materials-panel">
+            <div id="materials" class="materials-panel">
                 <h3><i class="bi bi-collection"></i> 素材一覧</h3>
                 
                 <!-- 検索フォーム -->
@@ -1340,14 +1346,14 @@ $materials = $stmt->fetchAll();
                 <div class="pagination-container">
                     <!-- 前のページ -->
                     <?php if ($page > 1): ?>
-                        <a href="?page=<?= $page - 1 ?>" class="pagination-btn">
+                        <a href="?page=<?= $page - 1 ?>#materials" class="pagination-btn">
                             前へ
                         </a>
                     <?php endif; ?>
                     
                     <!-- 次のページ -->
                     <?php if ($page < $totalPages): ?>
-                        <a href="?page=<?= $page + 1 ?>" class="pagination-btn">
+                        <a href="?page=<?= $page + 1 ?>#materials" class="pagination-btn">
                             次へ
                         </a>
                     <?php endif; ?>
