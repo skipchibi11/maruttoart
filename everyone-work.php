@@ -187,6 +187,26 @@ try {
     $relatedArtworks = [];
     $showRelatedSection = false;
 }
+
+// 関連素材を取得
+$relatedMaterials = [];
+$showRelatedMaterialsSection = false;
+
+try {
+    $stmt = $pdo->prepare("
+        SELECT * FROM community_artwork_related_materials
+        WHERE community_artwork_id = ?
+        ORDER BY similarity_score DESC
+    ");
+    $stmt->execute([$artwork['id']]);
+    $relatedMaterials = $stmt->fetchAll();
+    
+    $showRelatedMaterialsSection = !empty($relatedMaterials);
+} catch (Exception $e) {
+    error_log("Related materials query error: " . $e->getMessage());
+    $relatedMaterials = [];
+    $showRelatedMaterialsSection = false;
+}
 ?>
 
 <!DOCTYPE html>
@@ -1138,6 +1158,42 @@ try {
                                 <div class="related-artwork-info">
                                     <div class="related-artwork-title"><?= h($relatedArtwork['title']) ?></div>
                                     <div class="related-artwork-author">by <?= h($relatedArtwork['pen_name']) ?></div>
+                                </div>
+                            </a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+            <?php endif; ?>
+
+            <!-- 関連素材セクション -->
+            <?php if ($showRelatedMaterialsSection): ?>
+            <section class="related-artworks-section">
+                <div class="text-center">
+                    <h3>この作品と仲よしの素材</h3>
+                    <div class="related-artworks-grid">
+                        <?php foreach ($relatedMaterials as $material): ?>
+                        <div class="related-artwork-item">
+                            <?php
+                            $materialUrl = !empty($material['category_slug']) 
+                                ? '/' . h($material['category_slug']) . '/' . h($material['material_slug']) . '/' 
+                                : '/detail/' . h($material['material_slug']);
+                            $imagePath = !empty($material['material_webp_medium_path']) 
+                                ? '/' . h($material['material_webp_medium_path']) 
+                                : (!empty($material['material_webp_small_path']) 
+                                    ? '/' . h($material['material_webp_small_path']) 
+                                    : '/' . h($material['material_image_path']));
+                            ?>
+                            <a href="<?= $materialUrl ?>" class="related-artwork-link">
+                                <div class="related-artwork-thumbnail">
+                                    <img src="<?= $imagePath ?>" 
+                                         alt="<?= h($material['material_title']) ?>"
+                                         class="related-artwork-image"
+                                         loading="lazy">
+                                </div>
+                                <div class="related-artwork-info">
+                                    <div class="related-artwork-title"><?= h($material['material_title']) ?></div>
                                 </div>
                             </a>
                         </div>

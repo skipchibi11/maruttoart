@@ -114,6 +114,35 @@ try {
 } catch (Exception $e) {
     // エラーが発生した場合は関連セクションを表示しない
 }
+
+// 関連するみんなのアトリエ作品を取得
+$relatedArtworks = [];
+$showRelatedArtworksSection = false;
+
+try {
+    // ビューの存在確認
+    $viewCheckStmt = $pdo->query("
+        SELECT COUNT(*) as view_count 
+        FROM information_schema.views 
+        WHERE table_schema = DATABASE() 
+        AND table_name = 'material_related_community_artworks'
+    ");
+    $viewResult = $viewCheckStmt->fetch();
+    $viewExists = $viewResult['view_count'] > 0;
+    
+    if ($viewExists) {
+        $artworkStmt = $pdo->prepare("
+            SELECT * FROM material_related_community_artworks
+            WHERE material_id = ?
+            ORDER BY similarity_score DESC
+        ");
+        $artworkStmt->execute([$material['id']]);
+        $relatedArtworks = $artworkStmt->fetchAll();
+        $showRelatedArtworksSection = !empty($relatedArtworks);
+    }
+} catch (Exception $e) {
+    error_log('Error fetching related community artworks: ' . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
@@ -3113,6 +3142,38 @@ try {
                                 <img src="<?= $imageSrc ?>" 
                                      class="card-img-top" 
                                      alt="<?= h($relatedMaterial['title']) ?>"
+                                     loading="lazy"
+                                     decoding="async">
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <!-- 関連するみんなのアトリエ作品セクション -->
+    <?php if ($showRelatedArtworksSection): ?>
+    <section class="related-materials mt-5">
+        <div class="container">
+            <h2 class="text-center mb-4">この素材と仲よしのみんなの作品</h2>
+            <div class="row g-3">
+                <?php foreach ($relatedArtworks as $artwork): ?>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 col-xl-2">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <a href="/everyone-work.php?id=<?= h($artwork['community_artwork_id']) ?>" class="text-decoration-none">
+                            <div class="card-img-top-wrapper" style="background-color: #ffffff;">
+                                <?php
+                                // community_artworksにはwebp_pathとfile_pathのみ存在
+                                $artworkImagePath = !empty($artwork['artwork_webp_path']) 
+                                    ? '/' . h($artwork['artwork_webp_path']) 
+                                    : '/' . h($artwork['artwork_image_path']);
+                                ?>
+                                <img src="<?= $artworkImagePath ?>" 
+                                     class="card-img-top" 
+                                     alt="<?= h($artwork['artwork_title']) ?>"
                                      loading="lazy"
                                      decoding="async">
                             </div>

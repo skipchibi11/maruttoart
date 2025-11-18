@@ -48,6 +48,14 @@
 - 進捗管理による安定した処理
 - 循環処理により全作品の類似度を最新に保つ
 
+### クロス類似度計算（コミュニティ作品 ⇔ 素材）
+- コミュニティ作品と素材の間のベクトル類似度を計算
+- 承認済みコミュニティ作品と全素材を比較
+- 上位20件の類似素材を保存（閾値: 0.7以上）
+- ビューで上位8件を取得可能
+- 循環処理により定期的に再計算
+- 相互表示：作品詳細に関連素材、素材詳細に関連作品
+
 ## ファイル構成
 ```
 cron/
@@ -62,6 +70,8 @@ cron/
 ├── generate_community_artwork_embeddings.sh       # コミュニティ作品ベクトル化用シェルスクリプト
 ├── calculate_community_artwork_similarities.php   # コミュニティ作品類似度計算スクリプト
 ├── calculate_community_artwork_similarities.sh    # コミュニティ作品類似度計算用シェルスクリプト
+├── calculate_cross_similarities.php               # クロス類似度計算スクリプト（作品⇔素材）
+├── calculate_cross_similarities.sh                # クロス類似度計算用シェルスクリプト
 ├── cleanup_material_files.php                    # 素材ファイル整理スクリプト
 ├── cleanup_material_files.sh                     # 素材ファイル整理用シェルスクリプト
 └── README.md                                      # このファイル
@@ -117,6 +127,29 @@ CREATE TABLE community_artwork_similarity_progress (
     status ENUM('pending', 'processing', 'completed', 'error'),
     ...
 );
+
+-- クロス類似度用テーブル（database/add_cross_similarities.sql）
+CREATE TABLE community_artwork_material_similarities (
+    community_artwork_id INT NOT NULL,
+    material_id INT NOT NULL,
+    similarity_score DECIMAL(5,4) NOT NULL,
+    calculated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (community_artwork_id, material_id),
+    ...
+);
+
+CREATE TABLE cross_similarity_progress (
+    community_artwork_id INT NOT NULL,
+    status ENUM('pending', 'processing', 'completed', 'error'),
+    processed_at TIMESTAMP NULL,
+    ...
+);
+
+-- ビュー: 作品→素材の類似度取得（上位8件）
+CREATE VIEW community_artwork_related_materials AS ...
+
+-- ビュー: 素材→作品の類似度取得（上位8件）
+CREATE VIEW material_related_community_artworks AS ...
 ```
 
 ### 2. 必要な拡張機能の確認
@@ -270,6 +303,9 @@ tail -f logs/structured_images.log
 # コミュニティ作品類似度計算（5分おきに実行、未処理を1件ずつ）
 */5 * * * * /path/to/maruttoart/cron/calculate_community_artwork_similarities.sh
 
+# クロス類似度計算（作品⇔素材）（5分おきに実行、未処理を1件ずつ）
+*/5 * * * * /path/to/maruttoart/cron/calculate_cross_similarities.sh
+
 # 素材ファイル整理（毎日深夜2時30分に実行）
 30 2 * * * /path/to/maruttoart/cron/cleanup_material_files.sh
 ```
@@ -289,6 +325,7 @@ tail -f logs/image_embedding.log
 tail -f logs/similarity_calculation.log
 tail -f logs/community_artwork_embeddings.log
 tail -f logs/community_artwork_similarity.log
+tail -f logs/cross_similarity_calculation.log
 tail -f logs/cleanup_material_files.log
 ```
 
