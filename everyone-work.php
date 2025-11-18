@@ -1123,13 +1123,16 @@ try {
             </section>
             <?php endif; ?>
 
-            <!-- 関連作品セクション -->
-            <?php if ($showRelatedSection): ?>
+            <!-- 関連作品・素材セクション -->
+            <?php if ($showRelatedSection || $showRelatedMaterialsSection): ?>
             <section class="related-artworks-section">
                 <div class="text-center">
-                    <h3>この作品と仲よしの作品</h3>
+                    <h3>なかまたち</h3>
                     <div class="related-artworks-grid">
-                        <?php foreach ($relatedArtworks as $relatedArtwork): ?>
+                        <?php 
+                        // 関連作品を表示
+                        if ($showRelatedSection):
+                            foreach ($relatedArtworks as $relatedArtwork): ?>
                         <div class="related-artwork-item">
                             <a href="/everyone-work.php?id=<?= h($relatedArtwork['id']) ?>" class="related-artwork-link">
                                 <div class="related-artwork-thumbnail">
@@ -1161,21 +1164,13 @@ try {
                                 </div>
                             </a>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </section>
-            <?php endif; ?>
-
-            <!-- 関連素材セクション -->
-            <?php if ($showRelatedMaterialsSection): ?>
-            <section class="related-artworks-section">
-                <div class="text-center">
-                    <h3>この作品と仲よしの素材</h3>
-                    <div class="related-artworks-grid">
-                        <?php foreach ($relatedMaterials as $material): ?>
-                        <div class="related-artwork-item">
-                            <?php
+                        <?php 
+                            endforeach;
+                        endif;
+                        
+                        // 関連素材を表示
+                        if ($showRelatedMaterialsSection):
+                            foreach ($relatedMaterials as $material): 
                             $materialUrl = !empty($material['category_slug']) 
                                 ? '/' . h($material['category_slug']) . '/' . h($material['material_slug']) . '/' 
                                 : '/detail/' . h($material['material_slug']);
@@ -1185,6 +1180,7 @@ try {
                                     ? '/' . h($material['material_webp_small_path']) 
                                     : '/' . h($material['material_image_path']));
                             ?>
+                        <div class="related-artwork-item">
                             <a href="<?= $materialUrl ?>" class="related-artwork-link">
                                 <div class="related-artwork-thumbnail">
                                     <img src="<?= $imagePath ?>" 
@@ -1197,7 +1193,10 @@ try {
                                 </div>
                             </a>
                         </div>
-                        <?php endforeach; ?>
+                        <?php 
+                            endforeach;
+                        endif;
+                        ?>
                     </div>
                 </div>
             </section>

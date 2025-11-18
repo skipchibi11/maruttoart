@@ -3122,12 +3122,15 @@ try {
     <?php endif; ?>
 
     <!-- 関連画像セクション -->
-    <?php if ($showRelatedSection): ?>
+    <?php if ($showRelatedSection || $showRelatedArtworksSection): ?>
     <section class="related-materials mt-5">
         <div class="container">
-            <h2 class="text-center mb-4">この子と仲良しのイラストたち</h2>
+            <h2 class="text-center mb-4">なかまたち</h2>
             <div class="row g-3">
-                <?php foreach ($relatedMaterials as $relatedMaterial): ?>
+                <?php 
+                // 素材同士の関連画像を表示
+                if ($showRelatedSection):
+                    foreach ($relatedMaterials as $relatedMaterial): ?>
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 col-xl-2">
                     <div class="card h-100 border-0 shadow-sm">
                         <a href="/<?= h($relatedMaterial['category_slug']) ?>/<?= h($relatedMaterial['slug']) ?>/" class="text-decoration-none">
@@ -3148,19 +3151,13 @@ try {
                         </a>
                     </div>
                 </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-    <?php endif; ?>
-
-    <!-- 関連するみんなのアトリエ作品セクション -->
-    <?php if ($showRelatedArtworksSection): ?>
-    <section class="related-materials mt-5">
-        <div class="container">
-            <h2 class="text-center mb-4">この素材と仲よしのみんなの作品</h2>
-            <div class="row g-3">
-                <?php foreach ($relatedArtworks as $artwork): ?>
+                <?php 
+                    endforeach;
+                endif;
+                
+                // みんなのアトリエ作品を表示
+                if ($showRelatedArtworksSection):
+                    foreach ($relatedArtworks as $artwork): ?>
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 col-xl-2">
                     <div class="card h-100 border-0 shadow-sm">
                         <a href="/everyone-work.php?id=<?= h($artwork['community_artwork_id']) ?>" class="text-decoration-none">
@@ -3180,7 +3177,10 @@ try {
                         </a>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                <?php 
+                    endforeach;
+                endif;
+                ?>
             </div>
         </div>
     </section>
