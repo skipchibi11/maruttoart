@@ -173,7 +173,7 @@ try {
             JOIN community_artworks ca ON cas.similar_artwork_id = ca.id
             WHERE cas.artwork_id = ?
               AND ca.status = 'approved'
-              AND cas.similarity_score >= 0.3
+              AND cas.similarity_score >= 0.7
             ORDER BY cas.similarity_score DESC
             LIMIT 8
         ");

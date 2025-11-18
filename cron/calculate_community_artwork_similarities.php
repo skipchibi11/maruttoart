@@ -147,8 +147,8 @@ function calculateSimilarities($artworkId, $pdo) {
             try {
                 $similarity = calculateCosineSimilarity($targetVector, $compareVector);
                 
-                // 類似度が閾値以上の場合のみ保存（0.3以上）
-                if ($similarity >= 0.3) {
+                // 類似度が閾値以上の場合のみ保存（0.7以上）
+                if ($similarity >= 0.7) {
                     $similarities[] = [
                         'similar_artwork_id' => $compareArtwork['id'],
                         'similarity_score' => $similarity,
