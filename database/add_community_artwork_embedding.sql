@@ -55,7 +55,7 @@ FROM (
         similarity_score,
         ROW_NUMBER() OVER (PARTITION BY artwork_id ORDER BY similarity_score DESC) as rn
     FROM community_artwork_similarities
-    WHERE similarity_score >= 0.3
+    WHERE similarity_score >= 0.7
 ) cas
 JOIN community_artworks ca ON cas.similar_artwork_id = ca.id
 WHERE cas.rn <= 8
