@@ -1,11 +1,12 @@
 # 画像処理システム
 
 ## 概要
-このシステムは、アップロードされた素材画像の処理を自動化します：
+このシステムは、アップロードされた素材画像とコミュニティ作品の処理を自動化します：
 1. 構造化データ（JSON-LD、OGP等）用の1200x1200px画像生成
 2. 画像のベクトル化（類似検索用）
 3. 類似画像の計算・管理
 4. 素材ファイルの整理・統合
+5. **コミュニティ作品のベクトル化と類似作品検出**
 
 ## 機能
 
@@ -34,19 +35,36 @@
 - 空のディレクトリの自動削除
 - 1回の実行で1素材分を処理（安全性重視）
 
+### コミュニティ作品のベクトル化
+- 承認済みのコミュニティ作品の画像をOpenAI APIでベクトル化
+- 作品タイトルを含めた画像説明文の自動生成
+- 未処理作品を1件ずつ処理（API制限対応）
+- 類似作品検索の基盤データ作成
+
+### コミュニティ作品の類似度計算
+- コサイン類似度による作品類似度計算
+- 承認済み作品のみを比較対象とする
+- 上位20件の類似作品を保存（閾値: 0.3以上）
+- 進捗管理による安定した処理
+- 循環処理により全作品の類似度を最新に保つ
+
 ## ファイル構成
 ```
 cron/
-├── .htaccess                        # Webアクセス制限
-├── generate_structured_images.php   # 構造化画像生成スクリプト
-├── generate_structured_images.sh    # 構造化画像生成用シェルスクリプト
-├── generate_image_embeddings.php    # 画像ベクトル化スクリプト
-├── generate_image_embeddings.sh     # 画像ベクトル化用シェルスクリプト
-├── calculate_similarities.php       # 類似画像計算スクリプト
-├── calculate_similarities.sh        # 類似画像計算用シェルスクリプト
-├── cleanup_material_files.php      # 素材ファイル整理スクリプト
-├── cleanup_material_files.sh       # 素材ファイル整理用シェルスクリプト
-└── README.md                        # このファイル
+├── .htaccess                                      # Webアクセス制限
+├── generate_structured_images.php                 # 構造化画像生成スクリプト
+├── generate_structured_images.sh                  # 構造化画像生成用シェルスクリプト
+├── generate_image_embeddings.php                  # 素材画像ベクトル化スクリプト
+├── generate_image_embeddings.sh                   # 素材画像ベクトル化用シェルスクリプト
+├── calculate_similarities.php                     # 素材類似画像計算スクリプト
+├── calculate_similarities.sh                      # 素材類似画像計算用シェルスクリプト
+├── generate_community_artwork_embeddings.php      # コミュニティ作品ベクトル化スクリプト
+├── generate_community_artwork_embeddings.sh       # コミュニティ作品ベクトル化用シェルスクリプト
+├── calculate_community_artwork_similarities.php   # コミュニティ作品類似度計算スクリプト
+├── calculate_community_artwork_similarities.sh    # コミュニティ作品類似度計算用シェルスクリプト
+├── cleanup_material_files.php                    # 素材ファイル整理スクリプト
+├── cleanup_material_files.sh                     # 素材ファイル整理用シェルスクリプト
+└── README.md                                      # このファイル
 ```
 
 ## セットアップ
@@ -78,6 +96,25 @@ CREATE TABLE similarity_calculation_progress (
     material_id INT NOT NULL,
     status ENUM('pending', 'processing', 'completed', 'error'),
     processed_at TIMESTAMP NULL,
+    ...
+);
+
+-- コミュニティ作品用テーブル（database/add_community_artwork_embedding.sql）
+ALTER TABLE community_artworks
+ADD COLUMN image_embedding TEXT DEFAULT NULL,
+ADD COLUMN embedding_model VARCHAR(100) DEFAULT NULL,
+ADD COLUMN embedding_created_at TIMESTAMP NULL DEFAULT NULL;
+
+CREATE TABLE community_artwork_similarities (
+    artwork_id INT NOT NULL,
+    similar_artwork_id INT NOT NULL,
+    similarity_score DECIMAL(5,4) NOT NULL,
+    ...
+);
+
+CREATE TABLE community_artwork_similarity_progress (
+    artwork_id INT NOT NULL,
+    status ENUM('pending', 'processing', 'completed', 'error'),
     ...
 );
 ```
@@ -221,11 +258,20 @@ tail -f logs/structured_images.log
 # 構造化画像生成（毎日深夜2時に実行）
 0 2 * * * /path/to/maruttoart/cron/generate_structured_images.sh
 
-# 画像ベクトル化（毎分実行、未処理を1件ずつ）
+# 素材画像ベクトル化（毎分実行、未処理を1件ずつ）
 * * * * * /path/to/maruttoart/cron/generate_image_embeddings.sh
 
-# 類似画像計算（5分おきに実行、未処理を1件ずつ）
+# 素材類似画像計算（5分おきに実行、未処理を1件ずつ）
 */5 * * * * /path/to/maruttoart/cron/calculate_similarities.sh
+
+# コミュニティ作品ベクトル化（毎分実行、未処理を1件ずつ）
+* * * * * /path/to/maruttoart/cron/generate_community_artwork_embeddings.sh
+
+# コミュニティ作品類似度計算（5分おきに実行、未処理を1件ずつ）
+*/5 * * * * /path/to/maruttoart/cron/calculate_community_artwork_similarities.sh
+
+# 素材ファイル整理（毎日深夜2時30分に実行）
+30 2 * * * /path/to/maruttoart/cron/cleanup_material_files.sh
 ```
 
 #### 設定手順
@@ -240,6 +286,9 @@ crontab -l
 tail -f /var/log/cron
 tail -f logs/structured_images.log
 tail -f logs/image_embedding.log
+tail -f logs/similarity_calculation.log
+tail -f logs/community_artwork_embeddings.log
+tail -f logs/community_artwork_similarity.log
 tail -f logs/cleanup_material_files.log
 ```
 

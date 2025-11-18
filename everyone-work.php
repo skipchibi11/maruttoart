@@ -123,6 +123,70 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
         $usedMaterials = [];
     }
 }
+
+// 関連作品（類似度）を取得
+$relatedArtworks = [];
+$showRelatedSection = false;
+
+try {
+    // ビューの存在確認
+    $viewCheckStmt = $pdo->query("
+        SELECT COUNT(*) as view_count 
+        FROM information_schema.views 
+        WHERE table_schema = DATABASE() 
+        AND table_name = 'community_artwork_top_similarities'
+    ");
+    $viewResult = $viewCheckStmt->fetch();
+    $viewExists = $viewResult['view_count'] > 0;
+    
+    if ($viewExists) {
+        // 既存のビューを使用して類似作品を取得
+        $relatedStmt = $pdo->prepare("
+            SELECT 
+                cats.similar_artwork_id as id,
+                cats.similar_artwork_title as title,
+                cats.similar_artwork_pen_name as pen_name,
+                cats.similar_artwork_file_path as file_path,
+                cats.similar_artwork_webp_path as webp_path,
+                cats.similarity_score
+            FROM community_artwork_top_similarities cats
+            WHERE cats.artwork_id = ?
+            ORDER BY cats.similarity_score DESC
+            LIMIT 8
+        ");
+        $relatedStmt->execute([$artwork['id']]);
+        $relatedArtworks = $relatedStmt->fetchAll();
+        
+        // 類似度データがある場合のみ関連セクションを表示
+        $showRelatedSection = !empty($relatedArtworks);
+    } else {
+        // ビューが存在しない場合は直接テーブルから取得
+        $relatedStmt = $pdo->prepare("
+            SELECT 
+                ca.id,
+                ca.title,
+                ca.pen_name,
+                ca.file_path,
+                ca.webp_path,
+                cas.similarity_score
+            FROM community_artwork_similarities cas
+            JOIN community_artworks ca ON cas.similar_artwork_id = ca.id
+            WHERE cas.artwork_id = ?
+              AND ca.status = 'approved'
+              AND cas.similarity_score >= 0.3
+            ORDER BY cas.similarity_score DESC
+            LIMIT 8
+        ");
+        $relatedStmt->execute([$artwork['id']]);
+        $relatedArtworks = $relatedStmt->fetchAll();
+        
+        $showRelatedSection = !empty($relatedArtworks);
+    }
+} catch (Exception $e) {
+    error_log("Related artworks query error: " . $e->getMessage());
+    $relatedArtworks = [];
+    $showRelatedSection = false;
+}
 ?>
 
 <!DOCTYPE html>
@@ -384,6 +448,111 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
             color: #333;
         }
 
+        /* 関連作品セクション */
+        .related-artworks-section {
+            margin: 3rem 0;
+            padding: 2rem 0;
+            background-color: #fff3e0;
+            border-radius: 12px;
+        }
+
+        .related-artworks-section h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .related-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .related-artworks-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .related-artwork-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .related-artwork-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .related-artwork-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .related-artwork-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .related-artwork-thumbnail {
+            aspect-ratio: 1;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .related-artwork-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .related-artwork-placeholder {
+            width: 50px;
+            height: 50px;
+            color: #6c757d;
+        }
+
+        .related-artwork-placeholder svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .related-artwork-info {
+            padding: 0.75rem;
+        }
+
+        .related-artwork-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .related-artwork-author {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .related-artwork-similarity {
+            font-size: 0.7rem;
+            color: #ff9800;
+            font-weight: 500;
+        }
+
         @media (max-width: 768px) {
             .materials-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -398,6 +567,20 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
             .material-title {
                 padding: 0.3rem;
                 font-size: 0.7rem;
+            }
+
+            .related-artworks-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+                padding: 0 0.5rem;
+            }
+
+            .related-artworks-section h3 {
+                font-size: 1.2rem;
+            }
+
+            .related-subtitle {
+                font-size: 0.8rem;
             }
         }
 
@@ -911,6 +1094,50 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
                                 </div>
                                 <div class="material-title">
                                     <?= h($material['title']) ?>
+                                </div>
+                            </a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </section>
+            <?php endif; ?>
+
+            <!-- 関連作品セクション -->
+            <?php if ($showRelatedSection): ?>
+            <section class="related-artworks-section">
+                <div class="text-center">
+                    <h3>この作品と仲よしの作品</h3>
+                    <div class="related-artworks-grid">
+                        <?php foreach ($relatedArtworks as $relatedArtwork): ?>
+                        <div class="related-artwork-item">
+                            <a href="/everyone-work.php?id=<?= h($relatedArtwork['id']) ?>" class="related-artwork-link">
+                                <div class="related-artwork-thumbnail">
+                                    <?php 
+                                    $relatedThumbnail = '';
+                                    // WebP画像を優先使用
+                                    if (!empty($relatedArtwork['webp_path'])) {
+                                        $relatedThumbnail = $relatedArtwork['webp_path'];
+                                    } elseif (!empty($relatedArtwork['file_path'])) {
+                                        $relatedThumbnail = $relatedArtwork['file_path'];
+                                    }
+                                    ?>
+                                    <?php if (!empty($relatedThumbnail)): ?>
+                                    <img src="/<?= h($relatedThumbnail) ?>" 
+                                         alt="<?= h($relatedArtwork['title']) ?>"
+                                         class="related-artwork-image"
+                                         loading="lazy">
+                                    <?php else: ?>
+                                    <div class="related-artwork-placeholder">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="currentColor"/>
+                                        </svg>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="related-artwork-info">
+                                    <div class="related-artwork-title"><?= h($relatedArtwork['title']) ?></div>
+                                    <div class="related-artwork-author">by <?= h($relatedArtwork['pen_name']) ?></div>
                                 </div>
                             </a>
                         </div>
