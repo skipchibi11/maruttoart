@@ -150,7 +150,7 @@ function main() {
         
         // 未生成の素材を1件取得（IDの古い順）
         $stmt = $pdo->query("
-            SELECT m.id, m.title, m.slug, c.name as category_name,
+            SELECT m.id, m.title, m.slug, c.title as category_name,
                    m.image_path, m.webp_medium_path, m.webp_small_path
             FROM materials m
             LEFT JOIN categories c ON m.category_id = c.id
