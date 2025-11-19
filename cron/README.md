@@ -56,6 +56,13 @@
 - 循環処理により定期的に再計算
 - 相互表示：作品詳細に関連素材、素材詳細に関連作品
 
+### ミニストーリー生成
+- OpenAI GPT-4o-miniによる絵本風ミニストーリー自動生成
+- 素材タイトルとカテゴリ情報から50〜100文字の短編作成
+- 子供向けの優しい文体とポジティブな内容
+- 未生成の素材を1件ずつ処理（API制限対応）
+- 詳細ページでの表示によりコンテンツ充実化
+
 ## ファイル構成
 ```
 cron/
@@ -72,6 +79,8 @@ cron/
 ├── calculate_community_artwork_similarities.sh    # コミュニティ作品類似度計算用シェルスクリプト
 ├── calculate_cross_similarities.php               # クロス類似度計算スクリプト（作品⇔素材）
 ├── calculate_cross_similarities.sh                # クロス類似度計算用シェルスクリプト
+├── generate_mini_stories.php                      # ミニストーリー生成スクリプト
+├── generate_mini_stories.sh                       # ミニストーリー生成用シェルスクリプト
 ├── cleanup_material_files.php                    # 素材ファイル整理スクリプト
 ├── cleanup_material_files.sh                     # 素材ファイル整理用シェルスクリプト
 └── README.md                                      # このファイル
@@ -150,6 +159,12 @@ CREATE VIEW community_artwork_related_materials AS ...
 
 -- ビュー: 素材→作品の類似度取得（上位8件）
 CREATE VIEW material_related_community_artworks AS ...
+
+-- ミニストーリー用カラム（database/add_mini_story.sql）
+ALTER TABLE materials 
+ADD COLUMN mini_story TEXT DEFAULT NULL,
+ADD COLUMN mini_story_generated_at TIMESTAMP NULL DEFAULT NULL,
+ADD COLUMN mini_story_model VARCHAR(100) DEFAULT NULL;
 ```
 
 ### 2. 必要な拡張機能の確認
@@ -306,6 +321,9 @@ tail -f logs/structured_images.log
 # クロス類似度計算（作品⇔素材）（5分おきに実行、未処理を1件ずつ）
 */5 * * * * /path/to/maruttoart/cron/calculate_cross_similarities.sh
 
+# ミニストーリー生成（毎分実行、未処理を1件ずつ）
+* * * * * /path/to/maruttoart/cron/generate_mini_stories.sh
+
 # 素材ファイル整理（毎日深夜2時30分に実行）
 30 2 * * * /path/to/maruttoart/cron/cleanup_material_files.sh
 ```
@@ -326,6 +344,7 @@ tail -f logs/similarity_calculation.log
 tail -f logs/community_artwork_embeddings.log
 tail -f logs/community_artwork_similarity.log
 tail -f logs/cross_similarity_calculation.log
+tail -f logs/mini_story_generation.log
 tail -f logs/cleanup_material_files.log
 ```
 

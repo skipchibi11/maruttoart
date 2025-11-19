@@ -1365,6 +1365,131 @@ try {
             }
         }
 
+        /* ミニストーリーセクション */
+        .mini-story-section {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
+            padding: 3rem 0;
+            margin: 3rem 0;
+        }
+
+        .mini-story-container {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .mini-story-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .mini-story-image-col {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .mini-story-text-col {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .mini-story-image-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .mini-story-image {
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .mini-story-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .mini-story-content {
+            padding: 0;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .mini-story-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #d4a574;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .mini-story-icon {
+            color: #d4a574;
+            flex-shrink: 0;
+        }
+
+        .mini-story-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: #333;
+            background: #fff9f0;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid #d4a574;
+            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .mini-story-section {
+                padding: 2rem 0;
+                margin: 2rem 0;
+            }
+
+            .mini-story-container {
+                padding: 1.5rem;
+            }
+
+            .mini-story-image-col {
+                margin-bottom: 1.5rem;
+            }
+
+            .mini-story-content {
+                padding: 0;
+            }
+
+            .mini-story-title {
+                font-size: 1.2rem;
+            }
+
+            .mini-story-text {
+                font-size: 1rem;
+                padding: 1rem;
+            }
+
+            .mini-story-image {
+                max-width: 250px;
+            }
+        }
+
         /* SVG表示セクション */
         .svg-display-section {
             background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
@@ -3181,6 +3306,57 @@ try {
                     endforeach;
                 endif;
                 ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <!-- ミニストーリーセクション -->
+    <?php if (!empty($material['mini_story'])): ?>
+    <section class="mini-story-section">
+        <div class="container">
+            <div class="mini-story-container">
+                <div class="mini-story-row">
+                    <!-- 素材画像（中央配置） -->
+                    <div class="mini-story-image-col">
+                        <div class="mini-story-image-wrapper">
+                            <?php
+                            // 構造化画像を優先使用
+                            $storyImagePath = !empty($material['structured_image_path']) 
+                                ? '/' . h($material['structured_image_path'])
+                                : (!empty($material['webp_medium_path']) 
+                                    ? '/' . h($material['webp_medium_path'])
+                                    : '/' . h($material['image_path']));
+                            
+                            $storyBgColor = !empty($material['structured_bg_color']) 
+                                ? h($material['structured_bg_color']) 
+                                : '#ffffff';
+                            ?>
+                            <div class="mini-story-image" style="background-color: <?= $storyBgColor ?>;">
+                                <img src="<?= $storyImagePath ?>" 
+                                     alt="<?= h($material['title']) ?>" 
+                                     loading="lazy"
+                                     decoding="async">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ミニストーリー -->
+                    <div class="mini-story-text-col">
+                        <div class="mini-story-content">
+                            <h3 class="mini-story-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mini-story-icon">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                                <?= h($material['title']) ?>のおはなし
+                            </h3>
+                            <div class="mini-story-text">
+                                <?= nl2br(h($material['mini_story'])) ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
