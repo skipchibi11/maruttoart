@@ -124,8 +124,9 @@ function generateMiniStory($materialTitle, $categoryName, $imagePath, $apiKey) {
     // 引用符を削除
     $story = trim($story, '"\'');
     
-    // 改行を削除
-    $story = str_replace(["\r\n", "\r", "\n"], '', $story);
+    // Windows改行(\r\n)をUnix改行(\n)に統一
+    $story = str_replace("\r\n", "\n", $story);
+    $story = str_replace("\r", "\n", $story);
     
     return $story;
 }
