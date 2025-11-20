@@ -51,6 +51,36 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             margin-bottom: 1rem;
         }
         
+        /* お問い合わせフォーム */
+        .contact-form-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .contact-form-section h3 {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .contact-form-section .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .contact-form-section .btn-primary {
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+        }
+        
+        .alert-custom {
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
         /* GDPR Cookie Banner のスタイル */
         #gdpr-banner {
             position: fixed;
@@ -162,7 +192,16 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                         <li><strong>検索パフォーマンス</strong>: 表示回数、クリック数、平均掲載順位等</li>
                     </ul>
                     
-                    <p><strong>注意：</strong>当サイトは直接的に個人を特定できる情報（氏名、メールアドレス等）は収集しません。</p>
+                    <h4>お問い合わせフォーム経由で収集する情報</h4>
+                    <p>お問い合わせフォームを通じて、ユーザーが任意で提供する以下の情報を収集します：</p>
+                    <ul>
+                        <li><strong>お名前</strong>: お問い合わせへの対応のため</li>
+                        <li><strong>メールアドレス</strong>: 返信・連絡のため</li>
+                        <li><strong>件名</strong>: お問い合わせ内容の分類のため</li>
+                        <li><strong>お問い合わせ内容</strong>: ユーザーからのご質問・ご意見への対応のため</li>
+                        <li><strong>IPアドレス、送信日時</strong>: セキュリティ目的（スパム・不正利用の防止）</li>
+                    </ul>
+                    <p><strong>注意：</strong>お問い合わせフォーム以外では、直接的に個人を特定できる情報（氏名、メールアドレス等）は収集しません。お問い合わせフォームから送信された情報は、ユーザーの任意の提供によるものです。</p>
                 </div>
 
                 <div class="policy-section">
@@ -174,10 +213,11 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                         <li><strong>検索エンジン最適化</strong>: Google Search Consoleを使用した検索パフォーマンス分析</li>
                         <li><strong>マーケティング・改善施策</strong>: Google Tag Managerを使用したデータ収集と分析</li>
                         <li><strong>広告配信・最適化</strong>: Google AdSenseを使用した関連性の高い広告配信、広告効果の測定</li>
-                        <li><strong>セキュリティの維持・向上</strong>: 不正アクセスの検知・防止</li>
+                        <li><strong>お問い合わせ対応</strong>: お問い合わせフォームから送信された情報を用いた、ユーザーへの返信・対応</li>
+                        <li><strong>セキュリティの維持・向上</strong>: 不正アクセスの検知・防止、スパム対策</li>
                         <li><strong>法的要件への対応</strong>: 法令に基づく情報開示等</li>
                     </ul>
-                    <p><strong>データの処理根拠：</strong>当サイトは、正当な利益（サイト運営・改善・収益化）およびユーザーの同意に基づいて情報を処理します。</p>
+                    <p><strong>データの処理根拠：</strong>当サイトは、正当な利益（サイト運営・改善・収益化・ユーザーサポート）およびユーザーの同意に基づいて情報を処理します。お問い合わせフォームで提供された個人情報は、ユーザーの明示的な同意に基づいて処理されます。</p>
                 </div>
 
                 <div class="policy-section">
@@ -302,11 +342,20 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <div class="policy-section">
                     <h3>6. 個人情報の保護</h3>
                     <p>当サイトは、収集した情報について適切なセキュリティ対策を講じ、不正アクセス、紛失、破壊、改ざん、漏洩などを防止するよう努めます。</p>
+                    
+                    <h4>お問い合わせ情報の管理</h4>
+                    <p>お問い合わせフォームから送信された個人情報は、以下のように管理されます：</p>
+                    <ul>
+                        <li><strong>保存期間</strong>: お問い合わせ対応完了後、最長1年間保存し、その後削除します</li>
+                        <li><strong>アクセス制限</strong>: サイト管理者のみがアクセス可能です</li>
+                        <li><strong>利用目的の制限</strong>: お問い合わせへの対応以外の目的では使用しません</li>
+                        <li><strong>第三者提供の禁止</strong>: 法令に基づく場合を除き、第三者に提供することはありません</li>
+                    </ul>
                 </div>
 
                 <div class="policy-section">
                     <h3>7. 個人情報の第三者提供</h3>
-                    <p>当サイトは、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供することはありません。</p>
+                    <p>当サイトは、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供することはありません。お問い合わせフォームで提供された個人情報は、お問い合わせ対応の目的のみに使用し、マーケティングや広告配信等の目的では使用しません。</p>
                     
                     <h4>Google サービスでのデータ処理</h4>
                     <p>ユーザーがCookieの使用に同意した場合、以下のGoogleサービスで情報が処理されます：</p>
@@ -327,18 +376,79 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 </div>
 
                 <div class="policy-section">
-                    <h3>8. プライバシーポリシーの変更</h3>
-                    <p>当サイトは、必要に応じてプライバシーポリシーを変更する場合があります。重要な変更については、サイト上で通知いたします。</p>
+                    <h3>8. ユーザーの権利</h3>
+                    <p>お問い合わせフォームを通じて個人情報を提供されたユーザーは、以下の権利を有します：</p>
+                    <ul>
+                        <li><strong>アクセス権</strong>: 提供した個人情報の開示を請求できます</li>
+                        <li><strong>訂正権</strong>: 提供した個人情報が不正確な場合、訂正を請求できます</li>
+                        <li><strong>削除権（忘れられる権利）</strong>: 提供した個人情報の削除を請求できます</li>
+                        <li><strong>利用停止権</strong>: 提供した個人情報の利用停止を請求できます</li>
+                    </ul>
+                    <p>これらの権利を行使される場合は、下記のお問い合わせフォームからご連絡ください。ただし、法令に基づく保存義務がある場合や、お問い合わせ対応中の情報については、権利の行使が制限される場合があります。</p>
                 </div>
 
                 <div class="policy-section">
-                    <h3>9. お問い合わせ</h3>
-                    <p>プライバシーポリシーに関するお問い合わせは、下記までご連絡ください：</p>
-                    <p>Email: <a href="mailto:contact@marutto.art">contact@marutto.art</a></p>
+                    <h3>9. プライバシーポリシーの変更</h3>
+                    <p>当サイトは、必要に応じてプライバシーポリシーを変更する場合があります。重要な変更については、サイト上で通知いたします。最終更新日は本ページ上部に記載しています。</p>
+                </div>
+
+                <div class="policy-section">
+                    <h3>10. お問い合わせ</h3>
+                    <p>プライバシーポリシーやサイトに関するお問い合わせ、個人情報の開示・訂正・削除等のご請求は、以下のフォームからご連絡ください。</p>
+                </div>
+
+                <!-- お問い合わせフォーム -->
+                <div class="contact-form-section mt-5">
+                    <h3 class="text-center mb-4">お問い合わせフォーム</h3>
+                    
+                    <div id="contactFormMessages"></div>
+                    
+                    <form id="contactForm" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="contactName" class="form-label">お名前 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="contactName" name="name" required minlength="2" maxlength="50">
+                            <div class="invalid-feedback">お名前を入力してください（2文字以上）</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contactEmail" class="form-label">メールアドレス <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="contactEmail" name="email" required>
+                            <div class="invalid-feedback">有効なメールアドレスを入力してください</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contactSubject" class="form-label">件名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="contactSubject" name="subject" required minlength="5" maxlength="100">
+                            <div class="invalid-feedback">件名を入力してください（5文字以上）</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contactMessage" class="form-label">お問い合わせ内容 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="contactMessage" name="message" rows="6" required minlength="10" maxlength="2000"></textarea>
+                            <div class="invalid-feedback">お問い合わせ内容を入力してください（10文字以上）</div>
+                            <div class="form-text"><span id="charCount">0</span> / 2000 文字</div>
+                        </div>
+                        
+                        <!-- ハニーポット（ボット対策） -->
+                        <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">
+                        
+                        <!-- 簡単な算数問題（ボット対策） -->
+                        <div class="mb-3">
+                            <label for="mathAnswer" class="form-label">確認: <span id="mathQuestion"></span> = ? <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="mathAnswer" name="math_answer" required style="max-width: 150px;">
+                            <div class="invalid-feedback">正しい答えを入力してください</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitContactBtn">
+                                <i class="bi bi-send"></i> 送信する
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
                 <div class="text-center mt-5">
-                    <a href="/" class="btn btn-primary">ホームに戻る</a>
+                    <a href="/" class="btn btn-outline-primary">ホームに戻る</a>
                 </div>
             </div>
         </div>
@@ -468,6 +578,106 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         } else {
             init();
         }
+    })();
+    </script>
+
+    <!-- お問い合わせフォームのJavaScript -->
+    <script>
+    (function() {
+        let mathAnswer = 0;
+        
+        // 算数問題を生成
+        function generateMathQuestion() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            mathAnswer = num1 + num2;
+            document.getElementById('mathQuestion').textContent = num1 + ' + ' + num2;
+        }
+        
+        // 文字数カウント
+        const messageField = document.getElementById('contactMessage');
+        const charCount = document.getElementById('charCount');
+        
+        if (messageField && charCount) {
+            messageField.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+        }
+        
+        // フォーム送信
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Bootstrap validation
+                if (!contactForm.checkValidity()) {
+                    e.stopPropagation();
+                    contactForm.classList.add('was-validated');
+                    return;
+                }
+                
+                // 算数問題の確認
+                const userAnswer = parseInt(document.getElementById('mathAnswer').value);
+                if (userAnswer !== mathAnswer) {
+                    showMessage('算数問題の答えが正しくありません。', 'danger');
+                    return;
+                }
+                
+                // ハニーポット確認（ボットは通常このフィールドを埋める）
+                const honeypot = document.querySelector('input[name="website"]').value;
+                if (honeypot) {
+                    // ボットと判断されたが、エラーメッセージは出さない
+                    showMessage('送信に失敗しました。', 'danger');
+                    return;
+                }
+                
+                const submitBtn = document.getElementById('submitContactBtn');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>送信中...';
+                
+                try {
+                    const formData = new FormData(contactForm);
+                    const response = await fetch('/api/contact.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showMessage('お問い合わせを送信しました。ご連絡ありがとうございます。', 'success');
+                        contactForm.reset();
+                        contactForm.classList.remove('was-validated');
+                        charCount.textContent = '0';
+                        generateMathQuestion(); // 新しい問題を生成
+                    } else {
+                        showMessage(result.message || '送信に失敗しました。時間をおいて再度お試しください。', 'danger');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMessage('送信エラーが発生しました。時間をおいて再度お試しください。', 'danger');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+        }
+        
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('contactFormMessages');
+            messagesDiv.innerHTML = `
+                <div class="alert alert-${type} alert-custom alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            messagesDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // 初期化
+        generateMathQuestion();
     })();
     </script>
 </body>
