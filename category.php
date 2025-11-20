@@ -44,6 +44,28 @@ $materialsStmt = $pdo->prepare("
 ");
 $materialsStmt->execute([$category['id'], $perPage, $offset]);
 $materials = $materialsStmt->fetchAll();
+
+// 現在表示されている素材からミニストーリーがあるものをランダムに3件取得
+$storyMaterials = [];
+if (!empty($materials)) {
+    $materialIds = array_column($materials, 'id');
+    if (!empty($materialIds)) {
+        $placeholders = implode(',', array_fill(0, count($materialIds), '?'));
+        $storyStmt = $pdo->prepare("
+            SELECT m.id, m.title, m.slug, m.mini_story,
+                   m.image_path, m.webp_small_path, m.structured_bg_color,
+                   c.slug as category_slug
+            FROM materials m
+            LEFT JOIN categories c ON m.category_id = c.id
+            WHERE m.id IN ($placeholders)
+            AND m.mini_story IS NOT NULL
+            ORDER BY RAND()
+            LIMIT 3
+        ");
+        $storyStmt->execute($materialIds);
+        $storyMaterials = $storyStmt->fetchAll();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -398,6 +420,122 @@ $materials = $materialsStmt->fetchAll();
             outline: 0;
             box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
         }
+
+        /* ストーリーのある素材セクション */
+        .story-materials-section {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
+            padding: 3rem 2rem;
+            border-radius: 1rem;
+            margin: 2rem 0;
+        }
+
+        .story-materials-section h2 {
+            color: #d4a574;
+            font-weight: 700;
+        }
+
+        .story-materials-section .text-muted {
+            color: #a68b6a !important;
+        }
+
+        .story-materials-list {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .story-material-item {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .story-material-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .story-item-image-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .story-item-image {
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .story-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .story-item-content {
+            padding: 0 2rem 2rem 2rem;
+        }
+
+        .story-item-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #d4a574;
+            margin-bottom: 1.25rem;
+            text-align: center;
+        }
+
+        .story-item-text {
+            font-size: 1rem;
+            line-height: 2;
+            color: #555;
+            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
+            background: #fff9f0;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid #d4a574;
+        }
+
+        @media (max-width: 768px) {
+            .story-materials-section {
+                padding: 2rem 1rem;
+            }
+
+            .story-materials-list {
+                gap: 2rem;
+            }
+
+            .story-item-image-wrapper {
+                padding: 1.5rem;
+            }
+
+            .story-item-image {
+                max-width: 250px;
+            }
+
+            .story-item-content {
+                padding: 0 1.5rem 1.5rem 1.5rem;
+            }
+
+            .story-item-title {
+                font-size: 1.1rem;
+            }
+
+            .story-item-text {
+                font-size: 0.95rem;
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -546,6 +684,52 @@ $materials = $materialsStmt->fetchAll();
                     </ul>
                 </nav>
             </div>
+            <?php endif; ?>
+
+            <!-- ストーリーのある素材セクション -->
+            <?php if (!empty($storyMaterials)): ?>
+            <section class="story-materials-section mt-5 mb-5">
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="text-center mb-2">おはなしのある子たち</h2>
+                        <p class="text-center text-muted mb-4">ちいさな物語とともに、やさしい時間をどうぞ</p>
+                    </div>
+                </div>
+                
+                <div class="story-materials-list">
+                    <?php foreach ($storyMaterials as $storyMat): ?>
+                    <div class="story-material-item">
+                        <!-- 画像（リンク） -->
+                        <a href="/<?= h($storyMat['category_slug']) ?>/<?= h($storyMat['slug']) ?>/" class="text-decoration-none">
+                            <div class="story-item-image-wrapper">
+                                <?php
+                                $storyImageSrc = !empty($storyMat['webp_small_path']) 
+                                    ? '/' . h($storyMat['webp_small_path'])
+                                    : '/' . h($storyMat['image_path']);
+                                $storyBgColor = !empty($storyMat['structured_bg_color']) 
+                                    ? h($storyMat['structured_bg_color']) 
+                                    : '#ffffff';
+                                ?>
+                                <div class="story-item-image" style="background-color: <?= $storyBgColor ?>;">
+                                    <img src="<?= $storyImageSrc ?>" 
+                                         alt="<?= h($storyMat['title']) ?>"
+                                         loading="lazy"
+                                         decoding="async">
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <!-- ストーリー（リンクなし） -->
+                        <div class="story-item-content">
+                            <h3 class="story-item-title"><?= h($storyMat['title']) ?></h3>
+                            <div class="story-item-text">
+                                <?= nl2br(h($storyMat['mini_story'])) ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
             <?php endif; ?>
         <?php endif; ?>
     </div>
