@@ -143,6 +143,7 @@ try {
 } catch (Exception $e) {
     error_log('Error fetching related community artworks: ' . $e->getMessage());
 }
+
 ?>
 
 <!DOCTYPE html>
