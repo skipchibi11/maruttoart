@@ -1260,6 +1260,78 @@ try {
                 padding: 1rem;
             }
         }
+
+        /* 自己紹介セクション */
+        .profile-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            padding: 3rem 0;
+        }
+
+        .profile-card {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 3rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .profile-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e8eef5;
+        }
+
+        .profile-role {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .profile-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #5a7bb5;
+            margin: 0;
+        }
+
+        .profile-content {
+            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
+        }
+
+        .profile-content p {
+            line-height: 2;
+            color: #555;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-message {
+            font-weight: 600;
+            color: #5a7bb5;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e8eef5;
+        }
+
+        @media (max-width: 768px) {
+            .profile-section {
+                padding: 2rem 0;
+            }
+
+            .profile-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .profile-name {
+                font-size: 1.5rem;
+            }
+
+            .profile-content p {
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1535,6 +1607,25 @@ try {
         </div>
     </section>
     <?php endif; ?>
+
+    <!-- 自己紹介セクション -->
+    <section class="profile-section mt-5 mb-5">
+        <div class="container">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <p class="profile-role">サイト開発・イラスト制作担当</p>
+                    <h2 class="profile-name">たかせ さとる</h2>
+                </div>
+                <div class="profile-content">
+                    <p>まるくてやさしい世界をつくりたくて、<br>
+                    毎日すこしずつイラストを描いています。<br>
+                    一部の素材は色変更や組み合わせにも対応しており、<br>
+                    みなさんが自由にアレンジして楽しめるようにしています。</p>
+                    <p class="profile-message">あなたの日常に、ふわっと寄り添う素材になれたら嬉しいです。</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
     <div id="gdpr-banner" class="gdpr-cookie-banner hidden" style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #212529; color: #ffffff; padding: 1rem; z-index: 1050; box-shadow: 0 -2px 10px rgba(0,0,0,0.3);">
