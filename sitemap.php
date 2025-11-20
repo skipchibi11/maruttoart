@@ -32,21 +32,19 @@ foreach ($categories as $category) {
     $materialStmt->execute([$category['id']]);
     $categoryMaterials[$category['id']] = $materialStmt->fetchAll();
 }
-
-function h($str) {
-    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
-}
 ?>
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <?php include 'includes/gdpr-gtm-inline.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>サイトマップ｜maruttoart（商用利用OK）</title>
     <meta name="description" content="maruttoartのサイトマップ。カテゴリ、タグ、すべてのイラスト素材ページへのリンクを一覧で表示しています。">
     <link rel="icon" href="/favicon.ico">
     <link rel="canonical" href="https://marutto.art/sitemap.php">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
         * {
@@ -237,6 +235,9 @@ function h($str) {
     </style>
 </head>
 <body>
+    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
+    <?php include 'includes/header.php'; ?>
+    
     <div class="container">
         <div class="header">
             <h1>サイトマップ</h1>
@@ -249,6 +250,9 @@ function h($str) {
             <div class="main-links">
                 <a href="/" class="main-link">トップページ</a>
                 <a href="/list.php" class="main-link">イラスト素材一覧</a>
+                <a href="/everyone-works.php" class="main-link">みんなのアトリエ</a>
+                <a href="/compose2/" class="main-link">あなたのアトリエ</a>
+                <a href="/compose2/custom-size.php" class="main-link">カスタムサイズのアトリエ</a>
                 <a href="/privacy-policy.php" class="main-link">プライバシーポリシー</a>
                 <a href="/terms-of-use.php" class="main-link">利用規約</a>
             </div>
@@ -295,5 +299,9 @@ function h($str) {
 
         <a href="/" class="back-link">← トップページに戻る</a>
     </div>
+    
+    <?php include 'includes/footer.php'; ?>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
