@@ -29,6 +29,23 @@ $params = [$perPage, $offset];
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $artworks = $stmt->fetchAll();
+
+// 表示している作品の中から140文字以上の説明がある作品をランダムに3件取得
+$kindStories = [];
+if (!empty($artworks)) {
+    // 140文字以上の説明がある作品をフィルタリング
+    $longDescriptionArtworks = array_filter($artworks, function($artwork) {
+        return mb_strlen($artwork['description'] ?? '') >= 100;
+    });
+    
+    // ランダムに並び替えて最大3件取得
+    if (!empty($longDescriptionArtworks)) {
+        // array_valuesで配列を再インデックス化してからshuffle
+        $longDescriptionArtworks = array_values($longDescriptionArtworks);
+        shuffle($longDescriptionArtworks);
+        $kindStories = array_slice($longDescriptionArtworks, 0, 3);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -738,6 +755,112 @@ $artworks = $stmt->fetchAll();
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
+        /* 優しい出会いセクション */
+        .kind-stories-section {
+            background: linear-gradient(135deg, #ffe9f3 0%, #ffebf0 100%);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .kind-stories-section h2 {
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+            color: #d47ca5;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .kind-stories-section .text-muted {
+            color: #9a6b8b !important;
+            font-size: 1rem;
+        }
+
+        .kind-stories-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .kind-story-item {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(212, 124, 165, 0.12);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .kind-story-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .kind-story-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(212, 124, 165, 0.2);
+        }
+
+        .kind-story-image-wrapper {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .kind-story-image {
+            display: inline-block;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .kind-story-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .kind-story-content {
+            text-align: left;
+        }
+
+        .kind-story-title {
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .kind-story-author {
+            font-size: 0.9rem;
+            color: #d47ca5;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .kind-story-text {
+            font-size: 1rem;
+            line-height: 2;
+            color: #555;
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .kind-stories-section {
+                padding: 2rem 1rem;
+            }
+
+            .kind-stories-section h2 {
+                font-size: 1.6rem;
+            }
+
+            .kind-story-item {
+                padding: 1.5rem;
+            }
+
+            .kind-story-title {
+                font-size: 1.3rem;
+            }
+        }
+
 
     </style>
 </head>
@@ -816,6 +939,50 @@ $artworks = $stmt->fetchAll();
                 </div>
             </div>
         </nav>
+        <?php endif; ?>
+
+        <!-- 優しい出会いセクション -->
+        <?php if (!empty($kindStories)): ?>
+        <section class="kind-stories-section mt-5 mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center mb-2">優しい出会い</h2>
+                    <p class="text-center text-muted mb-4">作者の想いが込められた作品たち</p>
+                </div>
+            </div>
+            
+            <div class="kind-stories-list">
+                <?php foreach ($kindStories as $story): ?>
+                <div class="kind-story-item">
+                    <!-- 画像（リンク） -->
+                    <a href="/everyone-work.php?id=<?= h($story['id']) ?>" class="text-decoration-none">
+                        <div class="kind-story-image-wrapper">
+                            <?php
+                            $storyImagePath = !empty($story['webp_path']) 
+                                ? '/' . h($story['webp_path'])
+                                : '/' . h($story['file_path']);
+                            ?>
+                            <div class="kind-story-image">
+                                <img src="<?= $storyImagePath ?>" 
+                                     alt="<?= h($story['title']) ?>"
+                                     loading="lazy"
+                                     decoding="async">
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- 説明（リンクなし） -->
+                    <div class="kind-story-content">
+                        <h3 class="kind-story-title"><?= h($story['title']) ?></h3>
+                        <p class="kind-story-author">by <?= h($story['pen_name']) ?></p>
+                        <div class="kind-story-text">
+                            <?= nl2br(h($story['description'])) ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </section>
         <?php endif; ?>
 
         <?php if (empty($artworks)): ?>

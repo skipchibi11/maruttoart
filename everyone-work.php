@@ -124,6 +124,16 @@ if (isset($artwork['used_material_ids']) && !empty($artwork['used_material_ids']
     }
 }
 
+// 使用素材の中でミニストーリーがあるものを取得
+$materialStories = [];
+if (!empty($usedMaterials)) {
+    $materialStories = array_filter($usedMaterials, function($material) {
+        return !empty($material['mini_story']);
+    });
+    // 配列を再インデックス化
+    $materialStories = array_values($materialStories);
+}
+
 // 関連作品（類似度）を取得
 $relatedArtworks = [];
 $showRelatedSection = false;
@@ -954,6 +964,113 @@ try {
                 align-items: center;
             }
         }
+
+        /* 使用素材のストーリーセクション */
+        .material-stories-section {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .material-stories-section h2 {
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+            color: #d4a574;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .material-stories-section .text-muted {
+            color: #a68b5b !important;
+            font-size: 1rem;
+        }
+
+        .material-stories-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .material-story-item {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(212, 165, 116, 0.12);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .material-story-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .material-story-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(212, 165, 116, 0.2);
+        }
+
+        .material-story-image-wrapper {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .material-story-image {
+            display: inline-block;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .material-story-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .material-story-content {
+            text-align: left;
+        }
+
+        .material-story-title {
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .material-story-title a {
+            color: #333;
+            transition: color 0.2s ease;
+        }
+
+        .material-story-title a:hover {
+            color: #d4a574;
+        }
+
+        .material-story-text {
+            font-size: 1rem;
+            line-height: 2;
+            color: #555;
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .material-stories-section {
+                padding: 2rem 1rem;
+            }
+
+            .material-stories-section h2 {
+                font-size: 1.6rem;
+            }
+
+            .material-story-item {
+                padding: 1.5rem;
+            }
+
+            .material-story-title {
+                font-size: 1.3rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1082,7 +1199,7 @@ try {
             <?php if (!empty($usedMaterials)): ?>
             <section class="used-materials-section">
                 <div class="text-center">
-                    <h3>使用した素材</h3>
+                    <h3>イラストの子たち</h3>
                     <div class="materials-grid">
                         <?php foreach ($usedMaterials as $material): ?>
                         <div class="material-item">
@@ -1225,6 +1342,57 @@ try {
             </div>
         </div>
     </div>
+
+    <!-- 使用素材のストーリーセクション -->
+    <?php if (!empty($materialStories)): ?>
+    <section class="material-stories-section mt-5 mb-5">
+        <div class="container" style="max-width: 1200px;">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center mb-2">イラストの子たちのストーリー</h2>
+                    <p class="text-center text-muted mb-4">この作品で使われた素材たちの物語</p>
+                </div>
+            </div>
+            
+            <div class="material-stories-list">
+                <?php foreach ($materialStories as $story): ?>
+                <div class="material-story-item">
+                    <!-- 画像（リンク） -->
+                    <a href="/detail/?slug=<?= h($story['category_slug']) ?>&material_id=<?= h($story['id']) ?>" class="text-decoration-none">
+                        <div class="material-story-image-wrapper">
+                            <?php
+                            $storyImagePath = !empty($story['webp_medium_path']) 
+                                ? '/' . h($story['webp_medium_path'])
+                                : (!empty($story['webp_small_path']) 
+                                    ? '/' . h($story['webp_small_path'])
+                                    : '/' . h($story['image_path']));
+                            ?>
+                            <div class="material-story-image">
+                                <img src="<?= $storyImagePath ?>" 
+                                     alt="<?= h($story['title']) ?>"
+                                     loading="lazy"
+                                     decoding="async">
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- ストーリー（リンクなし） -->
+                    <div class="material-story-content">
+                        <h3 class="material-story-title">
+                            <a href="/detail/?slug=<?= h($story['category_slug']) ?>&material_id=<?= h($story['id']) ?>" class="text-decoration-none">
+                                <?= h($story['title']) ?>
+                            </a>
+                        </h3>
+                        <div class="material-story-text">
+                            <?= nl2br(h($story['mini_story'])) ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <?php include 'includes/footer.php'; ?>
 
