@@ -30,6 +30,17 @@ $stmt = $pdo->prepare("
 $stmt->execute([$perPage, $offset]);
 $materials = $stmt->fetchAll();
 
+// みんなのアトリエから140文字以上の説明がある作品をランダムに3件取得
+$storyStmt = $pdo->query("
+    SELECT id, title, pen_name, description, webp_path, file_path, created_at
+    FROM community_artworks
+    WHERE status = 'approved'
+    AND CHAR_LENGTH(description) >= 100
+    ORDER BY RAND()
+    LIMIT 3
+");
+$storyArtworks = $storyStmt->fetchAll();
+
 // AJAX リクエストの場合はJSONを返す
 if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     header('Content-Type: application/json');
@@ -89,61 +100,110 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <link rel="stylesheet" href="assets/css/layout.css">
 
     <style>
-        /* YouTube Shortsセクション */
-        .youtube-shorts-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem 0;
+        /* 使い方セクション */
+        .how-to-use-section {
+            background: linear-gradient(135deg, #ffe9f3 0%, #ffebf0 100%);
+            padding: 3rem 0;
             margin-bottom: 2rem;
         }
 
-        .shorts-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .shorts-content {
-            flex: 1;
-            min-width: 250px;
-            color: white;
-        }
-
-        .shorts-content h2 {
-            font-size: 1.75rem;
+        .how-to-content .page-title {
+            color: #d47ca5;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .how-to-content h2 {
+            color: #d47ca5;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-        }
-
-        .shorts-content p {
-            font-size: 1.1rem;
-            margin: 0;
-            opacity: 0.95;
-        }
-
-        .shorts-video {
-            flex: 0 0 auto;
-            display: flex;
             justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .step-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .step-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #d47ca5 0%, #e99bb8 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .step-text {
+            flex: 1;
+            color: #333;
+            line-height: 1.6;
+            font-size: 1rem;
         }
 
         @media (max-width: 768px) {
-            .shorts-container {
-                flex-direction: column;
-                text-align: center;
+            .how-to-use-section {
+                padding: 2rem 0;
             }
 
-            .shorts-content {
-                width: 100%;
+            .how-to-content .page-title {
+                font-size: 1.6rem;
+                margin-bottom: 0.5rem;
             }
 
-            .shorts-video iframe {
-                max-width: 280px !important;
-                height: 498px !important;
+            .how-to-content h2 {
+                font-size: 1.6rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .step-item {
+                padding: 1rem;
+            }
+
+            .step-number {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+
+            .step-text {
+                font-size: 0.95rem;
             }
         }
 
@@ -1303,6 +1363,120 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             scroll-padding-top: 80px; /* ヘッダー分の余白 */
         }
 
+        /* ストーリーセクション */
+        .story-materials-section {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .story-materials-section h2 {
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+            color: #d4a574;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .story-materials-section .text-muted {
+            color: #a68b5b !important;
+            font-size: 1rem;
+        }
+
+        .story-materials-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .story-material-item {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(212, 165, 116, 0.12);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .story-material-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .story-material-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(212, 165, 116, 0.2);
+        }
+
+        .story-material-image-wrapper {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .story-material-image {
+            display: inline-block;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .story-material-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .story-material-content {
+            text-align: left;
+        }
+
+        .story-material-title {
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .story-material-title a {
+            color: #333;
+            transition: color 0.2s ease;
+        }
+
+        .story-material-title a:hover {
+            color: #d4a574;
+        }
+
+        .story-author {
+            font-size: 0.9rem;
+            color: #d47ca5;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .story-material-text {
+            font-size: 1rem;
+            line-height: 2;
+            color: #555;
+            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .story-materials-section {
+                padding: 2rem 1rem;
+            }
+
+            .story-materials-section h2 {
+                font-size: 1.6rem;
+            }
+
+            .story-material-item {
+                padding: 1.5rem;
+            }
+
+            .story-material-title {
+                font-size: 1.3rem;
+            }
+        }
+
         /* GDPR Cookie Banner は外部CSS (assets/css/gdpr.css) で管理 */
     </style>
 </head>
@@ -1312,23 +1486,37 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     include '../includes/header.php'; 
     ?>
 
-    <!-- YouTube Shorts紹介セクション -->
-    <div class="youtube-shorts-section">
+    <!-- 使い方セクション -->
+    <div class="how-to-use-section">
         <div class="container">
-            <div class="shorts-container">
-                <div class="shorts-content">
-                    <h2><i class="bi bi-play-circle"></i> 使い方動画</h2>
-                    <p>このツールの使い方をショート動画で確認できます</p>
-                </div>
-                <div class="shorts-video">
-                    <iframe 
-                        src="https://www.youtube.com/embed/yH6RVpKp9Zw" 
-                        title="maruttoart 使い方ショート動画" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen
-                        style="width: 100%; max-width: 315px; height: 560px; border-radius: 12px;">
-                    </iframe>
+            <div class="how-to-content">
+                <h1 class="page-title">あなたのアトリエ</h1>
+                <h2><i class="bi bi-book"></i> 使い方</h2>
+                <div class="steps-grid">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-text">素材一覧から、使いたい素材をクリックしてキャンバスに追加します。</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-text">追加した素材は、ドラッグして好きな位置へ動かせます。</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-text">素材を選択して「変形」ボタンを押すと、サイズ変更や回転ができます。</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-text">素材を選択すると、対応しているものは色の変更ができます。</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">5</div>
+                        <div class="step-text">仕上がったら、PNG または SVG でダウンロードして完了です。</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">6</div>
+                        <div class="step-text">作品をみんなに共有したい場合は、「みんなのアトリエに投稿」ボタンから投稿できます。</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -4827,6 +5015,56 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             </div>
         </div>
     </div>
+
+    <!-- みんなの作品セクション -->
+    <?php if (!empty($storyArtworks)): ?>
+    <section class="story-materials-section mt-5 mb-5">
+        <div class="container" style="max-width: 1200px;">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="text-center mb-2">優しい出会い</h2>
+                    <p class="text-center text-muted mb-4">作者の想いが込められた作品たち</p>
+                </div>
+            </div>
+            
+            <div class="story-materials-list">
+                <?php foreach ($storyArtworks as $story): ?>
+                <div class="story-material-item">
+                    <!-- 画像（リンク） -->
+                    <a href="/everyone-work.php?id=<?= h($story['id']) ?>" class="text-decoration-none">
+                        <div class="story-material-image-wrapper">
+                            <?php
+                            $storyImagePath = !empty($story['webp_path']) 
+                                ? '/' . h($story['webp_path'])
+                                : '/' . h($story['file_path']);
+                            ?>
+                            <div class="story-material-image">
+                                <img src="<?= $storyImagePath ?>" 
+                                     alt="<?= h($story['title']) ?>"
+                                     loading="lazy"
+                                     decoding="async">
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- 説明（リンクなし） -->
+                    <div class="story-material-content">
+                        <h3 class="story-material-title">
+                            <a href="/everyone-work.php?id=<?= h($story['id']) ?>" class="text-decoration-none">
+                                <?= h($story['title']) ?>
+                            </a>
+                        </h3>
+                        <p class="story-author">by <?= h($story['pen_name']) ?></p>
+                        <div class="story-material-text">
+                            <?= nl2br(h($story['description'])) ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <?php include '../includes/footer.php'; ?>
 
