@@ -1358,15 +1358,17 @@ try {
                 <?php foreach ($materialStories as $story): ?>
                 <div class="material-story-item">
                     <!-- 画像（リンク） -->
-                    <a href="/detail/?slug=<?= h($story['category_slug']) ?>&material_id=<?= h($story['id']) ?>" class="text-decoration-none">
+                    <?php
+                    // list.phpと同じ形式のURL生成: /{category_slug}/{material_slug}/
+                    $storyUrl = '/' . h($story['category_slug']) . '/' . h($story['slug']) . '/';
+                    $storyImagePath = !empty($story['webp_medium_path']) 
+                        ? '/' . h($story['webp_medium_path'])
+                        : (!empty($story['webp_small_path']) 
+                            ? '/' . h($story['webp_small_path'])
+                            : '/' . h($story['image_path']));
+                    ?>
+                    <a href="<?= $storyUrl ?>" class="text-decoration-none">
                         <div class="material-story-image-wrapper">
-                            <?php
-                            $storyImagePath = !empty($story['webp_medium_path']) 
-                                ? '/' . h($story['webp_medium_path'])
-                                : (!empty($story['webp_small_path']) 
-                                    ? '/' . h($story['webp_small_path'])
-                                    : '/' . h($story['image_path']));
-                            ?>
                             <div class="material-story-image">
                                 <img src="<?= $storyImagePath ?>" 
                                      alt="<?= h($story['title']) ?>"
@@ -1379,7 +1381,7 @@ try {
                     <!-- ストーリー（リンクなし） -->
                     <div class="material-story-content">
                         <h3 class="material-story-title">
-                            <a href="/detail/?slug=<?= h($story['category_slug']) ?>&material_id=<?= h($story['id']) ?>" class="text-decoration-none">
+                            <a href="<?= $storyUrl ?>" class="text-decoration-none">
                                 <?= h($story['title']) ?>
                             </a>
                         </h3>
