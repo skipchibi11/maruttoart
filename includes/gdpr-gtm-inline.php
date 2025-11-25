@@ -9,6 +9,10 @@
  * - <body>直後で: <?php include 'includes/gdpr-gtm-noscript.php'; ?>
  */
 ?>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+     crossorigin="anonymous"></script>
+     
 <!-- Google Tag Manager & GDPR (Inline for Performance) -->
 <script>
 // グローバルGDPR同意チェック関数
