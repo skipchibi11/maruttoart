@@ -83,8 +83,7 @@ if (!empty($materials)) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager & GDPR -->
-    <script src="/assets/js/gdpr-gtm.js"></script>
+    <?php include 'includes/gdpr-gtm-inline.php'; ?>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -520,6 +519,8 @@ if (!empty($materials)) {
     </style>
 </head>
 <body>
+    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
+    
     <?php 
     $currentPage = 'tag';
     include 'includes/header.php'; 

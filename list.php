@@ -68,6 +68,8 @@ if (!empty($materials)) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <?php include 'includes/gdpr-gtm-inline.php'; ?>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ミニマルなフリーイラスト素材｜maruttoart（商用利用OK）</title>
@@ -1052,6 +1054,8 @@ if (!empty($materials)) {
     </style>
 </head>
 <body>
+    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
+    
     <?php 
     $currentPage = 'list';
     include 'includes/header.php'; 
@@ -1482,8 +1486,5 @@ if (!empty($materials)) {
         downloadBtn.addEventListener('click', generateAndDownloadBanner);
     });
     </script>
-
-    <!-- Google Tag Manager & GDPR -->
-    <script src="/assets/js/gdpr-gtm.js"></script>
 </body>
 </html>
