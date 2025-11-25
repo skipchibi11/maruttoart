@@ -8,8 +8,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager & GDPR -->
-    <script src="/assets/js/gdpr-gtm.js"></script>
+    <?php include 'includes/gdpr-gtm-inline.php'; ?>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -380,6 +379,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     </style>
 </head>
 <body>
+    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
+    
     <?php 
     $currentPage = 'terms-of-use';
     include 'includes/header.php'; 

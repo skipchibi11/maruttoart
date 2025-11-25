@@ -8,16 +8,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager & GDPR -->
-    <script src="/assets/js/gdpr-gtm.js"></script>
-    
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-579HN546');</script>
-    <!-- End Google Tag Manager -->
+    <?php include 'includes/gdpr-gtm-inline.php'; ?>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,6 +141,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     </style>
 </head>
 <body>
+    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
+    
     <?php 
     $currentPage = 'privacy-policy';
     include 'includes/header.php'; 
