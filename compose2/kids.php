@@ -6,28 +6,28 @@ setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
 $pdo = getDB();
 
-// ページネーション設定
-$perPage = 20; // 1ページあたりの表示件数
-$page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
-$offset = ($page - 1) * $perPage;
+// キッズ版は5つまで表示
+$perPage = 5;
+$page = 1; // 1ページ目のみ
+$offset = 0;
 
 // 総件数を取得
 $countSql = "SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''";
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute();
 $totalItems = $countStmt->fetchColumn();
-$totalPages = ceil($totalItems / $perPage);
+$totalPages = 1; // キッズ版はページネーションなし
 
-// ページネーション付きでSVG素材を取得
+// 最新のSVG素材を5つ取得
 $stmt = $pdo->prepare("
     SELECT DISTINCT id, title, slug, image_path, svg_path, webp_medium_path, category_id, created_at
     FROM materials 
     WHERE svg_path IS NOT NULL 
     AND svg_path != '' 
-    ORDER BY created_at DESC 
-    LIMIT ? OFFSET ?
+    ORDER BY RAND()
+    LIMIT 5
 ");
-$stmt->execute([$perPage, $offset]);
+$stmt->execute();
 $materials = $stmt->fetchAll();
 
 // みんなのアトリエから140文字以上の説明がある作品をランダムに3件取得
@@ -77,7 +77,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <?php include '../includes/gdpr-gtm-inline.php'; ?>
     
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=480, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
     <title>こどもアトリエ - maruttoart</title>
     <meta name="description" content="えをかいて、たのしいさくひんをつくろう！かんたんにつかえるこども用のアトリエです。">
@@ -99,9 +99,18 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <link rel="stylesheet" href="assets/css/layout.css">
 
     <style>
-        /* こども向けカラフルデザイン */
+        /* こども向けカラフルデザイン - スマホサイズ固定 */
+        html {
+            max-width: 480px;
+            margin: 0 auto;
+            overflow-x: hidden;
+        }
+        
         body {
             background: linear-gradient(135deg, #fff5f8 0%, #fff9e6 50%, #f0f8ff 100%);
+            max-width: 480px;
+            margin: 0 auto;
+            overflow-x: hidden;
         }
 
         /* 使い方セクション */
@@ -446,29 +455,36 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         .materials-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
             max-width: 100%;
+            padding: 10px;
         }
 
         .material-item {
             aspect-ratio: 1;
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 5px;
-            cursor: pointer;
+            background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%);
+            border: 4px solid #FFD700;
+            border-radius: 20px;
+            padding: 15px;
+            cursor: grab;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+            box-shadow: 0 6px 15px rgba(255, 105, 180, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .material-item:active {
+            cursor: grabbing;
         }
 
         .material-item:hover {
-            border-color: #2c5aa0;
-            background: #e3f2fd;
-            transform: translateY(-2px);
+            border-color: #FF69B4;
+            background: linear-gradient(145deg, #fff5f8 0%, #ffe4e1 100%);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
             box-shadow: 0 4px 15px rgba(44, 90, 160, 0.2);
         }
 
@@ -477,6 +493,40 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             height: 100%;
             object-fit: contain;
             border-radius: 4px;
+        }
+
+        /* シャッフルボタンのスタイル */
+        .shuffle-btn {
+            background: linear-gradient(145deg, #fff9e6 0%, #ffe4b5 100%) !important;
+            border: 4px solid #FFA500 !important;
+            cursor: pointer !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shuffle-btn:hover {
+            border-color: #FF8C00 !important;
+            background: linear-gradient(145deg, #fff5e1 0%, #ffd480 100%) !important;
+            transform: translateY(-8px) scale(1.05) rotate(5deg) !important;
+            box-shadow: 0 10px 25px rgba(255, 165, 0, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .shuffle-btn:active {
+            transform: translateY(-4px) scale(1.02) !important;
+        }
+
+        .shuffle-btn svg {
+            animation: shuffle-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes shuffle-pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
         }
 
         /* キャンバスエリア */
@@ -1509,20 +1559,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         <div class="main-content">
             <!-- 素材選択エリア -->
             <div id="materials" class="materials-panel">
-                <!-- けんさくフォーム -->
-                <div class="search-form">
-                    <form class="d-flex align-items-center" onsubmit="return false;">
-                        <input type="text" 
-                               id="materialSearch" 
-                               placeholder="すきな えを さがしてみよう！" 
-                               class="search-input form-control me-2">
-                        <button type="button" 
-                                id="clearSearch" 
-                                class="btn btn-outline-secondary ms-2" 
-                                style="display: none;">けす</button>
-                    </form>
-                </div>
-                
                 <div class="materials-grid">
                     <?php foreach ($materials as $material): ?>
                         <div class="material-item" 
@@ -1535,46 +1571,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                                  loading="lazy">
                         </div>
                     <?php endforeach; ?>
-                </div>
-                
-                <!-- ページネーション -->
-                <?php if ($totalPages > 1): ?>
-                <div class="pagination-container">
-                    <!-- 前のページ -->
-                    <?php if ($page > 1): ?>
-                        <a href="?page=<?= $page - 1 ?>#materials" class="pagination-btn">
-                            前へ
-                        </a>
-                    <?php endif; ?>
                     
-                    <!-- 次のページ -->
-                    <?php if ($page < $totalPages): ?>
-                        <a href="?page=<?= $page + 1 ?>#materials" class="pagination-btn">
-                            次へ
-                        </a>
-                    <?php endif; ?>
+                    <!-- シャッフルボタン -->
+                    <button class="material-item shuffle-btn" id="shuffleBtn" type="button" title="ほかのえをみる">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#f2b788" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wand-sparkles-icon lucide-wand-sparkles"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
+                    </button>
                 </div>
-                
-                <!-- ページ情報 -->
-                <div class="pagination-info">
-                    <?= $page ?> / <?= $totalPages ?> ページ （ぜんぶで <?= $totalItems ?> こ）
-                </div>
-                <?php endif; ?>
-                
-                <?php if (empty($materials)): ?>
-                <!-- えがみつからないときのメッセージ -->
-                <div style="text-align: center; padding: 2rem; color: #6c757d;">
-                    <p>えがみつからなかったよ。べつのことばでさがしてみてね！</p>
-                </div>
-                <?php endif; ?>
             </div>
 
             <!-- キャンバスエリア -->
             <div class="canvas-area">
-                <div class="canvas-header">
-                    <h3>🎨 きみのキャンバス 🎨</h3>
-                </div>
-                
                 <div class="canvas-container">
                     <svg id="mainCanvas" 
                          viewBox="0 0 1024 1024" 
@@ -1603,17 +1609,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     <button id="scaleUpBtn" class="btn btn-scale-up" title="おおきくする">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/><line x1="11" x2="11" y1="8" y2="14"/></svg>
                     </button>
-                    <button id="rotateLeftBtn" class="btn btn-rotate-left" title="ひだりにまわす">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw-icon lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    </button>
                     <button id="rotateBtn" class="btn btn-rotate" title="みぎにまわす">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
-                    </button>
-                    <button id="flipHorizontalBtn" class="btn btn-flip-horizontal" title="よこにひっくりかえす">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-horizontal2-icon lucide-flip-horizontal-2"><path d="m3 7 5 5-5 5V7"/><path d="m21 7-5 5 5 5V7"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/></svg>
-                    </button>
-                    <button id="flipVerticalBtn" class="btn btn-flip-vertical" title="たてにひっくりかえす">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-vertical2-icon lucide-flip-vertical-2"><path d="m17 3-5 5-5-5h10"/><path d="m17 21-5-5-5 5h10"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/></svg>
                     </button>
                     <button id="bringFrontBtn" class="btn btn-bring-front" title="まえにだす">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bring-to-front-icon lucide-bring-to-front"><rect x="8" y="8" width="8" height="8" rx="2"/><path d="M4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2"/><path d="M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2"/></svg>
@@ -1727,7 +1724,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             setTimeout(() => element.classList.remove('clicked'), 300);
 
             // SVGファイルを読み込み
-            fetch('/' + svgPath)
+            const svgUrl = svgPath.startsWith('/') ? svgPath : '/' + svgPath;
+            fetch(svgUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2077,123 +2075,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 updateSelectedLayerTitle();
                 
                 console.log(`Layer ${currentSelectedId} rotated right to ${layer.transform.rotation} degrees`);
-                
-                // ローカルストレージに保存
-                saveToLocalStorage();
-            }
-        }
-
-        // 選択されたレイヤーを15度左回転
-        function rotateLeftSelectedLayer() {
-            if (selectedLayerId === null) {
-                alert('回転させるレイヤーを選択してください。');
-                return;
-            }
-
-            const layer = layers.find(l => l.id === selectedLayerId);
-            if (layer) {
-                layer.transform.rotation -= 15;
-                // 0度未満の場合は360度から引く
-                if (layer.transform.rotation < 0) {
-                    layer.transform.rotation += 360;
-                }
-                
-                // 現在の選択IDを保存
-                const currentSelectedId = selectedLayerId;
-                
-                // 全レイヤーを再描画（選択状態を保持）
-                layers.forEach(l => {
-                    renderLayer(l);
-                });
-                
-                // 選択中の素材タイトルを更新
-                updateSelectedLayerTitle();
-                
-                console.log(`Layer ${currentSelectedId} rotated left to ${layer.transform.rotation} degrees`);
-                
-                // ローカルストレージに保存
-                saveToLocalStorage();
-            }
-        }
-
-        // 選択されたレイヤーを水平反転
-        function flipHorizontalSelectedLayer() {
-            if (selectedLayerId === null) {
-                alert('まずえをえらんでね！');
-                return;
-            }
-
-            const layer = layers.find(l => l.id === selectedLayerId);
-            if (layer) {
-                // 反転前の状態を保存
-                const wasFlipped = layer.transform.flipHorizontal;
-                
-                // 水平反転フラグを切り替え
-                layer.transform.flipHorizontal = !layer.transform.flipHorizontal;
-                
-                // 反転による位置のズレを補正
-                if (!wasFlipped && layer.transform.flipHorizontal) {
-                    // 通常→反転: 中心を基準とした位置補正
-                    layer.transform.x += 2 * layer.originalCenter.x * layer.transform.scale;
-                } else if (wasFlipped && !layer.transform.flipHorizontal) {
-                    // 反転→通常: 位置を元に戻す
-                    layer.transform.x -= 2 * layer.originalCenter.x * layer.transform.scale;
-                }
-                
-                // 現在の選択IDを保存
-                const currentSelectedId = selectedLayerId;
-                
-                // 全レイヤーを再描画（選択状態を保持）
-                layers.forEach(l => {
-                    renderLayer(l);
-                });
-                
-                // 選択中の素材タイトルを更新
-                updateSelectedLayerTitle();
-                
-                console.log(`Layer ${currentSelectedId} horizontal flip: ${layer.transform.flipHorizontal}`);
-                
-                // ローカルストレージに保存
-                saveToLocalStorage();
-            }
-        }
-
-        // 選択されたレイヤーを上下反転
-        function flipVerticalSelectedLayer() {
-            if (selectedLayerId === null) {
-                alert('まずえをえらんでね！');
-                return;
-            }
-
-            const layer = layers.find(l => l.id === selectedLayerId);
-            if (layer) {
-                // 反転前の状態を保存
-                const wasFlipped = layer.transform.flipVertical;
-                
-                // 上下反転フラグを切り替え
-                layer.transform.flipVertical = !layer.transform.flipVertical;
-                
-                // 反転による位置のズレを補正
-                if (!wasFlipped && layer.transform.flipVertical) {
-                    // 通常→反転: 中心を基準とした位置補正
-                    layer.transform.y += 2 * layer.originalCenter.y * layer.transform.scale;
-                } else if (wasFlipped && !layer.transform.flipVertical) {
-                    // 反転→通常: 位置を元に戻す
-                    layer.transform.y -= 2 * layer.originalCenter.y * layer.transform.scale;
-                }
-                
-                // 現在の選択IDを保存
-                const currentSelectedId = selectedLayerId;
-                
-                // 全レイヤーを再描画（選択状態を保持）
-                layers.forEach(l => {
-                    renderLayer(l);
-                });
-                
-                // 選択中の素材タイトルを更新
-                updateSelectedLayerTitle();
-                
-                console.log(`Layer ${currentSelectedId} vertical flip: ${layer.transform.flipVertical}`);
                 
                 // ローカルストレージに保存
                 saveToLocalStorage();
@@ -3138,31 +3019,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // 回転ボタンの状態を更新
         function updateRotateButtonState() {
             const rotateBtn = document.getElementById('rotateBtn');
-            const rotateLeftBtn = document.getElementById('rotateLeftBtn');
-            const flipHorizontalBtn = document.getElementById('flipHorizontalBtn');
-            const flipVerticalBtn = document.getElementById('flipVerticalBtn');
             
             console.log(`updateRotateButtonState: selectedLayerId = ${selectedLayerId}`);
             
             if (selectedLayerId !== null) {
                 rotateBtn.disabled = false;
                 rotateBtn.title = '選択したレイヤーを15度右回転';
-                rotateLeftBtn.disabled = false;
-                rotateLeftBtn.title = '選択したレイヤーを15度左回転';
-                flipHorizontalBtn.disabled = false;
-                flipHorizontalBtn.title = '選択したレイヤーを水平反転';
-                flipVerticalBtn.disabled = false;
-                flipVerticalBtn.title = '選択したレイヤーを上下反転';
                 console.log('Rotate buttons ENABLED');
             } else {
                 rotateBtn.disabled = true;
                 rotateBtn.title = 'レイヤーを選択してから回転できます';
-                rotateLeftBtn.disabled = true;
-                rotateLeftBtn.title = 'レイヤーを選択してから回転できます';
-                flipHorizontalBtn.disabled = true;
-                flipHorizontalBtn.title = 'レイヤーを選択してから反転できます';
-                flipVerticalBtn.disabled = true;
-                flipVerticalBtn.title = 'レイヤーを選択してから反転できます';
                 console.log('Rotate buttons DISABLED');
             }
         }
@@ -4679,18 +4545,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 e.stopPropagation();
                 rotateSelectedLayer();
             });
-            document.getElementById('rotateLeftBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                rotateLeftSelectedLayer();
-            });
-            document.getElementById('flipHorizontalBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                flipHorizontalSelectedLayer();
-            });
-            document.getElementById('flipVerticalBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                flipVerticalSelectedLayer();
-            });
             document.getElementById('scaleDownBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
                 scaleDownSelectedLayer();
@@ -5001,5 +4855,14 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- シャッフルボタン機能 -->
+    <script>
+        document.getElementById('shuffleBtn').addEventListener('click', function() {
+            // キャッシュをバイパスしてページをリロード
+            const timestamp = new Date().getTime();
+            window.location.href = '/compose2/kids.php?refresh=' + timestamp;
+        });
+    </script>
 </body>
 </html>
