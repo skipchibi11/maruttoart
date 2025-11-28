@@ -1596,12 +1596,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             </div>
                 <!-- そうさボタンエリア -->
                 <div class="manipulation-controls">
-                <div class="manipulation-header">
-                    <h3><i class="bi bi-magic"></i> えをへんこう</h3>
-                    <div class="selected-layer-info">
-                        <span id="selectedLayerTitle" class="selected-title">えをえらんでね</span>
-                    </div>
-                </div>
                 <div class="manipulation-buttons">
                     <button id="scaleDownBtn" class="btn btn-scale-down" title="ちいさくする">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
@@ -1612,46 +1606,12 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     <button id="rotateBtn" class="btn btn-rotate" title="みぎにまわす">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                     </button>
-                    <button id="bringFrontBtn" class="btn btn-bring-front" title="まえにだす">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bring-to-front-icon lucide-bring-to-front"><rect x="8" y="8" width="8" height="8" rx="2"/><path d="M4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2"/><path d="M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2"/></svg>
-                    </button>
-                    <button id="sendBackBtn" class="btn btn-send-back" title="うしろにさげる">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-to-back-icon lucide-send-to-back"><rect x="14" y="14" width="8" height="8" rx="2"/><rect x="2" y="2" width="8" height="8" rx="2"/><path d="M7 14v1a2 2 0 0 0 2 2h1"/><path d="M14 7h1a2 2 0 0 1 2 2v1"/></svg>
-                    </button>
                     <button id="deleteBtn" class="btn btn-delete" title="けす">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
                     <button id="springThemeBtn" class="btn btn-spring-theme" title="はるのいろ">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flower-icon lucide-flower"><circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/><path d="M12 7.5V9"/><path d="M7.5 12H9"/><path d="M16.5 12H15"/><path d="M12 16.5V15"/><path d="m8 8 1.88 1.88"/><path d="M14.12 9.88 16 8"/><path d="m8 16 1.88-1.88"/><path d="M14.12 14.12 16 16"/></svg>
                     </button>
-                    <button id="summerThemeBtn" class="btn btn-summer-theme" title="なつのいろ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-                    </button>
-                    <button id="autumnThemeBtn" class="btn btn-autumn-theme" title="あきのいろ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-leaf"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
-                    </button>
-                    <button id="winterThemeBtn" class="btn btn-winter-theme" title="ふゆのいろ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-snowflake-icon lucide-snowflake"><path d="m10 20-1.25-2.5L6 18"/><path d="M10 4 8.75 6.5 6 6"/><path d="m14 20 1.25-2.5L18 18"/><path d="m14 4 1.25 2.5L18 6"/><path d="m17 21-3-6h-4"/><path d="m17 3-3 6 1.5 3"/><path d="M2 12h6.5L10 9"/><path d="m20 10-1.5 2 1.5 2"/><path d="M22 12h-6.5L14 15"/><path d="m4 10 1.5 2L4 14"/><path d="m7 21 3-6-1.5-3"/><path d="m7 3 3 6h4"/></svg>
-                    </button>
-                    <button id="monochromeThemeBtn" class="btn btn-monochrome-theme" title="しろくろ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panda-icon lucide-panda"><path d="M11.25 17.25h1.5L12 18z"/><path d="m15 12 2 2"/><path d="M18 6.5a.5.5 0 0 0-.5-.5"/><path d="M20.69 9.67a4.5 4.5 0 1 0-7.04-5.5 8.35 8.35 0 0 0-3.3 0 4.5 4.5 0 1 0-7.04 5.5C2.49 11.2 2 12.88 2 14.5 2 19.47 6.48 22 12 22s10-2.53 10-7.5c0-1.62-.48-3.3-1.3-4.83"/><path d="M6 6.5a.495.495 0 0 1 .5-.5"/><path d="m9 12-2 2"/></svg>
-                    </button>
-                    <button id="sepiaThemeBtn" class="btn btn-sepia-theme" title="ふるいしゃしんのいろ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coffee-icon lucide-coffee"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg>
-                    </button>
-                </div>
-                
-                <!-- カラーパレット（レイヤー編集内：レイヤー選択時のみ表示） -->
-                <div id="colorPalette" class="color-palette mt-3" style="display: none;"></div>
-                
-                <!-- いろへんこう設定 -->
-                <div class="bulk-color-settings">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="bulkColorChange">
-                        <label class="form-check-label" for="bulkColorChange">
-                            ぜんぶのいろを かえる
-                        </label>
-                    </div>
                 </div>
             </div>
 
@@ -1862,6 +1822,26 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 selectLayer(layer.id);
             });
 
+            // ダブルクリックで前面に移動
+            layerGroup.addEventListener('dblclick', function(e) {
+                e.stopPropagation();
+                bringLayerToFrontById(layer.id);
+            });
+
+            // ダブルタップで前面に移動（スマホ対応）
+            let lastTap = 0;
+            layerGroup.addEventListener('touchend', function(e) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                    // ダブルタップ検出
+                    e.preventDefault();
+                    e.stopPropagation();
+                    bringLayerToFrontById(layer.id);
+                }
+                lastTap = currentTime;
+            });
+
             // マウスドラッグイベントを追加
             layerGroup.addEventListener('mousedown', function(e) {
                 e.stopPropagation();
@@ -1921,14 +1901,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateRotateButtonState();
             updateScaleDownButtonState();
             updateScaleUpButtonState();
-            updateLayerMoveButtonState();
             updateDeleteButtonState();
-            
-            // カラーパネルを表示
-            const selectedLayer = layers.find(layer => layer.id === layerId);
-            if (selectedLayer) {
-                showColorPanel(selectedLayer);
-            }
             
             console.log(`Selection complete - selectedLayerId: ${selectedLayerId}`);
         }
@@ -1952,11 +1925,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 updateRotateButtonState();
                 updateScaleDownButtonState();
                 updateScaleUpButtonState();
-                updateLayerMoveButtonState();
                 updateDeleteButtonState();
-                
-                // カラーパネルを非表示
-                hideColorPanel();
             }
         }
 
@@ -2166,6 +2135,37 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }
         }
 
+        // 指定されたレイヤーを1段だけ前面に移動（ダブルクリック/タップ用）
+        function bringLayerToFrontById(layerId) {
+            // レイヤーのインデックスを取得
+            const currentIndex = layers.findIndex(l => l.id === layerId);
+            if (currentIndex === -1 || currentIndex === layers.length - 1) {
+                // レイヤーが見つからないか、既に最前面の場合
+                return;
+            }
+
+            // レイヤーを1つ前に移動（配列の後ろが前面）
+            const layer = layers[currentIndex];
+            layers.splice(currentIndex, 1);
+            layers.splice(currentIndex + 1, 0, layer);
+
+            // 全レイヤーを再描画（Z-order更新のため）
+            layers.forEach(l => {
+                renderLayer(l);
+            });
+            
+            // レイヤーを選択
+            selectLayer(layerId);
+            
+            // 選択中の素材タイトルを更新
+            updateSelectedLayerTitle();
+            
+            console.log(`Layer ${layerId} moved up one level (double-click/tap)`);
+            
+            // ローカルストレージに保存
+            saveToLocalStorage();
+        }
+
         // 選択されたレイヤーを1つ前面に移動
         function bringLayerToFront() {
             if (selectedLayerId === null) {
@@ -2194,7 +2194,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             });
             
             // レイヤー移動ボタンの状態を更新
-            updateLayerMoveButtonState();
             
             // 選択中の素材タイトルを更新
             updateSelectedLayerTitle();
@@ -2233,7 +2232,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             });
             
             // レイヤー移動ボタンの状態を更新
-            updateLayerMoveButtonState();
             
             // 選択中の素材タイトルを更新
             updateSelectedLayerTitle();
@@ -2279,7 +2277,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateScaleDownButtonState();
             updateScaleUpButtonState();
             updateSelectedLayerTitle();
-            updateLayerMoveButtonState();
             updateDeleteButtonState();
             
             console.log(`Layer deleted (was at index: ${currentIndex})`);
@@ -2293,39 +2290,29 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             console.log(`=== applySeasonalTheme START (${season}) ===`);
             console.log('selectedLayerId:', selectedLayerId);
             
-            const bulkColorChange = document.getElementById('bulkColorChange').checked;
-            console.log('bulkColorChange:', bulkColorChange);
-            
-            // レイヤー未選択時の処理分岐
+            // レイヤー未選択時は全レイヤーに適用
             if (!selectedLayerId) {
-                if (bulkColorChange) {
-                    // 一括色変更許可：全レイヤーに適用
-                    console.log('Bulk color change mode: applying to all layers');
-                    if (layers.length === 0) {
-                        alert('さいしょにえをえらんでね！');
-                        return;
-                    }
-                    applyThemeToAllLayers(season);
-                    
-                    // ユーザーに通知
-                    const seasonNames = {
-                        spring: '春のやわらかパステル',
-                        summer: '夏のやわらかパステル', 
-                        autumn: '秋のやわらかパステル',
-                        winter: '冬のやわらかパステル',
-                        monochrome: 'やさしいモノクロ',
-                        sepia: 'やさしいセピア'
-                    };
-                    
-                    const message = `${seasonNames[season]}を全レイヤーに適用しました！`;
-                    console.log(message);
-                    
-                    return;
-                } else {
-                    // 従来モード：レイヤー選択要求
-                    alert('レイヤーを選択してください（一括適用する場合は「一括色変更許可」をONにしてください）');
+                console.log('No layer selected: applying to all layers');
+                if (layers.length === 0) {
+                    alert('さいしょにえをえらんでね！');
                     return;
                 }
+                applyThemeToAllLayers(season);
+                
+                // ユーザーに通知
+                const seasonNames = {
+                    spring: '春のやわらかパステル',
+                    summer: '夏のやわらかパステル', 
+                    autumn: '秋のやわらかパステル',
+                    winter: '冬のやわらかパステル',
+                    monochrome: 'やさしいモノクロ',
+                    sepia: 'やさしいセピア'
+                };
+                
+                const message = `${seasonNames[season]}を全レイヤーに適用しました！`;
+                console.log(message);
+                
+                return;
             }
             
             // レイヤーが選択されている場合：選択レイヤーのみに適用
@@ -2604,11 +2591,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             // ローカルストレージに保存
             saveToLocalStorage();
             
-            // カラーパレットを更新（色見本に変更を反映）
-            updateColorPaletteAfterThemeChange(layer);
-            
             console.log(`${palette.name}が適用されました: ${colorChangedCount}個の色要素を変更`);
-            console.log('カラーパレットも更新されました');
             console.log(`=== applySeasonalTheme END (${season}) ===`);
         }
 
@@ -2795,29 +2778,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         // テーマ適用後にカラーパレットを更新
-        function updateColorPaletteAfterThemeChange(layer) {
-            console.log(`Updating color palette after theme change for layer ${layer.id}`);
-            
-            // 現在のカラーパレットを取得
-            const colorPalette = document.getElementById('colorPalette');
-            if (!colorPalette || !colorPalette.classList.contains('loaded')) {
-                console.log('Color palette not loaded, skipping update');
-                return;
-            }
-            
-            // 古いカラーパレットをクリア（固定サイズ維持）
-            colorPalette.innerHTML = `
-                <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
-                    <div class="mb-2"><i class="bi bi-arrow-clockwise"></i> 色を更新中...</div>
-                    <div>テーマ適用後の新しい色を取得しています</div>
-                </div>
-            `;
-            
-            // 少し遅延してから新しい色を抽出
-            setTimeout(() => {
-                extractColorsFromLayer(layer);
-            }, 300);
-        }
+
 
         // SVG線形品質を確保する関数（現在は無効化 - 線が太くなる問題のため）
         function ensureSVGLineQuality(element) {
@@ -2989,7 +2950,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     updateRotateButtonState();
                     updateScaleDownButtonState();
                     updateScaleUpButtonState();
-                    updateLayerMoveButtonState();
                     updateDeleteButtonState();
                     updateSeasonalThemeButtonState();
                     
@@ -3066,39 +3026,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             } else {
                 scaleUpBtn.disabled = true;
                 scaleUpBtn.title = 'レイヤーを選択してから拡大できます';
-            }
-        }
-
-        // レイヤー移動ボタンの状態を更新
-        function updateLayerMoveButtonState() {
-            const bringFrontBtn = document.getElementById('bringFrontBtn');
-            const sendBackBtn = document.getElementById('sendBackBtn');
-            
-            if (selectedLayerId !== null) {
-                const currentIndex = layers.findIndex(l => l.id === selectedLayerId);
-                
-                // 前面移動ボタン（最前面でない場合は有効）
-                if (currentIndex >= 0 && currentIndex < layers.length - 1) {
-                    bringFrontBtn.disabled = false;
-                    bringFrontBtn.title = '選択したレイヤーを1つ前面に移動';
-                } else {
-                    bringFrontBtn.disabled = true;
-                    bringFrontBtn.title = '既に最前面です';
-                }
-                
-                // 背面移動ボタン（最背面でない場合は有効）
-                if (currentIndex > 0) {
-                    sendBackBtn.disabled = false;
-                    sendBackBtn.title = '選択したレイヤーを1つ背面に移動';
-                } else {
-                    sendBackBtn.disabled = true;
-                    sendBackBtn.title = '既に最背面です';
-                }
-            } else {
-                bringFrontBtn.disabled = true;
-                bringFrontBtn.title = 'レイヤーを選択してから移動できます';
-                sendBackBtn.disabled = true;
-                sendBackBtn.title = 'レイヤーを選択してから移動できます';
             }
         }
 
@@ -3226,7 +3153,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                             updateRotateButtonState();
                             updateScaleDownButtonState();
                             updateScaleUpButtonState();
-                            updateLayerMoveButtonState();
                             updateDeleteButtonState();
                             updateSeasonalThemeButtonState();
                         }
@@ -3323,7 +3249,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     updateRotateButtonState();
                     updateScaleDownButtonState();
                     updateScaleUpButtonState();
-                    updateLayerMoveButtonState();
                     updateDeleteButtonState();
                 }
             };
@@ -3371,7 +3296,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         updateRotateButtonState();
                         updateScaleDownButtonState();
                         updateScaleUpButtonState();
-                        updateLayerMoveButtonState();
                         updateDeleteButtonState();
                     }
                     
@@ -4161,327 +4085,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }
         }
 
-        // カラーパネル表示
-        function showColorPanel(layer) {
-            console.log(`showColorPanel called for layer ${layer.id}`);
-            const colorPalette = document.getElementById('colorPalette');
-            if (!colorPalette) {
-                console.log('colorPalette element not found');
-                return;
-            }
-            
-            // カラーパレットを表示（Flexレイアウトを維持）
-            colorPalette.style.display = 'flex';
-            
-            console.log('Extracting colors from layer...');
-            extractColorsFromLayer(layer);
-        }
 
-        // カラーパネル非表示（デフォルトメッセージを表示）
-        function hideColorPanel() {
-            const colorPalette = document.getElementById('colorPalette');
-            if (colorPalette) {
-                // カラーパレットを非表示にする
-                colorPalette.style.display = 'none';
-                
-                // 内容をリセット
-                colorPalette.innerHTML = `
-                    <div class="text-center text-muted">
-                        <div class="mb-2">素材を選択してください</div>
-                        <div>選択した素材の色を変更できます</div>
-                    </div>
-                `;
-                colorPalette.classList.remove('loaded');
-            }
-        }
 
-        // レイヤーから色を抽出
-        function extractColorsFromLayer(layer) {
-            console.log(`extractColorsFromLayer called for layer ${layer.id}`);
-            const colorPalette = document.getElementById('colorPalette');
-            if (!colorPalette) {
-                console.log('colorPalette element not found');
-                return;
-            }
-            
-            // カラーパレットを確実に表示（Flexレイアウトを維持）
-            colorPalette.style.display = 'flex';
-            
-            // ローディング状態を表示（固定サイズ）
-            colorPalette.innerHTML = `
-                <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
-                    <div class="mb-2">読み込み中...</div>
-                    <div>色を抽出しています...</div>
-                    <small class="d-block mt-1">しばらくお待ちください</small>
-                </div>
-            `;
-            
-            // レイヤーのSVG要素を取得
-            const layerElement = document.getElementById(`layer-${layer.id}`);
-            console.log(`Looking for layer element with id: layer-${layer.id}`);
-            if (!layerElement) {
-                console.log(`Layer element layer-${layer.id} not found`);
-                return;
-            }
-            console.log(`Found layer element:`, layerElement);
-            
-            // SVG内の全要素から色を抽出
-            const colors = new Set();
-            const allElements = layerElement.querySelectorAll('*');
-            
-            allElements.forEach(element => {
-                const fill = element.getAttribute('fill');
-                const stroke = element.getAttribute('stroke');
-                
-                if (fill && fill !== 'none' && fill !== 'transparent') {
-                    colors.add(convertToHex(fill));
-                }
-                if (stroke && stroke !== 'none' && stroke !== 'transparent') {
-                    colors.add(convertToHex(stroke));
-                }
-                
-                // style属性からも抽出
-                const style = element.getAttribute('style');
-                if (style) {
-                    const fillMatch = style.match(/fill\s*:\s*([^;]+)/);
-                    const strokeMatch = style.match(/stroke\s*:\s*([^;]+)/);
-                    
-                    if (fillMatch && fillMatch[1] !== 'none' && fillMatch[1] !== 'transparent') {
-                        colors.add(convertToHex(fillMatch[1].trim()));
-                    }
-                    if (strokeMatch && strokeMatch[1] !== 'none' && strokeMatch[1] !== 'transparent') {
-                        colors.add(convertToHex(strokeMatch[1].trim()));
-                    }
-                }
-            });
-            
-            // カラーパレットを生成（遅延なしで即座に）
-            generateColorPalette(Array.from(colors), layer);
-        }
 
-        // カラーパレットを生成
-        function generateColorPalette(colors, layer) {
-            const colorPalette = document.getElementById('colorPalette');
-            if (!colorPalette) return;
-            
-            // カラーパレットを確実に表示（Flexレイアウトを維持）
-            colorPalette.style.display = 'flex';
-            
-            // 既存のグローバル隠しカラーピッカーをクリア（テーマ変更後の古い参照を削除）
-            const globalHiddenPicker = document.getElementById('global-hidden-color-picker');
-            if (globalHiddenPicker) {
-                globalHiddenPicker.remove();
-                console.log('Removed existing global hidden color picker');
-            }
-            
-            if (colors.length === 0) {
-                colorPalette.innerHTML = `
-                    <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
-                        <div>変更可能な色が見つかりませんでした</div>
-                        <small class="d-block mt-1">この素材には色情報がないか、すべて透明です</small>
-                    </div>
-                `;
-                return;
-            }
-            
-            colorPalette.innerHTML = '';
-            colorPalette.classList.add('loaded');
-            
-            colors.forEach((originalColor, index) => {
-                const colorItem = document.createElement('div');
-                colorItem.className = 'color-item';
-                
-                colorItem.innerHTML = `
-                    <div class="color-swatch-container" data-original-color="${originalColor}" data-layer-id="${layer.id}">
-                        <input type="color" 
-                               class="color-picker-input" 
-                               value="${originalColor}" 
-                               oninput="changeColorDirectly('${originalColor}', this.value, ${layer.id}, this)"
-                               title="色を選択: ${originalColor}">
-                        <div class="color-label">${originalColor}</div>
-                    </div>
-                `;
-                
-                colorPalette.appendChild(colorItem);
-            });
-            
-            // デバッグ: 生成されたカラーピッカーの数を確認
-            const generatedPickers = colorPalette.querySelectorAll('.color-picker');
-            console.log(`Generated ${generatedPickers.length} color pickers for layer ${layer.id}`);
-        }
-
-        // 色を16進数に変換
-        function convertToHex(color) {
-            if (color.startsWith('#')) {
-                return color.toUpperCase();
-            }
-            
-            if (color.startsWith('rgb')) {
-                const matches = color.match(/\d+/g);
-                if (matches && matches.length >= 3) {
-                    const r = parseInt(matches[0]);
-                    const g = parseInt(matches[1]);
-                    const b = parseInt(matches[2]);
-                    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-                }
-            }
-            
-            return color;
-        }
-
-        // レイヤーの色を変更
-        function changeLayerColor(oldColor, newColor, layerId) {
-            const layer = layers.find(l => l.id === layerId);
-            if (!layer) return;
-            
-            const layerElement = document.getElementById(`layer-${layerId}`);
-            if (!layerElement) return;
-            
-            // SVG内の該当する色を全て変更
-            const allElements = layerElement.querySelectorAll('*');
-            let changeCount = 0;
-            
-            allElements.forEach(element => {
-                // fill属性をチェック
-                const fillAttr = element.getAttribute('fill');
-                if (fillAttr && convertToHex(fillAttr) === convertToHex(oldColor)) {
-                    element.setAttribute('fill', newColor);
-                    changeCount++;
-                }
-                
-                // stroke属性をチェック
-                const strokeAttr = element.getAttribute('stroke');
-                if (strokeAttr && convertToHex(strokeAttr) === convertToHex(oldColor)) {
-                    element.setAttribute('stroke', newColor);
-                    changeCount++;
-                }
-                
-                // style属性をチェック
-                const styleAttr = element.getAttribute('style');
-                if (styleAttr) {
-                    let newStyle = styleAttr;
-                    let styleChanged = false;
-                    
-                    const fillMatch = styleAttr.match(/fill\s*:\s*([^;]+)/);
-                    const strokeMatch = styleAttr.match(/stroke\s*:\s*([^;]+)/);
-                    
-                    if (fillMatch && convertToHex(fillMatch[1].trim()) === convertToHex(oldColor)) {
-                        newStyle = newStyle.replace(/fill\s*:\s*[^;]+/, `fill: ${newColor}`);
-                        styleChanged = true;
-                        changeCount++;
-                    }
-                    
-                    if (strokeMatch && convertToHex(strokeMatch[1].trim()) === convertToHex(oldColor)) {
-                        newStyle = newStyle.replace(/stroke\s*:\s*[^;]+/, `stroke: ${newColor}`);
-                        styleChanged = true;
-                        changeCount++;
-                    }
-                    
-                    if (styleChanged) {
-                        element.setAttribute('style', newStyle);
-                    }
-                }
-            });
-            
-            // レイヤーデータを更新
-            const parser = new DOMParser();
-            const layerSvg = layerElement.cloneNode(true);
-            layer.svgContent = layerSvg.innerHTML;
-            
-            // ローカルストレージに保存
-            saveToLocalStorage();
-            
-            console.log(`Color changed from ${oldColor} to ${newColor}, ${changeCount} elements updated`);
-        }
-
-        // デバウンス用のタイマー管理
-        let colorChangeTimeout = null;
-        let lastColorChange = null;
-        
-        // 直接色変更（即時反映・デバウンス対応）
-        function changeColorDirectly(originalColor, newColor, layerId, inputElement) {
-            console.log(`Changing color directly from ${originalColor} to ${newColor} on layer ${layerId}`);
-            
-            // 現在の色を取得（連続変更時は前回の新色が基準）
-            const container = inputElement.closest('.color-swatch-container');
-            const currentOriginalColor = container ? container.getAttribute('data-original-color') : originalColor;
-            
-            // UI は即座に更新
-            updateColorUI(currentOriginalColor, newColor, layerId, inputElement);
-            
-            // レイヤーの色変更はデバウンスして実行
-            if (colorChangeTimeout) {
-                clearTimeout(colorChangeTimeout);
-            }
-            
-            // 最新の色変更情報を保存
-            lastColorChange = {
-                originalColor: currentOriginalColor,
-                newColor: newColor,
-                layerId: layerId
-            };
-            
-            colorChangeTimeout = setTimeout(() => {
-                if (lastColorChange) {
-                    changeLayerColor(lastColorChange.originalColor, lastColorChange.newColor, lastColorChange.layerId);
-                    lastColorChange = null;
-                }
-                colorChangeTimeout = null;
-            }, 100); // 100ms のデバウンス（スムーズな操作感）
-        }
-        
-        // UI の即座更新
-        function updateColorUI(originalColor, newColor, layerId, inputElement) {
-            
-            // コンテナを取得して情報を更新
-            const container = inputElement.closest('.color-swatch-container');
-            if (container) {
-                const label = container.querySelector('.color-label');
-                
-                // ラベルを更新
-                if (label) {
-                    label.textContent = newColor.toUpperCase();
-                }
-                
-                // カラーピッカーのタイトルを更新
-                inputElement.title = `色を選択: ${newColor}`;
-                
-                // データ属性を更新
-                container.setAttribute('data-original-color', newColor);
-                
-                // 他の同じ色のカラーピッカーも更新（同期）
-                updateOtherPickersOfSameColor(originalColor, newColor, layerId);
-                
-                console.log(`Color picker updated from ${originalColor} to ${newColor} for layer ${layerId}`);
-            }
-        }
-        
-        // 同じ色の他のカラーピッカーを同期更新
-        function updateOtherPickersOfSameColor(originalColor, newColor, layerId) {
-            const allContainers = document.querySelectorAll('.color-swatch-container');
-            allContainers.forEach(container => {
-                const containerOriginalColor = container.getAttribute('data-original-color');
-                const containerLayerId = container.getAttribute('data-layer-id');
-                
-                if (convertToHex(containerOriginalColor) === convertToHex(originalColor) && 
-                    containerLayerId == layerId && 
-                    container.getAttribute('data-original-color') !== newColor) {
-                    
-                    const label = container.querySelector('.color-label');
-                    const input = container.querySelector('.color-picker-input');
-                    
-                    if (label) {
-                        label.textContent = newColor.toUpperCase();
-                    }
-                    if (input) {
-                        input.value = newColor;
-                        input.title = `色を選択: ${newColor}`;
-                    }
-                    
-                    container.setAttribute('data-original-color', newColor);
-                }
-            });
-        }
 
         // 旧実装（背景色仕様に合わせるため無効化）
         // function showColorTool() { /* 新実装では不要 */ }
@@ -4553,14 +4159,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 e.stopPropagation();
                 scaleUpSelectedLayer();
             });
-            document.getElementById('bringFrontBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                bringLayerToFront();
-            });
-            document.getElementById('sendBackBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                sendLayerToBack();
-            });
             document.getElementById('deleteBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
                 deleteSelectedLayer();
@@ -4568,26 +4166,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             document.getElementById('springThemeBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
                 applySeasonalTheme('spring');
-            });
-            document.getElementById('summerThemeBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                applySeasonalTheme('summer');
-            });
-            document.getElementById('autumnThemeBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                applySeasonalTheme('autumn');
-            });
-            document.getElementById('winterThemeBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                applySeasonalTheme('winter');
-            });
-            document.getElementById('monochromeThemeBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                applySeasonalTheme('monochrome');
-            });
-            document.getElementById('sepiaThemeBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                applySeasonalTheme('sepia');
             });
             document.getElementById('exportBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -4724,7 +4302,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateRotateButtonState();
             updateScaleDownButtonState();
             updateScaleUpButtonState();
-            updateLayerMoveButtonState();
             updateDeleteButtonState();
             updateSeasonalThemeButtonState();
             updateSelectedLayerTitle();
