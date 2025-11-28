@@ -1503,43 +1503,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     include '../includes/header.php'; 
     ?>
 
-    <!-- こどもアトリエ説明セクション -->
-    <div class="how-to-use-section">
-        <div class="container">
-            <div class="how-to-content">
-                <h1 class="page-title">🎨 こどもアトリエ 🌈</h1>
-                <h2><i class="bi bi-stars"></i> つかいかた</h2>
-                <div class="steps-grid">
-                    <div class="step-item">
-                        <div class="step-number">1</div>
-                        <div class="step-text">したにある えから、すきな えをクリックすると、キャンバスにつかされるよ！</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">2</div>
-                        <div class="step-text">えをゆびでうごかして、すきなばしょに おいてね！</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">3</div>
-                        <div class="step-text">えをえらんで「へんけい」ボタンをおすと、おおきくしたり まわしたりできるよ！</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">4</div>
-                        <div class="step-text">えをえらぶと、いろを かえられることもあるよ！すきないろにしてみてね！</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">5</div>
-                        <div class="step-text">できあがったら、ダウンロードボタンをおして ほぞんしよう！</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">6</div>
-                        <div class="step-text">さくひんを みんなにみせたいときは「とうこう」ボタンをおしてね！</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
+    <div class="container" style="margin-top: 2rem;">
 
         <!-- メインコンテンツ -->
         <div class="main-content">
@@ -5032,56 +4996,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             </div>
         </div>
     </div>
-
-    <!-- みんなの作品セクション -->
-    <?php if (!empty($storyArtworks)): ?>
-    <section class="story-materials-section mt-5 mb-5">
-        <div class="container" style="max-width: 1200px;">
-            <div class="row">
-                <div class="col-12">
-                    <h2 class="text-center mb-2">優しい出会い</h2>
-                    <p class="text-center text-muted mb-4">作者の想いが込められた作品たち</p>
-                </div>
-            </div>
-            
-            <div class="story-materials-list">
-                <?php foreach ($storyArtworks as $story): ?>
-                <div class="story-material-item">
-                    <!-- 画像（リンク） -->
-                    <a href="/everyone-work.php?id=<?= h($story['id']) ?>" class="text-decoration-none">
-                        <div class="story-material-image-wrapper">
-                            <?php
-                            $storyImagePath = !empty($story['webp_path']) 
-                                ? '/' . h($story['webp_path'])
-                                : '/' . h($story['file_path']);
-                            ?>
-                            <div class="story-material-image">
-                                <img src="<?= $storyImagePath ?>" 
-                                     alt="<?= h($story['title']) ?>"
-                                     loading="lazy"
-                                     decoding="async">
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <!-- 説明（リンクなし） -->
-                    <div class="story-material-content">
-                        <h3 class="story-material-title">
-                            <a href="/everyone-work.php?id=<?= h($story['id']) ?>" class="text-decoration-none">
-                                <?= h($story['title']) ?>
-                            </a>
-                        </h3>
-                        <p class="story-author">by <?= h($story['pen_name']) ?></p>
-                        <div class="story-material-text">
-                            <?= nl2br(h($story['description'])) ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-    <?php endif; ?>
 
     <?php include '../includes/footer.php'; ?>
 
