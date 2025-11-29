@@ -146,89 +146,39 @@ try {
     error_log("Random artwork query error: " . $e->getMessage());
 }
 
-// 関連作品（類似度）を取得
+// 子供用アトリエのランダム作品を取得（なかまたち）
 $relatedArtworks = [];
 $showRelatedSection = false;
-
-try {
-    // ビューの存在確認
-    $viewCheckStmt = $pdo->query("
-        SELECT COUNT(*) as view_count 
-        FROM information_schema.views 
-        WHERE table_schema = DATABASE() 
-        AND table_name = 'community_artwork_top_similarities'
-    ");
-    $viewResult = $viewCheckStmt->fetch();
-    $viewExists = $viewResult['view_count'] > 0;
-    
-    if ($viewExists) {
-        // 既存のビューを使用して類似作品を取得
-        $relatedStmt = $pdo->prepare("
-            SELECT 
-                cats.similar_artwork_id as id,
-                cats.similar_artwork_title as title,
-                cats.similar_artwork_pen_name as pen_name,
-                cats.similar_artwork_file_path as file_path,
-                cats.similar_artwork_webp_path as webp_path,
-                cats.similarity_score
-            FROM community_artwork_top_similarities cats
-            WHERE cats.artwork_id = ?
-            ORDER BY cats.similarity_score DESC
-            LIMIT 8
-        ");
-        $relatedStmt->execute([$artwork['id']]);
-        $relatedArtworks = $relatedStmt->fetchAll();
-        
-        // 類似度データがある場合のみ関連セクションを表示
-        $showRelatedSection = !empty($relatedArtworks);
-    } else {
-        // ビューが存在しない場合は直接テーブルから取得
-        $relatedStmt = $pdo->prepare("
-            SELECT 
-                ca.id,
-                ca.title,
-                ca.pen_name,
-                ca.file_path,
-                ca.webp_path,
-                cas.similarity_score
-            FROM community_artwork_similarities cas
-            JOIN community_artworks ca ON cas.similar_artwork_id = ca.id
-            WHERE cas.artwork_id = ?
-              AND ca.status = 'approved'
-              AND cas.similarity_score >= 0.7
-            ORDER BY cas.similarity_score DESC
-            LIMIT 8
-        ");
-        $relatedStmt->execute([$artwork['id']]);
-        $relatedArtworks = $relatedStmt->fetchAll();
-        
-        $showRelatedSection = !empty($relatedArtworks);
-    }
-} catch (Exception $e) {
-    error_log("Related artworks query error: " . $e->getMessage());
-    $relatedArtworks = [];
-    $showRelatedSection = false;
-}
-
-// 関連素材を取得
 $relatedMaterials = [];
 $showRelatedMaterialsSection = false;
 
 try {
-    $stmt = $pdo->prepare("
-        SELECT * FROM community_artwork_related_materials
-        WHERE community_artwork_id = ?
-        ORDER BY similarity_score DESC
+    // 他のランダムな子供作品を8件取得
+    $relatedStmt = $pdo->prepare("
+        SELECT 
+            id,
+            title,
+            image_path,
+            webp_path,
+            created_at
+        FROM kids_artworks
+        WHERE id != ?
+        ORDER BY RAND()
+        LIMIT 8
     ");
-    $stmt->execute([$artwork['id']]);
-    $relatedMaterials = $stmt->fetchAll();
+    $relatedStmt->execute([$artwork['id']]);
+    $relatedArtworks = $relatedStmt->fetchAll();
     
-    $showRelatedMaterialsSection = !empty($relatedMaterials);
+    // 作品がある場合のみ関連セクションを表示
+    $showRelatedSection = !empty($relatedArtworks);
 } catch (Exception $e) {
-    error_log("Related materials query error: " . $e->getMessage());
-    $relatedMaterials = [];
-    $showRelatedMaterialsSection = false;
+    error_log("Related kids artworks query error: " . $e->getMessage());
+    $relatedArtworks = [];
+    $showRelatedSection = false;
 }
+
+// 子供用アトリエでは関連素材セクションは表示しない
+// （素材を使わずに自由に描くため）
 ?>
 
 <!DOCTYPE html>
@@ -1278,7 +1228,7 @@ try {
             <?php if ($showRelatedSection || $showRelatedMaterialsSection): ?>
             <section class="related-artworks-section">
                 <div class="text-center">
-                    <h3>なかまたち</h3>
+                    <h3>おともだちのさくひん</h3>
                     <div class="related-artworks-grid">
                         <?php 
                         // 関連作品を表示

@@ -1841,7 +1841,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         <rect id="canvasBackground" 
                               x="0" y="0" 
                               width="1024" height="1024" 
-                              fill="white"/>
+                              fill="#a7d5e8"/>
                         <!-- レイヤーがここに追加されます -->
                     </svg>
                 </div>
@@ -1862,7 +1862,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%;"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M23 17C23 10.9249 18.0751 6 12 6C5.92487 6 1 10.9249 1 17H3C3 12.0294 7.02944 8 12 8C16.9706 8 21 12.0294 21 17H23Z" fill="#FF575B"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M21 17C21 12.0294 16.9706 8 12 8C7.02944 8 3 12.0294 3 17H5C5 13.134 8.13401 10 12 10C15.866 10 19 13.134 19 17H21Z" fill="#FABA2C"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M19 17C19 13.134 15.866 10 12 10C8.13401 10 5 13.134 5 17H7C7 14.2386 9.23858 12 12 12C14.7614 12 17 14.2386 17 17H19Z" fill="#7AC74D"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M17 17C17 14.2386 14.7614 12 12 12C9.23858 12 7 14.2386 7 17H9C9 15.3431 10.3431 14 12 14C13.6569 14 15 15.3431 15 17H17Z" fill="#00B0FF"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M15 17H13C13 16.4477 12.5523 16 12 16C11.4477 16 11 16.4477 11 17H9C9 15.3431 10.3431 14 12 14C13.6569 14 15 15.3431 15 17Z" fill="#B99FE4"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M13 17C13 16.4477 12.5523 16 12 16C11.4477 16 11 16.4477 11 17H13Z" fill="#E39BD1"></path> </g></svg>
                     </button>
                     <button id="bgColorBtn" class="btn btn-bg-color" title="はいけいのいろ">
-                        <input type="color" id="customBgColor" value="#D8E8F0" style="width: 90%; height: 90%; border: none; background: none; cursor: pointer;">
+                        <input type="color" id="customBgColor" value="#a7d5e8" style="width: 90%; height: 90%; border: none; background: none; cursor: pointer;">
                     </button>
                     <button id="deleteBtn" class="btn btn-delete" title="けす">
                         <svg viewBox="0 0 1024 1024" class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#000000" style="width: 90%; height: 90%;"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M512 454.4L270.933333 213.333333 554.666667 36.266667 817.066667 213.333333z" fill="#99caff"></path><path d="M512 454.4L270.933333 213.333333 362.666667 100.266667 817.066667 213.333333z" fill="#fbea79"></path><path d="M652.8 938.666667H371.2c-42.666667 0-78.933333-29.866667-85.333333-72.533334L192 234.666667h640l-96 631.466666c-6.4 42.666667-42.666667 72.533333-83.2 72.533334z" fill="#dbbf9e"></path><path d="M810.666667 277.333333H213.333333c-23.466667 0-42.666667-19.2-42.666666-42.666666s19.2-42.666667 42.666666-42.666667h597.333334c23.466667 0 42.666667 19.2 42.666666 42.666667s-19.2 42.666667-42.666666 42.666666z" fill="#9a794c"></path></g></svg>
@@ -3264,6 +3264,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // ローカルストレージに編集内容を保存
         function saveToLocalStorage() {
             try {
+                console.log('保存前のlayers配列:', layers);
+                console.log('保存前のlayers長さ:', layers.length);
+                
                 const editorData = {
                     layers: layers,
                     selectedLayerId: selectedLayerId,
@@ -3272,10 +3275,23 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     timestamp: Date.now()
                 };
                 
-                localStorage.setItem('compose2_editor_data', JSON.stringify(editorData));
-                console.log('編集内容をローカルストレージに保存しました');
+                const jsonData = JSON.stringify(editorData);
+                localStorage.setItem('compose2_editor_data', jsonData);
+                console.log('編集内容を保存:', {
+                    レイヤー数: layers.length,
+                    背景色: currentBackgroundColor,
+                    データサイズ: jsonData.length + 'バイト'
+                });
+                
+                // 保存直後に確認
+                const saved = localStorage.getItem('compose2_editor_data');
+                const parsed = JSON.parse(saved);
+                console.log('保存確認 - レイヤー数:', parsed.layers.length);
             } catch (error) {
                 console.error('ローカルストレージ保存エラー:', error);
+                if (error.name === 'QuotaExceededError') {
+                    alert('ストレージの容量が不足しています。ブラウザのデータをクリアしてください。');
+                }
             }
         }
 
@@ -3283,8 +3299,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         function loadFromLocalStorage() {
             try {
                 const savedData = localStorage.getItem('compose2_editor_data');
+                console.log('localStorage読み込み:', savedData ? 'データあり' : 'データなし');
+                
                 if (savedData) {
                     const editorData = JSON.parse(savedData);
+                    console.log('復元するデータ:', {
+                        レイヤー数: editorData.layers?.length || 0,
+                        背景色: editorData.currentBackgroundColor || 'なし',
+                        タイムスタンプ: editorData.timestamp ? new Date(editorData.timestamp).toLocaleString() : 'なし'
+                    });
                     
                     // データの復元
                     layers = editorData.layers || [];
@@ -3294,6 +3317,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     
                     // レイヤーを再描画
                     layers.forEach(layer => {
+                        console.log('レイヤー復元:', layer.id, layer.materialName);
                         renderLayer(layer);
                     });
                     
@@ -3306,6 +3330,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     updateSeasonalThemeButtonState();
                     
                     // 背景色を復元
+                    console.log('背景色を設定:', currentBackgroundColor);
                     setBackgroundColor(currentBackgroundColor);
                     updateBackgroundColorSelection(currentBackgroundColor);
                     
@@ -3777,8 +3802,14 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         function setBackgroundColor(color) {
             currentBackgroundColor = color;
             
+            // localStorageに保存
+            localStorage.setItem('kidsCanvasBackgroundColor', color);
+            
+            console.log('setBackgroundColor呼び出し:', color);
+            
             const svg = document.getElementById('mainCanvas');
             if (!svg) {
+                console.error('mainCanvas要素が見つかりません');
                 return;
             }
             
@@ -3790,15 +3821,18 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             
             // 既存のcanvasBackground要素を処理
             const canvasBackground = svg.querySelector('#canvasBackground');
+            console.log('canvasBackground要素:', canvasBackground ? '存在する' : '存在しない');
             
             if (color === 'transparent') {
                 // 透明背景の場合、canvasBackgroundを非表示にする
                 if (canvasBackground) {
                     canvasBackground.style.display = 'none';
+                    console.log('背景を透明に設定');
                 }
             } else {
                 // 色が指定された場合、canvasBackgroundの色を変更
                 if (canvasBackground) {
+                    console.log('背景色を変更:', color);
                     canvasBackground.setAttribute('fill', color);
                     canvasBackground.style.display = 'block';
                 } else {
@@ -3865,16 +3899,23 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             const layerElements = canvas.querySelectorAll('[id^="layer-"]');
             layerElements.forEach(element => element.remove());
             
-            // 背景色を水色にリセット
-            const defaultColor = '#D8E8F0';
+            // 背景色をデフォルトの水色にリセット
+            const defaultColor = '#a7d5e8';
             currentBackgroundColor = defaultColor;
-            setBackgroundColor(defaultColor);
+            
+            // 背景要素の色を直接変更（saveToLocalStorageを呼ばない）
+            const canvasBackground = canvas.querySelector('#canvasBackground');
+            if (canvasBackground) {
+                canvasBackground.setAttribute('fill', defaultColor);
+            }
             
             // カラーピッカーの値も更新
             const customBgColorInput = document.getElementById('customBgColor');
             if (customBgColorInput) {
                 customBgColorInput.value = defaultColor;
             }
+            
+            updateBackgroundColorSelection(defaultColor);
             
             // ボタンの状態を更新（全て無効化）
             updateRotateButtonState();
@@ -3883,7 +3924,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateDeleteButtonState();
             updateSeasonalThemeButtonState();
             
-            console.log('全ての素材を削除しました');
+            // localStorageをクリア（空の状態を保存しない）
+            clearLocalStorage();
+            
+            console.log('全ての素材を削除し、編集データをクリアしました');
             
             // ローカルストレージに保存（空の状態を保存）
             saveToLocalStorage();
@@ -4356,12 +4400,20 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         document.addEventListener('DOMContentLoaded', function() {
             console.log('ページ読み込み完了');
             
-            // ローカルストレージから編集内容を復元
+            // ローカルストレージから編集内容を復元（背景色も含む）
             const restored = loadFromLocalStorage();
             if (restored) {
                 console.log('編集内容を復元しました');
             } else {
                 console.log('新規セッションを開始します');
+                
+                // 復元データがない場合のみ、個別保存された背景色を確認
+                const savedBgColor = localStorage.getItem('kidsCanvasBackgroundColor');
+                if (savedBgColor) {
+                    currentBackgroundColor = savedBgColor;
+                    setBackgroundColor(savedBgColor);
+                    console.log('背景色を復元しました:', savedBgColor);
+                }
             }
             
             // 既存のすべてのレイヤーにSVG線形品質を適用し、元の色情報を保存
@@ -4524,9 +4576,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             // カスタム背景色ピッカーのイベントリスナーを設定（即座適用）
             const customBgColorInput = document.getElementById('customBgColor');
             if (customBgColorInput) {
-                // デフォルトの背景色を設定
-                setBackgroundColor('#D8E8F0');
-                
                 customBgColorInput.addEventListener('input', function() {
                     const color = this.value;
                     setBackgroundColor(color);
@@ -4653,10 +4702,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     return;
                 }
                 
-                // ランダムに30件選択
+                // ランダムに10件選択
                 const materialsArray = Array.from(materialItems);
                 const selectedMaterials = [];
-                const count = Math.min(30, materialsArray.length);
+                const count = Math.min(10, materialsArray.length);
                 
                 // ランダムに選択
                 while (selectedMaterials.length < count) {
