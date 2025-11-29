@@ -77,7 +77,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <?php include '../includes/gdpr-gtm-inline.php'; ?>
     
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=480, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
     <title>こどもアトリエ - maruttoart</title>
     <meta name="description" content="えをかいて、たのしいさくひんをつくろう！かんたんにつかえるこども用のアトリエです。">
@@ -99,17 +99,42 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <link rel="stylesheet" href="assets/css/layout.css">
 
     <style>
-        /* こども向けカラフルデザイン - スマホサイズ固定 */
+        /* こども向けカラフルデザイン - スマホサイズ固定(PCでも480px) */
+        * {
+            box-sizing: border-box;
+        }
+        
         html {
-            max-width: 480px;
-            margin: 0 auto;
             overflow-x: hidden;
+            background: linear-gradient(135deg, #fff5f8 0%, #fff9e6 50%, #f0f8ff 100%);
         }
         
         body {
             background: linear-gradient(135deg, #fff5f8 0%, #fff9e6 50%, #f0f8ff 100%);
             max-width: 480px;
+            width: 100%;
             margin: 0 auto;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        /* コンテナの調整 */
+        .container {
+            max-width: 480px;
+            width: 100%;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .main-content {
+            max-width: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        
+        .materials-panel {
+            max-width: 100%;
+            width: 100%;
             overflow-x: hidden;
         }
 
@@ -456,17 +481,17 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         .materials-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            gap: 10px;
             max-width: 100%;
-            padding: 10px;
+            padding: 5px;
         }
 
         .material-item {
             aspect-ratio: 1;
             background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%);
-            border: 4px solid #FFD700;
-            border-radius: 20px;
-            padding: 15px;
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 8px;
             cursor: grab;
             transition: all 0.3s ease;
             display: flex;
@@ -605,10 +630,25 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .manipulation-buttons {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
+            max-width: 100%;
+            padding: 5px;
+        }
+        
+        .manipulation-buttons button {
+            aspect-ratio: 1;
+            min-width: 0;
+            width: 100%;
+            height: auto;
+            padding: 15px 8px;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .manipulation-buttons button i {
+            font-size: 2rem;
         }
 
         /* 出力・削除ボタンエリア */
@@ -631,47 +671,81 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .action-buttons {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
+            max-width: 100%;
+            padding: 5px;
+        }
+        
+        .action-buttons button {
+            aspect-ratio: 1;
+            min-width: 0;
+            width: 100%;
+            height: auto;
+            padding: 15px 8px;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .action-buttons button i {
+            font-size: 2rem;
         }
 
         .controls {
             margin-top: 20px;
             display: flex;
-            gap: 10px;
+            gap: 5px;
             justify-content: center;
+            flex-wrap: wrap;
+            padding: 0 5px;
+        }
+        
+        .btn, .btn-export, .btn-clear {
+            padding: 8px 12px;
+            font-size: 0.9rem;
         }
 
         .btn-export {
-            background: #2c5aa0;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: linear-gradient(145deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 3px solid #2c5aa0;
+            color: #2c5aa0;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(44, 90, 160, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
 
         .btn-export:hover {
-            background: #1e3d6f;
-            color: white;
+            border-color: #1e3d6f;
+            background: linear-gradient(145deg, #bbdefb 0%, #90caf9 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(44, 90, 160, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-clear {
-            background: #dc3545;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: linear-gradient(145deg, #ffebee 0%, #ffcdd2 100%);
+            border: 3px solid #dc3545;
+            color: #dc3545;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
 
         .btn-clear:hover {
-            background: #c82333;
-            color: white;
+            border-color: #c82333;
+            background: linear-gradient(145deg, #ffcdd2 0%, #ef9a9a 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(220, 53, 69, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-upload {
@@ -690,23 +764,24 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .btn-rotate {
-            background: #f39c12;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: #545480;
+            border: 3px solid #3a3a5c;
+            color: #ffffff;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 48px;
-            min-height: 48px;
+            box-shadow: 0 6px 15px rgba(84, 84, 128, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
         
         .btn-rotate:hover {
-            background: #e67e22;
-            color: white;
+            border-color: #2a2a4c;
+            background: #6a6aa0;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(84, 84, 128, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         /* 背景パネルのスタイル */
@@ -779,35 +854,44 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
 
         .btn-rotate:disabled {
-            background: #bdc3c7;
+            background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%);
+            border-color: #bdc3c7;
+            color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-rotate-left {
-            background: #e67e22;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: linear-gradient(145deg, #fff9e6 0%, #ffe4b5 100%);
+            border: 3px solid #FFA500;
+            color: #FFA500;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 48px;
-            min-height: 48px;
+            box-shadow: 0 6px 15px rgba(255, 165, 0, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
         
         .btn-rotate-left:hover {
-            background: #d35400;
-            color: white;
+            border-color: #FF8C00;
+            background: linear-gradient(145deg, #fff5e6 0%, #ffd699 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(255, 165, 0, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-rotate-left:disabled {
-            background: #bdc3c7;
+            background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%);
+            border-color: #bdc3c7;
+            color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-flip-horizontal {
@@ -863,55 +947,65 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .btn-scale-down {
-            background: #9b59b6;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: #545480;
+            border: 3px solid #3a3a5c;
+            color: #ffffff;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 48px;
-            min-height: 48px;
+            box-shadow: 0 6px 15px rgba(84, 84, 128, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
         
         .btn-scale-down:hover {
-            background: #8e44ad;
-            color: white;
+            border-color: #2a2a4c;
+            background: #6a6aa0;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(84, 84, 128, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-scale-down:disabled {
-            background: #bdc3c7;
+            background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%);
+            border-color: #bdc3c7;
+            color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-scale-up {
-            background: #27ae60;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: #545480;
+            border: 3px solid #3a3a5c;
+            color: #ffffff;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 48px;
-            min-height: 48px;
+            box-shadow: 0 6px 15px rgba(84, 84, 128, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
         
         .btn-scale-up:hover {
-            background: #2ecc71;
-            color: white;
+            border-color: #2a2a4c;
+            background: #6a6aa0;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(84, 84, 128, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-scale-up:disabled {
-            background: #bdc3c7;
+            background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%);
+            border-color: #bdc3c7;
+            color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-bring-front {
@@ -967,53 +1061,61 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .btn-delete {
-            background: #e74c3c;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: linear-gradient(145deg, #ffebee 0%, #ffcdd2 100%);
+            border: 3px solid #e74c3c;
+            color: #e74c3c;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 48px;
-            min-height: 48px;
+            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
         
         .btn-delete:hover {
-            background: #c0392b;
-            color: white;
+            border-color: #c0392b;
+            background: linear-gradient(145deg, #ffe5e5 0%, #ffb3ba 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-delete:disabled {
-            background: #bdc3c7;
+            background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%);
+            border-color: #bdc3c7;
+            color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-spring-theme {
-            background: #2ecc71;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
+            border: 3px solid #2ecc71;
+            color: #2ecc71;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 48px;
-            min-height: 48px;
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
         
         .btn-spring-theme:hover {
-            background: #27ae60;
-            color: white;
+            border-color: #27ae60;
+            background: linear-gradient(145deg, #c8e6c9 0%, #a5d6a7 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-spring-theme:disabled {
-            background: #bdc3c7;
+            background: linear-gradient(145deg, #e0e0e0 0%, #d0d0d0 100%);
+            border-color: #bdc3c7;
+            color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
         }
@@ -1160,13 +1262,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             min-height: 60vh;
             position: relative;
             touch-action: manipulation;
-            padding: 10px;
+            padding: 5px;
         }
 
         #mainCanvas {
             width: 100%;
             height: 100%;
-            max-width: 500px;
+            max-width: 100%;
             max-height: 500px;
             background: white;
             border-radius: 8px;
@@ -1174,47 +1276,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             aspect-ratio: 1;
         }
 
-        /* レスポンシブ対応 */
-        @media (max-width: 768px) {
-            .canvas-container {
-                min-height: 45vh; /* スマホでは画面の45%に調整 */
-                margin-bottom: 15px;
-                padding: 5px; /* スマホでは内側余白をさらに減らす */
-            }
-            
-            #mainCanvas {
-                max-width: min(85vw, 450px); /* 画面幅の85%かつ最大450px */
-                max-height: min(40vh, 450px); /* 画面高の40%かつ最大450px */
-                width: auto;
-                height: auto;
-            }
-            
-            .materials-grid {
-                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-                gap: 10px;
-            }
-            
-            /* スマホでのボタンサイズ最適化 */
-            .manipulation-buttons,
-            .action-buttons {
-                gap: 8px;
-            }
-            
-            /* 操作ボタンは指でタッチしやすいサイズを維持 */
-            .manipulation-buttons button {
-                min-width: 50px;
-                min-height: 50px;
-                padding: 14px;
-            }
-            
-            /* 出力・削除ボタンはテキストがあるのでサイズ調整 */
-            .action-buttons button {
-                padding: 10px 16px;
-                font-size: 14px;
-            }
-            
-            /* コンテンツ全体のパディング調整 */
-            .materials-panel,
+        /* PCでもスマホでも同じレイアウト - メディアクエリ不要 */
             .canvas-area,
             .manipulation-controls,
             .action-controls {
@@ -1225,24 +1287,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 padding: 15px;
             }
 
-            /* スマホでのセクションタイトルサイズ調整 */
-            .manipulation-controls h3,
-            .action-controls h3 {
-                font-size: 1rem;
-            }
-
-            /* スマホでのヘッダー調整 */
-            .manipulation-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-
-            .selected-title {
-                font-size: 0.8rem;
-                min-width: 100px;
-            }
-        }
         
         /* 検索スピナーアニメーション */
         @keyframes spin {
@@ -1284,14 +1328,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         /* レイヤー要素のタッチ制御 */
         .layer-element {
             touch-action: none; /* ドラッグ中はスクロールを無効 */
-        }
-
-        /* レスポンシブ対応（コンテナ用） */
-        @media (max-width: 768px) {
-            .container {
-                padding-left: 15px;
-                padding-right: 15px;
-            }
         }
 
         /* フッターのスタイル */
@@ -1598,13 +1634,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 <div class="manipulation-controls">
                 <div class="manipulation-buttons">
                     <button id="scaleDownBtn" class="btn btn-scale-down" title="ちいさくする">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 50%; height: 50%;"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
                     </button>
                     <button id="scaleUpBtn" class="btn btn-scale-up" title="おおきくする">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/><line x1="11" x2="11" y1="8" y2="14"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%;"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
                     </button>
                     <button id="rotateBtn" class="btn btn-rotate" title="みぎにまわす">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%; transform: rotate(45deg);"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
                     </button>
                     <button id="deleteBtn" class="btn btn-delete" title="けす">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -1774,6 +1810,12 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             let scaleX = layer.transform.scale;
             let scaleY = layer.transform.scale;
             
+            // 選択時は少し拡大
+            const isSelected = (selectedLayerId === layer.id);
+            const scaleMultiplier = isSelected ? 1.08 : 1.0;
+            scaleX *= scaleMultiplier;
+            scaleY *= scaleMultiplier;
+            
             // 水平反転の場合はscaleXを負にする
             if (layer.transform.flipHorizontal) {
                 scaleX = -scaleX;
@@ -1816,12 +1858,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 canvas.appendChild(layerGroup);
             }
 
-            // レイヤークリックイベントを追加
-            layerGroup.addEventListener('click', function(e) {
-                e.stopPropagation();
-                selectLayer(layer.id);
-            });
-
             // ダブルクリックで前面に移動
             layerGroup.addEventListener('dblclick', function(e) {
                 e.stopPropagation();
@@ -1845,7 +1881,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             // マウスドラッグイベントを追加
             layerGroup.addEventListener('mousedown', function(e) {
                 e.stopPropagation();
-                startDrag(e, layer.id);
+                // clickイベントを阻害しないよう、ドラッグ準備のみ
+                prepareDrag(e, layer.id);
             });
 
             // タッチイベントを追加（スマホ対応）
@@ -1853,22 +1890,23 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 e.stopPropagation();
                 // レイヤーをタッチした時のみスクロールを防ぐ
                 e.preventDefault();
-                startDrag(e.touches[0], layer.id); // 最初のタッチポイントを使用
+                prepareDrag(e.touches[0], layer.id); // 最初のタッチポイントを使用
             }, { passive: false });
 
             // ポインターイベントも追加（デベロッパーツール対応）
             if ('onpointerdown' in window) {
                 layerGroup.addEventListener('pointerdown', function(e) {
                     e.stopPropagation();
-                    startDrag(e, layer.id);
+                    prepareDrag(e, layer.id);
                 });
             }
 
             // 選択状態に応じてスタイルを設定
-            if (selectedLayerId === layer.id) {
+            if (isSelected) {
                 layerGroup.style.cursor = 'move';
-                layerGroup.style.filter = 'drop-shadow(0 0 3px rgba(0,123,255,0.8))';
-                console.log(`Layer ${layer.id} is SELECTED - applying blue glow`);
+                // より強調されたスタイル：太い黄色の光彩エフェクト
+                layerGroup.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))';
+                console.log(`Layer ${layer.id} is SELECTED - applying golden glow and 8% scale boost`);
             } else {
                 layerGroup.style.cursor = 'pointer';
                 layerGroup.style.filter = '';
@@ -1886,16 +1924,20 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         // レイヤー選択機能
         function selectLayer(layerId) {
+            const previousSelectedId = selectedLayerId;
             selectedLayerId = layerId;
             console.log(`Layer ${layerId} selected - selectedLayerId is now: ${selectedLayerId}`);
             
             // 選択中の素材タイトルを更新
             updateSelectedLayerTitle();
             
-            // 全レイヤーを再描画して選択状態を反映
-            layers.forEach(layer => {
-                renderLayer(layer);
-            });
+            // 前回選択されていたレイヤーのスタイルをリセット
+            if (previousSelectedId !== null && previousSelectedId !== layerId) {
+                updateLayerSelectionStyle(previousSelectedId, false);
+            }
+            
+            // 新しく選択されたレイヤーのスタイルを更新
+            updateLayerSelectionStyle(layerId, true);
 
             // ボタンの状態を更新
             updateRotateButtonState();
@@ -1904,6 +1946,46 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateDeleteButtonState();
             
             console.log(`Selection complete - selectedLayerId: ${selectedLayerId}`);
+        }
+
+        // レイヤーの選択状態スタイルを更新（再描画せずに）
+        function updateLayerSelectionStyle(layerId, isSelected) {
+            const layer = layers.find(l => l.id === layerId);
+            if (!layer) return;
+            
+            const layerGroup = document.getElementById(`layer-${layerId}`);
+            if (!layerGroup) return;
+            
+            const centerX = layer.originalCenter.x;
+            const centerY = layer.originalCenter.y;
+            
+            // スケール計算
+            let scaleX = layer.transform.scale;
+            let scaleY = layer.transform.scale;
+            
+            // 選択時は少し拡大
+            const scaleMultiplier = isSelected ? 1.08 : 1.0;
+            scaleX *= scaleMultiplier;
+            scaleY *= scaleMultiplier;
+            
+            // 水平反転・垂直反転を適用
+            if (layer.transform.flipHorizontal) scaleX = -scaleX;
+            if (layer.transform.flipVertical) scaleY = -scaleY;
+            
+            // transform属性を更新
+            const transformString = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${scaleX}, ${scaleY}) rotate(${layer.transform.rotation}, ${centerX}, ${centerY})`;
+            layerGroup.setAttribute('transform', transformString);
+            
+            // スタイルを更新
+            if (isSelected) {
+                layerGroup.style.cursor = 'move';
+                layerGroup.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))';
+                console.log(`Layer ${layerId} selection style applied - golden glow and 8% scale boost`);
+            } else {
+                layerGroup.style.cursor = 'pointer';
+                layerGroup.style.filter = '';
+                console.log(`Layer ${layerId} selection style removed`);
+            }
         }
 
         // レイヤーの選択を解除
@@ -1929,13 +2011,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }
         }
 
-        // ドラッグ開始（マウス・タッチ・ポインター対応）
-        function startDrag(e, layerId) {
-            if (selectedLayerId !== layerId) {
-                selectLayer(layerId);
-            }
+        // ドラッグ準備（マウスdown時）
+        let dragPreparationLayerId = null;
+        let dragPreparationStartPos = { x: 0, y: 0 };
+        
+        function prepareDrag(e, layerId) {
+            dragPreparationLayerId = layerId;
             
-            isDragging = true;
             const canvas = document.getElementById('mainCanvas');
             const rect = canvas.getBoundingClientRect();
             
@@ -1953,8 +2035,22 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             
             const svgPoint = screenToSVG(clientX - rect.left, clientY - rect.top, canvas);
             
-            dragStartPos.x = svgPoint.x;
-            dragStartPos.y = svgPoint.y;
+            dragPreparationStartPos.x = svgPoint.x;
+            dragPreparationStartPos.y = svgPoint.y;
+            
+            console.log(`Drag preparation for layer ${layerId} at:`, svgPoint);
+        }
+        
+        // ドラッグ開始（実際にマウスが動いた時）
+        function startDrag(layerId, currentPos) {
+            if (selectedLayerId !== layerId) {
+                selectLayer(layerId);
+            }
+            
+            isDragging = true;
+            
+            dragStartPos.x = dragPreparationStartPos.x;
+            dragStartPos.y = dragPreparationStartPos.y;
             
             const layer = layers.find(l => l.id === layerId);
             if (layer) {
@@ -1962,7 +2058,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 dragStartTransform.y = layer.transform.y;
             }
             
-            console.log(`Drag started for layer ${layerId} at SVG coordinates:`, svgPoint, `Event type: ${e.type}`);
+            console.log(`Drag actually started for layer ${layerId}`);
         }
 
         // 画面座標をSVG座標に変換
@@ -1976,6 +2072,34 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         // ドラッグ中の処理（マウス・タッチ・ポインター対応）
         function onDrag(e) {
+            // ドラッグ準備中の場合、マウスが動いたら実際のドラッグを開始
+            if (dragPreparationLayerId !== null && !isDragging) {
+                const canvas = document.getElementById('mainCanvas');
+                const rect = canvas.getBoundingClientRect();
+                
+                let clientX, clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const svgPoint = screenToSVG(clientX - rect.left, clientY - rect.top, canvas);
+                
+                // 一定距離以上動いたらドラッグ開始（クリックとの区別のため）
+                const distance = Math.sqrt(
+                    Math.pow(svgPoint.x - dragPreparationStartPos.x, 2) +
+                    Math.pow(svgPoint.y - dragPreparationStartPos.y, 2)
+                );
+                
+                if (distance > 2) { // 2px以上動いたらドラッグとみなす
+                    startDrag(dragPreparationLayerId, svgPoint);
+                    dragPreparationLayerId = null;
+                }
+            }
+            
             if (!isDragging || selectedLayerId === null) return;
             
             const canvas = document.getElementById('mainCanvas');
@@ -2014,7 +2138,14 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 
                 // ローカルストレージに保存
                 saveToLocalStorage();
+            } else if (dragPreparationLayerId !== null) {
+                // ドラッグが発生しなかった場合（クリックのみ）、レイヤーを選択
+                console.log(`Click detected on layer ${dragPreparationLayerId} - selecting`);
+                selectLayer(dragPreparationLayerId);
             }
+            
+            // ドラッグ準備もリセット
+            dragPreparationLayerId = null;
         }
 
         // 選択されたレイヤーを15度右回転
@@ -3066,6 +3197,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // 選択中の素材タイトルを更新
         function updateSelectedLayerTitle() {
             const titleElement = document.getElementById('selectedLayerTitle');
+            
+            // 要素が存在しない場合は何もしない（kids.phpでは削除済み）
+            if (!titleElement) {
+                return;
+            }
             
             console.log(`updateSelectedLayerTitle: selectedLayerId = ${selectedLayerId}`);
             
