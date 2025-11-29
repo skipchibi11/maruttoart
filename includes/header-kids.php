@@ -142,7 +142,7 @@
     <div class="kids-container">
         <div class="kids-header-content">
             <div class="kids-brand-wrapper">
-                <a class="kids-brand" href="/">
+                <a class="kids-brand" href="/compose2/kids.php">
                     まるっとあーと
                 </a>
             </div>

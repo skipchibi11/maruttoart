@@ -872,13 +872,7 @@ if (!empty($artworks)) {
     <div class="container mt-4" id="materials">
         <div class="row">
             <div class="col-12">
-
-                    <h1 class="mb-2">みんなのアトリエ</h1>
-                    <p class="text-muted mb-4">
-                        全<?= number_format($totalItems) ?>件の作品 
-                        <?= number_format(($page - 1) * $perPage + 1) ?>-<?= number_format(min($page * $perPage, $totalItems)) ?>件目を表示 
-                        (<?= $page ?>/<?= $totalPages ?>ページ)
-                    </p>
+                    <h1 class="mb-4">みんなのアトリエ</h1>
             </div>
         </div>
 
@@ -949,8 +943,8 @@ if (!empty($artworks)) {
         <section class="kind-stories-section mt-5 mb-5">
             <div class="row">
                 <div class="col-12">
-                    <h2 class="text-center mb-2">優しい出会い</h2>
-                    <p class="text-center text-muted mb-4">作者の想いが込められた作品たち</p>
+                    <h2 class="text-center mb-2">おはなし</h2>
+                    <p class="text-center text-muted mb-4">みんなのつくった かわいいさくひんたち</p>
                 </div>
             </div>
             
@@ -976,12 +970,11 @@ if (!empty($artworks)) {
                         </div>
                     </a>
                     
-                    <!-- 説明（リンクなし） -->
+                    <!-- おはなし -->
                     <div class="kind-story-content">
                         <h3 class="kind-story-title"><?= h($story['title']) ?></h3>
-                        <p class="kind-story-author">by <?= h($story['pen_name']) ?></p>
                         <div class="kind-story-text">
-                            <?= nl2br(h($story['description'])) ?>
+                            <?= nl2br(h($story['ai_story'])) ?>
                         </div>
                     </div>
                 </div>

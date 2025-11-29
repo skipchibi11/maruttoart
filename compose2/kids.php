@@ -2529,11 +2529,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 return;
             }
 
-            // 削除の確認
-            if (!confirm('選択したレイヤーを削除しますか？この操作は元に戻せません。')) {
-                return;
-            }
-
             // 現在のレイヤーのインデックスを取得
             const currentIndex = layers.findIndex(l => l.id === selectedLayerId);
             if (currentIndex === -1) {
@@ -3477,12 +3472,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 return;
             }
 
-            // 1日1回制限のチェック
-            const lastUploadDate = localStorage.getItem('kidsLastUploadDate');
+            // 1日3回制限のチェック
             const today = new Date().toDateString();
+            const uploadCountKey = 'kidsUploadCount_' + today;
+            const uploadCount = parseInt(localStorage.getItem(uploadCountKey) || '0');
             
-            if (lastUploadDate === today) {
-                alert('きょうは もう とどけたよ！\nまた あした きてね！');
+            if (uploadCount >= 3) {
+                alert('きょうは もう 3つ とどけたよ！\nまた あした きてね！');
                 return;
             }
 
@@ -3669,11 +3665,22 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     document.body.removeChild(loadingMessage);
                     
                     if (data.success) {
-                        // アップロード日時を保存
-                        localStorage.setItem('kidsLastUploadDate', new Date().toDateString());
+                        // アップロードカウントを増やす
+                        const today = new Date().toDateString();
+                        const uploadCountKey = 'kidsUploadCount_' + today;
+                        const currentCount = parseInt(localStorage.getItem(uploadCountKey) || '0');
+                        localStorage.setItem(uploadCountKey, (currentCount + 1).toString());
                         
-                        // 成功メッセージ
-                        alert('えを とどけました！\nありがとう！\n\nまた あした きてね！');
+                        const remaining = 3 - (currentCount + 1);
+                        let successMsg = 'えを とどけました！\nありがとう！\n\nいま、おはなしを つくっています✨\nすこし まっててね！';
+                        
+                        if (remaining > 0) {
+                            successMsg += `\n\nきょうは あと ${remaining}つ とどけられるよ！`;
+                        } else {
+                            successMsg += '\n\nまた あした きてね！';
+                        }
+                        
+                        alert(successMsg);
                         
                         console.log('作品アップロード完了:', data);
                     } else {
@@ -3772,39 +3779,37 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 return;
             }
 
-            if (confirm('全ての素材を削除しますか？')) {
-                layers = [];
-                nextLayerId = 1;
-                selectedLayerId = null;
-                
-                // DOM要素も削除
-                const canvas = document.getElementById('mainCanvas');
-                const layerElements = canvas.querySelectorAll('[id^="layer-"]');
-                layerElements.forEach(element => element.remove());
-                
-                // 背景色を水色にリセット
-                const defaultColor = '#D8E8F0';
-                currentBackgroundColor = defaultColor;
-                setBackgroundColor(defaultColor);
-                
-                // カラーピッカーの値も更新
-                const customBgColorInput = document.getElementById('customBgColor');
-                if (customBgColorInput) {
-                    customBgColorInput.value = defaultColor;
-                }
-                
-                // ボタンの状態を更新（全て無効化）
-                updateRotateButtonState();
-                updateScaleDownButtonState();
-                updateScaleUpButtonState();
-                updateDeleteButtonState();
-                updateSeasonalThemeButtonState();
-                
-                console.log('全ての素材を削除しました');
-                
-                // ローカルストレージに保存（空の状態を保存）
-                saveToLocalStorage();
+            layers = [];
+            nextLayerId = 1;
+            selectedLayerId = null;
+            
+            // DOM要素も削除
+            const canvas = document.getElementById('mainCanvas');
+            const layerElements = canvas.querySelectorAll('[id^="layer-"]');
+            layerElements.forEach(element => element.remove());
+            
+            // 背景色を水色にリセット
+            const defaultColor = '#D8E8F0';
+            currentBackgroundColor = defaultColor;
+            setBackgroundColor(defaultColor);
+            
+            // カラーピッカーの値も更新
+            const customBgColorInput = document.getElementById('customBgColor');
+            if (customBgColorInput) {
+                customBgColorInput.value = defaultColor;
             }
+            
+            // ボタンの状態を更新（全て無効化）
+            updateRotateButtonState();
+            updateScaleDownButtonState();
+            updateScaleUpButtonState();
+            updateDeleteButtonState();
+            updateSeasonalThemeButtonState();
+            
+            console.log('全ての素材を削除しました');
+            
+            // ローカルストレージに保存（空の状態を保存）
+            saveToLocalStorage();
         }
 
         // 背景色パレットを生成する関数

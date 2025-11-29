@@ -112,122 +112,7 @@ function generateWebPThumbnail($sourcePath, $destinationPath) {
     }
 }
 
-// AIでタイトル、ペンネーム、ストーリーを生成する関数
-function generateAIContent($imagePath) {
-    // OpenAI APIを使用して生成
-    try {
-        // OpenAI設定ファイルを読み込み
-        if (!file_exists('../includes/openai.php')) {
-            error_log("OpenAI config file not found");
-            return null;
-        }
-        require_once '../includes/openai.php';
-        
-        // APIキーの存在確認
-        if (!defined('OPENAI_API_KEY') || empty(OPENAI_API_KEY)) {
-            error_log("OpenAI API key not configured");
-            return null;
-        }
-        
-        // 画像を読み込んでbase64エンコード
-        $imageData = file_get_contents($imagePath);
-        $base64Image = base64_encode($imageData);
-        $mimeType = mime_content_type($imagePath);
-        
-        $prompt = "この子供の絵を見て、以下の2つを生成してください：
 
-1. タイトル: 絵の内容を表す短いタイトル（10文字以内、ひらがな多め）
-
-2. ストーリー: 絵から想像できる優しくて楽しい短いお話（100文字程度、ひらがな多め）
-
-以下のJSON形式で返してください：
-{
-  \"title\": \"タイトル\",
-  \"story\": \"ストーリー\"
-}";
-        
-        $apiKey = OPENAI_API_KEY;
-        
-        $data = [
-            'model' => 'gpt-4o-mini',
-            'messages' => [
-                [
-                    'role' => 'user',
-                    'content' => [
-                        [
-                            'type' => 'text',
-                            'text' => $prompt
-                        ],
-                        [
-                            'type' => 'image_url',
-                            'image_url' => [
-                                'url' => "data:{$mimeType};base64,{$base64Image}"
-                            ]
-                        ]
-                    ]
-                ]
-            ],
-            'max_tokens' => 300
-        ];
-        
-        $ch = curl_init('https://api.openai.com/v1/chat/completions');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $apiKey
-        ]);
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($httpCode !== 200) {
-            error_log("OpenAI API error: HTTP {$httpCode}, Response: {$response}");
-            return null;
-        }
-        
-        $result = json_decode($response, true);
-        
-        if (isset($result['choices'][0]['message']['content'])) {
-            $content = trim($result['choices'][0]['message']['content']);
-            
-            // JSON形式のレスポンスをパース
-            // まずマークダウンのコードブロックを除去
-            $content = preg_replace('/```json\s*|\s*```/', '', $content);
-            $content = trim($content);
-            
-            error_log("AI raw response: " . substr($content, 0, 200));
-            
-            $aiData = json_decode($content, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                error_log("JSON decode error: " . json_last_error_msg());
-            }
-            
-            if ($aiData && isset($aiData['title'], $aiData['story'])) {
-                return [
-                    'title' => $aiData['title'],
-                    'story' => $aiData['story']
-                ];
-            }
-            
-            // JSON形式でない場合は、テキストをストーリーとして扱う
-            error_log("AI response not in JSON format: " . $content);
-            return [
-                'title' => 'こどもの さくひん',
-                'story' => $content
-            ];
-        }
-        
-        return null;
-        
-    } catch (Exception $e) {
-        error_log("AI content generation error: " . $e->getMessage());
-        return null;
-    }
-}
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -243,7 +128,7 @@ try {
     // データベース接続
     $pdo = getDB();
 
-    // 1日1回制限チェック
+    // 1日3回制限チェック
     $today = date('Y-m-d');
     $checkStmt = $pdo->prepare("
         SELECT COUNT(*) FROM kids_artworks 
@@ -254,20 +139,12 @@ try {
     $checkStmt->execute([$today, $ipAddress]);
     $uploadCount = $checkStmt->fetchColumn();
 
-    if ($uploadCount > 0) {
-        sendError('きょうは もう とどけたよ！ また あした きてね！', 429);
+    if ($uploadCount >= 3) {
+        sendError('きょうは もう 3つ とどけたよ！ また あした きてね！', 429);
     }
 
-    // 入力データの取得（バリデーションは後で行う）
-    $title = trim($_POST['title'] ?? '');
+    // 入力データの取得
     $description = trim($_POST['description'] ?? '');
-
-    // 初期値設定（AI生成前のフォールバック）
-    $defaultTitle = 'こどもの さくひん ' . date('Y/m/d H:i');
-    
-    if (empty($title)) {
-        $title = $defaultTitle;
-    }
 
     // データベース接続
     $pdo = getDB();
@@ -297,8 +174,9 @@ try {
         sendError('PNG または JPEG 形式のファイルのみアップロードできます');
     }
 
-    // アップロードディレクトリの準備
-    $uploadDir = __DIR__ . '/../uploads/kids/';
+    // アップロードディレクトリの準備（年月フォルダ構造）
+    $yearMonth = date('Y/m'); // 例: 2025/11
+    $uploadDir = __DIR__ . '/../uploads/kids/' . $yearMonth . '/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
@@ -307,7 +185,7 @@ try {
     $extension = ($mimeType === 'image/png') ? 'png' : 'jpg';
     $filename = date('YmdHis') . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
     $savePath = $uploadDir . $filename;
-    $relativePath = '/uploads/kids/' . $filename;
+    $relativePath = '/uploads/kids/' . $yearMonth . '/' . $filename;
 
     // ファイルを保存
     if (!move_uploaded_file($tmpPath, $savePath)) {
@@ -363,31 +241,11 @@ try {
         error_log("WebP thumbnail generated: " . $webpPath);
     }
 
-    // AIでタイトル、ストーリーを生成
-    $aiContent = generateAIContent($savePath);
-    $aiStory = '';
-    
-    if ($aiContent !== null) {
-        error_log("AI content received: " . print_r($aiContent, true));
-        
-        // AI生成されたタイトルを使用（デフォルト値の場合のみ上書き）
-        if ($title === $defaultTitle) {
-            $title = $aiContent['title'];
-        }
-        
-        $aiStory = $aiContent['story'];
-        
-        error_log("Final values - Title: {$title}, Story: " . substr($aiStory, 0, 50) . "...");
-    } else {
-        error_log("AI content generation failed - using defaults");
-    }
-    
-    // 最終的な長さチェック
-    if (mb_strlen($title) > 100) {
-        $title = mb_substr($title, 0, 100);
-    }
+    // タイトルとストーリーはCronで生成するため、初期値は待機メッセージ
+    $title = 'おはなしを つくっているよ';
+    $aiStory = "いま あなたの えから、すてきな おはなしを つくっています。\nすこし まっててね！";
 
-    if (mb_strlen($description) > 1000) {
+    error_log("Artwork uploaded - Title and story will be generated by cron");    if (mb_strlen($description) > 1000) {
         $description = mb_substr($description, 0, 1000);
     }
 
@@ -411,23 +269,23 @@ try {
     )";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        ':title' => $title,
-        ':description' => $description,
-        ':ai_story' => $aiStory,
-        ':image_path' => $relativePath,
-        ':webp_path' => $webpPath,
-        ':ip_address' => $ipAddress
-    ]);
+        $stmt->execute([
+            ':title' => $title,
+            ':description' => $description,
+            ':ai_story' => $aiStory,
+            ':image_path' => $relativePath,
+            ':webp_path' => $webpPath,
+            ':ip_address' => $ipAddress
+        ]);    $artworkId = $pdo->lastInsertId();
 
-    $artworkId = $pdo->lastInsertId();
+    error_log("Kids artwork uploaded successfully - ID: $artworkId - Will be processed by cron");
 
     // 成功レスポンス
     sendSuccess([
         'id' => $artworkId,
         'message' => 'さくひんを とどけました！ありがとう！',
         'artwork_url' => '/kids-work.php?id=' . $artworkId,
-        'has_story' => !empty($aiStory)
+        'has_story' => false // cronで生成されるまでfalse
     ]);
 
 } catch (Exception $e) {

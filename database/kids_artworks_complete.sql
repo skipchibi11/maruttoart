@@ -4,7 +4,8 @@
 -- このファイルには以下が含まれます：
 -- 1. kids_artworksテーブルの作成
 -- 2. ペンネーム機能の削除（NULL許可）
--- 3. 必要なインデックスの作成
+-- 3. タイトルとストーリーのデフォルト値設定
+-- 4. 必要なインデックスの作成
 -- =====================================================
 
 -- データベース選択
@@ -17,7 +18,7 @@ CREATE TABLE IF NOT EXISTS kids_artworks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
     -- 基本情報
-    title VARCHAR(255) NOT NULL COMMENT 'AIが生成した作品タイトル',
+    title VARCHAR(255) NOT NULL DEFAULT 'おはなしを つくっているよ' COMMENT 'AIが生成した作品タイトル（デフォルト：生成中メッセージ）',
     description TEXT COMMENT '作品の説明（オプション）',
     ai_story TEXT COMMENT 'AIが生成した物語',
     
@@ -43,14 +44,34 @@ CREATE TABLE IF NOT EXISTS kids_artworks (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='子供向けアトリエの作品';
 
 -- =====================================================
--- 2. 既存テーブルの更新（pen_nameをNULL許可に変更）
+-- 2. 既存テーブルの更新（pen_nameをNULL許可、デフォルト値設定）
 -- =====================================================
 -- 注意: テーブルが既に存在する場合のみ実行されます
 ALTER TABLE kids_artworks 
-MODIFY COLUMN pen_name VARCHAR(100) NULL DEFAULT NULL COMMENT 'ペンネーム（レガシー、現在は使用しない）';
+MODIFY COLUMN pen_name VARCHAR(100) NULL DEFAULT NULL COMMENT 'ペンネーム（レガシー、現在は使用しない）',
+MODIFY COLUMN title VARCHAR(255) NOT NULL DEFAULT 'おはなしを つくっているよ' COMMENT 'AIが生成した作品タイトル（デフォルト：生成中メッセージ）',
+MODIFY COLUMN ai_story TEXT COMMENT 'AIが生成した物語';
 
 -- =====================================================
--- 3. オプション: 既存のデフォルトペンネームをNULLに更新
+-- 3. 既存のNULL/空値をデフォルト値で更新
+-- =====================================================
+-- titleがNULLまたは空の場合、デフォルト値を設定
+UPDATE kids_artworks 
+SET title = 'おはなしを つくっているよ'
+WHERE title IS NULL OR title = '';
+
+-- ai_storyがNULLまたは空の場合、デフォルト値を設定
+UPDATE kids_artworks 
+SET ai_story = CONCAT('いま あなたの えから、すてきな おはなしを つくっています。', CHAR(10), 'すこし まっててね！')
+WHERE ai_story IS NULL OR ai_story = '';
+
+-- 既存データの文字列リテラル'\n'を実際の改行文字に変換
+UPDATE kids_artworks 
+SET ai_story = REPLACE(ai_story, '\\n', CHAR(10))
+WHERE ai_story LIKE '%\\n%';
+
+-- =====================================================
+-- 4. オプション: 既存のデフォルトペンネームをNULLに更新
 -- =====================================================
 -- 必要に応じてコメントを解除してください
 -- UPDATE kids_artworks SET pen_name = NULL WHERE pen_name = 'げんきな おともだち';

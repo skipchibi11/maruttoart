@@ -128,6 +128,24 @@ if (!empty($usedMaterials)) {
     $materialStories = array_values($materialStories);
 }
 
+// ランダムな作品のIDを取得（現在の作品を除く）
+$randomArtworkId = null;
+try {
+    $randomStmt = $pdo->prepare("
+        SELECT id FROM kids_artworks 
+        WHERE id != ? 
+        ORDER BY RAND() 
+        LIMIT 1
+    ");
+    $randomStmt->execute([$artwork['id']]);
+    $randomResult = $randomStmt->fetch();
+    if ($randomResult) {
+        $randomArtworkId = $randomResult['id'];
+    }
+} catch (Exception $e) {
+    error_log("Random artwork query error: " . $e->getMessage());
+}
+
 // 関連作品（類似度）を取得
 $relatedArtworks = [];
 $showRelatedSection = false;
@@ -311,37 +329,22 @@ try {
             color: #007bff;
         }
 
-        /* パンくずリスト */
-        .breadcrumb {
-            padding: 1rem 0;
-            background-color: #f8f9fa;
-        }
-
-        .breadcrumb-list {
-            display: flex;
-            list-style: none;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .breadcrumb-item {
-            color: #6c757d;
-        }
-
-        .breadcrumb-item a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .breadcrumb-item:not(:last-child)::after {
-            content: ">";
-            margin-left: 0.5rem;
-            color: #6c757d;
-        }
-
         /* メインコンテンツ */
         .main-content {
             padding: 2rem 0;
+        }
+
+        /* PC用レイアウト: 画像とコンテンツを横並び */
+        .artwork-content-wrapper {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        @media (max-width: 768px) {
+            .artwork-content-wrapper {
+                flex-direction: column;
+            }
         }
 
         .artwork-detail {
@@ -354,26 +357,68 @@ try {
 
         .artwork-image-container {
             text-align: center;
-            padding: 2rem;
-            background-color: #f8f9fa;
+            padding: 0;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .artwork-image {
             max-width: 100%;
-            max-height: 500px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-height: 80vh;
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            box-shadow: none;
+            object-fit: contain;
         }
 
 
 
         /* セクションスタイル */
         .artwork-image-section {
-            margin-bottom: 3rem;
+            flex: 1;
+            min-width: 0;
         }
 
         .artwork-detail-section {
-            margin-bottom: 3rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .artwork-image-section {
+                margin-bottom: 2rem;
+            }
+        }
+
+        .random-story-section {
+            margin: 3rem 0;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .random-story-section .btn {
+            background-color: #ffc107;
+            color: #212529;
+            border: none;
+            border-radius: 50px;
+            padding: 0.75em 2.5em;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+
+        .random-story-section .btn:hover {
+            background-color: #ffb300;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
+            color: #212529;
+            text-decoration: none;
         }
 
         .download-section {
@@ -610,20 +655,25 @@ try {
         /* 詳細セクションのスタイル */
         .artwork-info {
             max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
+            margin: 0;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .artwork-info {
+                text-align: center;
+            }
         }
 
         .artwork-title {
             font-size: 2rem;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 2rem;
-            color: #333;
+            color: #212529;
         }
 
         .artwork-description {
             margin-bottom: 2rem;
-            text-align: left;
         }
 
         .artwork-description h3 {
@@ -639,16 +689,17 @@ try {
         }
 
         .artwork-meta {
-            text-align: left;
-            background-color: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            border: none;
+            margin-top: 2rem;
         }
 
         .meta-item {
             margin-bottom: 0.8rem;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
+            color: #6c757d;
         }
 
         .meta-item:last-child {
@@ -656,8 +707,9 @@ try {
         }
 
         .meta-item strong {
-            color: #333;
+            color: #6c757d;
             margin-right: 0.5rem;
+            font-weight: 500;
         }
 
         /* ボタン */
@@ -939,10 +991,6 @@ try {
                 gap: 1rem;
             }
 
-            .breadcrumb-list {
-                font-size: 0.9rem;
-            }
-
             .artwork-info {
                 padding: 1.5rem;
             }
@@ -960,23 +1008,20 @@ try {
 
         /* 使用素材のストーリーセクション */
         .material-stories-section {
-            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
-            border-radius: 16px;
-            padding: 3rem 2rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 3rem 0;
         }
 
         .material-stories-section h2 {
             font-family: 'Hiragino Maru Gothic ProN', sans-serif;
-            color: #d4a574;
-            font-size: 2rem;
+            color: #333;
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
         }
 
         .material-stories-section .text-muted {
-            color: #a68b5b !important;
-            font-size: 1rem;
+            color: #666 !important;
+            font-size: 0.95rem;
         }
 
         .material-stories-list {
@@ -986,20 +1031,14 @@ try {
 
         .material-story-item {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 2px 12px rgba(212, 165, 116, 0.12);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
         }
 
         .material-story-item:last-child {
             margin-bottom: 0;
-        }
-
-        .material-story-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 24px rgba(212, 165, 116, 0.2);
         }
 
         .material-story-image-wrapper {
@@ -1016,8 +1055,7 @@ try {
         .material-story-image img {
             width: 100%;
             height: auto;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
 
         .material-story-content {
@@ -1026,25 +1064,24 @@ try {
 
         .material-story-title {
             font-family: 'Hiragino Maru Gothic ProN', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 1rem;
         }
 
         .material-story-title a {
             color: #333;
-            transition: color 0.2s ease;
+            text-decoration: none;
         }
 
         .material-story-title a:hover {
-            color: #d4a574;
+            color: #007bff;
         }
 
         .material-story-text {
             font-size: 1rem;
-            line-height: 2;
+            line-height: 1.8;
             color: #555;
-            font-family: 'Hiragino Maru Gothic ProN', sans-serif;
         }
 
         @media (max-width: 768px) {
@@ -1074,68 +1111,65 @@ try {
     include 'includes/header-kids.php'; 
     ?>
 
-    <!-- パンくずリスト -->
-    <section class="breadcrumb">
-        <div class="container">
-            <ul class="breadcrumb-list">
-                <li class="breadcrumb-item"><a href="/">ホーム</a></li>
-                <li class="breadcrumb-item"><a href="/everyone-works.php">みんなのアトリエ</a></li>
-                <li class="breadcrumb-item"><?= h($artwork['title']) ?></li>
-            </ul>
-        </div>
-    </section>
-
     <!-- メインコンテンツ -->
     <main class="main-content">
         <div class="container">
-            <!-- 作品画像 -->
-            <section class="artwork-image-section">
-                <div class="artwork-image-container">
-                    <?php if (!empty($artworkImageUrl)): ?>
-                    <img src="<?= h($artworkImageUrl) ?>" 
-                         alt="<?= h($artwork['title']) ?>"
-                         class="artwork-image"
-                         loading="lazy">
-                    <?php else: ?>
-                    <div style="padding: 2rem; text-align: center; color: #6c757d;">
-                        画像が見つかりません
+            <div class="artwork-content-wrapper">
+                <!-- 作品画像 -->
+                <section class="artwork-image-section">
+                    <div class="artwork-image-container">
+                        <?php if (!empty($artworkImageUrl)): ?>
+                        <img src="<?= h($artworkImageUrl) ?>" 
+                             alt="<?= h($artwork['title']) ?>"
+                             class="artwork-image"
+                             loading="lazy">
+                        <?php else: ?>
+                        <div style="padding: 2rem; text-align: center; color: #6c757d;">
+                            画像が見つかりません
+                        </div>
+                        <?php endif; ?>
                     </div>
-                    <?php endif; ?>
-                </div>
-            </section>
+                </section>
 
-            <!-- 詳細セクション -->
-            <section class="artwork-detail-section">
-                <div class="artwork-info">
-                    <h1 class="artwork-title"><?= h($artwork['title']) ?></h1>
-                    
-                    <?php if (!empty($artwork['description'])): ?>
-                    <div class="artwork-description">
-                        <p><?= nl2br(h($artwork['description'])) ?></p>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($artwork['ai_story'])): ?>
-                    <div class="ai-story-section" style="margin-top: 1.5rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
-                        <h3 style="font-size: 1.1rem; color: #495057; margin-bottom: 0.75rem;">
-                            <i class="bi bi-book"></i> AIが作ったおはなし
-                        </h3>
-                        <p style="line-height: 1.8; color: #212529; font-size: 1rem;">
-                            <?= nl2br(h($artwork['ai_story'])) ?>
-                        </p>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <div class="artwork-meta">
-                        <div class="meta-item">
-                            <strong>素材提供：</strong>marutto.art
+                <!-- 詳細セクション -->
+                <section class="artwork-detail-section">
+                    <div class="artwork-info">
+                        <h1 class="artwork-title"><?= h($artwork['title']) ?></h1>
+                        
+                        <?php if (!empty($artwork['description'])): ?>
+                        <div class="artwork-description">
+                            <p><?= nl2br(h($artwork['description'])) ?></p>
                         </div>
-                        <div class="meta-item">
-                            <strong>投稿日：</strong><?= date('Y-m-d', strtotime($artwork['created_at'])) ?>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($artwork['ai_story'])): ?>
+                        <div class="ai-story-section" style="margin-top: 1.5rem; padding: 0;">
+                            <p style="line-height: 1.8; color: #212529; font-size: 1rem;">
+                                <?= nl2br(h($artwork['ai_story'])) ?>
+                            </p>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="artwork-meta">
+                            <div class="meta-item">
+                                <strong>素材提供：</strong>marutto.art
+                            </div>
+                            <div class="meta-item">
+                                <strong>投稿日：</strong><?= date('Y-m-d', strtotime($artwork['created_at'])) ?>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </section>
+            </div>
+
+            <!-- ほかのおはなしボタン -->
+            <?php if (!empty($randomArtworkId)): ?>
+            <section class="random-story-section">
+                <a href="/kids-work.php?id=<?= $randomArtworkId ?>" class="btn">
+                    <i class="bi bi-arrow-repeat"></i> ほかのおはなし
+                </a>
             </section>
+            <?php endif; ?>
 
             <!-- ダウンロードセクション -->
             <section class="download-section">
