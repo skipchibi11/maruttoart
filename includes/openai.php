@@ -3,12 +3,17 @@
  * OpenAI API設定とヘルパー関数
  */
 
+// OpenAI APIキーを定数として定義
+if (!defined('OPENAI_API_KEY')) {
+    define('OPENAI_API_KEY', $_ENV['OPENAI_API_KEY'] ?? '');
+}
+
 /**
  * OpenAI APIキーの設定
  */
 function getOpenAIConfig() {
     return [
-        'api_key' => $_ENV['OPENAI_API_KEY'] ?? '',
+        'api_key' => OPENAI_API_KEY,
         'model' => 'gpt-4o-mini', // 画像解析対応モデル
         'max_tokens' => 2000,
         'temperature' => 0.3

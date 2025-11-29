@@ -1857,11 +1857,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             let scaleX = layer.transform.scale;
             let scaleY = layer.transform.scale;
             
-            // 選択時は少し拡大
+            // 選択状態の判定（スタイル適用用）
             const isSelected = (selectedLayerId === layer.id);
-            const scaleMultiplier = isSelected ? 1.08 : 1.0;
-            scaleX *= scaleMultiplier;
-            scaleY *= scaleMultiplier;
             
             // 水平反転の場合はscaleXを負にする
             if (layer.transform.flipHorizontal) {
@@ -1927,33 +1924,30 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
             // マウスドラッグイベントを追加
             layerGroup.addEventListener('mousedown', function(e) {
+                // タッチイベントから生成されたマウスイベントは無視
+                if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
+                    console.log(`mousedown ignored (from touch) on layer ${layer.id}`);
+                    return;
+                }
                 e.stopPropagation();
-                // clickイベントを阻害しないよう、ドラッグ準備のみ
+                console.log(`mousedown on layer ${layer.id}`);
                 prepareDrag(e, layer.id);
             });
 
             // タッチイベントを追加（スマホ対応）
             layerGroup.addEventListener('touchstart', function(e) {
                 e.stopPropagation();
-                // レイヤーをタッチした時のみスクロールを防ぐ
                 e.preventDefault();
-                prepareDrag(e.touches[0], layer.id); // 最初のタッチポイントを使用
+                console.log(`touchstart on layer ${layer.id}`);
+                prepareDrag(e.touches[0], layer.id);
             }, { passive: false });
-
-            // ポインターイベントも追加（デベロッパーツール対応）
-            if ('onpointerdown' in window) {
-                layerGroup.addEventListener('pointerdown', function(e) {
-                    e.stopPropagation();
-                    prepareDrag(e, layer.id);
-                });
-            }
 
             // 選択状態に応じてスタイルを設定
             if (isSelected) {
                 layerGroup.style.cursor = 'move';
-                // より強調されたスタイル：太い黄色の光彩エフェクト
+                // より強調されたスタイル：太い黄色の光彩エフェクト（サイズ変更なし）
                 layerGroup.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))';
-                console.log(`Layer ${layer.id} is SELECTED - applying golden glow and 8% scale boost`);
+                console.log(`Layer ${layer.id} is SELECTED - applying golden glow only`);
             } else {
                 layerGroup.style.cursor = 'pointer';
                 layerGroup.style.filter = '';
@@ -2060,6 +2054,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         let dragPreparationStartPos = { x: 0, y: 0 };
         
         function prepareDrag(e, layerId) {
+            console.log(`prepareDrag called for layer ${layerId}`);
             dragPreparationLayerId = layerId;
             
             const canvas = document.getElementById('mainCanvas');
@@ -2082,16 +2077,20 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             dragPreparationStartPos.x = svgPoint.x;
             dragPreparationStartPos.y = svgPoint.y;
             
-            console.log(`Drag preparation for layer ${layerId} at:`, svgPoint);
+            console.log(`Drag preparation complete - dragPreparationLayerId: ${dragPreparationLayerId}, pos:`, svgPoint);
         }
         
         // ドラッグ開始（実際にマウスが動いた時）
         function startDrag(layerId, currentPos) {
+            console.log(`startDrag called for layer ${layerId}, selectedLayerId: ${selectedLayerId}`);
+            
             if (selectedLayerId !== layerId) {
+                console.log(`Selecting layer ${layerId}`);
                 selectLayer(layerId);
             }
             
             isDragging = true;
+            console.log(`isDragging set to true`);
             
             dragStartPos.x = dragPreparationStartPos.x;
             dragStartPos.y = dragPreparationStartPos.y;
@@ -2100,6 +2099,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             if (layer) {
                 dragStartTransform.x = layer.transform.x;
                 dragStartTransform.y = layer.transform.y;
+                console.log(`Drag start transform: x=${layer.transform.x}, y=${layer.transform.y}`);
+            } else {
+                console.error(`Layer ${layerId} not found!`);
             }
             
             console.log(`Drag actually started for layer ${layerId}`);
@@ -2118,6 +2120,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         function onDrag(e) {
             // ドラッグ準備中の場合、マウスが動いたら実際のドラッグを開始
             if (dragPreparationLayerId !== null && !isDragging) {
+                console.log(`onDrag - checking if should start drag, dragPreparationLayerId: ${dragPreparationLayerId}`);
                 const canvas = document.getElementById('mainCanvas');
                 const rect = canvas.getBoundingClientRect();
                 
@@ -2138,13 +2141,22 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     Math.pow(svgPoint.y - dragPreparationStartPos.y, 2)
                 );
                 
+                console.log(`Distance moved: ${distance}px`);
+                
                 if (distance > 2) { // 2px以上動いたらドラッグとみなす
+                    console.log(`Starting drag for layer ${dragPreparationLayerId}`);
                     startDrag(dragPreparationLayerId, svgPoint);
                     dragPreparationLayerId = null;
                 }
             }
             
-            if (!isDragging || selectedLayerId === null) return;
+            if (!isDragging || selectedLayerId === null) {
+                if (!isDragging) console.log('onDrag - not dragging');
+                if (selectedLayerId === null) console.log('onDrag - no layer selected');
+                return;
+            }
+            
+            console.log(`onDrag - dragging layer ${selectedLayerId}`);
             
             const canvas = document.getElementById('mainCanvas');
             const rect = canvas.getBoundingClientRect();
@@ -3372,12 +3384,22 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 return;
             }
 
-            // プレビュー画像を生成
-            generateUploadPreview();
+            // 1日1回制限のチェック
+            const lastUploadDate = localStorage.getItem('kidsLastUploadDate');
+            const today = new Date().toDateString();
             
-            // モーダルを表示
-            const modal = new bootstrap.Modal(document.getElementById('uploadArtworkModal'));
-            modal.show();
+            if (lastUploadDate === today) {
+                alert('きょうは もう とどけたよ！\nまた あした きてね！');
+                return;
+            }
+
+            // 確認ダイアログ
+            if (!confirm('あなたの えを みんなに とどけますか？')) {
+                return;
+            }
+
+            // 直接アップロード処理を実行
+            submitArtworkDirectly();
         }
 
         // アップロード用プレビュー生成
@@ -3516,54 +3538,31 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             return result;
         }
 
-        // 作品アップロード実行
-        function submitArtwork() {
-            const form = document.getElementById('uploadArtworkForm');
-            const formData = new FormData(form);
-            
-            // バリデーション
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            
-            const agreeTerms = document.getElementById('agreeUploadTerms').checked;
-            if (!agreeTerms) {
-                alert('やくそくをよんで、チェックしてね！');
-                return;
-            }
-            
-            // アップロード処理開始
-            const submitBtn = document.getElementById('submitUploadBtn');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> アップロード中...';
-            
-            // プログレスバー表示
-            showUploadProgress();
+        // 作品アップロード実行（フォーム入力なし版）
+        function submitArtworkDirectly() {
+            // アップロード中メッセージ表示
+            const loadingMessage = document.createElement('div');
+            loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; text-align: center;';
+            loadingMessage.innerHTML = '<div style="font-size: 1.5rem; margin-bottom: 10px;">📤</div><div>えを とどけています...</div>';
+            document.body.appendChild(loadingMessage);
             
             generatePNGForUpload(function(blob) {
                 if (!blob) {
-                    showUploadError('PNG変換に失敗しました。');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    document.body.removeChild(loadingMessage);
+                    alert('えの へんかんに しっぱい しました');
                     return;
                 }
                 
-                // FormDataに画像を追加
-                formData.append('artwork', blob, `artwork-${Date.now()}.png`);
-                
-                // 投稿=フリー素材提供同意とみなす
-                formData.append('free_material_consent', '1');
-                
-                // 使用素材IDを収集してFormDataに追加
-                const usedMaterialIds = getUsedMaterialIds();
-                if (usedMaterialIds.length > 0) {
-                    formData.append('used_material_ids', usedMaterialIds.join(','));
-                }
+                // FormData作成（タイトルとペンネームはAIが生成）
+                const formData = new FormData();
+                const timestamp = new Date().toLocaleString('ja-JP');
+                formData.append('title', ''); // 空にしてAI生成に任せる
+                formData.append('pen_name', ''); // 空にしてAI生成に任せる
+                formData.append('description', '');
+                formData.append('artwork', blob, `kids-artwork-${Date.now()}.png`);
                 
                 // サーバーにアップロード
-                fetch('/api/upload-artwork.php', {
+                fetch('/api/upload-kids-artwork.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -3571,144 +3570,30 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
-                    return response.text();
+                    return response.json();
                 })
-                .then(responseText => {
-                    console.log('Server response:', responseText);
-                    
-                    let data;
-                    try {
-                        data = JSON.parse(responseText);
-                    } catch (parseError) {
-                        console.error('JSON parse error:', parseError);
-                        console.error('Response text:', responseText);
-                        throw new Error('サーバーレスポンスの解析に失敗しました');
-                    }
+                .then(data => {
+                    document.body.removeChild(loadingMessage);
                     
                     if (data.success) {
-                        showUploadSuccess(data.data);
+                        // アップロード日時を保存
+                        localStorage.setItem('kidsLastUploadDate', new Date().toDateString());
                         
-                        // 3秒後にモーダルを閉じる
-                        setTimeout(() => {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('uploadArtworkModal'));
-                            modal.hide();
-                            
-                            // フォームリセット
-                            form.reset();
-                            resetUploadModal();
-                        }, 3000);
+                        // 成功メッセージ
+                        alert('えを とどけました！\nありがとう！\n\nまた あした きてね！');
                         
                         console.log('作品アップロード完了:', data);
                     } else {
-                        let errorMsg = data.error || 'アップロードに失敗しました';
-                        if (data.details) {
-                            console.error('Error details:', data.details);
-                        }
-                        showUploadError(errorMsg);
+                        let errorMsg = data.error || 'とどけるのに しっぱい しました';
+                        alert(errorMsg);
                     }
                 })
                 .catch(error => {
-                    console.error('アップロードエラー:', error);
-                    let errorMessage = 'アップロードに失敗しました';
-                    
-                    // HTTP 429エラー（投稿制限）の場合
-                    if (error.message.includes('429')) {
-                        errorMessage = '1日の投稿制限（1件）に達しています。明日再度お試しください。';
-                    } 
-                    // JSONパースエラーの場合
-                    else if (error.message.includes('JSON')) {
-                        errorMessage += '（サーバーエラーが発生しています）';
-                    } 
-                    // その他のエラー
-                    else {
-                        errorMessage += ': ' + error.message;
-                    }
-                    
-                    showUploadError(errorMessage);
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    document.body.removeChild(loadingMessage);
+                    console.error('Upload error:', error);
+                    alert('エラーが はっせい しました\nもう いちど ためして ください');
                 });
             });
-        }
-
-        // アップロード進捗表示
-        function showUploadProgress() {
-            const progressHtml = `
-                <div class="upload-progress">
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                             role="progressbar" style="width: 100%">アップロード中...</div>
-                    </div>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', progressHtml);
-        }
-
-        // アップロード成功表示
-        function showUploadSuccess(data) {
-            // 既存のメッセージを削除
-            removeUploadMessages();
-            
-            const successHtml = `
-                <div class="upload-success">
-                    <h6><i class="bi bi-check-circle-fill"></i> アップロード完了</h6>
-                    <p class="mb-1">作品「${data.title}」のアップロードが完了しました！</p>
-                    <small class="text-muted">
-                        管理者による承認後に公開されます。<br>
-                        本日の残り投稿可能数: ${data.remaining_uploads}件
-                    </small>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', successHtml);
-        }
-
-        // アップロードエラー表示
-        function showUploadError(errorMessage) {
-            // 既存のメッセージを削除
-            removeUploadMessages();
-            
-            const errorHtml = `
-                <div class="upload-error">
-                    <h6><i class="bi bi-exclamation-triangle-fill"></i> アップロードエラー</h6>
-                    <p class="mb-0">${errorMessage}</p>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', errorHtml);
-        }
-
-        // アップロードメッセージを削除
-        function removeUploadMessages() {
-            const progress = document.querySelector('.upload-progress');
-            const success = document.querySelector('.upload-success');
-            const error = document.querySelector('.upload-error');
-            
-            if (progress) progress.remove();
-            if (success) success.remove();
-            if (error) error.remove();
-        }
-
-        // アップロードモーダルリセット
-        function resetUploadModal() {
-            removeUploadMessages();
-            
-            const previewContainer = document.getElementById('uploadPreviewContainer');
-            previewContainer.innerHTML = `
-                <div class="preview-placeholder">
-                    <i class="bi bi-image"></i>
-                    <p>作品のプレビューがここに表示されます</p>
-                </div>
-            `;
-            
-            document.getElementById('descriptionCount').textContent = '0';
-            document.getElementById('submitUploadBtn').disabled = true;
         }
 
         // 背景色を設定する関数
@@ -4335,83 +4220,122 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 });
             });
             
-            // ボタンイベントを追加
-            document.getElementById('rotateBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                rotateSelectedLayer();
-            });
-            document.getElementById('scaleDownBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                scaleDownSelectedLayer();
-            });
-            document.getElementById('scaleUpBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                scaleUpSelectedLayer();
-            });
-            document.getElementById('deleteBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                deleteSelectedLayer();
-            });
-            document.getElementById('springThemeBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                applySeasonalTheme('spring');
-            });
-            document.getElementById('exportBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                exportToPNG();
-            });
-            document.getElementById('clearBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                clearAll();
-            });
+            // ボタンイベントを追加（存在チェック付き）
+            const rotateBtn = document.getElementById('rotateBtn');
+            if (rotateBtn) {
+                rotateBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    rotateSelectedLayer();
+                });
+            }
+            
+            const scaleDownBtn = document.getElementById('scaleDownBtn');
+            if (scaleDownBtn) {
+                scaleDownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    scaleDownSelectedLayer();
+                });
+            }
+            
+            const scaleUpBtn = document.getElementById('scaleUpBtn');
+            if (scaleUpBtn) {
+                scaleUpBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    scaleUpSelectedLayer();
+                });
+            }
+            
+            const deleteBtn = document.getElementById('deleteBtn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deleteSelectedLayer();
+                });
+            }
+            
+            const springThemeBtn = document.getElementById('springThemeBtn');
+            if (springThemeBtn) {
+                springThemeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    applySeasonalTheme('spring');
+                });
+            }
+            
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    exportToPNG();
+                });
+            }
+            
+            const clearBtn = document.getElementById('clearBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    clearAll();
+                });
+            }
             
             // アップロードボタンのイベントリスナー
-            document.getElementById('uploadBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                openUploadModal();
-            });
+            const uploadBtn = document.getElementById('uploadBtn');
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openUploadModal();
+                });
+            }
             
             // アップロードモーダルのイベントリスナー
-            document.getElementById('submitUploadBtn').addEventListener('click', submitArtwork);
+            const submitUploadBtn = document.getElementById('submitUploadBtn');
+            if (submitUploadBtn) {
+                submitUploadBtn.addEventListener('click', submitArtwork);
+            }
             
             // フォームバリデーション
             const artworkTitle = document.getElementById('artworkTitle');
             const penName = document.getElementById('penName');
             const agreeUploadTerms = document.getElementById('agreeUploadTerms');
-            const submitUploadBtn = document.getElementById('submitUploadBtn');
             
-            function validateUploadForm() {
-                const titleValid = artworkTitle.value.trim().length > 0 && artworkTitle.value.trim().length <= 100;
-                const penNameValid = penName.value.trim().length > 0 && penName.value.trim().length <= 50;
-                const termsAgreed = agreeUploadTerms.checked;
+            if (artworkTitle && penName && agreeUploadTerms && submitUploadBtn) {
+                function validateUploadForm() {
+                    const titleValid = artworkTitle.value.trim().length > 0 && artworkTitle.value.trim().length <= 100;
+                    const penNameValid = penName.value.trim().length > 0 && penName.value.trim().length <= 50;
+                    const termsAgreed = agreeUploadTerms.checked;
+                    
+                    submitUploadBtn.disabled = !(titleValid && penNameValid && termsAgreed);
+                }
                 
-                submitUploadBtn.disabled = !(titleValid && penNameValid && termsAgreed);
+                artworkTitle.addEventListener('input', validateUploadForm);
+                penName.addEventListener('input', validateUploadForm);
+                agreeUploadTerms.addEventListener('change', validateUploadForm);
             }
-            
-            artworkTitle.addEventListener('input', validateUploadForm);
-            penName.addEventListener('input', validateUploadForm);
-            agreeUploadTerms.addEventListener('change', validateUploadForm);
             
             // 文字数カウンター
             const descriptionTextarea = document.getElementById('artworkDescription');
             const descriptionCount = document.getElementById('descriptionCount');
             
-            descriptionTextarea.addEventListener('input', function() {
-                const count = this.value.length;
-                descriptionCount.textContent = count;
-                
-                if (count > 1000) {
-                    descriptionCount.style.color = '#dc3545';
-                } else {
-                    descriptionCount.style.color = '#6c757d';
-                }
-            });
+            if (descriptionTextarea && descriptionCount) {
+                descriptionTextarea.addEventListener('input', function() {
+                    const count = this.value.length;
+                    descriptionCount.textContent = count;
+                    
+                    if (count > 1000) {
+                        descriptionCount.style.color = '#dc3545';
+                    } else {
+                        descriptionCount.style.color = '#6c757d';
+                    }
+                });
+            }
             
             // モーダル表示時にフォームリセット
-            document.getElementById('uploadArtworkModal').addEventListener('show.bs.modal', function() {
-                resetUploadModal();
-                validateUploadForm();
-            });
+            const uploadArtworkModal = document.getElementById('uploadArtworkModal');
+            if (uploadArtworkModal) {
+                uploadArtworkModal.addEventListener('show.bs.modal', function() {
+                    resetUploadModal();
+                    validateUploadForm();
+                });
+            }
             
             // 背景色パネルのイベントリスナーを設定
             const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
@@ -4504,99 +4428,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             console.log('レイヤーを選択して各種操作ボタンで回転・拡大縮小・前面背面移動ができます');
         });
     </script>
-
-    <!-- 作品アップロードモーダル -->
-    <div class="modal fade" id="uploadArtworkModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="uploadModalLabel">
-                        <i class="bi bi-cloud-upload"></i> みんなの作品集に投稿
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="閉じる"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="upload-preview-section">
-                                <h6><i class="bi bi-image"></i> 作品プレビュー</h6>
-                                <div id="uploadPreviewContainer" class="upload-preview-container">
-                                    <div class="preview-placeholder">
-                                        <i class="bi bi-image"></i>
-                                        <p>作品のプレビューがここに表示されます</p>
-                                    </div>
-                                </div>
-                                <div class="upload-file-info mt-3">
-                                    <small class="text-muted">
-                                        <i class="bi bi-info-circle"></i> 
-                                        PNG形式で出力された作品が投稿されます。最大2MB、2500px以内に自動調整されます。
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <form id="uploadArtworkForm" enctype="multipart/form-data">
-                                <div class="mb-3">
-                                    <label for="artworkTitle" class="form-label">さくひんのなまえ <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="artworkTitle" name="title" required maxlength="100" 
-                                           placeholder="れい：はるのおはなばたけ">
-                                    <div class="form-text">100もじまで かけるよ</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="penName" class="form-label">きみのなまえ（ペンネーム） <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="penName" name="pen_name" required maxlength="50" 
-                                           placeholder="れい：はなこ">
-                                    <div class="form-text">50もじまで かけるよ</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="artworkDescription" class="form-label">さくひんのせつめい（かかなくてもいいよ）</label>
-                                    <textarea class="form-control" id="artworkDescription" name="description" rows="3" 
-                                              maxlength="1000" placeholder="どんなさくひんか、かいてみてね（1000もじまで）"></textarea>
-                                    <div class="form-text">
-                                        <span id="descriptionCount">0</span>/1000もじ
-                                    </div>
-                                </div>
-                                
-                                <!-- フリー素材同意は投稿時に自動的に同意したものとみなす -->
-                                
-                                <div class="alert alert-warning">
-                                    <h6><i class="bi bi-info-circle"></i> だいじなやくそく</h6>
-                                    <ul class="mb-0 small">
-                                        <li><strong>とうこうすると、みんながきみのさくひんをつかえるようになるよ</strong></li>
-                                        <li>ほかのひとが、きみのさくひんをダウンロードしてつかえるよ</li>
-                                        <li>とうこうしたさくひんは、おとなのひとがチェックしてからこうかいされるよ</li>
-                                        <li>maruttoのえをつかったさくひんだけとうこうできるよ</li>
-                                        <li>わるいないようは、けされることがあるよ</li>
-                                        <li>1にち1こまでとうこうできるよ</li>
-                                    </ul>
-                                </div>
-                                
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="agreeUploadTerms" required>
-                                    <label class="form-check-label" for="agreeUploadTerms">
-                                        <a href="/terms-of-use.php" target="_blank">やくそく</a>をよんで、みんながさくひんをつかってもいいよ <span class="text-danger">*</span>
-                                    </label>
-                                </div>
-
-                                <!-- 隠しファイル入力 -->
-                                <input type="file" id="artworkFile" name="artwork" accept="image/png,image/webp,image/svg+xml" style="display: none;">
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> やめる
-                    </button>
-                    <button type="button" class="btn btn-success" id="submitUploadBtn" disabled>
-                        <i class="bi bi-cloud-upload"></i> とうこうする
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
     <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
