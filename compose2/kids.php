@@ -660,6 +660,31 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             order: 7;
         }
 
+        .info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            order: 8;
+            margin-top: 15px;
+        }
+
+        .info-section p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .info-section p:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-section strong {
+            color: #2c5aa0;
+            font-size: 1rem;
+        }
+
         .action-controls h3 {
             color: #2c5aa0;
             font-weight: 600;
@@ -749,18 +774,24 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .btn-upload {
-            background: #28a745;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
+            background: linear-gradient(145deg, #d4edda 0%, #a8d5ba 100%);
+            border: 3px solid #28a745;
+            color: #28a745;
+            border-radius: 15px;
+            font-weight: 600;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
 
         .btn-upload:hover {
-            background: #218838;
-            color: white;
+            border-color: #218838;
+            background: linear-gradient(145deg, #c3e6cb 0%, #8fbc8f 100%);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-rotate {
@@ -1682,18 +1713,26 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
             <!-- ダウンロード・とうこうボタン -->
             <div class="action-controls">
-                <h3><i class="bi bi-stars"></i> できあがり！</h3>
                 <div class="action-buttons">
                     <button id="exportBtn" class="btn btn-export">
-                        <i class="bi bi-download"></i> ダウンロード
+                        ダウンロード
                     </button>
                     <button id="uploadBtn" class="btn btn-upload">
-                        <i class="bi bi-cloud-upload"></i> みんなにみせる
+                        みんなに<br />とどける
                     </button>
                     <button id="clearBtn" class="btn btn-clear">
-                        <i class="bi bi-trash"></i> ぜんぶけす
+                        ぜんぶけす
                     </button>
                 </div>
+            </div>
+
+            <!-- 説明セクション -->
+            <div class="info-section">
+                <p><strong>とどける について</strong><br>
+                みんなが よろこぶように、あなたの えから ちいさな おはなしを つくって、とどけます。とどいた えは、ほかの ひとが ダウンロードして つかう ことも できます。</p>
+                
+                <p><strong>ぜんぶ けす について</strong><br>
+                いまの えを まっさらに して、さいしょから つくりなおせます。</p>
             </div>
         </div>
     </div>
