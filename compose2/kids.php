@@ -130,12 +130,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             max-width: 100%;
             width: 100%;
             overflow-x: hidden;
+            position: relative;
+            z-index: 1;
         }
         
         .materials-panel {
             max-width: 100%;
             width: 100%;
             overflow-x: hidden;
+            position: relative;
+            z-index: 10;
         }
 
         /* 使い方セクション */
@@ -487,18 +491,38 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .material-item {
-            aspect-ratio: 1;
+            position: relative;
+            width: 100%;
             background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%);
             border: 3px solid #FFD700;
             border-radius: 15px;
-            padding: 8px;
             cursor: grab;
             transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(255, 105, 180, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            box-shadow: 0 6px 15px rgba(255, 105, 180, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Safari対応: aspect-ratioの代わりにpadding-topを使用 */
+        .material-item::before {
+            content: '';
+            display: block;
+            padding-top: 100%;
+        }
+        
+        .material-item > svg,
+        .material-item > img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: calc(100% - 16px);
+            height: calc(100% - 16px);
+            max-width: calc(100% - 16px);
+            max-height: calc(100% - 16px);
+            object-fit: contain;
         }
 
         .material-item:active {
@@ -525,9 +549,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             background: linear-gradient(145deg, #fff9e6 0%, #ffe4b5 100%) !important;
             border: 4px solid #FFA500 !important;
             cursor: pointer !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
         .shuffle-btn:hover {
@@ -541,16 +565,22 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             transform: translateY(-4px) scale(1.02) !important;
         }
 
-        .shuffle-btn svg {
+        .shuffle-btn > svg {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 60px !important;
+            height: 60px !important;
             animation: shuffle-pulse 2s ease-in-out infinite;
         }
 
         @keyframes shuffle-pulse {
             0%, 100% {
-                transform: scale(1);
+                transform: translate(-50%, -50%) scale(1);
             }
             50% {
-                transform: scale(1.1);
+                transform: translate(-50%, -50%) scale(1.1);
             }
         }
 
@@ -563,13 +593,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             display: flex;
             flex-direction: column;
             order: 4;
+            position: relative;
+            z-index: 10;
         }
 
         .canvas-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .canvas-header h3 {
@@ -584,6 +616,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         /* キャンバス関連の基本スタイルはlayout.cssに移動 */
 
         /* 操作コントロール関連の基本スタイルはlayout.cssに移動 */
+        
+        .manipulation-controls {
+            position: relative;
+            z-index: 10;
+        }
 
         .manipulation-controls h3 {
             color: #2c5aa0;
@@ -638,13 +675,47 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
         
         .manipulation-buttons button {
-            aspect-ratio: 1;
+            position: relative;
             min-width: 0;
             width: 100%;
-            height: auto;
-            padding: 15px 8px;
-            flex-direction: column;
-            gap: 5px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        /* Safari対応: aspect-ratioの代わりにpadding-topを使用 */
+        .manipulation-buttons button::before {
+            content: '';
+            display: block;
+            padding-top: 100%;
+        }
+        
+        .manipulation-buttons button > svg,
+        .manipulation-buttons button > input {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+        }
+        
+        /* 縮小ボタンは小さい星 */
+        .btn-scale-down > svg {
+            width: 50% !important;
+            height: 50% !important;
+        }
+        
+        /* 拡大ボタンは大きい星 */
+        .btn-scale-up > svg {
+            width: 90% !important;
+            height: 90% !important;
+        }
+        
+        /* 回転ボタンは風車アイコン */
+        .btn-rotate > svg {
+            width: 90% !important;
+            height: 90% !important;
         }
         
         .manipulation-buttons button i {
@@ -658,6 +729,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             order: 7;
+            position: relative;
+            z-index: 10;
         }
 
         .info-section {
@@ -704,13 +777,19 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
         
         .action-buttons button {
-            aspect-ratio: 1;
+            position: relative;
             min-width: 0;
             width: 100%;
-            height: auto;
             padding: 15px 8px;
+            display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
             gap: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            line-height: 1.2;
         }
         
         .action-buttons button i {
@@ -1316,21 +1395,19 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             background: #f8f9fa;
             border: 2px dashed #dee2e6;
             border-radius: 10px;
-            min-height: 60vh;
             position: relative;
             touch-action: manipulation;
-            padding: 5px;
+            padding: 0;
         }
 
         #mainCanvas {
             width: 100%;
-            height: 100%;
-            max-width: 100%;
+            height: auto;
+            max-width: 500px;
             max-height: 500px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            aspect-ratio: 1;
         }
 
         /* PCでもスマホでも同じレイアウト - メディアクエリ不要 */
@@ -1773,13 +1850,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 <div class="manipulation-controls">
                 <div class="manipulation-buttons">
                     <button id="scaleDownBtn" class="btn btn-scale-down" title="ちいさくする">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 50%; height: 50%;"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
                     </button>
                     <button id="scaleUpBtn" class="btn btn-scale-up" title="おおきくする">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%;"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
                     </button>
                     <button id="rotateBtn" class="btn btn-rotate" title="みぎにまわす">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%; transform: rotate(45deg);"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
+                        <svg viewBox="-6.4 -6.4 76.80 76.80" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="a"></g> <g id="b"></g> <g id="c"></g> <g id="d"></g> <g id="e"></g> <g id="f"></g> <g id="g"></g> <g id="h"></g> <g id="i"></g> <g id="j"></g> <g id="k"></g> <g id="l"></g> <g id="m"></g> <g id="n"></g> <g id="o"></g> <g id="p"></g> <g id="q"></g> <g id="r"> <path d="M34.55,42.29l-1.77-5.61-3.73,.11v21.21c0,.55,.45,1,1,1h3.49c.55,0,1-.45,1-1v-15.71Z" fill="#9dacb9" id="s"></path> <path d="M27.44,18.97v9.13h9.12v-9.13h-9.12Z" fill="#f0f4f6" id="t"></path> <path d="M29.38,5.05c-.29-.07-.6-.07-.89,.02l-10.48,3.22c-.43,.13-.57,.68-.25,1l6.14,6.14,.68,4.34,4.48,.81h3.16l1.07-6.54-3.78-8.93s-.08-.05-.13-.07h0Z" fill="#fd91ba" id="u"></path> <path d="M29.51,5.12l2.71,15.47h2.73l4.59-1.5,.57-3.65L30.15,5.49c-.19-.17-.41-.29-.65-.37h0Z" fill="#ffa6c5" id="v"></path> <path d="M40.1,15.43l-5.16,5.15v3.16l7.95,.3,7.55-3.01c.11-.33,.11-.68,.01-1.01l-3.22-10.48c-.13-.43-.68-.57-1-.25l-6.14,6.14Z" fill="#0acffb" id="w"></path> <path d="M50.45,21.03l-15.5,2.71v2.73l1.62,3.45,3.54,1.71,9.95-9.95c.18-.18,.32-.41,.4-.65Z" fill="#62d9fa" id="x"></path> <path d="M40.1,31.63l-5.16-5.16h-3.16l-.94,6.89,3.71,8.92,11.44-3.51c.43-.13,.57-.68,.25-1l-6.14-6.14Z" fill="#fdda5c" id="y"></path> <path d="M34.55,42.29l-2.77-15.81h-2.73l-4.46,.44-.69,4.71,5.16,5.16,5.5,5.5Z" fill="#fce87b" id="a`"></path> <path d="M23.9,31.63l5.16-5.16v-3.16l-6.12-1.11-9.35,3.82c-.12,.33-.14,.68-.05,1.02l3.22,10.48c.13,.43,.68,.57,1,.25l6.14-6.14Z" fill="#6df4c0" id="aa"></path> <path d="M13.59,26.03l15.47-2.71v-2.73l-5.16-5.16-9.95,9.95c-.17,.19-.3,.41-.37,.65Z" fill="#9af6d3" id="ab"></path> <path d="M50.45,21.03l-15.5-.45v3.16l15.5-2.71Z" fill="#00bff8" id="ac"></path> <path d="M13.59,26.03l15.5,.45v-3.16l-15.5,2.71Z" fill="#3aedbc" id="ad"></path> <path d="M29.51,5.12l-.45,15.5h3.16l-2.71-15.5Z" fill="#fc76a8" id="ae"></path> <path d="M34.55,42.29l.39-15.81h-3.16l2.77,15.81Z" fill="#f8c228" id="af"></path> <path d="M51.42,19.73l-3.22-10.48c-.13-.41-.4-.75-.78-.95-.38-.2-.81-.24-1.22-.12-.25,.08-.48,.22-.66,.4l-5.43,5.43L30.86,4.78c-.7-.7-1.72-.95-2.67-.66h0l-10.48,3.22c-.41,.13-.75,.4-.95,.78-.2,.38-.24,.81-.12,1.22,.08,.25,.21,.47,.4,.66l5.43,5.43-9.24,9.24c-.7,.7-.95,1.72-.66,2.67l3.22,10.48c.13,.41,.4,.75,.78,.95,.38,.2,.81,.24,1.22,.12,.25-.08,.48-.22,.66-.4l5.43-5.43,4.16,4.16v20.79c0,1.1,.9,2,2,2h3.49c1.1,0,2-.9,2-2v-14.97l10.73-3.29c.41-.13,.75-.4,.95-.78,.2-.38,.24-.81,.12-1.22-.08-.25-.21-.47-.4-.66l-5.43-5.43,9.24-9.24c.7-.7,.95-1.72,.66-2.67Zm-4.94-9.26l2.99,9.72-13.52,2.37v-1.55l4.86-4.86h0l5.67-5.67Zm-13.43,9.12l-2.08-11.86,7.71,7.71-4.16,4.15h-1.48Zm.89,2v3.89h-3.89v-3.89h3.89Zm-15.01-12.54l9.72-2.99,2.37,13.52h-1.55l-4.86-4.86-5.67-5.67Zm4.97,7.79l4.16,4.16v1.48l-11.87,2.08,7.71-7.71Zm-6.38,19.75l-2.99-9.72,13.52-2.37v1.55l-4.86,4.86h0l-5.67,5.67Zm7.79-4.97l4.16-4.16h1.48l2.08,11.86-3.26-3.26h0l-4.45-4.45Zm4.74,26.36v-18.79l3.5,3.5v15.3h-3.5Zm15.01-19.99l-9.72,2.99-2.37-13.52h1.55l4.86,4.86h0l5.67,5.67Zm-4.97-7.79l-4.16-4.16v-1.48l11.87-2.08-7.71,7.71Z"></path> </g> <g id="ag"></g> <g id="ah"></g> <g id="ai"></g> <g id="aj"></g> <g id="ak"></g> <g id="al"></g> <g id="am"></g> <g id="an"></g> <g id="ao"></g> <g id="ap"></g> <g id="aq"></g> <g id="ar"></g> <g id="as"></g> <g id="at"></g> <g id="au"></g> <g id="av"></g> <g id="aw"></g> <g id="ax"></g> <g id="ay"></g> <g id="b`"></g> <g id="ba"></g> <g id="bb"></g> <g id="bc"></g> <g id="bd"></g> <g id="be"></g> <g id="bf"></g> <g id="bg"></g> <g id="bh"></g> <g id="bi"></g> <g id="bj"></g> <g id="bk"></g> <g id="bl"></g> </g></svg>
                     </button>
                     <button id="springThemeBtn" class="btn btn-spring-theme" title="いろをかえる">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%;"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M23 17C23 10.9249 18.0751 6 12 6C5.92487 6 1 10.9249 1 17H3C3 12.0294 7.02944 8 12 8C16.9706 8 21 12.0294 21 17H23Z" fill="#FF575B"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M21 17C21 12.0294 16.9706 8 12 8C7.02944 8 3 12.0294 3 17H5C5 13.134 8.13401 10 12 10C15.866 10 19 13.134 19 17H21Z" fill="#FABA2C"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M19 17C19 13.134 15.866 10 12 10C8.13401 10 5 13.134 5 17H7C7 14.2386 9.23858 12 12 12C14.7614 12 17 14.2386 17 17H19Z" fill="#7AC74D"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M17 17C17 14.2386 14.7614 12 12 12C9.23858 12 7 14.2386 7 17H9C9 15.3431 10.3431 14 12 14C13.6569 14 15 15.3431 15 17H17Z" fill="#00B0FF"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M15 17H13C13 16.4477 12.5523 16 12 16C11.4477 16 11 16.4477 11 17H9C9 15.3431 10.3431 14 12 14C13.6569 14 15 15.3431 15 17Z" fill="#B99FE4"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M13 17C13 16.4477 12.5523 16 12 16C11.4477 16 11 16.4477 11 17H13Z" fill="#E39BD1"></path> </g></svg>
