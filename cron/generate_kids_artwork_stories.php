@@ -34,14 +34,14 @@ try {
         die("ERROR: OpenAI API key not configured\n");
     }
     
-    // タイトルまたはストーリーがデフォルト値（待機メッセージ）の作品を取得（最大10件）
+    // タイトルとストーリーが両方ともデフォルト値（待機メッセージ）の作品を取得
     $defaultTitle = 'おはなしを つくっているよ';
     $defaultStory = "いま あなたの えから、すてきな おはなしを つくっています。\nすこし まっててね！";
     
     $stmt = $pdo->prepare("
-        SELECT id, image_path, webp_path, created_at
+        SELECT id, image_path, webp_path, created_at, title, ai_story
         FROM kids_artworks
-        WHERE title = :default_title OR ai_story = :default_story
+        WHERE title = :default_title AND ai_story = :default_story
         ORDER BY created_at ASC
         LIMIT 1
     ");
@@ -55,7 +55,8 @@ try {
     $errorCount = 0;
     
     if (empty($artworks)) {
-        echo "No artworks to process.\n";
+        echo "No artworks to process (no default values found).\n";
+        error_log("Kids artwork stories cron: No artworks with default values found");
         exit(0);
     }
     
