@@ -1637,10 +1637,92 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         /* GDPR Cookie Banner は外部CSS (assets/css/gdpr.css) で管理 */
+
+        /* 背景に流れる素材のアニメーション（PC用） */
+        .floating-materials-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-material {
+            position: absolute;
+            opacity: 0.6;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .floating-material:hover {
+            opacity: 0.85;
+            transform: scale(1.1);
+        }
+
+        .floating-material:active {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .floating-material.left-to-right {
+            animation-name: floatLeftToRight;
+        }
+
+        .floating-material.right-to-left {
+            animation-name: floatRightToLeft;
+        }
+
+        .floating-material img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(1.1) saturate(0.8);
+        }
+
+        @keyframes floatLeftToRight {
+            0% {
+                transform: translateX(-300px) translateY(0);
+            }
+            100% {
+                transform: translateX(calc(100vw + 300px)) translateY(30px);
+            }
+        }
+
+        @keyframes floatRightToLeft {
+            0% {
+                transform: translateX(calc(100vw + 300px)) translateY(0);
+            }
+            100% {
+                transform: translateX(-300px) translateY(30px);
+            }
+        }
+
+        /* モバイルでは表示しない */
+        @media (max-width: 768px) {
+            .floating-materials-container {
+                display: none;
+            }
+        }
+
+        /* main-contentを前面に */
+        .main-content {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
     <?php include '../includes/gdpr-gtm-noscript.php'; ?>
+    
+    <!-- PC用：背景に流れる素材 -->
+    <div class="floating-materials-container" id="floatingMaterialsContainer"></div>
+    
     <?php 
     $currentPage = 'kids';
     include '../includes/header.php'; 
@@ -4426,6 +4508,118 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             console.log('素材をクリックしてキャンバスに配置してください');
             console.log('レイヤーをクリック/タップして選択し、ドラッグで移動できます（デベロッパーツール対応）');
             console.log('レイヤーを選択して各種操作ボタンで回転・拡大縮小・前面背面移動ができます');
+            
+            // PC用：背景に流れる素材を生成
+            createFloatingMaterials();
+        });
+        
+        // 背景に流れる素材を生成する関数
+        function createFloatingMaterials() {
+            // モバイルでは実行しない
+            if (window.innerWidth <= 768) {
+                return;
+            }
+            
+            const container = document.getElementById('floatingMaterialsContainer');
+            if (!container) return;
+            
+            // SVG素材のみを取得（data-svg-path属性があるもの）
+            const materialItems = document.querySelectorAll('.material-item[data-svg-path]');
+            if (materialItems.length === 0) {
+                console.log('SVG素材が見つかりませんでした');
+                return;
+            }
+            
+            // ランダムに10件程度選択
+            const materialsArray = Array.from(materialItems);
+            const selectedMaterials = [];
+            const count = Math.min(10, materialsArray.length);
+            
+            // ランダムに選択
+            while (selectedMaterials.length < count) {
+                const randomIndex = Math.floor(Math.random() * materialsArray.length);
+                const material = materialsArray[randomIndex];
+                if (!selectedMaterials.includes(material)) {
+                    selectedMaterials.push(material);
+                }
+            }
+            
+            // 各素材に対して流れる要素を作成
+            selectedMaterials.forEach((material, index) => {
+                const img = material.querySelector('img');
+                const svgPath = material.getAttribute('data-svg-path');
+                if (!img || !svgPath) return;
+                
+                const floatingEl = document.createElement('div');
+                
+                // ランダムに方向を決定（50%の確率で左→右、50%で右→左）
+                const direction = Math.random() < 0.5 ? 'left-to-right' : 'right-to-left';
+                floatingEl.className = `floating-material ${direction}`;
+                
+                const floatingImg = document.createElement('img');
+                floatingImg.src = img.src;
+                floatingImg.alt = '';
+                
+                floatingEl.appendChild(floatingImg);
+                
+                // サイズを大きめにランダムに（200px～300px）
+                const size = 200 + Math.random() * 100;
+                floatingEl.style.width = size + 'px';
+                floatingEl.style.height = size + 'px';
+                
+                // 開始位置（高さはランダム）
+                const startY = Math.random() * (window.innerHeight - size);
+                floatingEl.style.top = startY + 'px';
+                floatingEl.style.left = '0';
+                
+                // アニメーション時間（60秒～120秒でゆっくり）
+                const duration = 60 + Math.random() * 60;
+                floatingEl.style.animationDuration = duration + 's';
+                
+                // 画面の途中からランダムに開始位置を設定（すぐに表示されるように）
+                // 0～duration秒の間のランダムな時点から開始
+                const delay = -(Math.random() * duration);
+                floatingEl.style.animationDelay = delay + 's';
+                
+                // 透明度をランダムに（0.5～0.7）
+                const opacity = 0.5 + Math.random() * 0.2;
+                floatingEl.style.opacity = opacity;
+                
+                // クリックイベントを追加（素材をキャンバスに追加）
+                floatingEl.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // 元の素材アイテムを使用して追加
+                    addMaterialToCanvas(material);
+                    
+                    // クリック時の視覚効果（一時的に拡大して薄くする）
+                    const originalFilter = this.style.filter || '';
+                    this.style.filter = 'brightness(1.5) saturate(1.5) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))';
+                    
+                    setTimeout(() => {
+                        this.style.filter = originalFilter;
+                    }, 300);
+                    
+                    console.log('流れている素材をクリックして追加しました:', material.getAttribute('data-title'));
+                });
+                
+                container.appendChild(floatingEl);
+            });
+            
+            console.log(`背景に${selectedMaterials.length}個のSVG素材を流しました`);
+        }
+        
+        // ウィンドウリサイズ時に再生成
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                const container = document.getElementById('floatingMaterialsContainer');
+                if (container) {
+                    container.innerHTML = '';
+                    createFloatingMaterials();
+                }
+            }, 500);
         });
     </script>
 
