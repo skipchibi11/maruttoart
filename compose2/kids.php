@@ -2117,10 +2117,47 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 layerGroup.style.cursor = 'move';
                 // より強調されたスタイル：太い黄色の光彩エフェクト（サイズ変更なし）
                 layerGroup.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))';
-                console.log(`Layer ${layer.id} is SELECTED - applying golden glow only`);
+                
+                // Safari対応：SVG rect要素でバウンディングボックスを描画
+                try {
+                    const bbox = layerGroup.getBBox();
+                    const padding = 5;
+                    
+                    // 既存の選択枠があれば削除
+                    const existingRect = layerGroup.querySelector('.selection-rect');
+                    if (existingRect) {
+                        existingRect.remove();
+                    }
+                    
+                    // 選択枠用のrect要素を作成
+                    const selectionRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    selectionRect.classList.add('selection-rect');
+                    selectionRect.setAttribute('x', bbox.x - padding);
+                    selectionRect.setAttribute('y', bbox.y - padding);
+                    selectionRect.setAttribute('width', bbox.width + padding * 2);
+                    selectionRect.setAttribute('height', bbox.height + padding * 2);
+                    selectionRect.setAttribute('fill', 'none');
+                    selectionRect.setAttribute('stroke', '#FFD700');
+                    selectionRect.setAttribute('stroke-width', '3');
+                    selectionRect.setAttribute('pointer-events', 'none');
+                    
+                    // 最初の子要素として挿入（背景として）
+                    layerGroup.insertBefore(selectionRect, layerGroup.firstChild);
+                } catch (error) {
+                    console.log('バウンディングボックス取得エラー:', error);
+                }
+                
+                console.log(`Layer ${layer.id} is SELECTED - applying golden glow and rect`);
             } else {
                 layerGroup.style.cursor = 'pointer';
                 layerGroup.style.filter = '';
+                
+                // 選択枠を削除
+                const existingRect = layerGroup.querySelector('.selection-rect');
+                if (existingRect) {
+                    existingRect.remove();
+                }
+                
                 console.log(`Layer ${layer.id} is not selected (selectedLayerId: ${selectedLayerId})`);
             }
             
@@ -4651,12 +4688,38 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             console.log('レイヤーをクリック/タップして選択し、ドラッグで移動できます（デベロッパーツール対応）');
             console.log('レイヤーを選択して各種操作ボタンで回転・拡大縮小・前面背面移動ができます');
             
-            // PC用：背景に流れる素材を生成
+            // PC用：背景に流れる素材を生成（APIから50件取得して8件表示）
             createFloatingMaterials();
         });
         
+        // グローバル変数：取得した全素材データ
+        let allFloatingMaterials = [];
+        let floatingRotationInterval = null;
+
+        // 配列からランダムにN件選択する関数
+        function getRandomMaterials(materials, count) {
+            const shuffled = [...materials].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, Math.min(count, materials.length));
+        }
+
+        // 30秒ごとに素材をローテーション
+        function startFloatingRotation() {
+            // 既存のインターバルがあればクリア
+            if (floatingRotationInterval) {
+                clearInterval(floatingRotationInterval);
+            }
+            
+            floatingRotationInterval = setInterval(() => {
+                if (allFloatingMaterials.length > 0) {
+                    const newMaterials = getRandomMaterials(allFloatingMaterials, 8);
+                    console.log('素材をローテーション:', newMaterials.length + '件');
+                    createFloatingMaterials(newMaterials);
+                }
+            }, 30000); // 30秒
+        }
+
         // 背景に流れる素材を生成する関数（非同期対応）
-        async function createFloatingMaterials(useFetchedData = false) {
+        async function createFloatingMaterials(materialsToShow = null) {
             // モバイルでは実行しない
             if (window.innerWidth <= 768) {
                 return;
@@ -4667,8 +4730,14 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             
             let materialsData = [];
             
-            if (useFetchedData) {
-                // APIから非同期で素材を取得
+            if (materialsToShow) {
+                // 指定された素材を使用（ローテーション時）
+                materialsData = materialsToShow;
+            } else if (allFloatingMaterials.length > 0) {
+                // 既に取得済みのデータからランダムに8件選択
+                materialsData = getRandomMaterials(allFloatingMaterials, 8);
+            } else {
+                // 初回：APIから50件取得
                 try {
                     const response = await fetch('/api/get-floating-materials.php');
                     
@@ -4681,8 +4750,14 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     const data = await response.json();
                     
                     if (data.success && data.materials) {
-                        materialsData = data.materials;
-                        console.log(`APIから${materialsData.length}件のSVG素材を取得しました`);
+                        allFloatingMaterials = data.materials;
+                        console.log(`APIから${allFloatingMaterials.length}件のSVG素材を取得しました`);
+                        
+                        // その中からランダムに8件選択
+                        materialsData = getRandomMaterials(allFloatingMaterials, 8);
+                        
+                        // 30秒ごとにローテーション開始
+                        startFloatingRotation();
                     } else {
                         console.error('素材の取得に失敗しました:', data.error || 'Unknown error');
                         if (data.trace) {
@@ -4694,38 +4769,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     console.error('素材取得エラー:', error);
                     return;
                 }
-            } else {
-                // 初回は既存のDOM要素から取得
-                const materialItems = document.querySelectorAll('.material-item[data-svg-path]');
-                if (materialItems.length === 0) {
-                    console.log('SVG素材が見つかりませんでした');
-                    return;
-                }
-                
-                // ランダムに10件選択
-                const materialsArray = Array.from(materialItems);
-                const selectedMaterials = [];
-                const count = Math.min(10, materialsArray.length);
-                
-                // ランダムに選択
-                while (selectedMaterials.length < count) {
-                    const randomIndex = Math.floor(Math.random() * materialsArray.length);
-                    const material = materialsArray[randomIndex];
-                    if (!selectedMaterials.includes(material)) {
-                        selectedMaterials.push(material);
-                    }
-                }
-                
-                // DOM要素からデータを抽出
-                materialsData = selectedMaterials.map(material => {
-                    const img = material.querySelector('img');
-                    return {
-                        id: material.getAttribute('data-material-id'),
-                        title: material.getAttribute('data-title'),
-                        svg_path: material.getAttribute('data-svg-path'),
-                        image_path: img ? img.src : ''
-                    };
-                });
             }
             
             // 既存の素材をフェードアウト

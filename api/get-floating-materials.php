@@ -7,14 +7,14 @@ require_once __DIR__ . '/../config.php';
 try {
     $pdo = getDB();
     
-    // SVGパスが存在する素材のみを取得（ランダムに30件）
+    // SVGパスが存在する素材のみを取得（ランダムに50件）
     $stmt = $pdo->prepare("
         SELECT DISTINCT id, title, slug, image_path, webp_medium_path, svg_path
         FROM materials
         WHERE svg_path IS NOT NULL 
         AND svg_path != ''
         ORDER BY RAND()
-        LIMIT 30
+        LIMIT 50
     ");
     
     $stmt->execute();
