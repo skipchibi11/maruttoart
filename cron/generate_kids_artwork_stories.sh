@@ -7,7 +7,7 @@
 cd "$(dirname "$0")"
 
 # PHPスクリプトを実行
-/usr/bin/php generate_kids_artwork_stories.php >> ../logs/kids_story_generation.log 2>&1
+/usr/local/php/8.4/bin/php generate_kids_artwork_stories.php >> ../logs/kids_story_generation.log 2>&1
 
 # 終了ステータスを確認
 if [ $? -eq 0 ]; then
