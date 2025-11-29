@@ -1061,24 +1061,24 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .btn-delete {
-            background: linear-gradient(145deg, #ffebee 0%, #ffcdd2 100%);
-            border: 3px solid #e74c3c;
-            color: #e74c3c;
+            background: #ffffbd;
+            border: 3px solid #e0e060;
+            color: #666666;
             border-radius: 15px;
             font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 15px rgba(224, 224, 96, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
             cursor: pointer;
         }
         
         .btn-delete:hover {
-            border-color: #c0392b;
-            background: linear-gradient(145deg, #ffe5e5 0%, #ffb3ba 100%);
+            border-color: #d0d050;
+            background: #ffffd0;
             transform: translateY(-4px) scale(1.05);
-            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(224, 224, 96, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-delete:disabled {
@@ -1092,24 +1092,24 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
 
         .btn-spring-theme {
-            background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
-            border: 3px solid #2ecc71;
-            color: #2ecc71;
+            background: #ffffbd;
+            border: 3px solid #e0e060;
+            color: #666666;
             border-radius: 15px;
             font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 15px rgba(224, 224, 96, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
             cursor: pointer;
         }
         
         .btn-spring-theme:hover {
-            border-color: #27ae60;
-            background: linear-gradient(145deg, #c8e6c9 0%, #a5d6a7 100%);
+            border-color: #d0d050;
+            background: #ffffd0;
             transform: translateY(-4px) scale(1.05);
-            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(224, 224, 96, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-spring-theme:disabled {
@@ -1118,6 +1118,32 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
+        }
+
+        .btn-bg-color {
+            background: #ffffbd;
+            border: 3px solid #e0e060;
+            color: #666666;
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(224, 224, 96, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .btn-bg-color:hover {
+            border-color: #d0d050;
+            background: #ffffd0;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(224, 224, 96, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-bg-color input[type="color"] {
+            border-radius: 10px;
         }
 
         .btn-summer-theme {
@@ -1642,33 +1668,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     <button id="rotateBtn" class="btn btn-rotate" title="みぎにまわす">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%; transform: rotate(45deg);"><path d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z" fill="#ffdc5c"></path></svg>
                     </button>
+                    <button id="springThemeBtn" class="btn btn-spring-theme" title="いろをかえる">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 90%; height: 90%;"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M23 17C23 10.9249 18.0751 6 12 6C5.92487 6 1 10.9249 1 17H3C3 12.0294 7.02944 8 12 8C16.9706 8 21 12.0294 21 17H23Z" fill="#FF575B"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M21 17C21 12.0294 16.9706 8 12 8C7.02944 8 3 12.0294 3 17H5C5 13.134 8.13401 10 12 10C15.866 10 19 13.134 19 17H21Z" fill="#FABA2C"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M19 17C19 13.134 15.866 10 12 10C8.13401 10 5 13.134 5 17H7C7 14.2386 9.23858 12 12 12C14.7614 12 17 14.2386 17 17H19Z" fill="#7AC74D"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M17 17C17 14.2386 14.7614 12 12 12C9.23858 12 7 14.2386 7 17H9C9 15.3431 10.3431 14 12 14C13.6569 14 15 15.3431 15 17H17Z" fill="#00B0FF"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M15 17H13C13 16.4477 12.5523 16 12 16C11.4477 16 11 16.4477 11 17H9C9 15.3431 10.3431 14 12 14C13.6569 14 15 15.3431 15 17Z" fill="#B99FE4"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M13 17C13 16.4477 12.5523 16 12 16C11.4477 16 11 16.4477 11 17H13Z" fill="#E39BD1"></path> </g></svg>
+                    </button>
+                    <button id="bgColorBtn" class="btn btn-bg-color" title="はいけいのいろ">
+                        <input type="color" id="customBgColor" value="#D8E8F0" style="width: 90%; height: 90%; border: none; background: none; cursor: pointer;">
+                    </button>
                     <button id="deleteBtn" class="btn btn-delete" title="けす">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <svg viewBox="0 0 1024 1024" class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#000000" style="width: 90%; height: 90%;"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M512 454.4L270.933333 213.333333 554.666667 36.266667 817.066667 213.333333z" fill="#99caff"></path><path d="M512 454.4L270.933333 213.333333 362.666667 100.266667 817.066667 213.333333z" fill="#fbea79"></path><path d="M652.8 938.666667H371.2c-42.666667 0-78.933333-29.866667-85.333333-72.533334L192 234.666667h640l-96 631.466666c-6.4 42.666667-42.666667 72.533333-83.2 72.533334z" fill="#dbbf9e"></path><path d="M810.666667 277.333333H213.333333c-23.466667 0-42.666667-19.2-42.666666-42.666666s19.2-42.666667 42.666666-42.666667h597.333334c23.466667 0 42.666667 19.2 42.666666 42.666667s-19.2 42.666667-42.666666 42.666666z" fill="#9a794c"></path></g></svg>
                     </button>
-                    <button id="springThemeBtn" class="btn btn-spring-theme" title="はるのいろ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flower-icon lucide-flower"><circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/><path d="M12 7.5V9"/><path d="M7.5 12H9"/><path d="M16.5 12H15"/><path d="M12 16.5V15"/><path d="m8 8 1.88 1.88"/><path d="M14.12 9.88 16 8"/><path d="m8 16 1.88-1.88"/><path d="M14.12 14.12 16 16"/></svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- はいけいパネル -->
-            <div class="background-controls">
-                <h3><i class="bi bi-palette"></i> はいけい</h3>
-                <div class="background-panel">
-                    <!-- 透明背景ボタン -->
-                    <div class="bg-color-section mb-3">
-                        <div class="bg-color-palette d-flex justify-content-center align-items-center gap-2">
-                            <button type="button" class="bg-color-btn active" data-color="transparent" title="透明（背景なし）">
-                                <div class="bg-swatch transparent-bg"></div>
-                            </button>
-                            
-                            <!-- カスタムカラーピッカー -->
-                            <div class="d-flex align-items-center gap-2">
-                                <input type="color" id="customBgColor" class="form-control form-control-color" 
-                                       style="width: 50px; height: 38px;" title="カスタム背景色を選択" value="#ffffff">
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1944,6 +1952,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateScaleDownButtonState();
             updateScaleUpButtonState();
             updateDeleteButtonState();
+            updateSeasonalThemeButtonState();
             
             console.log(`Selection complete - selectedLayerId: ${selectedLayerId}`);
         }
@@ -1963,11 +1972,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             let scaleX = layer.transform.scale;
             let scaleY = layer.transform.scale;
             
-            // 選択時は少し拡大
-            const scaleMultiplier = isSelected ? 1.08 : 1.0;
-            scaleX *= scaleMultiplier;
-            scaleY *= scaleMultiplier;
-            
             // 水平反転・垂直反転を適用
             if (layer.transform.flipHorizontal) scaleX = -scaleX;
             if (layer.transform.flipVertical) scaleY = -scaleY;
@@ -1980,7 +1984,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             if (isSelected) {
                 layerGroup.style.cursor = 'move';
                 layerGroup.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))';
-                console.log(`Layer ${layerId} selection style applied - golden glow and 8% scale boost`);
+                console.log(`Layer ${layerId} selection style applied - golden glow`);
             } else {
                 layerGroup.style.cursor = 'pointer';
                 layerGroup.style.filter = '';
@@ -2008,6 +2012,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 updateScaleDownButtonState();
                 updateScaleUpButtonState();
                 updateDeleteButtonState();
+                updateSeasonalThemeButtonState();
             }
         }
 
@@ -3175,23 +3180,17 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         // 季節テーマボタンの状態を更新
         function updateSeasonalThemeButtonState() {
-            const themeButtons = [
-                { id: 'springThemeBtn', title: '春テーマを適用' },
-                { id: 'summerThemeBtn', title: '夏テーマを適用' },
-                { id: 'autumnThemeBtn', title: '秋テーマを適用' },
-                { id: 'winterThemeBtn', title: '冬テーマを適用' },
-                { id: 'monochromeThemeBtn', title: '白黒テーマを適用' },
-                { id: 'sepiaThemeBtn', title: 'セピアテーマを適用' }
-            ];
+            const springThemeBtn = document.getElementById('springThemeBtn');
             
-            themeButtons.forEach(buttonInfo => {
-                const button = document.getElementById(buttonInfo.id);
-                if (button) {
-                    // 季節テーマボタンは常に有効
-                    button.disabled = false;
-                    button.title = buttonInfo.title;
+            if (springThemeBtn) {
+                if (selectedLayerId !== null) {
+                    springThemeBtn.disabled = false;
+                    springThemeBtn.title = 'いろをかえる';
+                } else {
+                    springThemeBtn.disabled = true;
+                    springThemeBtn.title = 'レイヤーを選択してから色を変更できます';
                 }
-            });
+            }
         }
 
         // 選択中の素材タイトルを更新
@@ -3759,15 +3758,30 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             if (confirm('全ての素材を削除しますか？')) {
                 layers = [];
                 nextLayerId = 1;
+                selectedLayerId = null;
                 
                 // DOM要素も削除
                 const canvas = document.getElementById('mainCanvas');
                 const layerElements = canvas.querySelectorAll('[id^="layer-"]');
                 layerElements.forEach(element => element.remove());
                 
-                // 背景色もリセット
-                currentBackgroundColor = 'transparent';
-                setBackgroundColor('transparent');
+                // 背景色を水色にリセット
+                const defaultColor = '#D8E8F0';
+                currentBackgroundColor = defaultColor;
+                setBackgroundColor(defaultColor);
+                
+                // カラーピッカーの値も更新
+                const customBgColorInput = document.getElementById('customBgColor');
+                if (customBgColorInput) {
+                    customBgColorInput.value = defaultColor;
+                }
+                
+                // ボタンの状態を更新（全て無効化）
+                updateRotateButtonState();
+                updateScaleDownButtonState();
+                updateScaleUpButtonState();
+                updateDeleteButtonState();
+                updateSeasonalThemeButtonState();
                 
                 console.log('全ての素材を削除しました');
                 
@@ -4372,6 +4386,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             // カスタム背景色ピッカーのイベントリスナーを設定（即座適用）
             const customBgColorInput = document.getElementById('customBgColor');
             if (customBgColorInput) {
+                // デフォルトの背景色を設定
+                setBackgroundColor('#D8E8F0');
+                
                 customBgColorInput.addEventListener('input', function() {
                     const color = this.value;
                     setBackgroundColor(color);
