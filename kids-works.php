@@ -865,8 +865,8 @@ if (!empty($artworks)) {
     <?php include 'includes/gdpr-gtm-noscript.php'; ?>
     
     <?php 
-    $currentPage = 'everyone-works';
-    include 'includes/header.php'; 
+    $currentPage = 'kids-works';
+    include 'includes/header-kids.php'; 
     ?>
 
     <div class="container mt-4" id="materials">

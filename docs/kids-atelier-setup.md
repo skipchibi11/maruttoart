@@ -15,20 +15,28 @@
 - `/api/upload-kids-artwork.php` - 子供向けアップロードAPI
 - `/kids-works.php` - 子供向け作品一覧ページ
 - `/kids-work.php` - 子供向け作品詳細ページ
-- `/database/kids_artworks.sql` - テーブル作成SQL
+- `/database/kids_artworks_complete.sql` - テーブル作成SQL（統合版）
+- `/api/get-floating-materials.php` - 背景素材取得API
 
 ### 4. 修正ファイル
-- `/compose2/kids.php` - アップロードAPIエンドポイントを変更
+- `/compose2/kids.php` - アップロードAPIエンドポイントを変更、背景素材アニメーション追加
+- `/includes/header-kids.php` - 子供向けヘッダー（完全版）
+- `/includes/header-kids-nav.php` - 子供向けヘッダー（navbar only）
 
 ## セットアップ手順
 
 ### 1. データベーステーブルの作成
 
 ```bash
-mysql -u your_username -p your_database < database/kids_artworks.sql
+mysql -u your_username -p your_database < database/kids_artworks_complete.sql
 ```
 
-または、phpMyAdminなどで `database/kids_artworks.sql` の内容を実行してください。
+または、phpMyAdminなどで `database/kids_artworks_complete.sql` の内容を実行してください。
+
+**注意:** 統合版SQLファイルには以下が含まれています：
+- kids_artworksテーブルの作成
+- ペンネーム機能の削除（NULL許可）
+- 必要なインデックスの作成
 
 ### 2. アップロードディレクトリの作成
 

@@ -1070,8 +1070,8 @@ try {
     <?php include 'includes/gdpr-gtm-noscript.php'; ?>
     
     <?php 
-    $currentPage = 'everyone-work';
-    include 'includes/header.php'; 
+    $currentPage = 'kids-work';
+    include 'includes/header-kids.php'; 
     ?>
 
     <!-- パンくずリスト -->

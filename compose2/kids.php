@@ -1725,7 +1725,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     
     <?php 
     $currentPage = 'kids';
-    include '../includes/header.php'; 
+    include '../includes/header-kids-nav.php'; 
     ?>
 
     <div class="container" style="margin-top: 2rem;">
@@ -1837,16 +1837,27 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         
         // 素材をキャンバス中央に追加
-        function addMaterialToCanvas(element) {
-            const materialId = element.dataset.materialId;
-            const svgPath = element.dataset.svgPath;
-            const title = element.dataset.title;
+        function addMaterialToCanvas(elementOrData) {
+            let materialId, svgPath, title;
+            
+            // DOM要素かデータオブジェクトかを判定
+            if (elementOrData.dataset) {
+                // DOM要素の場合
+                materialId = elementOrData.dataset.materialId;
+                svgPath = elementOrData.dataset.svgPath;
+                title = elementOrData.dataset.title;
+                
+                // クリック効果
+                elementOrData.classList.add('clicked');
+                setTimeout(() => elementOrData.classList.remove('clicked'), 300);
+            } else {
+                // データオブジェクトの場合（APIから取得した素材）
+                materialId = elementOrData.id;
+                svgPath = elementOrData.svg_path;
+                title = elementOrData.title;
+            }
 
             console.log('素材追加:', title);
-
-            // クリック効果
-            element.classList.add('clicked');
-            setTimeout(() => element.classList.remove('clicked'), 300);
 
             // SVGファイルを読み込み
             const svgUrl = svgPath.startsWith('/') ? svgPath : '/' + svgPath;
@@ -4513,8 +4524,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             createFloatingMaterials();
         });
         
-        // 背景に流れる素材を生成する関数
-        function createFloatingMaterials() {
+        // 背景に流れる素材を生成する関数（非同期対応）
+        async function createFloatingMaterials(useFetchedData = false) {
             // モバイルでは実行しない
             if (window.innerWidth <= 768) {
                 return;
@@ -4523,91 +4534,161 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             const container = document.getElementById('floatingMaterialsContainer');
             if (!container) return;
             
-            // SVG素材のみを取得（data-svg-path属性があるもの）
-            const materialItems = document.querySelectorAll('.material-item[data-svg-path]');
-            if (materialItems.length === 0) {
-                console.log('SVG素材が見つかりませんでした');
-                return;
-            }
+            let materialsData = [];
             
-            // ランダムに10件程度選択
-            const materialsArray = Array.from(materialItems);
-            const selectedMaterials = [];
-            const count = Math.min(10, materialsArray.length);
-            
-            // ランダムに選択
-            while (selectedMaterials.length < count) {
-                const randomIndex = Math.floor(Math.random() * materialsArray.length);
-                const material = materialsArray[randomIndex];
-                if (!selectedMaterials.includes(material)) {
-                    selectedMaterials.push(material);
+            if (useFetchedData) {
+                // APIから非同期で素材を取得
+                try {
+                    const response = await fetch('/api/get-floating-materials.php');
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('API HTTPエラー:', response.status, errorText);
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.materials) {
+                        materialsData = data.materials;
+                        console.log(`APIから${materialsData.length}件のSVG素材を取得しました`);
+                    } else {
+                        console.error('素材の取得に失敗しました:', data.error || 'Unknown error');
+                        if (data.trace) {
+                            console.error('Stack trace:', data.trace);
+                        }
+                        return;
+                    }
+                } catch (error) {
+                    console.error('素材取得エラー:', error);
+                    return;
                 }
+            } else {
+                // 初回は既存のDOM要素から取得
+                const materialItems = document.querySelectorAll('.material-item[data-svg-path]');
+                if (materialItems.length === 0) {
+                    console.log('SVG素材が見つかりませんでした');
+                    return;
+                }
+                
+                // ランダムに30件選択
+                const materialsArray = Array.from(materialItems);
+                const selectedMaterials = [];
+                const count = Math.min(30, materialsArray.length);
+                
+                // ランダムに選択
+                while (selectedMaterials.length < count) {
+                    const randomIndex = Math.floor(Math.random() * materialsArray.length);
+                    const material = materialsArray[randomIndex];
+                    if (!selectedMaterials.includes(material)) {
+                        selectedMaterials.push(material);
+                    }
+                }
+                
+                // DOM要素からデータを抽出
+                materialsData = selectedMaterials.map(material => {
+                    const img = material.querySelector('img');
+                    return {
+                        id: material.getAttribute('data-material-id'),
+                        title: material.getAttribute('data-title'),
+                        svg_path: material.getAttribute('data-svg-path'),
+                        image_path: img ? img.src : ''
+                    };
+                });
             }
             
-            // 各素材に対して流れる要素を作成
-            selectedMaterials.forEach((material, index) => {
-                const img = material.querySelector('img');
-                const svgPath = material.getAttribute('data-svg-path');
-                if (!img || !svgPath) return;
-                
-                const floatingEl = document.createElement('div');
-                
-                // ランダムに方向を決定（50%の確率で左→右、50%で右→左）
-                const direction = Math.random() < 0.5 ? 'left-to-right' : 'right-to-left';
-                floatingEl.className = `floating-material ${direction}`;
-                
-                const floatingImg = document.createElement('img');
-                floatingImg.src = img.src;
-                floatingImg.alt = '';
-                
-                floatingEl.appendChild(floatingImg);
-                
-                // サイズを大きめにランダムに（200px～300px）
-                const size = 200 + Math.random() * 100;
-                floatingEl.style.width = size + 'px';
-                floatingEl.style.height = size + 'px';
-                
-                // 開始位置（高さはランダム）
-                const startY = Math.random() * (window.innerHeight - size);
-                floatingEl.style.top = startY + 'px';
-                floatingEl.style.left = '0';
-                
-                // アニメーション時間（60秒～120秒でゆっくり）
-                const duration = 60 + Math.random() * 60;
-                floatingEl.style.animationDuration = duration + 's';
-                
-                // 画面の途中からランダムに開始位置を設定（すぐに表示されるように）
-                // 0～duration秒の間のランダムな時点から開始
-                const delay = -(Math.random() * duration);
-                floatingEl.style.animationDelay = delay + 's';
-                
-                // 透明度をランダムに（0.5～0.7）
-                const opacity = 0.5 + Math.random() * 0.2;
-                floatingEl.style.opacity = opacity;
-                
-                // クリックイベントを追加（素材をキャンバスに追加）
-                floatingEl.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    
-                    // 元の素材アイテムを使用して追加
-                    addMaterialToCanvas(material);
-                    
-                    // クリック時の視覚効果（一時的に拡大して薄くする）
-                    const originalFilter = this.style.filter || '';
-                    this.style.filter = 'brightness(1.5) saturate(1.5) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))';
-                    
-                    setTimeout(() => {
-                        this.style.filter = originalFilter;
-                    }, 300);
-                    
-                    console.log('流れている素材をクリックして追加しました:', material.getAttribute('data-title'));
-                });
-                
-                container.appendChild(floatingEl);
+            // 既存の素材をフェードアウト
+            const existingMaterials = container.querySelectorAll('.floating-material');
+            existingMaterials.forEach(el => {
+                el.style.transition = 'opacity 1s ease';
+                el.style.opacity = '0';
             });
             
-            console.log(`背景に${selectedMaterials.length}個のSVG素材を流しました`);
+            // 1秒後にクリアして新しい素材を追加
+            setTimeout(() => {
+                container.innerHTML = '';
+                
+                // 各素材に対して流れる要素を作成
+                materialsData.forEach((materialData, index) => {
+                    const floatingEl = document.createElement('div');
+                    
+                    // ランダムに方向を決定（50%の確率で左→右、50%で右→左）
+                    const direction = Math.random() < 0.5 ? 'left-to-right' : 'right-to-left';
+                    floatingEl.className = `floating-material ${direction}`;
+                    
+                    const floatingImg = document.createElement('img');
+                    floatingImg.src = materialData.image_path;
+                    floatingImg.alt = '';
+                    
+                    floatingEl.appendChild(floatingImg);
+                    
+                    // サイズを大きめにランダムに（200px～300px）
+                    const size = 200 + Math.random() * 100;
+                    floatingEl.style.width = size + 'px';
+                    floatingEl.style.height = size + 'px';
+                    
+                    // 開始位置（高さはランダム）
+                    const startY = Math.random() * (window.innerHeight - size);
+                    floatingEl.style.top = startY + 'px';
+                    floatingEl.style.left = '0';
+                    
+                    // アニメーション時間（60秒～120秒でゆっくり）
+                    const duration = 60 + Math.random() * 60;
+                    floatingEl.style.animationDuration = duration + 's';
+                    
+                    // 画面の途中からランダムに開始位置を設定（すぐに表示されるように）
+                    const delay = -(Math.random() * duration);
+                    floatingEl.style.animationDelay = delay + 's';
+                    
+                    // 透明度をランダムに（0.5～0.7）
+                    const opacity = 0.5 + Math.random() * 0.2;
+                    floatingEl.style.opacity = opacity;
+                    
+                    // データ属性を保存
+                    floatingEl.setAttribute('data-material-id', materialData.id);
+                    floatingEl.setAttribute('data-title', materialData.title);
+                    floatingEl.setAttribute('data-svg-path', materialData.svg_path);
+                    
+                    // クリックイベントを追加（素材をキャンバスに追加）
+                    floatingEl.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        
+                        // DOM内の対応する素材アイテムを検索
+                        const materialElement = document.querySelector(`.material-item[data-material-id="${materialData.id}"]`);
+                        
+                        if (materialElement) {
+                            // 素材一覧に存在する場合はDOM要素を渡す
+                            addMaterialToCanvas(materialElement);
+                        } else {
+                            // 素材一覧に存在しない場合はデータオブジェクトを直接渡す
+                            addMaterialToCanvas(materialData);
+                        }
+                        
+                        // クリック時の視覚効果
+                        const originalFilter = this.style.filter || '';
+                        this.style.filter = 'brightness(1.5) saturate(1.5) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))';
+                        
+                        setTimeout(() => {
+                            this.style.filter = originalFilter;
+                        }, 300);
+                        
+                        console.log('流れている素材をクリックして追加しました:', materialData.title);
+                    });
+                    
+                    container.appendChild(floatingEl);
+                });
+                
+                console.log(`背景に${materialsData.length}個のSVG素材を流しました`);
+            }, 1000);
         }
+        
+        // 30秒ごとに素材を更新（非同期）
+        setInterval(async function() {
+            if (window.innerWidth > 768) {
+                console.log('30秒経過：新しい素材を取得して更新します');
+                await createFloatingMaterials(true); // APIから取得
+            }
+        }, 30000);
         
         // ウィンドウリサイズ時に再生成
         let resizeTimeout;
@@ -4617,7 +4698,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 const container = document.getElementById('floatingMaterialsContainer');
                 if (container) {
                     container.innerHTML = '';
-                    createFloatingMaterials();
+                    createFloatingMaterials(false); // 初回と同じDOM要素から
                 }
             }, 500);
         });
