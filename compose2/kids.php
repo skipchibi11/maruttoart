@@ -2112,53 +2112,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 prepareDrag(e.touches[0], layer.id);
             }, { passive: false });
 
-            // 選択状態に応じてスタイルを設定
+            // 選択状態に応じてカーソルのみ変更
             if (isSelected) {
                 layerGroup.style.cursor = 'move';
-                // より強調されたスタイル：太い黄色の光彩エフェクト（サイズ変更なし）
-                layerGroup.style.filter = 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))';
-                
-                // Safari対応：SVG rect要素でバウンディングボックスを描画
-                try {
-                    const bbox = layerGroup.getBBox();
-                    const padding = 5;
-                    
-                    // 既存の選択枠があれば削除
-                    const existingRect = layerGroup.querySelector('.selection-rect');
-                    if (existingRect) {
-                        existingRect.remove();
-                    }
-                    
-                    // 選択枠用のrect要素を作成
-                    const selectionRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                    selectionRect.classList.add('selection-rect');
-                    selectionRect.setAttribute('x', bbox.x - padding);
-                    selectionRect.setAttribute('y', bbox.y - padding);
-                    selectionRect.setAttribute('width', bbox.width + padding * 2);
-                    selectionRect.setAttribute('height', bbox.height + padding * 2);
-                    selectionRect.setAttribute('fill', 'none');
-                    selectionRect.setAttribute('stroke', '#FFD700');
-                    selectionRect.setAttribute('stroke-width', '3');
-                    selectionRect.setAttribute('pointer-events', 'none');
-                    
-                    // 最初の子要素として挿入（背景として）
-                    layerGroup.insertBefore(selectionRect, layerGroup.firstChild);
-                } catch (error) {
-                    console.log('バウンディングボックス取得エラー:', error);
-                }
-                
-                console.log(`Layer ${layer.id} is SELECTED - applying golden glow and rect`);
             } else {
                 layerGroup.style.cursor = 'pointer';
-                layerGroup.style.filter = '';
-                
-                // 選択枠を削除
-                const existingRect = layerGroup.querySelector('.selection-rect');
-                if (existingRect) {
-                    existingRect.remove();
-                }
-                
-                console.log(`Layer ${layer.id} is not selected (selectedLayerId: ${selectedLayerId})`);
             }
             
             // SVG線形品質の属性を自動設定
