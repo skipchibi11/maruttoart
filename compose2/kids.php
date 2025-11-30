@@ -4678,8 +4678,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         // 背景に流れる素材を生成する関数（非同期対応）
         async function createFloatingMaterials(materialsToShow = null) {
-            // モバイルでは実行しない
-            if (window.innerWidth <= 768) {
+            // モバイル・スマホサイズでは実行しない（タブレット横向きは含めない）
+            // 768px以下、またはタッチデバイスで画面幅が狭い場合
+            const isMobile = window.innerWidth <= 768 || (window.matchMedia('(hover: none)').matches && window.innerWidth < 1024);
+            if (isMobile) {
+                console.log('モバイル判定: 素材を流さない (width:', window.innerWidth, ')');
                 return;
             }
             
@@ -4814,23 +4817,27 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }, 1000);
         }
         
-        // 30秒ごとに素材を更新（非同期）
-        setInterval(async function() {
-            if (window.innerWidth > 768) {
-                console.log('30秒経過：新しい素材を取得して更新します');
-                await createFloatingMaterials(true); // APIから取得
-            }
-        }, 30000);
+
         
-        // ウィンドウリサイズ時に再生成
+        // ウィンドウリサイズ時に再生成（モバイル⇔PC切り替え対応）
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(function() {
+                const isMobile = window.innerWidth <= 768 || (window.matchMedia('(hover: none)').matches && window.innerWidth < 1024);
                 const container = document.getElementById('floatingMaterialsContainer');
-                if (container) {
+                
+                if (!isMobile && container && allFloatingMaterials.length > 0) {
+                    // PC/タブレット横向き：素材を再生成
+                    const newMaterials = getRandomMaterials(allFloatingMaterials, 8);
+                    createFloatingMaterials(newMaterials);
+                } else if (isMobile && container) {
+                    // モバイル：素材をクリア
                     container.innerHTML = '';
-                    createFloatingMaterials(false); // 初回と同じDOM要素から
+                    if (floatingRotationInterval) {
+                        clearInterval(floatingRotationInterval);
+                        floatingRotationInterval = null;
+                    }
                 }
             }, 500);
         });
