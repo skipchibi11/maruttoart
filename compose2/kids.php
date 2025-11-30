@@ -1729,8 +1729,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
             z-index: -1;
             overflow: hidden;
@@ -4858,20 +4860,33 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // ウィンドウリサイズ時に再生成（モバイル⇔PC切り替え対応）
         let resizeTimeout;
         let lastWidth = window.innerWidth;
+        let lastHeight = window.innerHeight;
         
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(function() {
-                // 幅が変わっていない場合は何もしない（iOS のスクロール時のリサイズを無視）
-                if (window.innerWidth === lastWidth) {
+                const currentWidth = window.innerWidth;
+                const currentHeight = window.innerHeight;
+                const widthDiff = Math.abs(currentWidth - lastWidth);
+                const heightDiff = Math.abs(currentHeight - lastHeight);
+                
+                // iOSのアドレスバー表示/非表示を無視：幅が変わらず、高さが50px以下の変化は無視
+                if (widthDiff === 0 && heightDiff < 50) {
                     return;
                 }
-                lastWidth = window.innerWidth;
                 
-                const isMobile = window.innerWidth <= 768 || (window.matchMedia('(hover: none)').matches && window.innerWidth < 1024);
+                // 画面回転などの大きな変化のみ処理
+                if (widthDiff < 50 && heightDiff < 50) {
+                    return;
+                }
+                
+                lastWidth = currentWidth;
+                lastHeight = currentHeight;
+                
+                const isMobile = currentWidth <= 768 || (window.matchMedia('(hover: none)').matches && currentWidth < 1024);
                 const container = document.getElementById('floatingMaterialsContainer');
                 
-                console.log('画面幅が変更されました:', lastWidth);
+                console.log('画面サイズが大きく変更されました:', currentWidth, 'x', currentHeight);
                 
                 if (!isMobile && container && allFloatingMaterials.length > 0) {
                     // PC/タブレット横向き：素材を再生成
