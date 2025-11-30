@@ -1732,6 +1732,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
+            /* iOS対策: ハードウェアアクセラレーションを有効化 */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: transform;
         }
 
         .floating-material {
@@ -4845,11 +4849,21 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         
         // ウィンドウリサイズ時に再生成（モバイル⇔PC切り替え対応）
         let resizeTimeout;
+        let lastWidth = window.innerWidth;
+        
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(function() {
+                // 幅が変わっていない場合は何もしない（iOS のスクロール時のリサイズを無視）
+                if (window.innerWidth === lastWidth) {
+                    return;
+                }
+                lastWidth = window.innerWidth;
+                
                 const isMobile = window.innerWidth <= 768 || (window.matchMedia('(hover: none)').matches && window.innerWidth < 1024);
                 const container = document.getElementById('floatingMaterialsContainer');
+                
+                console.log('画面幅が変更されました:', lastWidth);
                 
                 if (!isMobile && container && allFloatingMaterials.length > 0) {
                     // PC/タブレット横向き：素材を再生成
