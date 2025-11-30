@@ -7,11 +7,18 @@
     }
 
     .kids-container {
-        max-width: 1200px;
         margin: 0 auto;
         padding: 0 20px;
         position: relative;
         z-index: 1;
+        width: 100%;
+    }
+    
+    /* スマホサイズでは中央寄せ */
+    @media (max-width: 768px) {
+        .kids-container {
+            max-width: 480px;
+        }
     }
 
     .kids-header-content {
