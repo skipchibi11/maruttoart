@@ -111,11 +111,18 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         
         body {
             background: linear-gradient(135deg, #fff5f8 0%, #fff9e6 50%, #f0f8ff 100%);
-            max-width: 480px;
             width: 100%;
-            margin: 0 auto;
+            margin: 0;
             padding: 0;
             overflow-x: hidden;
+        }
+        
+        /* スマホサイズでは body を 480px に制限 */
+        @media (max-width: 768px) {
+            body {
+                max-width: 480px;
+                margin: 0 auto;
+            }
         }
         
         /* コンテナの調整 */
