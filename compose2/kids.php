@@ -4762,10 +4762,27 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     floatingEl.style.width = size + 'px';
                     floatingEl.style.height = size + 'px';
                     
-                    // 開始位置（高さはランダム）
-                    const startY = Math.random() * (window.innerHeight - size);
+                    // 開始位置（高さはランダム、画面全体を使用）
+                    // iPad対策: 複数の高さ取得方法を試して最大値を使用
+                    const viewportHeight = Math.max(
+                        document.documentElement.clientHeight,
+                        document.body.clientHeight,
+                        window.innerHeight
+                    );
+                    const startY = Math.random() * Math.max(0, viewportHeight - size);
                     floatingEl.style.top = startY + 'px';
                     floatingEl.style.left = '0';
+                    
+                    // デバッグ用
+                    if (index === 0) {
+                        console.log('素材配置 - viewport:', {
+                            innerWidth: window.innerWidth,
+                            innerHeight: window.innerHeight,
+                            clientHeight: document.documentElement.clientHeight,
+                            bodyHeight: document.body.clientHeight,
+                            使用高さ: viewportHeight
+                        });
+                    }
                     
                     // アニメーション時間（60秒～120秒でゆっくり）
                     const duration = 60 + Math.random() * 60;
