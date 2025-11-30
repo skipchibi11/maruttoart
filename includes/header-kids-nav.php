@@ -14,8 +14,8 @@
         width: 100%;
     }
     
-    /* スマホサイズのみ中央寄せ（iPad横向きは除外） */
-    @media (max-width: 480px) {
+    /* スマホサイズ（600px以下かつ高さ900px以下）のみ中央寄せ */
+    @media (max-width: 600px) and (max-height: 900px) {
         .kids-container {
             max-width: 480px;
         }

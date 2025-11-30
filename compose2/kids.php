@@ -119,8 +119,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             z-index: 0;
         }
         
-        /* スマホサイズでは body を 480px に制限 */
-        @media (max-width: 768px) {
+        /* スマホサイズ（600px以下かつ高さ900px以下）のみ body を 480px に制限 */
+        @media (max-width: 600px) and (max-height: 900px) {
             body {
                 max-width: 480px;
                 margin: 0 auto;
@@ -4699,13 +4699,17 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         // 背景に流れる素材を生成する関数（非同期対応）
         async function createFloatingMaterials(materialsToShow = null) {
-            // モバイル・スマホサイズでは実行しない（タブレット横向きは含めない）
-            // 768px以下、またはタッチデバイスで画面幅が狭い場合
-            const isMobile = window.innerWidth <= 768 || (window.matchMedia('(hover: none)').matches && window.innerWidth < 1024);
-            if (isMobile) {
-                console.log('モバイル判定: 素材を流さない (width:', window.innerWidth, ')');
+            // スマホサイズ（600px以下かつ高さ900px以下）のみ実行しない
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const isSmallPhone = viewportWidth <= 600 && viewportHeight <= 900;
+            
+            if (isSmallPhone) {
+                console.log('スマホ判定: 素材を流さない (width:', viewportWidth, 'height:', viewportHeight, ')');
                 return;
             }
+            
+            console.log('タブレット/PC判定: 素材を流します (width:', viewportWidth, 'height:', viewportHeight, ')');
             
             const container = document.getElementById('floatingMaterialsContainer');
             if (!container) return;
@@ -4883,17 +4887,17 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 lastWidth = currentWidth;
                 lastHeight = currentHeight;
                 
-                const isMobile = currentWidth <= 768 || (window.matchMedia('(hover: none)').matches && currentWidth < 1024);
+                const isSmallPhone = currentWidth <= 600 && currentHeight <= 900;
                 const container = document.getElementById('floatingMaterialsContainer');
                 
-                console.log('画面サイズが大きく変更されました:', currentWidth, 'x', currentHeight);
+                console.log('画面サイズが大きく変更されました:', currentWidth, 'x', currentHeight, 'スマホ判定:', isSmallPhone);
                 
-                if (!isMobile && container && allFloatingMaterials.length > 0) {
+                if (!isSmallPhone && container && allFloatingMaterials.length > 0) {
                     // PC/タブレット横向き：素材を再生成
                     const newMaterials = getRandomMaterials(allFloatingMaterials, 8);
                     createFloatingMaterials(newMaterials);
-                } else if (isMobile && container) {
-                    // モバイル：素材をクリア
+                } else if (isSmallPhone && container) {
+                    // スマホ：素材をクリア
                     container.innerHTML = '';
                     if (floatingRotationInterval) {
                         clearInterval(floatingRotationInterval);
