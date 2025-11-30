@@ -115,6 +115,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            position: relative;
+            z-index: 0;
         }
         
         /* スマホサイズでは body を 480px に制限 */
@@ -1727,15 +1729,17 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
-            z-index: 0;
+            z-index: -1;
             overflow: hidden;
-            /* iOS対策: ハードウェアアクセラレーションを有効化 */
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-            will-change: transform;
+            /* iOS対策: ハードウェアアクセラレーションとスタッキングコンテキストの独立 */
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            isolation: isolate;
         }
 
         .floating-material {
@@ -1802,6 +1806,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         .main-content {
             position: relative;
             z-index: 1;
+            /* iOS対策: 確実に前面に表示 */
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            isolation: isolate;
         }
     </style>
 </head>
