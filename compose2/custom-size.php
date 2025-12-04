@@ -58,7 +58,7 @@ $storyArtworks = $storyStmt->fetchAll();
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;700&family=Yuji+Syuku&family=Zen+Maru+Gothic:wght@400;700&family=Kosugi+Maru&display=swap" rel="stylesheet">
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -328,27 +328,315 @@ $storyArtworks = $storyStmt->fetchAll();
             border: 1px solid #e9ecef;
         }
 
+        /* テキストコントロールセクション */
+        .text-controls {
+        }
+
+        /* テキスト追加ボタンのスタイル */
+        .add-text-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .add-text-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-text-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* テキスト編集モーダルのスタイル */
+        .text-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .text-modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .text-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .text-modal-header h3 {
+            color: #2c5aa0;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .text-modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .text-modal-close:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .text-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .text-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .text-input-group label {
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .text-input-group input[type="text"],
+        .text-input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .text-input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .text-input-group input:focus,
+        .text-input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .text-input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .text-input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .text-size-slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .text-size-slider-group label {
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .text-size-value {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .text-size-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .text-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .text-size-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .text-size-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .text-size-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .text-color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .text-color-picker-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .text-color-picker {
+            width: 60px;
+            height: 40px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .text-color-picker:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .text-modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .text-modal-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .text-modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .text-modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .text-modal-btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .text-modal-btn-secondary:hover {
+            background: #e9ecef;
+        }
+
         /* レスポンシブ対応 */
         @media (max-width: 576px) {
             .search-form {
-                padding: 1rem;
+                padding: 0.75rem;
                 border-radius: 10px;
             }
             
             .search-form form {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.75rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
             }
             
             .search-input {
-                margin-bottom: 0;
+                flex: 1;
+            }
+            
+            #searchButton {
+                flex-shrink: 0;
             }
             
             #clearSearch {
-                margin-left: 0 !important;
-                align-self: flex-start;
-                width: auto;
+                flex-shrink: 0;
             }
         }
 
@@ -402,7 +690,6 @@ $storyArtworks = $storyStmt->fetchAll();
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 3;
         }
 
         .color-section h3 {
@@ -422,7 +709,6 @@ $storyArtworks = $storyStmt->fetchAll();
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
             border-radius: 12px;
             padding: 1.5rem;
-            min-height: 160px;
             max-height: 160px;
             overflow-y: auto;
             display: flex;
@@ -533,7 +819,6 @@ $storyArtworks = $storyStmt->fetchAll();
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
-            order: 4;
         }
 
         .canvas-header {
@@ -581,7 +866,6 @@ $storyArtworks = $storyStmt->fetchAll();
             background: #f8f9fa;
             border-radius: 4px;
             border: 1px solid #e9ecef;
-            min-width: 120px;
             text-align: center;
         }
 
@@ -613,7 +897,6 @@ $storyArtworks = $storyStmt->fetchAll();
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 7;
         }
 
         .action-controls h3 {
@@ -705,6 +988,32 @@ $storyArtworks = $storyStmt->fetchAll();
             color: white;
         }
 
+        .btn-text {
+            background: #9b59b6;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-text:hover {
+            background: #8e44ad;
+            color: white;
+        }
+        
+        .btn-text:disabled {
+            background: #d1c4e9;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
         /* 背景パネルのスタイル */
         .background-controls {
             background: white;
@@ -712,7 +1021,6 @@ $storyArtworks = $storyStmt->fetchAll();
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            order: 6;
         }
 
         .background-controls h3 {
@@ -1153,7 +1461,6 @@ $storyArtworks = $storyStmt->fetchAll();
             background: #f8f9fa;
             border: 2px dashed #dee2e6;
             border-radius: 10px;
-            min-height: 60vh;
             position: relative;
             touch-action: manipulation;
             padding: 10px;
@@ -1172,7 +1479,6 @@ $storyArtworks = $storyStmt->fetchAll();
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
             .canvas-container {
-                min-height: 45vh; /* スマホでは画面の45%に調整 */
                 margin-bottom: 15px;
                 padding: 5px; /* スマホでは内側余白をさらに減らす */
             }
@@ -1541,22 +1847,26 @@ $storyArtworks = $storyStmt->fetchAll();
                     </div>
                     <div class="step-item">
                         <div class="step-number">2</div>
-                        <div class="step-text">素材一覧から、使いたい素材をクリックしてキャンバスに追加します。</div>
+                        <div class="step-text">「テキストを追加」ボタンで見出しやメッセージを入力できます。フォント、サイズ、色も自由に設定可能です。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">3</div>
-                        <div class="step-text">追加した素材は、ドラッグして好きな位置へ動かせます。</div>
+                        <div class="step-text">素材一覧から、使いたい素材をクリックしてキャンバスに追加します。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">4</div>
-                        <div class="step-text">素材を選択して「変形」ボタンを押すと、サイズ変更や回転ができます。</div>
+                        <div class="step-text">追加した素材やテキストは、ドラッグして好きな位置へ動かせます。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">5</div>
-                        <div class="step-text">素材を選択すると、対応しているものは色の変更ができます。</div>
+                        <div class="step-text">レイヤーを選択して「変形」ボタンでサイズ変更や回転ができます。テキストはダブルクリックで再編集できます。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">6</div>
+                        <div class="step-text">素材を選択すると、対応しているものは色の変更ができます。</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">7</div>
                         <div class="step-text">完成したら、PNG でダウンロードして完了です。</div>
                     </div>
                 </div>
@@ -1568,53 +1878,56 @@ $storyArtworks = $storyStmt->fetchAll();
 
         <!-- メインコンテンツ -->
         <div class="main-content">
+            <!-- キャンバスサイズ設定パネル -->
+            <div class="canvas-size-controls">
+                <h4><i class="bi bi-aspect-ratio"></i> キャンバスサイズ設定</h4>
+                
+                <div class="size-input-group">
+                    <span class="size-label">幅:</span>
+                    <input type="number" id="canvasWidth" class="size-input" value="1024" min="100" max="2000">
+                    <span class="size-unit">px</span>
+                    
+                    <span class="size-separator">×</span>
+                    
+                    <span class="size-label">高さ:</span>
+                    <input type="number" id="canvasHeight" class="size-input" value="1024" min="100" max="2000">
+                    <span class="size-unit">px</span>
+                    
+                    <button class="apply-size-btn" onclick="applyCanvasSize()">適用</button>
+                </div>
+                
+                <div class="size-presets">
+                    <strong>プリセット:</strong>
+                    <button class="preset-btn" onclick="setCanvasSize(1000, 1500)">1000×1500</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1080, 1080)">1080×1080</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1280, 670)">1280×670</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1920, 1006)">1920×1006</button>
+                </div>
+                
+                <div class="current-size-info">
+                    現在のサイズ: <span id="currentSizeDisplay">1024 × 1024 px</span>
+                </div>
+            </div>
+
             <!-- 素材選択エリア -->
             <div class="materials-panel">
                 <h3><i class="bi bi-collection"></i> 素材一覧</h3>
-                
+
                 <!-- 検索フォーム -->
                 <div class="search-form">
                     <form class="d-flex align-items-center" onsubmit="return false;">
                         <input type="text" 
                                id="materialSearch" 
                                placeholder="全ての素材から検索（スペース区切りでOR検索可）" 
-                               class="search-input form-control me-2">
+                               class="search-input form-control">
+                        <button type="button" 
+                                id="searchButton" 
+                                class="btn btn-primary ms-2">検索</button>
                         <button type="button" 
                                 id="clearSearch" 
                                 class="btn btn-outline-secondary ms-2" 
                                 style="display: none;">クリア</button>
                     </form>
-                </div>
-
-                <!-- キャンバスサイズ設定パネル -->
-                <div class="canvas-size-controls">
-                    <h4><i class="bi bi-aspect-ratio"></i> キャンバスサイズ設定</h4>
-                    
-                    <div class="size-input-group">
-                        <span class="size-label">幅:</span>
-                        <input type="number" id="canvasWidth" class="size-input" value="1024" min="100" max="2000">
-                        <span class="size-unit">px</span>
-                        
-                        <span class="size-separator">×</span>
-                        
-                        <span class="size-label">高さ:</span>
-                        <input type="number" id="canvasHeight" class="size-input" value="1024" min="100" max="2000">
-                        <span class="size-unit">px</span>
-                        
-                        <button class="apply-size-btn" onclick="applyCanvasSize()">適用</button>
-                    </div>
-                    
-                    <div class="size-presets">
-                        <strong>プリセット:</strong>
-                        <button class="preset-btn" onclick="setCanvasSize(1000, 1500)">1000×1500</button>
-                        <button class="preset-btn" onclick="setCanvasSize(1080, 1080)">1080×1080</button>
-                        <button class="preset-btn" onclick="setCanvasSize(1280, 670)">1280×670</button>
-                        <button class="preset-btn" onclick="setCanvasSize(1920, 1006)">1920×1006</button>
-                    </div>
-                    
-                    <div class="current-size-info">
-                        現在のサイズ: <span id="currentSizeDisplay">1024 × 1024 px</span>
-                    </div>
                 </div>
                 
                 <div class="materials-grid">
@@ -1663,19 +1976,6 @@ $storyArtworks = $storyStmt->fetchAll();
                 <?php endif; ?>
             </div>
 
-            <!-- カラーセクション -->
-            <div id="color-section" class="color-section">
-                <h3><i class="bi bi-palette"></i> 色を変更 <small class="text-muted">（リアルタイム即時反映）</small></h3>
-                <div id="color-panel-content" class="color-panel-content">
-                    <div id="colorPalette" class="color-palette">
-                        <div class="text-center text-muted">
-                            <div class="mb-2">素材を選択してください</div>
-                            <div>選択した素材の色を変更できます</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- キャンバスエリア -->
             <div class="canvas-area">
                 <div class="canvas-header">
@@ -1703,6 +2003,12 @@ $storyArtworks = $storyStmt->fetchAll();
                         <span id="selectedLayerTitle" class="selected-title">レイヤーを選択してください</span>
                     </div>
                 </div>
+                
+                <!-- 色変更セクション -->
+                <div id="color-panel-content" class="color-panel-content" style="margin-bottom: 15px;">
+                    <div id="colorPalette" class="color-palette"></div>
+                </div>
+                
                 <div class="manipulation-buttons">
                     <button id="scaleDownBtn" class="btn btn-scale-down" title="選択したレイヤーを20%縮小">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
@@ -1715,6 +2021,9 @@ $storyArtworks = $storyStmt->fetchAll();
                     </button>
                     <button id="rotateBtn" class="btn btn-rotate" title="選択したレイヤーを15度右回転">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                    </button>
+                    <button id="textBtn" class="btn btn-text" onclick="handleTextButton()" title="テキストを追加・編集">
+                        <span style="font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 20px;">T</span>
                     </button>
                     <button id="flipHorizontalBtn" class="btn btn-flip-horizontal" title="選択したレイヤーを水平反転">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-horizontal2-icon lucide-flip-horizontal-2"><path d="m3 7 5 5-5 5V7"/><path d="m21 7-5 5 5 5V7"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/></svg>
@@ -1760,6 +2069,7 @@ $storyArtworks = $storyStmt->fetchAll();
                         </label>
                     </div>
                 </div>
+                
             </div>
 
             <!-- 背景パネル -->
@@ -1798,6 +2108,57 @@ $storyArtworks = $storyStmt->fetchAll();
         </div>
     </div>
 
+    <!-- テキスト編集モーダル -->
+    <div id="textModal" class="text-modal">
+        <div class="text-modal-content">
+            <div class="text-modal-header">
+                <h3><i class="bi bi-fonts"></i> テキストを追加</h3>
+                <button class="text-modal-close" onclick="closeTextModal()">&times;</button>
+            </div>
+            <div class="text-modal-body">
+                <div class="text-input-group">
+                    <label><i class="bi bi-type"></i> テキスト内容</label>
+                    <textarea id="textContent" placeholder="ここにテキストを入力してください"></textarea>
+                </div>
+                <div class="text-input-group">
+                    <label><i class="bi bi-fonts"></i> フォント</label>
+                    <select id="textFont">
+                        <option value="Noto Sans JP">ゴシック体</option>
+                        <option value="Noto Serif JP">明朝体</option>
+                        <option value="Yuji Syuku">手書き風</option>
+                        <option value="Zen Maru Gothic">丸ゴシック</option>
+                        <option value="Kosugi Maru">小杉丸</option>
+                    </select>
+                </div>
+                <div class="text-input-group">
+                    <label><i class="bi bi-type-bold"></i> 太さ</label>
+                    <select id="textWeight">
+                        <option value="300">細字（Light）</option>
+                        <option value="400" selected>標準（Regular）</option>
+                        <option value="500">中字（Medium）</option>
+                        <option value="600">半太字（SemiBold）</option>
+                        <option value="700">太字（Bold）</option>
+                    </select>
+                </div>
+                <div class="text-size-slider-group">
+                    <label>
+                        <span><i class="bi bi-text-left"></i> フォントサイズ</span>
+                        <span class="text-size-value" id="textSizeValue">48px</span>
+                    </label>
+                    <input type="range" id="textSize" class="text-size-slider" min="20" max="200" value="48">
+                </div>
+                <div class="text-color-picker-group">
+                    <label><i class="bi bi-palette"></i> 文字色</label>
+                    <input type="color" id="textColor" class="text-color-picker" value="#000000">
+                </div>
+            </div>
+            <div class="text-modal-footer">
+                <button class="text-modal-btn text-modal-btn-secondary" onclick="closeTextModal()">キャンセル</button>
+                <button class="text-modal-btn text-modal-btn-primary" onclick="addTextToCanvas()">追加</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         console.log('シンプルSVG編集ツール開始');
         
@@ -1808,11 +2169,321 @@ $storyArtworks = $storyStmt->fetchAll();
         let isDragging = false;
         let dragStartPos = { x: 0, y: 0 };
         let dragStartTransform = { x: 0, y: 0 };
+        let mouseDownPos = { x: 0, y: 0, layerId: null }; // マウスダウン時の位置とレイヤーID
+        let dragThreshold = 20; // ドラッグと判定する最小移動距離（ピクセル）
         let currentBackgroundColor = 'transparent'; // 現在の背景色
         
         // タッチデバイス判定
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+        // テキスト編集中のレイヤーID
+        let editingTextLayerId = null;
+
+        // テキストボタンをクリックしたときの処理
+        function handleTextButton() {
+            if (selectedLayerId !== null) {
+                const layer = layers.find(l => l.id === selectedLayerId);
+                if (layer && layer.type === 'text') {
+                    // テキストレイヤーが選択されている場合は編集
+                    openTextModal(selectedLayerId);
+                    return;
+                }
+            }
+            // レイヤー未選択またはテキストレイヤー以外の場合は新規追加
+            openTextModal();
+        }
+
+        // テキストモーダルを開く
+        function openTextModal(layerId = null) {
+            const modal = document.getElementById('textModal');
+            editingTextLayerId = layerId;
+            
+            if (layerId) {
+                // 既存テキストの編集
+                const layer = layers.find(l => l.id === layerId);
+                if (layer && layer.type === 'text') {
+                    document.getElementById('textContent').value = layer.text || '';
+                    document.getElementById('textFont').value = layer.fontFamily || 'Noto Sans JP';
+                    document.getElementById('textWeight').value = layer.fontWeight || '400';
+                    document.getElementById('textSize').value = layer.fontSize || 48;
+                    document.getElementById('textSizeValue').textContent = `${layer.fontSize || 48}px`;
+                    document.getElementById('textColor').value = layer.color || '#000000';
+                }
+            } else {
+                // 新規テキスト追加
+                document.getElementById('textContent').value = '';
+                document.getElementById('textFont').value = 'Noto Sans JP';
+                document.getElementById('textWeight').value = '400';
+                document.getElementById('textSize').value = 48;
+                document.getElementById('textSizeValue').textContent = '48px';
+                document.getElementById('textColor').value = '#000000';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // テキストモーダルを閉じる
+        function closeTextModal() {
+            const modal = document.getElementById('textModal');
+            modal.style.display = 'none';
+            editingTextLayerId = null;
+        }
+
+        // テキストをキャンバスに追加
+        function addTextToCanvas() {
+            const textContent = document.getElementById('textContent').value.trim();
+            const fontFamily = document.getElementById('textFont').value;
+            const fontWeight = document.getElementById('textWeight').value;
+            const fontSize = parseInt(document.getElementById('textSize').value);
+            const color = document.getElementById('textColor').value;
+
+            if (!textContent) {
+                alert('テキストを入力してください');
+                return;
+            }
+
+            if (editingTextLayerId) {
+                // 既存テキストの編集
+                updateTextLayer(editingTextLayerId, textContent, fontFamily, fontWeight, fontSize, color);
+            } else {
+                // 新規テキストの追加
+                createTextLayer(textContent, fontFamily, fontWeight, fontSize, color);
+            }
+
+            closeTextModal();
+        }
+
+        // 新規テキストレイヤーを作成
+        function createTextLayer(text, fontFamily, fontWeight, fontSize, color) {
+            const canvas = document.getElementById('mainCanvas');
+            const viewBox = canvas.viewBox.baseVal;
+            const centerX = viewBox.width / 2;
+            const centerY = viewBox.height / 2;
+
+            const layer = {
+                id: nextLayerId++,
+                type: 'text',
+                text: text,
+                fontFamily: fontFamily,
+                fontWeight: fontWeight,
+                fontSize: fontSize,
+                color: color,
+                x: centerX,
+                y: centerY,
+                rotation: 0,
+                scale: 1,
+                flipX: 1,
+                flipY: 1,
+                transform: {
+                    x: centerX,
+                    y: centerY,
+                    rotation: 0,
+                    scale: 1,
+                    flipHorizontal: false,
+                    flipVertical: false
+                },
+                visible: true
+            };
+
+            layers.push(layer);
+            renderTextLayer(layer);
+            selectLayer(layer.id);
+            saveToLocalStorage();
+
+            console.log('テキストレイヤー追加:', text);
+        }
+
+        // テキストレイヤーを描画（初回追加時）
+        function renderTextLayer(layer) {
+            const canvas = document.getElementById('mainCanvas');
+            
+            // レイヤーグループを作成
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.id = `layer-${layer.id}`;
+            group.setAttribute('class', 'layer-element');
+            group.setAttribute('data-layer-id', layer.id);
+            group.style.cursor = 'move';
+
+            // テキスト要素を作成
+            const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textElement.setAttribute('x', '0');
+            textElement.setAttribute('y', '0');
+            textElement.setAttribute('font-family', layer.fontFamily);
+            textElement.setAttribute('font-weight', layer.fontWeight || '400');
+            textElement.setAttribute('font-size', layer.fontSize);
+            textElement.setAttribute('fill', layer.color);
+            textElement.setAttribute('text-anchor', 'middle');
+            textElement.setAttribute('dominant-baseline', 'middle');
+            textElement.textContent = layer.text;
+
+            group.appendChild(textElement);
+
+            // transform属性を設定
+            const transform = `translate(${layer.x}, ${layer.y}) rotate(${layer.rotation}) scale(${layer.scale * layer.flipX}, ${layer.scale * layer.flipY})`;
+            group.setAttribute('transform', transform);
+
+            // レイヤークリックイベントを追加
+            group.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectLayer(layer.id);
+            });
+
+            // マウスドラッグイベントを追加
+            group.addEventListener('mousedown', function(e) {
+                e.stopPropagation();
+                startDrag(e, layer.id);
+            });
+
+            // タッチイベントを追加
+            group.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                startDrag(e.touches[0], layer.id);
+            }, { passive: false });
+
+            // 選択状態に応じてスタイルを設定
+            if (selectedLayerId === layer.id) {
+                group.style.cursor = 'move';
+                group.style.filter = 'drop-shadow(0 0 3px rgba(0,123,255,0.8))';
+            } else {
+                group.style.cursor = 'pointer';
+                group.style.filter = '';
+            }
+
+            canvas.appendChild(group);
+        }
+
+        // テキストレイヤーを変形を適用して再描画（レイヤー操作時）
+        function renderTextLayerWithTransform(layer) {
+            const canvas = document.getElementById('mainCanvas');
+            
+            // 既存のレイヤー要素があれば削除
+            const existingLayer = document.getElementById(`layer-${layer.id}`);
+            if (existingLayer) {
+                existingLayer.remove();
+            }
+
+            // レイヤーグループを作成
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.id = `layer-${layer.id}`;
+            group.setAttribute('class', 'layer-element');
+            group.setAttribute('data-layer-id', layer.id);
+
+            // テキスト要素を作成
+            const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textElement.setAttribute('x', '0');
+            textElement.setAttribute('y', '0');
+            textElement.setAttribute('font-family', layer.fontFamily);
+            textElement.setAttribute('font-weight', layer.fontWeight || '400');
+            textElement.setAttribute('font-size', layer.fontSize);
+            textElement.setAttribute('fill', layer.color);
+            textElement.setAttribute('text-anchor', 'middle');
+            textElement.setAttribute('dominant-baseline', 'middle');
+            textElement.textContent = layer.text;
+
+            group.appendChild(textElement);
+
+            // transform属性を設定（transform構造を使用）
+            if (layer.transform) {
+                let scaleX = layer.transform.scale || 1;
+                let scaleY = layer.transform.scale || 1;
+                
+                if (layer.transform.flipHorizontal) {
+                    scaleX = -scaleX;
+                }
+                if (layer.transform.flipVertical) {
+                    scaleY = -scaleY;
+                }
+                
+                const transform = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${scaleX}, ${scaleY}) rotate(${layer.transform.rotation})`;
+                group.setAttribute('transform', transform);
+            } else {
+                // 古い形式の互換性
+                const transform = `translate(${layer.x}, ${layer.y}) rotate(${layer.rotation}) scale(${layer.scale * (layer.flipX || 1)}, ${layer.scale * (layer.flipY || 1)})`;
+                group.setAttribute('transform', transform);
+            }
+
+            // レイヤークリックイベントを追加
+            group.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectLayer(layer.id);
+            });
+
+            // マウスドラッグイベントを追加
+            group.addEventListener('mousedown', function(e) {
+                e.stopPropagation();
+                startDrag(e, layer.id);
+            });
+
+            // タッチイベントを追加
+            group.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                startDrag(e.touches[0], layer.id);
+            }, { passive: false });
+
+            // 選択状態に応じてスタイルを設定
+            if (selectedLayerId === layer.id) {
+                group.style.cursor = 'move';
+                group.style.filter = 'drop-shadow(0 0 3px rgba(0,123,255,0.8))';
+            } else {
+                group.style.cursor = 'pointer';
+                group.style.filter = '';
+            }
+
+            // レイヤーの順序に従って挿入
+            const layerIndex = layers.findIndex(l => l.id === layer.id);
+            const existingLayers = canvas.querySelectorAll('.layer-element');
+            
+            if (layerIndex === 0) {
+                const background = canvas.getElementById('canvasBackground');
+                canvas.insertBefore(group, background.nextSibling);
+            } else if (layerIndex < existingLayers.length) {
+                let insertBefore = null;
+                for (let i = layerIndex; i < layers.length; i++) {
+                    const nextLayerElement = canvas.getElementById(`layer-${layers[i].id}`);
+                    if (nextLayerElement) {
+                        insertBefore = nextLayerElement;
+                        break;
+                    }
+                }
+                if (insertBefore) {
+                    canvas.insertBefore(group, insertBefore);
+                } else {
+                    canvas.appendChild(group);
+                }
+            } else {
+                canvas.appendChild(group);
+            }
+        }
+
+        // テキストレイヤーを更新
+        function updateTextLayer(layerId, text, fontFamily, fontWeight, fontSize, color) {
+            const layer = layers.find(l => l.id === layerId);
+            if (!layer || layer.type !== 'text') return;
+
+            layer.text = text;
+            layer.fontFamily = fontFamily;
+            layer.fontWeight = fontWeight;
+            layer.fontSize = fontSize;
+            layer.color = color;
+
+            // DOMを更新
+            const layerElement = document.querySelector(`.layer-element[data-layer-id="${layerId}"]`);
+            if (layerElement) {
+                const textElement = layerElement.querySelector('text');
+                if (textElement) {
+                    textElement.textContent = text;
+                    textElement.setAttribute('font-family', fontFamily);
+                    textElement.setAttribute('font-weight', fontWeight);
+                    textElement.setAttribute('font-size', fontSize);
+                    textElement.setAttribute('fill', color);
+                }
+            }
+
+            saveToLocalStorage();
+            console.log('テキストレイヤー更新:', text);
+        }
 
         
         // 素材をキャンバス中央に追加
@@ -1900,6 +2571,12 @@ $storyArtworks = $storyStmt->fetchAll();
             }
 
             if (!layer.visible) return;
+
+            // テキストレイヤーの場合は専用の描画関数を使用
+            if (layer.type === 'text') {
+                renderTextLayerWithTransform(layer);
+                return;
+            }
 
             // 新しいレイヤー要素を作成
             const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -2026,6 +2703,7 @@ $storyArtworks = $storyStmt->fetchAll();
             updateScaleUpButtonState();
             updateLayerMoveButtonState();
             updateDeleteButtonState();
+            updateTextButtonState();
             
             // カラーパネルを表示
             const selectedLayer = layers.find(layer => layer.id === layerId);
@@ -2057,6 +2735,7 @@ $storyArtworks = $storyStmt->fetchAll();
                 updateScaleUpButtonState();
                 updateLayerMoveButtonState();
                 updateDeleteButtonState();
+                updateTextButtonState();
                 
                 // カラーパネルを非表示
                 hideColorPanel();
@@ -2065,11 +2744,9 @@ $storyArtworks = $storyStmt->fetchAll();
 
         // ドラッグ開始（マウス・タッチ・ポインター対応）
         function startDrag(e, layerId) {
-            if (selectedLayerId !== layerId) {
-                selectLayer(layerId);
-            }
+            // 選択状態の更新は遅延させる（ダブルクリック判定のため）
+            // ドラッグが実際に開始されたときに選択する
             
-            isDragging = true;
             const canvas = document.getElementById('mainCanvas');
             const rect = canvas.getBoundingClientRect();
             
@@ -2085,6 +2762,11 @@ $storyArtworks = $storyStmt->fetchAll();
                 clientY = e.clientY;
             }
             
+            // マウスダウン時の画面座標を保存
+            mouseDownPos.x = clientX;
+            mouseDownPos.y = clientY;
+            mouseDownPos.layerId = layerId; // レイヤーIDも保存
+            
             const svgPoint = screenToSVG(clientX - rect.left, clientY - rect.top, canvas);
             
             dragStartPos.x = svgPoint.x;
@@ -2096,7 +2778,8 @@ $storyArtworks = $storyStmt->fetchAll();
                 dragStartTransform.y = layer.transform.y;
             }
             
-            console.log(`Drag started for layer ${layerId} at SVG coordinates:`, svgPoint, `Event type: ${e.type}`);
+            // ドラッグフラグはまだセットしない（移動してから判定）
+            console.log(`Mouse down for layer ${layerId} at SVG coordinates:`, svgPoint, `Event type: ${e.type}`);
         }
 
         // 画面座標をSVG座標に変換
@@ -2110,7 +2793,7 @@ $storyArtworks = $storyStmt->fetchAll();
 
         // ドラッグ中の処理（マウス・タッチ・ポインター対応）
         function onDrag(e) {
-            if (!isDragging || selectedLayerId === null) return;
+            if (!mouseDownPos.layerId) return; // マウスダウンしていない
             
             const canvas = document.getElementById('mainCanvas');
             const rect = canvas.getBoundingClientRect();
@@ -2125,6 +2808,28 @@ $storyArtworks = $storyStmt->fetchAll();
                 // マウスイベント・ポインターイベント
                 clientX = e.clientX;
                 clientY = e.clientY;
+            }
+            
+            // まだドラッグ開始していない場合、移動距離をチェック
+            if (!isDragging) {
+                const distanceX = Math.abs(clientX - mouseDownPos.x);
+                const distanceY = Math.abs(clientY - mouseDownPos.y);
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                
+                // 閾値を超えた場合のみドラッグ開始
+                if (distance > dragThreshold) {
+                    isDragging = true;
+                    const layerId = mouseDownPos.layerId;
+                    
+                    // ドラッグ開始時に選択状態を更新
+                    if (selectedLayerId !== layerId) {
+                        selectLayer(layerId);
+                    }
+                    
+                    console.log(`Drag started for layer ${layerId} after moving ${distance.toFixed(2)}px`);
+                } else {
+                    return; // まだドラッグ開始しない
+                }
             }
             
             const svgPoint = screenToSVG(clientX - rect.left, clientY - rect.top, canvas);
@@ -2148,7 +2853,16 @@ $storyArtworks = $storyStmt->fetchAll();
                 
                 // ローカルストレージに保存
                 saveToLocalStorage();
+            } else if (mouseDownPos.layerId) {
+                // ドラッグしなかった場合（単純なクリック）
+                // 選択状態を更新
+                if (selectedLayerId !== mouseDownPos.layerId) {
+                    selectLayer(mouseDownPos.layerId);
+                }
             }
+            
+            // マウスダウン情報をクリア
+            mouseDownPos.layerId = null;
         }
 
         // 選択されたレイヤーを15度右回転
@@ -2501,6 +3215,7 @@ $storyArtworks = $storyStmt->fetchAll();
             updateSelectedLayerTitle();
             updateLayerMoveButtonState();
             updateDeleteButtonState();
+            updateTextButtonState();
             
             console.log(`Layer deleted (was at index: ${currentIndex})`);
             
@@ -3378,6 +4093,28 @@ $storyArtworks = $storyStmt->fetchAll();
             }
         }
 
+        // テキストボタンの状態を更新
+        function updateTextButtonState() {
+            const textBtn = document.getElementById('textBtn');
+            
+            if (selectedLayerId !== null) {
+                const layer = layers.find(l => l.id === selectedLayerId);
+                if (layer && layer.type === 'text') {
+                    // テキストレイヤーが選択されている場合は編集モード
+                    textBtn.title = 'テキストを編集';
+                    textBtn.style.background = '#8e44ad'; // 濃い紫で編集モードを示す
+                } else {
+                    // テキスト以外のレイヤーが選択されている場合は追加モード
+                    textBtn.title = 'テキストを追加';
+                    textBtn.style.background = '#9b59b6'; // 通常の紫
+                }
+            } else {
+                // レイヤー未選択の場合は追加モード
+                textBtn.title = 'テキストを追加';
+                textBtn.style.background = '#9b59b6'; // 通常の紫
+            }
+        }
+
         // 季節テーマボタンの状態を更新
         function updateSeasonalThemeButtonState() {
             const themeButtons = [
@@ -3408,9 +4145,15 @@ $storyArtworks = $storyStmt->fetchAll();
             if (selectedLayerId !== null) {
                 const layer = layers.find(l => l.id === selectedLayerId);
                 if (layer) {
-                    titleElement.textContent = layer.title;
+                    if (layer.type === 'text') {
+                        // テキストレイヤーの場合はテキスト内容を表示
+                        const previewText = layer.text.length > 20 ? layer.text.substring(0, 20) + '...' : layer.text;
+                        titleElement.textContent = `テキスト: ${previewText}`;
+                    } else {
+                        titleElement.textContent = layer.title;
+                    }
                     titleElement.classList.add('active');
-                    console.log(`Title updated to: ${layer.title}`);
+                    console.log(`Title updated to: ${titleElement.textContent}`);
                 } else {
                     titleElement.textContent = 'レイヤーを選択してください';
                     titleElement.classList.remove('active');
@@ -3445,12 +4188,8 @@ $storyArtworks = $storyStmt->fetchAll();
                 });
             }
             
-            // 選択枠なしでSVGを取得
-            const svgData = new XMLSerializer().serializeToString(canvas);
-            
             // 高解像度出力用のキャンバスを作成
             const outputCanvas = document.createElement('canvas');
-            // 現在のキャンバスサイズを使用
             outputCanvas.width = currentCanvasWidth;
             outputCanvas.height = currentCanvasHeight;
             const ctx = outputCanvas.getContext('2d');
@@ -3459,57 +4198,143 @@ $storyArtworks = $storyStmt->fetchAll();
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             
-            // SVGをImageとして読み込み
-            const img = new Image();
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+            // フォントが完全に読み込まれるのを待つ
+            document.fonts.ready.then(() => {
+                // まず背景を描画
+                if (currentBackgroundColor === 'transparent') {
+                    // 透明背景（何もしない）
+                } else {
+                    ctx.fillStyle = currentBackgroundColor;
+                    ctx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+                }
                 
-                // PNGとしてダウンロード
-                outputCanvas.toBlob(function(blob) {
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = `svg-composition-${currentCanvasWidth}x${currentCanvasHeight}-${Date.now()}.png`;
-                        
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        URL.revokeObjectURL(url);
-                        console.log(`PNG出力完了 (${currentCanvasWidth}x${currentCanvasHeight}px)`);
-                        
-                        // 選択状態を復元
-                        if (currentSelectedId !== null) {
-                            selectedLayerId = currentSelectedId;
-                            layers.forEach(layer => {
-                                renderLayer(layer);
-                            });
-                            updateSelectedLayerTitle();
-                            updateRotateButtonState();
-                            updateScaleDownButtonState();
-                            updateScaleUpButtonState();
-                            updateLayerMoveButtonState();
-                            updateDeleteButtonState();
-                            updateSeasonalThemeButtonState();
-                        }
-                    } else {
-                        alert('PNG変換に失敗しました。');
-                        
-                        // エラー時も選択状態を復元
-                        if (currentSelectedId !== null) {
-                            selectedLayerId = currentSelectedId;
-                            layers.forEach(layer => {
-                                renderLayer(layer);
-                            });
-                        }
+                // テキストレイヤー以外を含むSVGを作成
+                const tempSvg = canvas.cloneNode(true);
+                const textLayers = tempSvg.querySelectorAll('.layer-element[data-layer-id]');
+                const textLayerIds = [];
+                
+                // テキストレイヤーを削除してIDを記録
+                textLayers.forEach(layerElement => {
+                    const layerId = parseInt(layerElement.getAttribute('data-layer-id'));
+                    const layer = layers.find(l => l.id === layerId);
+                    if (layer && layer.type === 'text') {
+                        textLayerIds.push(layerId);
+                        layerElement.remove();
                     }
-                }, 'image/png');
-            };
-            
-            img.onerror = function(error) {
-                console.error('PNG出力エラー:', error);
-                alert('PNG出力に失敗しました。');
+                });
+                
+                // SVG素材のみをシリアライズ
+                const svgData = new XMLSerializer().serializeToString(tempSvg);
+                
+                // SVG素材を描画
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+                    
+                    // テキストレイヤーをCanvasで直接描画
+                    layers.forEach(layer => {
+                        if (layer.type === 'text' && layer.visible) {
+                            const transform = layer.transform || {
+                                x: layer.x,
+                                y: layer.y,
+                                rotation: layer.rotation || 0,
+                                scale: layer.scale || 1,
+                                flipHorizontal: false,
+                                flipVertical: false
+                            };
+                            
+                            ctx.save();
+                            
+                            // 変形を適用
+                            ctx.translate(transform.x, transform.y);
+                            ctx.rotate((transform.rotation * Math.PI) / 180);
+                            ctx.scale(
+                                transform.scale * (transform.flipHorizontal ? -1 : 1),
+                                transform.scale * (transform.flipVertical ? -1 : 1)
+                            );
+                            
+                            // フォントスタイルを設定
+                            const fontWeight = layer.fontWeight || '400';
+                            const fontSize = layer.fontSize || 48;
+                            const fontFamily = layer.fontFamily || 'Noto Sans JP';
+                            ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
+                            ctx.fillStyle = layer.color || '#000000';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            
+                            // テキストを描画
+                            ctx.fillText(layer.text, 0, 0);
+                            
+                            ctx.restore();
+                        }
+                    });
+                    
+                    // PNGとしてダウンロード
+                    outputCanvas.toBlob(function(blob) {
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `svg-composition-${currentCanvasWidth}x${currentCanvasHeight}-${Date.now()}.png`;
+                            
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            URL.revokeObjectURL(url);
+                            console.log(`PNG出力完了 (${currentCanvasWidth}x${currentCanvasHeight}px)`);
+                            
+                            // 選択状態を復元
+                            if (currentSelectedId !== null) {
+                                selectedLayerId = currentSelectedId;
+                                layers.forEach(layer => {
+                                    renderLayer(layer);
+                                });
+                                updateSelectedLayerTitle();
+                                updateRotateButtonState();
+                                updateScaleDownButtonState();
+                                updateScaleUpButtonState();
+                                updateLayerMoveButtonState();
+                                updateDeleteButtonState();
+                                updateTextButtonState();
+                                updateSeasonalThemeButtonState();
+                            }
+                        } else {
+                            alert('PNG変換に失敗しました。');
+                            
+                            // エラー時も選択状態を復元
+                            if (currentSelectedId !== null) {
+                                selectedLayerId = currentSelectedId;
+                                layers.forEach(layer => {
+                                    renderLayer(layer);
+                                });
+                            }
+                        }
+                    }, 'image/png');
+                };
+                
+                img.onerror = function(error) {
+                    console.error('PNG出力エラー:', error);
+                    alert('PNG出力に失敗しました。');
+                    
+                    // エラー時も選択状態を復元
+                    if (currentSelectedId !== null) {
+                        selectedLayerId = currentSelectedId;
+                        layers.forEach(layer => {
+                            renderLayer(layer);
+                        });
+                    }
+                };
+                
+                // SVGデータをBlobとして作成
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                img.src = svgUrl;
+                
+                setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
+            }).catch((error) => {
+                console.error('フォント読み込みエラー:', error);
+                alert('フォントの読み込みに失敗しました。PNG出力を中止します。');
                 
                 // エラー時も選択状態を復元
                 if (currentSelectedId !== null) {
@@ -3518,14 +4343,7 @@ $storyArtworks = $storyStmt->fetchAll();
                         renderLayer(layer);
                     });
                 }
-            };
-            
-            // SVGデータをBlobとして作成
-            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const svgUrl = URL.createObjectURL(svgBlob);
-            img.src = svgUrl;
-            
-            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
+            });
         }
 
 
@@ -3694,33 +4512,46 @@ $storyArtworks = $storyStmt->fetchAll();
         // 素材検索機能（全件Ajax検索対応）
         function initializeMaterialSearch() {
             const searchInput = document.getElementById('materialSearch');
+            const searchButton = document.getElementById('searchButton');
             const clearButton = document.getElementById('clearSearch');
             
-            if (!searchInput) return;
+            if (!searchInput || !searchButton) return;
             
-            let searchTimeout = null;
+            // 検索実行関数
+            function executeSearch() {
+                const searchTerm = searchInput.value.trim();
+                
+                if (searchTerm) {
+                    // クリアボタンを表示
+                    clearButton.style.display = 'block';
+                    // Ajax全件検索を実行
+                    performGlobalSearch(searchTerm);
+                } else {
+                    alert('検索キーワードを入力してください');
+                }
+            }
             
-            // 検索入力イベント（デバウンス付き）
+            // 検索ボタンクリックイベント
+            searchButton.addEventListener('click', executeSearch);
+            
+            // Enterキーで検索実行
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    executeSearch();
+                }
+            });
+            
+            // 入力時はクリアボタンの表示/非表示のみ
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.trim();
-                
-                // クリアボタンの表示/非表示
-                clearButton.style.display = searchTerm ? 'block' : 'none';
-                
-                // デバウンス処理（300ms）
-                if (searchTimeout) {
-                    clearTimeout(searchTimeout);
+                // 入力があればクリアボタンを表示（検索結果がある場合）
+                if (!searchTerm && clearButton.style.display === 'block') {
+                    // 入力が空になった場合のみクリア動作
+                    clearButton.style.display = 'none';
+                    hideSearchResultsMessage();
+                    window.location.reload();
                 }
-                
-                searchTimeout = setTimeout(() => {
-                    if (searchTerm) {
-                        // Ajax全件検索を実行
-                        performGlobalSearch(searchTerm);
-                    } else {
-                        // 検索クリア時はページリロード
-                        window.location.reload();
-                    }
-                }, 300);
             });
             
             // クリアボタンイベント
@@ -3730,13 +4561,6 @@ $storyArtworks = $storyStmt->fetchAll();
                 hideSearchResultsMessage();
                 // ページリロードで元の状態に戻す
                 window.location.reload();
-            });
-            
-            // Enterキーでの検索実行を防ぐ
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                }
             });
         }
         
@@ -4024,20 +4848,21 @@ $storyArtworks = $storyStmt->fetchAll();
                 return;
             }
             
+            // テキストレイヤーの場合は色パネルを表示しない
+            if (layer.type === 'text') {
+                hideColorPanel();
+                return;
+            }
+            
             console.log('Extracting colors from layer...');
             extractColorsFromLayer(layer);
         }
 
-        // カラーパネル非表示（デフォルトメッセージを表示）
+        // カラーパネル非表示
         function hideColorPanel() {
             const colorPalette = document.getElementById('colorPalette');
             if (colorPalette) {
-                colorPalette.innerHTML = `
-                    <div class="text-center text-muted" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;">
-                        <div class="mb-2">素材を選択してください</div>
-                        <div>選択した素材の色を変更できます</div>
-                    </div>
-                `;
+                colorPalette.innerHTML = '';
                 colorPalette.classList.remove('loaded');
             }
         }
@@ -4341,6 +5166,25 @@ $storyArtworks = $storyStmt->fetchAll();
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
             console.log('ページ読み込み完了');
+            
+            // テキストサイズスライダーのイベントリスナー
+            const textSizeSlider = document.getElementById('textSize');
+            const textSizeValue = document.getElementById('textSizeValue');
+            if (textSizeSlider && textSizeValue) {
+                textSizeSlider.addEventListener('input', function() {
+                    textSizeValue.textContent = `${this.value}px`;
+                });
+            }
+
+            // モーダル外クリックで閉じる
+            const textModal = document.getElementById('textModal');
+            if (textModal) {
+                textModal.addEventListener('click', function(e) {
+                    if (e.target === textModal) {
+                        closeTextModal();
+                    }
+                });
+            }
             
             // ローカルストレージから編集内容を復元
             const restored = loadFromLocalStorage();
