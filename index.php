@@ -1520,22 +1520,16 @@ try {
         <!-- 広告ユニット1 -->
         <div class="row mt-5">
             <div class="col-12 text-center">
-                <div class="ad-container" style="display: inline-block; width: 300px; height: 250px; background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
-                    <div>
-                        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
-                            crossorigin="anonymous"></script>
-                        <!-- display -->
-                        <ins class="adsbygoogle"
-                            style="display:block"
-                            data-ad-client="ca-pub-8053468089362860"
-                            data-ad-slot="5862880939"
-                            data-ad-format="auto"
-                            data-full-width-responsive="true"></ins>
-                        <script>
-                            (adsbygoogle = window.adsbygoogle || []).push({});
-                        </script>
-                    </div>
-                </div>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+                    crossorigin="anonymous"></script>
+                <!-- display -->
+                <ins class="adsbygoogle"
+                    style="display:inline-block;width:300px;height:250px"
+                    data-ad-client="ca-pub-8053468089362860"
+                    data-ad-slot="5862880939"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
             </div>
         </div>
         <?php else: ?>
@@ -1619,22 +1613,16 @@ try {
         <!-- 広告ユニット2 -->
         <div class="row mt-5">
             <div class="col-12 text-center">
-                <div class="ad-container" style="display: inline-block; width: 300px; height: 250px; background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
-                    <div>
-                        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
-                            crossorigin="anonymous"></script>
-                        <!-- display -->
-                        <ins class="adsbygoogle"
-                            style="display:block"
-                            data-ad-client="ca-pub-8053468089362860"
-                            data-ad-slot="5862880939"
-                            data-ad-format="auto"
-                            data-full-width-responsive="true"></ins>
-                        <script>
-                            (adsbygoogle = window.adsbygoogle || []).push({});
-                        </script>
-                    </div>
-                </div>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+                    crossorigin="anonymous"></script>
+                <!-- display -->
+                <ins class="adsbygoogle"
+                    style="display:inline-block;width:300px;height:250px"
+                    data-ad-client="ca-pub-8053468089362860"
+                    data-ad-slot="5862880939"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
             </div>
         </div>
 
