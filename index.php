@@ -208,6 +208,16 @@ try {
             box-sizing: border-box;
         }
 
+        /* 広告表示制御 */
+        .ad-desktop-only {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .ad-desktop-only {
+                display: block;
+            }
+        }
+
         body {
             background-color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
@@ -1518,8 +1528,20 @@ try {
         </div>
         
         <!-- 広告ユニット1 -->
-        <div class="row mt-5">
-            <div class="col-12 text-center">
+        <div class="mt-5" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <div>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+                    crossorigin="anonymous"></script>
+                <!-- display -->
+                <ins class="adsbygoogle"
+                    style="display:inline-block;width:300px;height:250px"
+                    data-ad-client="ca-pub-8053468089362860"
+                    data-ad-slot="5862880939"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            <div class="ad-desktop-only">
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
                     crossorigin="anonymous"></script>
                 <!-- display -->
@@ -1611,8 +1633,20 @@ try {
         </div>
         
         <!-- 広告ユニット2 -->
-        <div class="row mt-5">
-            <div class="col-12 text-center">
+        <div class="mt-5" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <div>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+                    crossorigin="anonymous"></script>
+                <!-- display -->
+                <ins class="adsbygoogle"
+                    style="display:inline-block;width:300px;height:250px"
+                    data-ad-client="ca-pub-8053468089362860"
+                    data-ad-slot="5862880939"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            <div class="ad-desktop-only">
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
                     crossorigin="anonymous"></script>
                 <!-- display -->
