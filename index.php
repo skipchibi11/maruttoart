@@ -1528,30 +1528,10 @@ try {
         </div>
         
         <!-- 広告ユニット1 -->
-        <div class="mt-5" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-            <div>
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
-                    crossorigin="anonymous"></script>
-                <!-- display -->
-                <ins class="adsbygoogle"
-                    style="display:inline-block;width:300px;height:250px"
-                    data-ad-client="ca-pub-8053468089362860"
-                    data-ad-slot="5862880939"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            </div>
+        <div class="mt-5" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+            <?php include __DIR__ . '/includes/ad-display.php'; ?>
             <div class="ad-desktop-only">
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
-                    crossorigin="anonymous"></script>
-                <!-- display -->
-                <ins class="adsbygoogle"
-                    style="display:inline-block;width:300px;height:250px"
-                    data-ad-client="ca-pub-8053468089362860"
-                    data-ad-slot="5862880939"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
+                <?php include __DIR__ . '/includes/ad-display.php'; ?>
             </div>
         </div>
         <?php else: ?>
@@ -1633,30 +1613,10 @@ try {
         </div>
         
         <!-- 広告ユニット2 -->
-        <div class="mt-5" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-            <div>
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
-                    crossorigin="anonymous"></script>
-                <!-- display -->
-                <ins class="adsbygoogle"
-                    style="display:inline-block;width:300px;height:250px"
-                    data-ad-client="ca-pub-8053468089362860"
-                    data-ad-slot="5862880939"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            </div>
+        <div class="mt-5" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+            <?php include __DIR__ . '/includes/ad-display.php'; ?>
             <div class="ad-desktop-only">
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
-                    crossorigin="anonymous"></script>
-                <!-- display -->
-                <ins class="adsbygoogle"
-                    style="display:inline-block;width:300px;height:250px"
-                    data-ad-client="ca-pub-8053468089362860"
-                    data-ad-slot="5862880939"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
+                <?php include __DIR__ . '/includes/ad-display.php'; ?>
             </div>
         </div>
 
