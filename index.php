@@ -1528,7 +1528,7 @@ try {
         </div>
         
         <!-- 広告ユニット1 -->
-        <div class="mt-5" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+        <div class="mt-5" style="display: flex; justify-content: center; gap: 100px; flex-wrap: wrap;">
             <?php include __DIR__ . '/includes/ad-display.php'; ?>
             <div class="ad-desktop-only">
                 <?php include __DIR__ . '/includes/ad-display.php'; ?>
@@ -1613,7 +1613,7 @@ try {
         </div>
         
         <!-- 広告ユニット2 -->
-        <div class="mt-5" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+        <div class="mt-5" style="display: flex; justify-content: center; gap: 100px; flex-wrap: wrap;">
             <?php include __DIR__ . '/includes/ad-display.php'; ?>
             <div class="ad-desktop-only">
                 <?php include __DIR__ . '/includes/ad-display.php'; ?>
