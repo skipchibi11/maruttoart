@@ -2314,7 +2314,20 @@ $storyArtworks = $storyStmt->fetchAll();
             textElement.setAttribute('fill', layer.color);
             textElement.setAttribute('text-anchor', 'middle');
             textElement.setAttribute('dominant-baseline', 'middle');
-            textElement.textContent = layer.text;
+            
+            // 改行をtspanで処理
+            const lines = layer.text.split('\n');
+            const lineHeight = layer.fontSize * 1.2;
+            const totalHeight = lineHeight * (lines.length - 1);
+            const startY = -totalHeight / 2;
+            
+            lines.forEach((line, index) => {
+                const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                tspan.setAttribute('x', '0');
+                tspan.setAttribute('dy', index === 0 ? startY : lineHeight);
+                tspan.textContent = line;
+                textElement.appendChild(tspan);
+            });
 
             group.appendChild(textElement);
 
@@ -2379,7 +2392,20 @@ $storyArtworks = $storyStmt->fetchAll();
             textElement.setAttribute('fill', layer.color);
             textElement.setAttribute('text-anchor', 'middle');
             textElement.setAttribute('dominant-baseline', 'middle');
-            textElement.textContent = layer.text;
+            
+            // 改行をtspanで処理
+            const lines = layer.text.split('\n');
+            const lineHeight = layer.fontSize * 1.2;
+            const totalHeight = lineHeight * (lines.length - 1);
+            const startY = -totalHeight / 2;
+            
+            lines.forEach((line, index) => {
+                const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                tspan.setAttribute('x', '0');
+                tspan.setAttribute('dy', index === 0 ? startY : lineHeight);
+                tspan.textContent = line;
+                textElement.appendChild(tspan);
+            });
 
             group.appendChild(textElement);
 
@@ -2473,7 +2499,25 @@ $storyArtworks = $storyStmt->fetchAll();
             if (layerElement) {
                 const textElement = layerElement.querySelector('text');
                 if (textElement) {
-                    textElement.textContent = text;
+                    // 既存のtspanをすべて削除
+                    while (textElement.firstChild) {
+                        textElement.removeChild(textElement.firstChild);
+                    }
+                    
+                    // 改行をtspanで処理
+                    const lines = text.split('\n');
+                    const lineHeight = fontSize * 1.2;
+                    const totalHeight = lineHeight * (lines.length - 1);
+                    const startY = -totalHeight / 2;
+                    
+                    lines.forEach((line, index) => {
+                        const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                        tspan.setAttribute('x', '0');
+                        tspan.setAttribute('dy', index === 0 ? startY : lineHeight);
+                        tspan.textContent = line;
+                        textElement.appendChild(tspan);
+                    });
+                    
                     textElement.setAttribute('font-family', fontFamily);
                     textElement.setAttribute('font-weight', fontWeight);
                     textElement.setAttribute('font-size', fontSize);
@@ -4262,8 +4306,16 @@ $storyArtworks = $storyStmt->fetchAll();
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
                             
-                            // テキストを描画
-                            ctx.fillText(layer.text, 0, 0);
+                            // テキストを改行で分割して描画
+                            const lines = layer.text.split('\n');
+                            const lineHeight = fontSize * 1.2; // 行間を考慮
+                            const totalHeight = lineHeight * (lines.length - 1);
+                            const startY = -totalHeight / 2;
+                            
+                            lines.forEach((line, index) => {
+                                const y = startY + (lineHeight * index);
+                                ctx.fillText(line, 0, y);
+                            });
                             
                             ctx.restore();
                         }
