@@ -39,6 +39,23 @@ try {
         sendError('POSTメソッドが必要です', 405);
     }
 
+    // 投稿制限チェック（1日1回）
+    $pdo = getDB();
+    $userIP = $_SERVER['REMOTE_ADDR'];
+    $today = date('Y-m-d');
+    
+    $checkStmt = $pdo->prepare("
+        SELECT post_count 
+        FROM post_limits 
+        WHERE ip_address = ? AND post_date = ?
+    ");
+    $checkStmt->execute([$userIP, $today]);
+    $limitRecord = $checkStmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($limitRecord && $limitRecord['post_count'] >= 1) {
+        sendError('1日の投稿制限に達しました。明日また投稿してください。', 429);
+    }
+
     // ファイルアップロードチェック
     if (!isset($_FILES['artwork']) || $_FILES['artwork']['error'] !== UPLOAD_ERR_OK) {
         sendError('ファイルのアップロードに失敗しました');
@@ -120,6 +137,16 @@ try {
     ]);
 
     $artworkId = $pdo->lastInsertId();
+
+    // 投稿制限を記録
+    $updateStmt = $pdo->prepare("
+        INSERT INTO post_limits (ip_address, post_date, post_count) 
+        VALUES (?, ?, 1)
+        ON DUPLICATE KEY UPDATE 
+        post_count = post_count + 1,
+        updated_at = CURRENT_TIMESTAMP
+    ");
+    $updateStmt->execute([$userIP, $today]);
 
     // 成功レスポンス
     sendSuccess([
