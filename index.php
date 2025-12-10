@@ -4,6 +4,9 @@ require_once 'config.php';
 // 公開ページなのでキャッシュを有効化
 setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
+// アクセスログ記録
+logAccess();
+
 $pdo = getDB();
 
 // トップページは新着6件のみ表示（背景色情報も取得）

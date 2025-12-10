@@ -949,4 +949,45 @@ function getSimilarityCalculationProgress($pdo = null) {
     
     return $progress;
 }
+
+/**
+ * シンプルなアクセスログ記録（GDPR同意不要・Cookie不使用）
+ * IPアドレス、ページ、日時を記録
+ * 
+ * @param string|null $pageUrl アクセスしたページURL（nullの場合は現在のページ）
+ */
+function logAccess($pageUrl = null) {
+    try {
+        // ボットを除外
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        if (preg_match('/bot|crawl|slurp|spider|archiver/i', $userAgent)) {
+            return;
+        }
+
+        $pdo = getDB();
+        
+        // IPアドレス
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        
+        // ページURLの正規化（クエリストリング含む）
+        if ($pageUrl === null) {
+            $pageUrl = $_SERVER['REQUEST_URI'] ?? '/';
+            // クエリパラメータも記録する
+        }
+        
+        // ログを記録
+        $stmt = $pdo->prepare("
+            INSERT INTO access_logs (ip_address, page_url, accessed_at) 
+            VALUES (?, ?, NOW())
+        ");
+        
+        $stmt->execute([
+            $ipAddress,
+            substr($pageUrl, 0, 255)
+        ]);
+        
+    } catch (Exception $e) {
+        error_log("Access log error: " . $e->getMessage());
+    }
+}
 ?>
