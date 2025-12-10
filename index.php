@@ -1446,15 +1446,6 @@ try {
                             </svg>
                             <span class="hero-tile-label">あなたの<br>アトリエ</span>
                         </a>
-                        <a href="/compose2/custom-size.php" class="hero-tile">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                <path d="m7.5 4.21 9 5.23"/>
-                                <path d="M12 22V12"/>
-                                <path d="m3.5 8.77 8.5 4.9"/>
-                            </svg>
-                            <span class="hero-tile-label">カスタム<br>サイズ</span>
-                        </a>
                         <a href="/compose2/kids.php" class="hero-tile">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
                                 <path d="M15.236 22a3 3 0 0 0-2.2-5"/>

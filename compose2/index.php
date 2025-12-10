@@ -40,55 +40,25 @@ $storyStmt = $pdo->query("
     LIMIT 3
 ");
 $storyArtworks = $storyStmt->fetchAll();
-
-// AJAX リクエストの場合はJSONを返す
-if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
-    header('Content-Type: application/json');
-    
-    // ページネーションHTMLを生成
-    $paginationHtml = '';
-    if ($totalPages > 1) {
-        if ($page > 1) {
-            $paginationHtml .= '<a href="?page=' . ($page - 1) . '#materials" class="pagination-btn">前へ</a>';
-        }
-        if ($page < $totalPages) {
-            $paginationHtml .= '<a href="?page=' . ($page + 1) . '#materials" class="pagination-btn">次へ</a>';
-        }
-    }
-    
-    // ページ情報テキスト
-    $pageInfo = $page . ' / ' . $totalPages . ' ページ （全 ' . $totalItems . ' 件）';
-    
-    // JSONレスポンス
-    echo json_encode([
-        'materials' => $materials,
-        'pagination' => $paginationHtml,
-        'pageInfo' => $pageInfo,
-        'currentPage' => $page,
-        'totalPages' => $totalPages
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
 ?>
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- Google Tag Manager & GDPR -->
-    <script src="/assets/js/gdpr-gtm.js"></script>
+    <?php include '../includes/gdpr-gtm-inline.php'; ?>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
     <title>あなたのアトリエ - maruttoart</title>
-    <meta name="description" content="SVG素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
+    <meta name="description" content="任意のサイズでベクター素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
     
-    <!-- カノニカルURL設定（アトリエツール用 - 1つのツールとして統一） -->
+    <!-- カノニカルURL設定 -->
     <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose2/">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@400;700&family=Yuji+Syuku&family=Zen+Maru+Gothic:wght@400;700&family=Kosugi+Maru&display=swap" rel="stylesheet">
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -243,27 +213,430 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             color: #adb5bd;
         }
 
+        /* カスタムサイズ設定パネルのスタイル */
+        .canvas-size-controls {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            margin-bottom: 1.5rem;
+        }
+
+        .canvas-size-controls h4 {
+            color: #2c5aa0;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .size-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .size-input {
+            width: 70px;
+            padding: 6px 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: border-color 0.2s ease;
+        }
+
+        .size-input:focus {
+            border-color: #2c5aa0;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(44, 90, 160, 0.1);
+        }
+
+        .size-label {
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .size-separator {
+            font-weight: bold;
+            color: #6c757d;
+        }
+
+        .size-unit {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .size-presets {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .size-presets strong {
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+        .preset-btn {
+            padding: 4px 8px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            background: white;
+            color: #495057;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            border-color: #2c5aa0;
+            background: #e3f2fd;
+            color: #2c5aa0;
+        }
+
+        .apply-size-btn {
+            background: #2c5aa0;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .apply-size-btn:hover {
+            background: #1e4086;
+            transform: translateY(-1px);
+        }
+
+        .current-size-info {
+            background: #fff;
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 0.8rem;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+        }
+
+        /* テキストコントロールセクション */
+        .text-controls {
+        }
+
+        /* テキスト追加ボタンのスタイル */
+        .add-text-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .add-text-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-text-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* テキスト編集モーダルのスタイル */
+        .text-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .text-modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .text-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .text-modal-header h3 {
+            color: #2c5aa0;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .text-modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .text-modal-close:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .text-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .text-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .text-input-group label {
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .text-input-group input[type="text"],
+        .text-input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .text-input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .text-input-group input:focus,
+        .text-input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .text-input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .text-input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .text-size-slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .text-size-slider-group label {
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .text-size-value {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .text-size-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .text-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .text-size-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .text-size-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .text-size-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .text-color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .text-color-picker-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .text-color-picker {
+            width: 60px;
+            height: 40px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .text-color-picker:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .text-modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .text-modal-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .text-modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .text-modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .text-modal-btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .text-modal-btn-secondary:hover {
+            background: #e9ecef;
+        }
+
         /* レスポンシブ対応 */
         @media (max-width: 576px) {
             .search-form {
-                padding: 1rem;
+                padding: 0.75rem;
                 border-radius: 10px;
             }
             
             .search-form form {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.75rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
             }
             
             .search-input {
-                margin-bottom: 0;
+                flex: 1;
+            }
+            
+            #searchButton {
+                flex-shrink: 0;
             }
             
             #clearSearch {
-                margin-left: 0 !important;
-                align-self: flex-start;
-                width: auto;
+                flex-shrink: 0;
             }
         }
 
@@ -317,7 +690,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 3;
         }
 
         .color-section h3 {
@@ -337,39 +709,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
             border-radius: 12px;
             padding: 1.5rem;
+            max-height: 160px;
+            overflow-y: auto;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 1.5rem;
+            gap: 0.75rem;
             border: 2px solid #e3f2fd;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            overflow: visible;
-        }
-
-        .color-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .color-swatch-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .color-picker-input {
-            width: 60px;
-            height: 60px;
-            border: 3px solid #e0e0e0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: white;
         }
 
         /* カラー関連の基本スタイルはlayout.cssに移動 */
@@ -471,7 +819,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
-            order: 4;
         }
 
         .canvas-header {
@@ -519,7 +866,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             background: #f8f9fa;
             border-radius: 4px;
             border: 1px solid #e9ecef;
-            min-width: 120px;
             text-align: center;
         }
 
@@ -551,7 +897,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            order: 7;
         }
 
         .action-controls h3 {
@@ -643,6 +988,32 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             color: white;
         }
 
+        .btn-text {
+            background: #9b59b6;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+        }
+        
+        .btn-text:hover {
+            background: #8e44ad;
+            color: white;
+        }
+        
+        .btn-text:disabled {
+            background: #d1c4e9;
+            color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
         /* 背景パネルのスタイル */
         .background-controls {
             background: white;
@@ -650,7 +1021,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            order: 6;
         }
 
         .background-controls h3 {
@@ -1091,34 +1461,31 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             background: #f8f9fa;
             border: 2px dashed #dee2e6;
             border-radius: 10px;
-            min-height: 60vh;
             position: relative;
             touch-action: manipulation;
             padding: 10px;
         }
 
         #mainCanvas {
-            width: 100%;
-            height: 100%;
-            max-width: 500px;
-            max-height: 500px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            aspect-ratio: 1;
+            max-width: min(70vw, 50vh);
+            max-height: min(50vh, 70vw);
+            width: auto;
+            height: auto;
         }
 
         /* レスポンシブ対応 */
         @media (max-width: 768px) {
             .canvas-container {
-                min-height: 45vh; /* スマホでは画面の45%に調整 */
                 margin-bottom: 15px;
                 padding: 5px; /* スマホでは内側余白をさらに減らす */
             }
             
             #mainCanvas {
-                max-width: min(85vw, 450px); /* 画面幅の85%かつ最大450px */
-                max-height: min(40vh, 450px); /* 画面高の40%かつ最大450px */
+                max-width: min(85vw, 35vh);
+                max-height: min(35vh, 85vw);
                 width: auto;
                 height: auto;
             }
@@ -1220,13 +1587,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             touch-action: none; /* ドラッグ中はスクロールを無効 */
         }
 
-        /* レスポンシブ対応（コンテナ用） */
-        @media (max-width: 768px) {
-            .container {
-                padding-left: 15px;
-                padding-right: 15px;
-            }
-        }
+
 
         /* フッターのスタイル */
         .footer-custom {
@@ -1348,21 +1709,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             margin-top: 0.1rem;
         }
 
-
-
-        /* ヘッダーをシンプルに */
-        .header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        /* スムーススクロール */
-        html {
-            scroll-behavior: smooth;
-            scroll-padding-top: 80px; /* ヘッダー分の余白 */
-        }
-
         /* ストーリーセクション */
         .story-materials-section {
             background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
@@ -1481,8 +1827,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     </style>
 </head>
 <body>
+    <?php include '../includes/gdpr-gtm-noscript.php'; ?>
+    
     <?php 
-    $currentPage = 'index';
+    $currentPage = 'custom-size';
     include '../includes/header.php'; 
     ?>
 
@@ -1495,27 +1843,31 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 <div class="steps-grid">
                     <div class="step-item">
                         <div class="step-number">1</div>
-                        <div class="step-text">素材一覧から、使いたい素材をクリックしてキャンバスに追加します。</div>
+                        <div class="step-text">最初に、キャンバスのサイズを指定します。<br>幅と高さを入力して、目的に合わせた作業スペースを作成してください。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">2</div>
-                        <div class="step-text">追加した素材は、ドラッグして好きな位置へ動かせます。</div>
+                        <div class="step-text">「テキストを追加」ボタンで見出しやメッセージを入力できます。フォント、サイズ、色も自由に設定可能です。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">3</div>
-                        <div class="step-text">素材を選択して「変形」ボタンを押すと、サイズ変更や回転ができます。</div>
+                        <div class="step-text">素材一覧から、使いたい素材をクリックしてキャンバスに追加します。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">4</div>
-                        <div class="step-text">素材を選択すると、対応しているものは色の変更ができます。</div>
+                        <div class="step-text">追加した素材やテキストは、ドラッグして好きな位置へ動かせます。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">5</div>
-                        <div class="step-text">仕上がったら、PNG または SVG でダウンロードして完了です。</div>
+                        <div class="step-text">レイヤーを選択して「変形」ボタンでサイズ変更や回転ができます。テキストはダブルクリックで再編集できます。</div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">6</div>
-                        <div class="step-text">作品をみんなに共有したい場合は、「みんなのアトリエに投稿」ボタンから投稿できます。</div>
+                        <div class="step-text">素材を選択すると、対応しているものは色の変更ができます。</div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">7</div>
+                        <div class="step-text">完成したら、PNG でダウンロードして完了です。</div>
                     </div>
                 </div>
             </div>
@@ -1526,15 +1878,51 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         <!-- メインコンテンツ -->
         <div class="main-content">
+            <!-- キャンバスサイズ設定パネル -->
+            <div class="canvas-size-controls">
+                <h4><i class="bi bi-aspect-ratio"></i> キャンバスサイズ設定</h4>
+                
+                <div class="size-input-group">
+                    <span class="size-label">幅:</span>
+                    <input type="number" id="canvasWidth" class="size-input" value="1024" min="100" max="2000">
+                    <span class="size-unit">px</span>
+                    
+                    <span class="size-separator">×</span>
+                    
+                    <span class="size-label">高さ:</span>
+                    <input type="number" id="canvasHeight" class="size-input" value="1024" min="100" max="2000">
+                    <span class="size-unit">px</span>
+                    
+                    <button class="apply-size-btn" onclick="applyCanvasSize()">適用</button>
+                </div>
+                
+                <div class="size-presets">
+                    <strong>プリセット:</strong>
+                    <button class="preset-btn" onclick="setCanvasSize(1000, 1500)">1000×1500</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1080, 1080)">1080×1080</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1280, 670)">1280×670</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1920, 1006)">1920×1006</button>
+                </div>
+                
+                <div class="current-size-info">
+                    現在のサイズ: <span id="currentSizeDisplay">1024 × 1024 px</span>
+                </div>
+            </div>
+
             <!-- 素材選択エリア -->
-            <div id="materials" class="materials-panel">
+            <div class="materials-panel">
+                <h3><i class="bi bi-collection"></i> 素材一覧</h3>
+
                 <!-- 検索フォーム -->
                 <div class="search-form">
                     <form class="d-flex align-items-center" onsubmit="return false;">
                         <input type="text" 
                                id="materialSearch" 
                                placeholder="全ての素材から検索（スペース区切りでOR検索可）" 
-                               class="search-input form-control me-2">
+                               class="search-input form-control">
+                        <button type="button" 
+                                id="searchButton" 
+                                class="btn btn-primary ms-2">検索</button>
                         <button type="button" 
                                 id="clearSearch" 
                                 class="btn btn-outline-secondary ms-2" 
@@ -1561,14 +1949,14 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 <div class="pagination-container">
                     <!-- 前のページ -->
                     <?php if ($page > 1): ?>
-                        <a href="?page=<?= $page - 1 ?>#materials" class="pagination-btn">
+                        <a href="?page=<?= $page - 1 ?>" class="pagination-btn">
                             前へ
                         </a>
                     <?php endif; ?>
                     
                     <!-- 次のページ -->
                     <?php if ($page < $totalPages): ?>
-                        <a href="?page=<?= $page + 1 ?>#materials" class="pagination-btn">
+                        <a href="?page=<?= $page + 1 ?>" class="pagination-btn">
                             次へ
                         </a>
                     <?php endif; ?>
@@ -1615,6 +2003,12 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         <span id="selectedLayerTitle" class="selected-title">レイヤーを選択してください</span>
                     </div>
                 </div>
+                
+                <!-- 色変更セクション -->
+                <div id="color-panel-content" class="color-panel-content" style="margin-bottom: 15px;">
+                    <div id="colorPalette" class="color-palette"></div>
+                </div>
+                
                 <div class="manipulation-buttons">
                     <button id="scaleDownBtn" class="btn btn-scale-down" title="選択したレイヤーを20%縮小">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
@@ -1627,6 +2021,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     </button>
                     <button id="rotateBtn" class="btn btn-rotate" title="選択したレイヤーを15度右回転">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                    </button>
+                    <button id="textBtn" class="btn btn-text" onclick="handleTextButton()" title="テキストを追加・編集">
+                        <span style="font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 20px;">T</span>
                     </button>
                     <button id="flipHorizontalBtn" class="btn btn-flip-horizontal" title="選択したレイヤーを水平反転">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flip-horizontal2-icon lucide-flip-horizontal-2"><path d="m3 7 5 5-5 5V7"/><path d="m21 7-5 5 5 5V7"/><path d="M12 20v2"/><path d="M12 14v2"/><path d="M12 8v2"/><path d="M12 2v2"/></svg>
@@ -1663,9 +2060,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     </button>
                 </div>
                 
-                <!-- カラーパレット（レイヤー編集内：レイヤー選択時のみ表示） -->
-                <div id="colorPalette" class="color-palette mt-3" style="display: none;"></div>
-                
                 <!-- 一括色変更設定 -->
                 <div class="bulk-color-settings">
                     <div class="form-check form-switch">
@@ -1675,6 +2069,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         </label>
                     </div>
                 </div>
+                
             </div>
 
             <!-- 背景パネル -->
@@ -1706,12 +2101,63 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         <i class="bi bi-download"></i> PNG出力
                     </button>
                     <button id="uploadBtn" class="btn btn-upload">
-                        <i class="bi bi-cloud-upload"></i> みんなの作品集に投稿
+                        <i class="bi bi-cloud-upload"></i> 作品を投稿
                     </button>
                     <button id="clearBtn" class="btn btn-clear">
                         <i class="bi bi-trash"></i> 全て削除
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- テキスト編集モーダル -->
+    <div id="textModal" class="text-modal">
+        <div class="text-modal-content">
+            <div class="text-modal-header">
+                <h3><i class="bi bi-fonts"></i> テキストを追加</h3>
+                <button class="text-modal-close" onclick="closeTextModal()">&times;</button>
+            </div>
+            <div class="text-modal-body">
+                <div class="text-input-group">
+                    <label><i class="bi bi-type"></i> テキスト内容</label>
+                    <textarea id="textContent" placeholder="ここにテキストを入力してください"></textarea>
+                </div>
+                <div class="text-input-group">
+                    <label><i class="bi bi-fonts"></i> フォント</label>
+                    <select id="textFont">
+                        <option value="Noto Sans JP">ゴシック体</option>
+                        <option value="Noto Serif JP">明朝体</option>
+                        <option value="Yuji Syuku">手書き風</option>
+                        <option value="Zen Maru Gothic">丸ゴシック</option>
+                        <option value="Kosugi Maru">小杉丸</option>
+                    </select>
+                </div>
+                <div class="text-input-group">
+                    <label><i class="bi bi-type-bold"></i> 太さ</label>
+                    <select id="textWeight">
+                        <option value="300">細字（Light）</option>
+                        <option value="400" selected>標準（Regular）</option>
+                        <option value="500">中字（Medium）</option>
+                        <option value="600">半太字（SemiBold）</option>
+                        <option value="700">太字（Bold）</option>
+                    </select>
+                </div>
+                <div class="text-size-slider-group">
+                    <label>
+                        <span><i class="bi bi-text-left"></i> フォントサイズ</span>
+                        <span class="text-size-value" id="textSizeValue">48px</span>
+                    </label>
+                    <input type="range" id="textSize" class="text-size-slider" min="20" max="200" value="48">
+                </div>
+                <div class="text-color-picker-group">
+                    <label><i class="bi bi-palette"></i> 文字色</label>
+                    <input type="color" id="textColor" class="text-color-picker" value="#000000">
+                </div>
+            </div>
+            <div class="text-modal-footer">
+                <button class="text-modal-btn text-modal-btn-secondary" onclick="closeTextModal()">キャンセル</button>
+                <button class="text-modal-btn text-modal-btn-primary" onclick="addTextToCanvas()">追加</button>
             </div>
         </div>
     </div>
@@ -1726,11 +2172,365 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         let isDragging = false;
         let dragStartPos = { x: 0, y: 0 };
         let dragStartTransform = { x: 0, y: 0 };
+        let mouseDownPos = { x: 0, y: 0, layerId: null }; // マウスダウン時の位置とレイヤーID
+        let dragThreshold = 20; // ドラッグと判定する最小移動距離（ピクセル）
         let currentBackgroundColor = 'transparent'; // 現在の背景色
         
         // タッチデバイス判定
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+        // テキスト編集中のレイヤーID
+        let editingTextLayerId = null;
+
+        // テキストボタンをクリックしたときの処理
+        function handleTextButton() {
+            if (selectedLayerId !== null) {
+                const layer = layers.find(l => l.id === selectedLayerId);
+                if (layer && layer.type === 'text') {
+                    // テキストレイヤーが選択されている場合は編集
+                    openTextModal(selectedLayerId);
+                    return;
+                }
+            }
+            // レイヤー未選択またはテキストレイヤー以外の場合は新規追加
+            openTextModal();
+        }
+
+        // テキストモーダルを開く
+        function openTextModal(layerId = null) {
+            const modal = document.getElementById('textModal');
+            editingTextLayerId = layerId;
+            
+            if (layerId) {
+                // 既存テキストの編集
+                const layer = layers.find(l => l.id === layerId);
+                if (layer && layer.type === 'text') {
+                    document.getElementById('textContent').value = layer.text || '';
+                    document.getElementById('textFont').value = layer.fontFamily || 'Noto Sans JP';
+                    document.getElementById('textWeight').value = layer.fontWeight || '400';
+                    document.getElementById('textSize').value = layer.fontSize || 48;
+                    document.getElementById('textSizeValue').textContent = `${layer.fontSize || 48}px`;
+                    document.getElementById('textColor').value = layer.color || '#000000';
+                }
+            } else {
+                // 新規テキスト追加
+                document.getElementById('textContent').value = '';
+                document.getElementById('textFont').value = 'Noto Sans JP';
+                document.getElementById('textWeight').value = '400';
+                document.getElementById('textSize').value = 48;
+                document.getElementById('textSizeValue').textContent = '48px';
+                document.getElementById('textColor').value = '#000000';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // テキストモーダルを閉じる
+        function closeTextModal() {
+            const modal = document.getElementById('textModal');
+            modal.style.display = 'none';
+            editingTextLayerId = null;
+        }
+
+        // テキストをキャンバスに追加
+        function addTextToCanvas() {
+            const textContent = document.getElementById('textContent').value.trim();
+            const fontFamily = document.getElementById('textFont').value;
+            const fontWeight = document.getElementById('textWeight').value;
+            const fontSize = parseInt(document.getElementById('textSize').value);
+            const color = document.getElementById('textColor').value;
+
+            if (!textContent) {
+                alert('テキストを入力してください');
+                return;
+            }
+
+            if (editingTextLayerId) {
+                // 既存テキストの編集
+                updateTextLayer(editingTextLayerId, textContent, fontFamily, fontWeight, fontSize, color);
+            } else {
+                // 新規テキストの追加
+                createTextLayer(textContent, fontFamily, fontWeight, fontSize, color);
+            }
+
+            closeTextModal();
+        }
+
+        // 新規テキストレイヤーを作成
+        function createTextLayer(text, fontFamily, fontWeight, fontSize, color) {
+            const canvas = document.getElementById('mainCanvas');
+            const viewBox = canvas.viewBox.baseVal;
+            const centerX = viewBox.width / 2;
+            const centerY = viewBox.height / 2;
+
+            const layer = {
+                id: nextLayerId++,
+                type: 'text',
+                text: text,
+                fontFamily: fontFamily,
+                fontWeight: fontWeight,
+                fontSize: fontSize,
+                color: color,
+                x: centerX,
+                y: centerY,
+                rotation: 0,
+                scale: 1,
+                flipX: 1,
+                flipY: 1,
+                transform: {
+                    x: centerX,
+                    y: centerY,
+                    rotation: 0,
+                    scale: 1,
+                    flipHorizontal: false,
+                    flipVertical: false
+                },
+                visible: true
+            };
+
+            layers.push(layer);
+            renderTextLayer(layer);
+            selectLayer(layer.id);
+            saveToLocalStorage();
+
+            console.log('テキストレイヤー追加:', text);
+        }
+
+        // テキストレイヤーを描画（初回追加時）
+        function renderTextLayer(layer) {
+            const canvas = document.getElementById('mainCanvas');
+            
+            // レイヤーグループを作成
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.id = `layer-${layer.id}`;
+            group.setAttribute('class', 'layer-element');
+            group.setAttribute('data-layer-id', layer.id);
+            group.style.cursor = 'move';
+
+            // テキスト要素を作成
+            const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textElement.setAttribute('x', '0');
+            textElement.setAttribute('y', '0');
+            textElement.setAttribute('font-family', layer.fontFamily);
+            textElement.setAttribute('font-weight', layer.fontWeight || '400');
+            textElement.setAttribute('font-size', layer.fontSize);
+            textElement.setAttribute('fill', layer.color);
+            textElement.setAttribute('text-anchor', 'middle');
+            textElement.setAttribute('dominant-baseline', 'middle');
+            
+            // 改行をtspanで処理
+            const lines = layer.text.split('\n');
+            const lineHeight = layer.fontSize * 1.2;
+            const totalHeight = lineHeight * (lines.length - 1);
+            const startY = -totalHeight / 2;
+            
+            lines.forEach((line, index) => {
+                const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                tspan.setAttribute('x', '0');
+                tspan.setAttribute('dy', index === 0 ? startY : lineHeight);
+                tspan.textContent = line;
+                textElement.appendChild(tspan);
+            });
+
+            group.appendChild(textElement);
+
+            // transform属性を設定
+            const transform = `translate(${layer.x}, ${layer.y}) rotate(${layer.rotation}) scale(${layer.scale * layer.flipX}, ${layer.scale * layer.flipY})`;
+            group.setAttribute('transform', transform);
+
+            // レイヤークリックイベントを追加
+            group.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectLayer(layer.id);
+            });
+
+            // マウスドラッグイベントを追加
+            group.addEventListener('mousedown', function(e) {
+                e.stopPropagation();
+                startDrag(e, layer.id);
+            });
+
+            // タッチイベントを追加
+            group.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                startDrag(e.touches[0], layer.id);
+            }, { passive: false });
+
+            // 選択状態に応じてスタイルを設定
+            if (selectedLayerId === layer.id) {
+                group.style.cursor = 'move';
+                group.style.filter = 'drop-shadow(0 0 3px rgba(0,123,255,0.8))';
+            } else {
+                group.style.cursor = 'pointer';
+                group.style.filter = '';
+            }
+
+            canvas.appendChild(group);
+        }
+
+        // テキストレイヤーを変形を適用して再描画（レイヤー操作時）
+        function renderTextLayerWithTransform(layer) {
+            const canvas = document.getElementById('mainCanvas');
+            
+            // 既存のレイヤー要素があれば削除
+            const existingLayer = document.getElementById(`layer-${layer.id}`);
+            if (existingLayer) {
+                existingLayer.remove();
+            }
+
+            // レイヤーグループを作成
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.id = `layer-${layer.id}`;
+            group.setAttribute('class', 'layer-element');
+            group.setAttribute('data-layer-id', layer.id);
+
+            // テキスト要素を作成
+            const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textElement.setAttribute('x', '0');
+            textElement.setAttribute('y', '0');
+            textElement.setAttribute('font-family', layer.fontFamily);
+            textElement.setAttribute('font-weight', layer.fontWeight || '400');
+            textElement.setAttribute('font-size', layer.fontSize);
+            textElement.setAttribute('fill', layer.color);
+            textElement.setAttribute('text-anchor', 'middle');
+            textElement.setAttribute('dominant-baseline', 'middle');
+            
+            // 改行をtspanで処理
+            const lines = layer.text.split('\n');
+            const lineHeight = layer.fontSize * 1.2;
+            const totalHeight = lineHeight * (lines.length - 1);
+            const startY = -totalHeight / 2;
+            
+            lines.forEach((line, index) => {
+                const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                tspan.setAttribute('x', '0');
+                tspan.setAttribute('dy', index === 0 ? startY : lineHeight);
+                tspan.textContent = line;
+                textElement.appendChild(tspan);
+            });
+
+            group.appendChild(textElement);
+
+            // transform属性を設定（transform構造を使用）
+            if (layer.transform) {
+                let scaleX = layer.transform.scale || 1;
+                let scaleY = layer.transform.scale || 1;
+                
+                if (layer.transform.flipHorizontal) {
+                    scaleX = -scaleX;
+                }
+                if (layer.transform.flipVertical) {
+                    scaleY = -scaleY;
+                }
+                
+                const transform = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${scaleX}, ${scaleY}) rotate(${layer.transform.rotation})`;
+                group.setAttribute('transform', transform);
+            } else {
+                // 古い形式の互換性
+                const transform = `translate(${layer.x}, ${layer.y}) rotate(${layer.rotation}) scale(${layer.scale * (layer.flipX || 1)}, ${layer.scale * (layer.flipY || 1)})`;
+                group.setAttribute('transform', transform);
+            }
+
+            // レイヤークリックイベントを追加
+            group.addEventListener('click', function(e) {
+                e.stopPropagation();
+                selectLayer(layer.id);
+            });
+
+            // マウスドラッグイベントを追加
+            group.addEventListener('mousedown', function(e) {
+                e.stopPropagation();
+                startDrag(e, layer.id);
+            });
+
+            // タッチイベントを追加
+            group.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                startDrag(e.touches[0], layer.id);
+            }, { passive: false });
+
+            // 選択状態に応じてスタイルを設定
+            if (selectedLayerId === layer.id) {
+                group.style.cursor = 'move';
+                group.style.filter = 'drop-shadow(0 0 3px rgba(0,123,255,0.8))';
+            } else {
+                group.style.cursor = 'pointer';
+                group.style.filter = '';
+            }
+
+            // レイヤーの順序に従って挿入
+            const layerIndex = layers.findIndex(l => l.id === layer.id);
+            const existingLayers = canvas.querySelectorAll('.layer-element');
+            
+            if (layerIndex === 0) {
+                const background = canvas.getElementById('canvasBackground');
+                canvas.insertBefore(group, background.nextSibling);
+            } else if (layerIndex < existingLayers.length) {
+                let insertBefore = null;
+                for (let i = layerIndex; i < layers.length; i++) {
+                    const nextLayerElement = canvas.getElementById(`layer-${layers[i].id}`);
+                    if (nextLayerElement) {
+                        insertBefore = nextLayerElement;
+                        break;
+                    }
+                }
+                if (insertBefore) {
+                    canvas.insertBefore(group, insertBefore);
+                } else {
+                    canvas.appendChild(group);
+                }
+            } else {
+                canvas.appendChild(group);
+            }
+        }
+
+        // テキストレイヤーを更新
+        function updateTextLayer(layerId, text, fontFamily, fontWeight, fontSize, color) {
+            const layer = layers.find(l => l.id === layerId);
+            if (!layer || layer.type !== 'text') return;
+
+            layer.text = text;
+            layer.fontFamily = fontFamily;
+            layer.fontWeight = fontWeight;
+            layer.fontSize = fontSize;
+            layer.color = color;
+
+            // DOMを更新
+            const layerElement = document.querySelector(`.layer-element[data-layer-id="${layerId}"]`);
+            if (layerElement) {
+                const textElement = layerElement.querySelector('text');
+                if (textElement) {
+                    // 既存のtspanをすべて削除
+                    while (textElement.firstChild) {
+                        textElement.removeChild(textElement.firstChild);
+                    }
+                    
+                    // 改行をtspanで処理
+                    const lines = text.split('\n');
+                    const lineHeight = fontSize * 1.2;
+                    const totalHeight = lineHeight * (lines.length - 1);
+                    const startY = -totalHeight / 2;
+                    
+                    lines.forEach((line, index) => {
+                        const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+                        tspan.setAttribute('x', '0');
+                        tspan.setAttribute('dy', index === 0 ? startY : lineHeight);
+                        tspan.textContent = line;
+                        textElement.appendChild(tspan);
+                    });
+                    
+                    textElement.setAttribute('font-family', fontFamily);
+                    textElement.setAttribute('font-weight', fontWeight);
+                    textElement.setAttribute('font-size', fontSize);
+                    textElement.setAttribute('fill', color);
+                }
+            }
+
+            saveToLocalStorage();
+            console.log('テキストレイヤー更新:', text);
+        }
 
         
         // 素材をキャンバス中央に追加
@@ -1739,7 +2539,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             const svgPath = element.dataset.svgPath;
             const title = element.dataset.title;
 
-            console.log('素材追加:', title);
+            // タイトルをエスケープしてログ出力
+            const safeTitle = title.replace(/[`\\]/g, '\\$&');
+            console.log('素材追加:', safeTitle);
 
             // クリック効果
             element.classList.add('clicked');
@@ -1775,6 +2577,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         // レイヤーオブジェクトを作成
                         const layer = {
                             id: nextLayerId++,
+                            type: 'svg', // レイヤータイプを明示
                             materialId: materialId,
                             title: title,
                             svgContent: svgElement.innerHTML,
@@ -1792,8 +2595,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         };
 
                         layers.push(layer);
-                        renderLayer(layer);
-                        console.log(`素材「${title}」をキャンバス中央に追加`);
+                        
+                        // 全レイヤーを再描画（既存レイヤーが消えないように）
+                        layers.forEach(l => renderLayer(l));
+                        
+                        // タイトルをエスケープしてログ出力
+                        const safeTitle = title.replace(/[`\\]/g, '\\$&');
+                        console.log(`素材「${safeTitle}」をキャンバス中央に追加 (ID: ${layer.id}, 全レイヤー数: ${layers.length})`);
                         
                         // ローカルストレージに保存
                         saveToLocalStorage();
@@ -1819,6 +2627,12 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
             if (!layer.visible) return;
 
+            // テキストレイヤーの場合は専用の描画関数を使用
+            if (layer.type === 'text') {
+                renderTextLayerWithTransform(layer);
+                return;
+            }
+
             // 新しいレイヤー要素を作成
             const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             layerGroup.id = `layer-${layer.id}`;
@@ -1828,25 +2642,35 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
             // スケール変換後の実際の中心点を計算
             // rotate の中心座標は、scale変換前の座標系で指定する必要がある
-            const centerX = layer.originalCenter.x;
-            const centerY = layer.originalCenter.y;
+            const centerX = layer.originalCenter ? layer.originalCenter.x : 0;
+            const centerY = layer.originalCenter ? layer.originalCenter.y : 0;
+            
+            // transformオブジェクトまたは直接プロパティから値を取得
+            const x = layer.transform ? layer.transform.x : (layer.x || 0);
+            const y = layer.transform ? layer.transform.y : (layer.y || 0);
+            const scale = layer.transform ? layer.transform.scale : (layer.scale || 1);
+            const rotation = layer.transform ? layer.transform.rotation : (layer.rotation || 0);
+            const flipHorizontal = layer.transform ? layer.transform.flipHorizontal : false;
+            const flipVertical = layer.transform ? layer.transform.flipVertical : false;
+            const flipX = layer.flipX !== undefined ? layer.flipX : 1;
+            const flipY = layer.flipY !== undefined ? layer.flipY : 1;
             
             // 変換を適用: 移動→スケール→反転→中心回転
-            let scaleX = layer.transform.scale;
-            let scaleY = layer.transform.scale;
+            let scaleX = scale * flipX;
+            let scaleY = scale * flipY;
             
             // 水平反転の場合はscaleXを負にする
-            if (layer.transform.flipHorizontal) {
+            if (flipHorizontal) {
                 scaleX = -scaleX;
             }
             
             // 上下反転の場合はscaleYを負にする
-            if (layer.transform.flipVertical) {
+            if (flipVertical) {
                 scaleY = -scaleY;
             }
             
             // 統一された処理: すべて同じ順序で処理
-            const transformString = `translate(${layer.transform.x}, ${layer.transform.y}) scale(${scaleX}, ${scaleY}) rotate(${layer.transform.rotation}, ${centerX}, ${centerY})`;
+            const transformString = `translate(${x}, ${y}) scale(${scaleX}, ${scaleY}) rotate(${rotation}, ${centerX}, ${centerY})`;
             layerGroup.setAttribute('transform', transformString);
 
             // layersの配列順に基づいて正しい位置に挿入
@@ -1855,13 +2679,17 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             
             if (layerIndex === 0) {
                 // 最初のレイヤーの場合、backgroundの後に挿入
-                const background = canvas.getElementById('canvasBackground');
-                canvas.insertBefore(layerGroup, background.nextSibling);
+                const background = document.getElementById('canvasBackground');
+                if (background && background.nextSibling) {
+                    canvas.insertBefore(layerGroup, background.nextSibling);
+                } else {
+                    canvas.appendChild(layerGroup);
+                }
             } else if (layerIndex < existingLayers.length) {
                 // 指定されたインデックスの位置に挿入
                 let insertBefore = null;
-                for (let i = layerIndex; i < layers.length; i++) {
-                    const nextLayerElement = canvas.getElementById(`layer-${layers[i].id}`);
+                for (let i = layerIndex + 1; i < layers.length; i++) {
+                    const nextLayerElement = document.getElementById(`layer-${layers[i].id}`);
                     if (nextLayerElement) {
                         insertBefore = nextLayerElement;
                         break;
@@ -1944,6 +2772,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateScaleUpButtonState();
             updateLayerMoveButtonState();
             updateDeleteButtonState();
+            updateTextButtonState();
             
             // カラーパネルを表示
             const selectedLayer = layers.find(layer => layer.id === layerId);
@@ -1975,6 +2804,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 updateScaleUpButtonState();
                 updateLayerMoveButtonState();
                 updateDeleteButtonState();
+                updateTextButtonState();
                 
                 // カラーパネルを非表示
                 hideColorPanel();
@@ -1983,11 +2813,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         // ドラッグ開始（マウス・タッチ・ポインター対応）
         function startDrag(e, layerId) {
-            if (selectedLayerId !== layerId) {
-                selectLayer(layerId);
-            }
+            // 選択状態の更新は遅延させる（ダブルクリック判定のため）
+            // ドラッグが実際に開始されたときに選択する
             
-            isDragging = true;
             const canvas = document.getElementById('mainCanvas');
             const rect = canvas.getBoundingClientRect();
             
@@ -2003,6 +2831,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 clientY = e.clientY;
             }
             
+            // マウスダウン時の画面座標を保存
+            mouseDownPos.x = clientX;
+            mouseDownPos.y = clientY;
+            mouseDownPos.layerId = layerId; // レイヤーIDも保存
+            
             const svgPoint = screenToSVG(clientX - rect.left, clientY - rect.top, canvas);
             
             dragStartPos.x = svgPoint.x;
@@ -2014,7 +2847,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 dragStartTransform.y = layer.transform.y;
             }
             
-            console.log(`Drag started for layer ${layerId} at SVG coordinates:`, svgPoint, `Event type: ${e.type}`);
+            // ドラッグフラグはまだセットしない（移動してから判定）
+            console.log(`Mouse down for layer ${layerId} at SVG coordinates:`, svgPoint, `Event type: ${e.type}`);
         }
 
         // 画面座標をSVG座標に変換
@@ -2028,7 +2862,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
         // ドラッグ中の処理（マウス・タッチ・ポインター対応）
         function onDrag(e) {
-            if (!isDragging || selectedLayerId === null) return;
+            if (!mouseDownPos.layerId) return; // マウスダウンしていない
             
             const canvas = document.getElementById('mainCanvas');
             const rect = canvas.getBoundingClientRect();
@@ -2043,6 +2877,28 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 // マウスイベント・ポインターイベント
                 clientX = e.clientX;
                 clientY = e.clientY;
+            }
+            
+            // まだドラッグ開始していない場合、移動距離をチェック
+            if (!isDragging) {
+                const distanceX = Math.abs(clientX - mouseDownPos.x);
+                const distanceY = Math.abs(clientY - mouseDownPos.y);
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                
+                // 閾値を超えた場合のみドラッグ開始
+                if (distance > dragThreshold) {
+                    isDragging = true;
+                    const layerId = mouseDownPos.layerId;
+                    
+                    // ドラッグ開始時に選択状態を更新
+                    if (selectedLayerId !== layerId) {
+                        selectLayer(layerId);
+                    }
+                    
+                    console.log(`Drag started for layer ${layerId} after moving ${distance.toFixed(2)}px`);
+                } else {
+                    return; // まだドラッグ開始しない
+                }
             }
             
             const svgPoint = screenToSVG(clientX - rect.left, clientY - rect.top, canvas);
@@ -2066,7 +2922,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 
                 // ローカルストレージに保存
                 saveToLocalStorage();
+            } else if (mouseDownPos.layerId) {
+                // ドラッグしなかった場合（単純なクリック）
+                // 選択状態を更新
+                if (selectedLayerId !== mouseDownPos.layerId) {
+                    selectLayer(mouseDownPos.layerId);
+                }
             }
+            
+            // マウスダウン情報をクリア
+            mouseDownPos.layerId = null;
         }
 
         // 選択されたレイヤーを15度右回転
@@ -2419,6 +3284,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             updateSelectedLayerTitle();
             updateLayerMoveButtonState();
             updateDeleteButtonState();
+            updateTextButtonState();
             
             console.log(`Layer deleted (was at index: ${currentIndex})`);
             
@@ -3094,11 +3960,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     selectedLayerId: selectedLayerId,
                     nextLayerId: nextLayerId,
                     currentBackgroundColor: currentBackgroundColor,
+                    canvasWidth: currentCanvasWidth,
+                    canvasHeight: currentCanvasHeight,
                     timestamp: Date.now()
                 };
                 
-                localStorage.setItem('compose2_editor_data', JSON.stringify(editorData));
-                console.log('編集内容をローカルストレージに保存しました');
+                localStorage.setItem('compose2_custom_size_editor_data', JSON.stringify(editorData));
+                console.log('編集内容をローカルストレージに保存しました (カスタムサイズ版)');
             } catch (error) {
                 console.error('ローカルストレージ保存エラー:', error);
             }
@@ -3107,7 +3975,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // ローカルストレージから編集内容を読み込み
         function loadFromLocalStorage() {
             try {
-                const savedData = localStorage.getItem('compose2_editor_data');
+                const savedData = localStorage.getItem('compose2_custom_size_editor_data');
                 if (savedData) {
                     const editorData = JSON.parse(savedData);
                     
@@ -3116,6 +3984,32 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     selectedLayerId = editorData.selectedLayerId || null;
                     nextLayerId = editorData.nextLayerId || 1;
                     currentBackgroundColor = editorData.currentBackgroundColor || 'transparent';
+                    
+                    // キャンバスサイズを復元
+                    if (editorData.canvasWidth && editorData.canvasHeight) {
+                        currentCanvasWidth = editorData.canvasWidth;
+                        currentCanvasHeight = editorData.canvasHeight;
+                        
+                        // 入力欄とキャンバスに反映
+                        document.getElementById('canvasWidth').value = currentCanvasWidth;
+                        document.getElementById('canvasHeight').value = currentCanvasHeight;
+                        
+                        const svgCanvas = document.getElementById('mainCanvas');
+                        if (svgCanvas) {
+                            svgCanvas.setAttribute('width', currentCanvasWidth);
+                            svgCanvas.setAttribute('height', currentCanvasHeight);
+                            svgCanvas.setAttribute('viewBox', `0 0 ${currentCanvasWidth} ${currentCanvasHeight}`);
+                            
+                            const canvasBackground = document.getElementById('canvasBackground');
+                            if (canvasBackground) {
+                                canvasBackground.setAttribute('width', currentCanvasWidth);
+                                canvasBackground.setAttribute('height', currentCanvasHeight);
+                            }
+                        }
+                        
+                        // 現在のサイズ表示を更新
+                        document.getElementById('currentSizeDisplay').textContent = `${currentCanvasWidth} × ${currentCanvasHeight} px`;
+                    }
                     
                     // レイヤーを再描画
                     layers.forEach(layer => {
@@ -3135,7 +4029,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     setBackgroundColor(currentBackgroundColor);
                     updateBackgroundColorSelection(currentBackgroundColor);
                     
-                    console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました`);
+                    console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました (カスタムサイズ版: ${currentCanvasWidth}×${currentCanvasHeight})`);
                     return true;
                 }
             } catch (error) {
@@ -3147,8 +4041,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // ローカルストレージをクリア
         function clearLocalStorage() {
             try {
-                localStorage.removeItem('compose2_editor_data');
-                console.log('ローカルストレージをクリアしました');
+                localStorage.removeItem('compose2_custom_size_editor_data');
+                console.log('ローカルストレージをクリアしました (カスタムサイズ版)');
             } catch (error) {
                 console.error('ローカルストレージクリアエラー:', error);
             }
@@ -3268,6 +4162,28 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }
         }
 
+        // テキストボタンの状態を更新
+        function updateTextButtonState() {
+            const textBtn = document.getElementById('textBtn');
+            
+            if (selectedLayerId !== null) {
+                const layer = layers.find(l => l.id === selectedLayerId);
+                if (layer && layer.type === 'text') {
+                    // テキストレイヤーが選択されている場合は編集モード
+                    textBtn.title = 'テキストを編集';
+                    textBtn.style.background = '#8e44ad'; // 濃い紫で編集モードを示す
+                } else {
+                    // テキスト以外のレイヤーが選択されている場合は追加モード
+                    textBtn.title = 'テキストを追加';
+                    textBtn.style.background = '#9b59b6'; // 通常の紫
+                }
+            } else {
+                // レイヤー未選択の場合は追加モード
+                textBtn.title = 'テキストを追加';
+                textBtn.style.background = '#9b59b6'; // 通常の紫
+            }
+        }
+
         // 季節テーマボタンの状態を更新
         function updateSeasonalThemeButtonState() {
             const themeButtons = [
@@ -3298,9 +4214,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             if (selectedLayerId !== null) {
                 const layer = layers.find(l => l.id === selectedLayerId);
                 if (layer) {
-                    titleElement.textContent = layer.title;
+                    if (layer.type === 'text') {
+                        // テキストレイヤーの場合はテキスト内容を表示
+                        const previewText = layer.text.length > 20 ? layer.text.substring(0, 20) + '...' : layer.text;
+                        titleElement.textContent = `テキスト: ${previewText}`;
+                    } else {
+                        titleElement.textContent = layer.title;
+                    }
                     titleElement.classList.add('active');
-                    console.log(`Title updated to: ${layer.title}`);
+                    console.log(`Title updated to: ${titleElement.textContent}`);
                 } else {
                     titleElement.textContent = 'レイヤーを選択してください';
                     titleElement.classList.remove('active');
@@ -3313,6 +4235,214 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }
         }
 
+        // SVGデータ読み込み機能
+        function loadArtworkSVG(artworkId) {
+            console.log('SVGデータ読み込み開始:', artworkId);
+            
+            // すぐにURLパラメータを削除（リロード対策）
+            removeArtworkIdFromURL();
+            
+            fetch(`../api/get-artwork-svg.php?id=${artworkId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.svg_data) {
+                        const svgData = data.svg_data;
+                        
+                        // キャンバスサイズを復元
+                        if (svgData.canvasWidth && svgData.canvasHeight) {
+                            currentCanvasWidth = svgData.canvasWidth;
+                            currentCanvasHeight = svgData.canvasHeight;
+                            
+                            // 入力欄とキャンバスに反映
+                            document.getElementById('canvasWidth').value = currentCanvasWidth;
+                            document.getElementById('canvasHeight').value = currentCanvasHeight;
+                            
+                            const svgCanvas = document.getElementById('mainCanvas');
+                            if (svgCanvas) {
+                                svgCanvas.setAttribute('width', currentCanvasWidth);
+                                svgCanvas.setAttribute('height', currentCanvasHeight);
+                                svgCanvas.setAttribute('viewBox', `0 0 ${currentCanvasWidth} ${currentCanvasHeight}`);
+                                
+                                const canvasBackground = document.getElementById('canvasBackground');
+                                if (canvasBackground) {
+                                    canvasBackground.setAttribute('width', currentCanvasWidth);
+                                    canvasBackground.setAttribute('height', currentCanvasHeight);
+                                }
+                            }
+                            
+                            // 現在のサイズ表示を更新
+                            document.getElementById('currentSizeDisplay').textContent = `${currentCanvasWidth} × ${currentCanvasHeight} px`;
+                        }
+                        
+                        // 背景色を復元
+                        if (svgData.backgroundColor) {
+                            currentBackgroundColor = svgData.backgroundColor;
+                            setBackgroundColor(currentBackgroundColor);
+                            updateBackgroundColorSelection(currentBackgroundColor);
+                        }
+                        
+                        // レイヤーを復元
+                        if (svgData.layers && Array.isArray(svgData.layers)) {
+                            console.log('レイヤー復元開始:', svgData.layers);
+                            layers = [];
+                            let loadedLayersCount = 0;
+                            const totalLayers = svgData.layers.length;
+                            
+                            if (totalLayers === 0) {
+                                alert('レイヤーデータがありません');
+                                return;
+                            }
+                            
+                            // 読み込むレイヤーの最大IDを事前に計算してnextLayerIdを更新
+                            const layerIds = svgData.layers.map(l => l.id || 0);
+                            const maxId = Math.max(...layerIds, 0);
+                            nextLayerId = maxId + 1;
+                            console.log(`レイヤーID範囲: ${Math.min(...layerIds)} - ${maxId}, nextLayerId: ${nextLayerId}`);
+                            
+                            svgData.layers.forEach((layerData, index) => {
+                                console.log(`レイヤー ${index}:`, layerData);
+                                
+                                // typeプロパティがない場合は推測
+                                if (!layerData.type) {
+                                    if (layerData.text !== undefined) {
+                                        layerData.type = 'text';
+                                    } else if (layerData.svgContent || layerData.svgPath || layerData.materialId) {
+                                        layerData.type = 'svg';
+                                    }
+                                    console.log('typeプロパティを推測:', layerData.type);
+                                }
+                                
+                                if (layerData.type === 'svg') {
+                                    // SVG素材レイヤー
+                                    console.log('SVG素材レイヤー検出:', layerData);
+                                    
+                                    // svgContentが既に存在する場合はそれを使用
+                                    if (layerData.svgContent) {
+                                        console.log('svgContent既に存在 - 直接使用');
+                                        
+                                        // transformオブジェクトから位置情報を展開
+                                        if (layerData.transform) {
+                                            layerData.x = layerData.transform.x || layerData.x || currentCanvasWidth / 2;
+                                            layerData.y = layerData.transform.y || layerData.y || currentCanvasHeight / 2;
+                                            layerData.rotation = layerData.transform.rotation || layerData.rotation || 0;
+                                            layerData.scale = layerData.transform.scale || layerData.scale || 1;
+                                            layerData.flipX = layerData.transform.flipX !== undefined ? layerData.transform.flipX : (layerData.flipX !== undefined ? layerData.flipX : 1);
+                                            layerData.flipY = layerData.transform.flipY !== undefined ? layerData.transform.flipY : (layerData.flipY !== undefined ? layerData.flipY : 1);
+                                        }
+                                        
+                                        layers.push(layerData);
+                                        renderLayer(layerData);
+                                        
+                                        loadedLayersCount++;
+                                        if (loadedLayersCount === totalLayers) {
+                                            saveToLocalStorage();
+                                            console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                        }
+                                    } else if (layerData.svgPath) {
+                                        console.log('svgPathから読み込み:', layerData.svgPath);
+                                        fetch(layerData.svgPath)
+                                            .then(response => response.text())
+                                            .then(svgText => {
+                                                const parser = new DOMParser();
+                                                const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+                                                const svgElement = svgDoc.querySelector('svg');
+                                                
+                                                if (svgElement) {
+                                                    console.log('SVG要素取得成功');
+                                                    // svgContentを更新
+                                                    layerData.svgContent = svgElement.innerHTML;
+                                                    
+                                                    // transformオブジェクトから位置情報を展開
+                                                    if (layerData.transform) {
+                                                        layerData.x = layerData.transform.x || layerData.x || currentCanvasWidth / 2;
+                                                        layerData.y = layerData.transform.y || layerData.y || currentCanvasHeight / 2;
+                                                        layerData.rotation = layerData.transform.rotation || layerData.rotation || 0;
+                                                        layerData.scale = layerData.transform.scale || layerData.scale || 1;
+                                                        layerData.flipX = layerData.transform.flipX !== undefined ? layerData.transform.flipX : (layerData.flipX !== undefined ? layerData.flipX : 1);
+                                                        layerData.flipY = layerData.transform.flipY !== undefined ? layerData.transform.flipY : (layerData.flipY !== undefined ? layerData.flipY : 1);
+                                                    }
+                                                    
+                                                    layers.push(layerData);
+                                                    renderLayer(layerData);
+                                                } else {
+                                                    console.error('SVG要素が見つかりません');
+                                                }
+                                                
+                                                loadedLayersCount++;
+                                                if (loadedLayersCount === totalLayers) {
+                                                    saveToLocalStorage();
+                                                    console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                                }
+                                            })
+                                            .catch(error => {
+                                                console.error('SVG素材の読み込みエラー:', layerData.svgPath, error);
+                                                loadedLayersCount++;
+                                                if (loadedLayersCount === totalLayers) {
+                                                    saveToLocalStorage();
+                                                    console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                                }
+                                            });
+                                    } else {
+                                        // svgPathもsvgContentもない場合
+                                        console.warn('SVGレイヤーにsvgPathもsvgContentもありません:', layerData);
+                                        loadedLayersCount++;
+                                        if (loadedLayersCount === totalLayers) {
+                                            saveToLocalStorage();
+                                            console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                        }
+                                    }
+                                } else if (layerData.type === 'text') {
+                                    // テキストレイヤー
+                                    console.log('テキストレイヤー検出:', layerData);
+                                    
+                                    // transformオブジェクトから位置情報を展開
+                                    if (layerData.transform) {
+                                        layerData.x = layerData.transform.x || layerData.x || 0;
+                                        layerData.y = layerData.transform.y || layerData.y || 0;
+                                        layerData.rotation = layerData.transform.rotation || layerData.rotation || 0;
+                                        layerData.scale = layerData.transform.scale || layerData.scale || 1;
+                                        layerData.flipX = layerData.transform.flipX !== undefined ? layerData.transform.flipX : (layerData.flipX !== undefined ? layerData.flipX : 1);
+                                        layerData.flipY = layerData.transform.flipY !== undefined ? layerData.transform.flipY : (layerData.flipY !== undefined ? layerData.flipY : 1);
+                                    }
+                                    
+                                    layers.push(layerData);
+                                    renderTextLayer(layerData);
+                                    
+                                    loadedLayersCount++;
+                                    if (loadedLayersCount === totalLayers) {
+                                        saveToLocalStorage();
+                                        console.log(`${layers.length}個のレイヤーを読み込みました (nextLayerId: ${nextLayerId})`);
+                                    }
+                                } else {
+                                    // 不明なタイプ
+                                    console.warn('不明なレイヤータイプ:', layerData);
+                                    loadedLayersCount++;
+                                    if (loadedLayersCount === totalLayers) {
+                                        saveToLocalStorage();
+                                        console.log(`${layers.length}個のレイヤーを読み込みました (nextLayerId: ${nextLayerId})`);
+                                    }
+                                }
+                            });
+                        } else {
+                            console.warn('SVGデータにレイヤー情報がありません');
+                        }
+                    } else {
+                        console.warn('SVGデータが見つかりません');
+                    }
+                })
+                .catch(error => {
+                    console.error('SVGデータ読み込みエラー:', error);
+                });
+        }
+
+        // URLからartwork_idパラメータを削除する関数
+        function removeArtworkIdFromURL() {
+            const url = new URL(window.location);
+            url.searchParams.delete('artwork_id');
+            window.history.replaceState({}, '', url);
+            console.log('URLパラメータを削除しました');
+        }
+
         // PNG出力機能
         function exportToPNG() {
             if (layers.length === 0) {
@@ -3320,7 +4450,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 return;
             }
 
-            console.log('PNG出力開始 (2500px)');
+            console.log(`PNG出力開始 (${currentCanvasWidth}x${currentCanvasHeight}px)`);
 
             const canvas = document.getElementById('mainCanvas');
             
@@ -3335,71 +4465,167 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 });
             }
             
-            // 選択枠なしでSVGを取得
-            const svgData = new XMLSerializer().serializeToString(canvas);
-            
             // 高解像度出力用のキャンバスを作成
             const outputCanvas = document.createElement('canvas');
-            const outputSize = 2500; // 2500px出力
-            outputCanvas.width = outputSize;
-            outputCanvas.height = outputSize;
+            outputCanvas.width = currentCanvasWidth;
+            outputCanvas.height = currentCanvasHeight;
             const ctx = outputCanvas.getContext('2d');
             
             // 高品質設定
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             
-            // SVGをImageとして読み込み
-            const img = new Image();
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+            // フォントが完全に読み込まれるのを待つ
+            document.fonts.ready.then(() => {
+                // まず背景を描画
+                if (currentBackgroundColor === 'transparent') {
+                    // 透明背景（何もしない）
+                } else {
+                    ctx.fillStyle = currentBackgroundColor;
+                    ctx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+                }
                 
-                // PNGとしてダウンロード
-                outputCanvas.toBlob(function(blob) {
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = `svg-composition-2500px-${Date.now()}.png`;
-                        
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        URL.revokeObjectURL(url);
-                        console.log('PNG出力完了 (2500px)');
-                        
-                        // 選択状態を復元
-                        if (currentSelectedId !== null) {
-                            selectedLayerId = currentSelectedId;
-                            layers.forEach(layer => {
-                                renderLayer(layer);
-                            });
-                            updateSelectedLayerTitle();
-                            updateRotateButtonState();
-                            updateScaleDownButtonState();
-                            updateScaleUpButtonState();
-                            updateLayerMoveButtonState();
-                            updateDeleteButtonState();
-                            updateSeasonalThemeButtonState();
-                        }
-                    } else {
-                        alert('PNG変換に失敗しました。');
-                        
-                        // エラー時も選択状態を復元
-                        if (currentSelectedId !== null) {
-                            selectedLayerId = currentSelectedId;
-                            layers.forEach(layer => {
-                                renderLayer(layer);
-                            });
-                        }
+                // レイヤー配列の順序通りに1つずつ描画
+                function renderLayersSequentially(index) {
+                    if (index >= layers.length) {
+                        // 全レイヤー処理完了 - ダウンロード
+                        outputCanvas.toBlob(function(blob) {
+                            if (blob) {
+                                const url = URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = `svg-composition-${currentCanvasWidth}x${currentCanvasHeight}-${Date.now()}.png`;
+                                
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                
+                                URL.revokeObjectURL(url);
+                                console.log(`PNG出力完了 (${currentCanvasWidth}x${currentCanvasHeight}px)`);
+                                
+                                // 選択状態を復元
+                                if (currentSelectedId !== null) {
+                                    selectedLayerId = currentSelectedId;
+                                    layers.forEach(layer => {
+                                        renderLayer(layer);
+                                    });
+                                    updateSelectedLayerTitle();
+                                    updateRotateButtonState();
+                                    updateScaleDownButtonState();
+                                    updateScaleUpButtonState();
+                                    updateLayerMoveButtonState();
+                                    updateDeleteButtonState();
+                                    updateTextButtonState();
+                                    updateSeasonalThemeButtonState();
+                                }
+                            } else {
+                                alert('PNG変換に失敗しました。');
+                                
+                                // エラー時も選択状態を復元
+                                if (currentSelectedId !== null) {
+                                    selectedLayerId = currentSelectedId;
+                                    layers.forEach(layer => {
+                                        renderLayer(layer);
+                                    });
+                                }
+                            }
+                        }, 'image/png');
+                        return;
                     }
-                }, 'image/png');
-            };
-            
-            img.onerror = function(error) {
-                console.error('PNG出力エラー:', error);
-                alert('PNG出力に失敗しました。');
+                    
+                    const layer = layers[index];
+                    if (!layer.visible) {
+                        // 非表示レイヤーはスキップ
+                        renderLayersSequentially(index + 1);
+                        return;
+                    }
+                    
+                    if (layer.type === 'text') {
+                        // テキストレイヤーを直接Canvas描画
+                        const transform = layer.transform || {
+                            x: layer.x,
+                            y: layer.y,
+                            rotation: layer.rotation || 0,
+                            scale: layer.scale || 1,
+                            flipHorizontal: false,
+                            flipVertical: false
+                        };
+                        
+                        ctx.save();
+                        
+                        // 変形を適用
+                        ctx.translate(transform.x, transform.y);
+                        ctx.rotate((transform.rotation * Math.PI) / 180);
+                        ctx.scale(
+                            transform.scale * (transform.flipHorizontal ? -1 : 1),
+                            transform.scale * (transform.flipVertical ? -1 : 1)
+                        );
+                        
+                        // フォントスタイルを設定
+                        const fontWeight = layer.fontWeight || '400';
+                        const fontSize = layer.fontSize || 48;
+                        const fontFamily = layer.fontFamily || 'Noto Sans JP';
+                        ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", sans-serif`;
+                        ctx.fillStyle = layer.color || '#000000';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        // テキストを改行で分割して描画
+                        const lines = layer.text.split('\n');
+                        const lineHeight = fontSize * 1.2;
+                        const totalHeight = lineHeight * (lines.length - 1);
+                        const startY = -totalHeight / 2;
+                        
+                        lines.forEach((line, lineIndex) => {
+                            const y = startY + (lineHeight * lineIndex);
+                            ctx.fillText(line, 0, y);
+                        });
+                        
+                        ctx.restore();
+                        
+                        // 次のレイヤーへ
+                        renderLayersSequentially(index + 1);
+                    } else {
+                        // SVG素材レイヤー - 個別にSVGを作成して描画
+                        const layerElement = document.getElementById(`layer-${layer.id}`);
+                        if (!layerElement) {
+                            renderLayersSequentially(index + 1);
+                            return;
+                        }
+                        
+                        // 個別レイヤーのSVGを作成
+                        const tempSvg = canvas.cloneNode(false);
+                        const clonedLayer = layerElement.cloneNode(true);
+                        tempSvg.appendChild(clonedLayer);
+                        
+                        const svgData = new XMLSerializer().serializeToString(tempSvg);
+                        const img = new Image();
+                        
+                        img.onload = function() {
+                            ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+                            // 次のレイヤーへ
+                            renderLayersSequentially(index + 1);
+                        };
+                        
+                        img.onerror = function(error) {
+                            console.error(`Layer ${layer.id} 描画エラー:`, error);
+                            // エラーでもスキップして次へ
+                            renderLayersSequentially(index + 1);
+                        };
+                        
+                        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                        const svgUrl = URL.createObjectURL(svgBlob);
+                        img.src = svgUrl;
+                        setTimeout(() => URL.revokeObjectURL(svgUrl), 100);
+                    }
+                }
+                
+                // 描画開始
+                renderLayersSequentially(0);
+                
+            }).catch((error) => {
+                console.error('フォント読み込みエラー:', error);
+                alert('フォントの読み込みに失敗しました。PNG出力を中止します。');
                 
                 // エラー時も選択状態を復元
                 if (currentSelectedId !== null) {
@@ -3408,217 +4634,49 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                         renderLayer(layer);
                     });
                 }
-            };
-            
-            // SVGデータをBlobとして作成
-            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const svgUrl = URL.createObjectURL(svgBlob);
-            img.src = svgUrl;
-            
-            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
+            });
         }
 
-        // 作品アップロード機能
-        function openUploadModal() {
+        // 作品投稿機能
+        function uploadArtwork() {
             if (layers.length === 0) {
-                alert('素材を追加してから作品を投稿してください。');
+                alert('素材を追加してから投稿してください。');
                 return;
             }
 
-            // プレビュー画像を生成
-            generateUploadPreview();
-            
-            // モーダルを表示
-            const modal = new bootstrap.Modal(document.getElementById('uploadArtworkModal'));
-            modal.show();
-        }
-
-        // アップロード用プレビュー生成
-        function generateUploadPreview() {
-            const canvas = document.getElementById('mainCanvas');
-            
-            // 選択状態を一時的に保存・解除
-            const currentSelectedId = selectedLayerId;
-            if (selectedLayerId !== null) {
-                selectedLayerId = null;
-                layers.forEach(layer => renderLayer(layer));
-            }
-            
-            // プレビュー用小サイズキャンバス作成
-            const previewCanvas = document.createElement('canvas');
-            const previewSize = 300;
-            previewCanvas.width = previewSize;
-            previewCanvas.height = previewSize;
-            const ctx = previewCanvas.getContext('2d');
-            
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            
-            const svgData = new XMLSerializer().serializeToString(canvas);
-            const img = new Image();
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, previewCanvas.width, previewCanvas.height);
-                
-                // プレビューコンテナに画像を表示
-                const previewContainer = document.getElementById('uploadPreviewContainer');
-                previewContainer.innerHTML = '';
-                
-                const previewImg = document.createElement('img');
-                previewImg.src = previewCanvas.toDataURL('image/png');
-                previewContainer.appendChild(previewImg);
-                
-                // 選択状態を復元
-                if (currentSelectedId !== null) {
-                    selectedLayerId = currentSelectedId;
-                    layers.forEach(layer => renderLayer(layer));
-                    updateSelectedLayerTitle();
-                    updateRotateButtonState();
-                    updateScaleDownButtonState();
-                    updateScaleUpButtonState();
-                    updateLayerMoveButtonState();
-                    updateDeleteButtonState();
-                }
-            };
-            
-            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const svgUrl = URL.createObjectURL(svgBlob);
-            img.src = svgUrl;
-            
-            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
-        }
-
-        // 高解像度PNG生成（アップロード用）
-        function generatePNGForUpload(callback) {
-            const canvas = document.getElementById('mainCanvas');
-            
-            // 選択状態を一時的に解除
-            const currentSelectedId = selectedLayerId;
-            if (selectedLayerId !== null) {
-                selectedLayerId = null;
-                layers.forEach(layer => renderLayer(layer));
-            }
-            
-            // 高解像度出力用キャンバス作成（2500px）
-            const outputCanvas = document.createElement('canvas');
-            const outputSize = 2500;
-            outputCanvas.width = outputSize;
-            outputCanvas.height = outputSize;
-            const ctx = outputCanvas.getContext('2d');
-            
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            
-            const svgData = new XMLSerializer().serializeToString(canvas);
-            const img = new Image();
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
-                
-                outputCanvas.toBlob(function(blob) {
-                    // 選択状態を復元
-                    if (currentSelectedId !== null) {
-                        selectedLayerId = currentSelectedId;
-                        layers.forEach(layer => renderLayer(layer));
-                        updateSelectedLayerTitle();
-                        updateRotateButtonState();
-                        updateScaleDownButtonState();
-                        updateScaleUpButtonState();
-                        updateLayerMoveButtonState();
-                        updateDeleteButtonState();
-                    }
-                    
-                    if (callback) callback(blob);
-                }, 'image/png');
-            };
-            
-            img.onerror = function(error) {
-                console.error('PNG生成エラー:', error);
-                if (callback) callback(null);
-            };
-            
-            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const svgUrl = URL.createObjectURL(svgBlob);
-            img.src = svgUrl;
-            
-            setTimeout(() => URL.revokeObjectURL(svgUrl), 1000);
-        }
-
-        // 使用されている素材IDを収集する関数
-        function getUsedMaterialIds() {
-            const usedIds = new Set();
-            
-            // 正しいキャンバス要素IDを使用（mainCanvasが正しいID）
-            const canvas = document.getElementById('mainCanvas');
-            if (canvas) {
-                const materialElements = canvas.querySelectorAll('[data-material-id]');
-                console.log(`Found ${materialElements.length} material elements on canvas`);
-                
-                materialElements.forEach(element => {
-                    const materialId = element.getAttribute('data-material-id');
-                    console.log(`Material element found with ID: ${materialId}`);
-                    if (materialId && materialId !== '' && materialId !== 'null') {
-                        usedIds.add(parseInt(materialId, 10));
-                    }
-                });
-            } else {
-                console.error('mainCanvas element not found');
-            }
-            
-            const result = Array.from(usedIds).filter(id => !isNaN(id) && id > 0);
-            console.log('Used material IDs detected:', result);
-            
-            return result;
-        }
-
-        // 作品アップロード実行
-        function submitArtwork() {
-            const form = document.getElementById('uploadArtworkForm');
-            const formData = new FormData(form);
-            
-            // バリデーション
-            if (!form.checkValidity()) {
-                form.reportValidity();
+            if (!confirm('作品を投稿しますか？\n（すぐに公開されます）')) {
                 return;
             }
-            
-            const agreeTerms = document.getElementById('agreeUploadTerms').checked;
-            if (!agreeTerms) {
-                alert('利用規約への同意が必要です。');
-                return;
-            }
-            
-            // アップロード処理開始
-            const submitBtn = document.getElementById('submitUploadBtn');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> アップロード中...';
-            
-            // プログレスバー表示
-            showUploadProgress();
-            
-            generatePNGForUpload(function(blob) {
+
+            // ローディング表示
+            const loadingDiv = document.createElement('div');
+            loadingDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; text-align: center; min-width: 200px;';
+            loadingDiv.innerHTML = '<div style="font-size: 2rem; margin-bottom: 10px;">📤</div><div style="font-size: 1.2rem;">投稿中...</div>';
+            document.body.appendChild(loadingDiv);
+
+            // exportToPNG関数を利用してPNG生成（投稿用に修正）
+            exportToPNGForUpload(function(blob) {
                 if (!blob) {
-                    showUploadError('PNG変換に失敗しました。');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    document.body.removeChild(loadingDiv);
+                    alert('画像の生成に失敗しました');
                     return;
                 }
+
+                // FormData作成
+                const formData = new FormData();
+                formData.append('artwork', blob, `custom-artwork-${Date.now()}.png`);
                 
-                // FormDataに画像を追加
-                formData.append('artwork', blob, `artwork-${Date.now()}.png`);
-                
-                // 投稿=フリー素材提供同意とみなす
-                formData.append('free_material_consent', '1');
-                
-                // 使用素材IDを収集してFormDataに追加
-                const usedMaterialIds = getUsedMaterialIds();
-                if (usedMaterialIds.length > 0) {
-                    formData.append('used_material_ids', usedMaterialIds.join(','));
-                }
-                
+                // SVGデータを保存（レイヤー情報をJSON形式で、テキストレイヤーは除外）
+                const svgData = {
+                    layers: layers.filter(layer => layer.type !== 'text'),
+                    canvasWidth: currentCanvasWidth,
+                    canvasHeight: currentCanvasHeight,
+                    backgroundColor: currentBackgroundColor
+                };
+                formData.append('svg_data', JSON.stringify(svgData));
+
                 // サーバーにアップロード
-                fetch('/api/upload-artwork.php', {
+                fetch('../api/upload-custom-artwork.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -3626,145 +4684,140 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
-                    return response.text();
+                    return response.json();
                 })
-                .then(responseText => {
-                    console.log('Server response:', responseText);
-                    
-                    let data;
-                    try {
-                        data = JSON.parse(responseText);
-                    } catch (parseError) {
-                        console.error('JSON parse error:', parseError);
-                        console.error('Response text:', responseText);
-                        throw new Error('サーバーレスポンスの解析に失敗しました');
-                    }
+                .then(data => {
+                    document.body.removeChild(loadingDiv);
                     
                     if (data.success) {
-                        showUploadSuccess(data.data);
-                        
-                        // 3秒後にモーダルを閉じる
-                        setTimeout(() => {
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('uploadArtworkModal'));
-                            modal.hide();
-                            
-                            // フォームリセット
-                            form.reset();
-                            resetUploadModal();
-                        }, 3000);
-                        
-                        console.log('作品アップロード完了:', data);
+                        alert('作品を投稿しました！\nありがとうございます✨');
                     } else {
-                        let errorMsg = data.error || 'アップロードに失敗しました';
-                        if (data.details) {
-                            console.error('Error details:', data.details);
-                        }
-                        showUploadError(errorMsg);
+                        alert('投稿に失敗しました: ' + (data.error || '不明なエラー'));
                     }
                 })
                 .catch(error => {
-                    console.error('アップロードエラー:', error);
-                    let errorMessage = 'アップロードに失敗しました';
-                    
-                    // HTTP 429エラー（投稿制限）の場合
-                    if (error.message.includes('429')) {
-                        errorMessage = '1日の投稿制限（1件）に達しています。明日再度お試しください。';
-                    } 
-                    // JSONパースエラーの場合
-                    else if (error.message.includes('JSON')) {
-                        errorMessage += '（サーバーエラーが発生しています）';
-                    } 
-                    // その他のエラー
-                    else {
-                        errorMessage += ': ' + error.message;
-                    }
-                    
-                    showUploadError(errorMessage);
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    document.body.removeChild(loadingDiv);
+                    console.error('Upload error:', error);
+                    alert('投稿中にエラーが発生しました: ' + error.message);
                 });
             });
         }
 
-        // アップロード進捗表示
-        function showUploadProgress() {
-            const progressHtml = `
-                <div class="upload-progress">
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                             role="progressbar" style="width: 100%">アップロード中...</div>
-                    </div>
-                </div>
-            `;
+        // PNG出力（投稿用・ダウンロードなし）
+        function exportToPNGForUpload(callback) {
+            if (layers.length === 0) {
+                if (callback) callback(null);
+                return;
+            }
+
+            console.log(`PNG生成開始 (投稿用: ${currentCanvasWidth}x${currentCanvasHeight}px)`);
+
+            const canvas = document.getElementById('mainCanvas');
             
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', progressHtml);
+            // 選択状態を一時的に保存
+            const currentSelectedId = selectedLayerId;
+            
+            // 一時的に選択を解除して選択枠を非表示にする
+            if (selectedLayerId !== null) {
+                selectedLayerId = null;
+                layers.forEach(layer => {
+                    renderLayer(layer);
+                });
+            }
+            
+            // 高解像度出力用のキャンバスを作成
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = currentCanvasWidth;
+            outputCanvas.height = currentCanvasHeight;
+            const ctx = outputCanvas.getContext('2d');
+            
+            // 高品質設定
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            // フォントが完全に読み込まれるのを待つ
+            document.fonts.ready.then(() => {
+                // まず背景を描画
+                if (currentBackgroundColor === 'transparent') {
+                    // 透明背景（何もしない）
+                } else {
+                    ctx.fillStyle = currentBackgroundColor;
+                    ctx.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+                }
+                
+                // レイヤー配列の順序通りに1つずつ描画（投稿用）
+                function renderLayersSequentiallyForUpload(index) {
+                    if (index >= layers.length) {
+                        // 全レイヤー処理完了 - Blobを返す
+                        outputCanvas.toBlob(function(blob) {
+                            // 選択状態を復元
+                            if (currentSelectedId !== null) {
+                                selectedLayerId = currentSelectedId;
+                                layers.forEach(layer => {
+                                    renderLayer(layer);
+                                });
+                            }
+                            
+                            if (callback) callback(blob);
+                        }, 'image/png');
+                        return;
+                    }
+                    
+                    const layer = layers[index];
+                    if (!layer.visible || layer.type === 'text') {
+                        // 非表示レイヤーまたはテキストレイヤーはスキップ（投稿時は除外）
+                        renderLayersSequentiallyForUpload(index + 1);
+                        return;
+                    }
+                    
+                    // SVG素材レイヤーのみ描画
+                    const layerElement = document.getElementById(`layer-${layer.id}`);
+                    if (!layerElement) {
+                        renderLayersSequentiallyForUpload(index + 1);
+                        return;
+                    }
+                    
+                    // 個別レイヤーのSVGを作成
+                    const tempSvg = canvas.cloneNode(false);
+                    const clonedLayer = layerElement.cloneNode(true);
+                    tempSvg.appendChild(clonedLayer);
+                    
+                    const svgData = new XMLSerializer().serializeToString(tempSvg);
+                    const img = new Image();
+                    
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+                        // 次のレイヤーへ
+                        renderLayersSequentiallyForUpload(index + 1);
+                    };
+                    
+                    img.onerror = function(error) {
+                        console.error(`Layer ${layer.id} 描画エラー (投稿用):`, error);
+                        // エラーでもスキップして次へ
+                        renderLayersSequentiallyForUpload(index + 1);
+                    };
+                    
+                    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                    const svgUrl = URL.createObjectURL(svgBlob);
+                    img.src = svgUrl;
+                    setTimeout(() => URL.revokeObjectURL(svgUrl), 100);
+                }
+                
+                // 描画開始
+                renderLayersSequentiallyForUpload(0);
+            }).catch((error) => {
+                console.error('フォント読み込みエラー:', error);
+                if (currentSelectedId !== null) {
+                    selectedLayerId = currentSelectedId;
+                    layers.forEach(layer => {
+                        renderLayer(layer);
+                    });
+                }
+                if (callback) callback(null);
+            });
         }
 
-        // アップロード成功表示
-        function showUploadSuccess(data) {
-            // 既存のメッセージを削除
-            removeUploadMessages();
-            
-            const successHtml = `
-                <div class="upload-success">
-                    <h6><i class="bi bi-check-circle-fill"></i> アップロード完了</h6>
-                    <p class="mb-1">作品「${data.title}」のアップロードが完了しました！</p>
-                    <small class="text-muted">
-                        管理者による承認後に公開されます。<br>
-                        本日の残り投稿可能数: ${data.remaining_uploads}件
-                    </small>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', successHtml);
-        }
 
-        // アップロードエラー表示
-        function showUploadError(errorMessage) {
-            // 既存のメッセージを削除
-            removeUploadMessages();
-            
-            const errorHtml = `
-                <div class="upload-error">
-                    <h6><i class="bi bi-exclamation-triangle-fill"></i> アップロードエラー</h6>
-                    <p class="mb-0">${errorMessage}</p>
-                </div>
-            `;
-            
-            const container = document.getElementById('uploadPreviewContainer');
-            container.insertAdjacentHTML('afterend', errorHtml);
-        }
-
-        // アップロードメッセージを削除
-        function removeUploadMessages() {
-            const progress = document.querySelector('.upload-progress');
-            const success = document.querySelector('.upload-success');
-            const error = document.querySelector('.upload-error');
-            
-            if (progress) progress.remove();
-            if (success) success.remove();
-            if (error) error.remove();
-        }
-
-        // アップロードモーダルリセット
-        function resetUploadModal() {
-            removeUploadMessages();
-            
-            const previewContainer = document.getElementById('uploadPreviewContainer');
-            previewContainer.innerHTML = `
-                <div class="preview-placeholder">
-                    <i class="bi bi-image"></i>
-                    <p>作品のプレビューがここに表示されます</p>
-                </div>
-            `;
-            
-            document.getElementById('descriptionCount').textContent = '0';
-            document.getElementById('submitUploadBtn').disabled = true;
-        }
 
         // 背景色を設定する関数
         function setBackgroundColor(color) {
@@ -3852,6 +4905,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             if (confirm('全ての素材を削除しますか？')) {
                 layers = [];
                 nextLayerId = 1;
+                selectedLayerId = null;
                 
                 // DOM要素も削除
                 const canvas = document.getElementById('mainCanvas');
@@ -3861,11 +4915,33 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 // 背景色もリセット
                 currentBackgroundColor = 'transparent';
                 setBackgroundColor('transparent');
+                updateBackgroundColorSelection('transparent');
+                
+                // キャンバスサイズもリセット
+                currentCanvasWidth = 1920;
+                currentCanvasHeight = 1080;
+                document.getElementById('canvasWidth').value = currentCanvasWidth;
+                document.getElementById('canvasHeight').value = currentCanvasHeight;
+                document.getElementById('currentSizeDisplay').textContent = `${currentCanvasWidth} × ${currentCanvasHeight} px`;
+                
+                const svgCanvas = document.getElementById('mainCanvas');
+                if (svgCanvas) {
+                    svgCanvas.setAttribute('width', currentCanvasWidth);
+                    svgCanvas.setAttribute('height', currentCanvasHeight);
+                    svgCanvas.setAttribute('viewBox', `0 0 ${currentCanvasWidth} ${currentCanvasHeight}`);
+                    
+                    const canvasBackground = document.getElementById('canvasBackground');
+                    if (canvasBackground) {
+                        canvasBackground.setAttribute('width', currentCanvasWidth);
+                        canvasBackground.setAttribute('height', currentCanvasHeight);
+                    }
+                }
                 
                 console.log('全ての素材を削除しました');
                 
-                // ローカルストレージに保存（空の状態を保存）
-                saveToLocalStorage();
+                // ローカルストレージを完全に削除
+                localStorage.removeItem('compose2_custom_size_editor_data');
+                console.log('ローカルストレージを完全に削除しました');
             }
         }
 
@@ -3930,33 +5006,46 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // 素材検索機能（全件Ajax検索対応）
         function initializeMaterialSearch() {
             const searchInput = document.getElementById('materialSearch');
+            const searchButton = document.getElementById('searchButton');
             const clearButton = document.getElementById('clearSearch');
             
-            if (!searchInput) return;
+            if (!searchInput || !searchButton) return;
             
-            let searchTimeout = null;
+            // 検索実行関数
+            function executeSearch() {
+                const searchTerm = searchInput.value.trim();
+                
+                if (searchTerm) {
+                    // クリアボタンを表示
+                    clearButton.style.display = 'block';
+                    // Ajax全件検索を実行
+                    performGlobalSearch(searchTerm);
+                } else {
+                    alert('検索キーワードを入力してください');
+                }
+            }
             
-            // 検索入力イベント（デバウンス付き）
+            // 検索ボタンクリックイベント
+            searchButton.addEventListener('click', executeSearch);
+            
+            // Enterキーで検索実行
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    executeSearch();
+                }
+            });
+            
+            // 入力時はクリアボタンの表示/非表示のみ
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.trim();
-                
-                // クリアボタンの表示/非表示
-                clearButton.style.display = searchTerm ? 'block' : 'none';
-                
-                // デバウンス処理（300ms）
-                if (searchTimeout) {
-                    clearTimeout(searchTimeout);
+                // 入力があればクリアボタンを表示（検索結果がある場合）
+                if (!searchTerm && clearButton.style.display === 'block') {
+                    // 入力が空になった場合のみクリア動作
+                    clearButton.style.display = 'none';
+                    hideSearchResultsMessage();
+                    window.location.reload();
                 }
-                
-                searchTimeout = setTimeout(() => {
-                    if (searchTerm) {
-                        // Ajax全件検索を実行
-                        performGlobalSearch(searchTerm);
-                    } else {
-                        // 検索クリア時はページリロード
-                        window.location.reload();
-                    }
-                }, 300);
             });
             
             // クリアボタンイベント
@@ -3966,13 +5055,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 hideSearchResultsMessage();
                 // ページリロードで元の状態に戻す
                 window.location.reload();
-            });
-            
-            // Enterキーでの検索実行を防ぐ
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                }
             });
         }
         
@@ -4070,7 +5152,10 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             item.className = 'material-item';
             item.setAttribute('data-material-id', material.id);
             item.setAttribute('data-svg-path', material.svg_path);
-            item.setAttribute('data-title', material.title);
+            
+            // タイトルをエスケープして設定
+            const escapedTitle = material.title.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            item.setAttribute('data-title', escapedTitle);
             
             // WebP優先で画像パスを選択
             let previewPath = '';
@@ -4086,7 +5171,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             item.innerHTML = `
                 <div class="material-image">
                     <img src="/${previewPath}" 
-                         alt="${material.title}" 
+                         alt="${escapedTitle}" 
                          loading="lazy"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <div class="svg-fallback" style="display: none;">
@@ -4213,22 +5298,22 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }
         }
         
-        // ページネーション非同期読み込み
+        // ページネーション時の検索状態管理
         function initializePaginationSearch() {
             const paginationLinks = document.querySelectorAll('.pagination-btn');
             const searchInput = document.getElementById('materialSearch');
             
-            // ページ変更を非同期で処理
+            // ページ変更時は検索をリセット
             paginationLinks.forEach(link => {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault(); // デフォルトのリンク動作を防止
-                    
-                    const url = this.href;
-                    const pageMatch = url.match(/[?&]page=(\d+)/);
-                    const page = pageMatch ? pageMatch[1] : 1;
-                    
-                    // 非同期で素材を読み込む
-                    loadMaterialsPage(page);
+                link.addEventListener('click', function() {
+                    if (searchInput && searchInput.value.trim()) {
+                        // 検索中の場合は確認ダイアログを表示
+                        const confirm = window.confirm('ページを移動すると検索がリセットされます。続行しますか？');
+                        if (!confirm) {
+                            event.preventDefault();
+                            return false;
+                        }
+                    }
                 });
             });
             
@@ -4251,99 +5336,30 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             }
         }
 
-        // 素材ページを非同期で読み込む
-        async function loadMaterialsPage(page) {
-            const materialsGrid = document.querySelector('.materials-grid');
-            const paginationContainer = document.querySelector('.pagination-container');
-            const paginationInfo = document.querySelector('.pagination-info');
-            
-            if (!materialsGrid) return;
-            
-            // ローディング表示
-            materialsGrid.innerHTML = '<div style="text-align: center; padding: 3rem; color: #6c757d;"><div class="spinner-border" role="status"><span class="visually-hidden">読み込み中...</span></div><p class="mt-3">素材を読み込んでいます...</p></div>';
-            
-            try {
-                // 素材データを取得
-                const response = await fetch(`?page=${page}&ajax=1`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const data = await response.json();
-                
-                // 素材グリッドを更新
-                if (data.materials && data.materials.length > 0) {
-                    materialsGrid.innerHTML = data.materials.map(material => `
-                        <div class="material-item" 
-                             data-material-id="${material.id}"
-                             data-svg-path="${material.svg_path}"
-                             data-title="${material.title}"
-                             title="${material.title}">
-                            <img src="/${material.webp_medium_path || material.image_path}" 
-                                 alt="${material.title}"
-                                 loading="lazy">
-                        </div>
-                    `).join('');
-                    
-                    // クリックイベントを再設定
-                    materialsGrid.querySelectorAll('.material-item').forEach(item => {
-                        item.addEventListener('click', function() {
-                            addMaterialToCanvas(this);
-                        });
-                    });
-                } else {
-                    materialsGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6c757d;"><p>素材が見つかりませんでした。</p></div>';
-                }
-                
-                // ページネーションを更新
-                if (paginationContainer && data.pagination) {
-                    paginationContainer.innerHTML = data.pagination;
-                    // ページネーションイベントを再初期化
-                    initializePaginationSearch();
-                }
-                
-                // ページ情報を更新
-                if (paginationInfo && data.pageInfo) {
-                    paginationInfo.textContent = data.pageInfo;
-                }
-                
-                // 素材一覧の位置にスムーススクロール
-                document.getElementById('materials').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-            } catch (error) {
-                console.error('Error loading materials:', error);
-                materialsGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #dc3545;"><p>素材の読み込みに失敗しました。ページをリロードしてください。</p></div>';
-            }
-        }
-
         // カラーパネル表示
         function showColorPanel(layer) {
             console.log(`showColorPanel called for layer ${layer.id}`);
-            const colorPalette = document.getElementById('colorPalette');
-            if (!colorPalette) {
-                console.log('colorPalette element not found');
+            const colorPanelContent = document.getElementById('color-panel-content');
+            if (!colorPanelContent) {
+                console.log('color-panel-content element not found');
                 return;
             }
             
-            // カラーパレットを表示（Flexレイアウトを維持）
-            colorPalette.style.display = 'flex';
+            // テキストレイヤーの場合は色パネルを表示しない
+            if (layer.type === 'text') {
+                hideColorPanel();
+                return;
+            }
             
             console.log('Extracting colors from layer...');
             extractColorsFromLayer(layer);
         }
 
-        // カラーパネル非表示（デフォルトメッセージを表示）
+        // カラーパネル非表示
         function hideColorPanel() {
             const colorPalette = document.getElementById('colorPalette');
             if (colorPalette) {
-                // カラーパレットを非表示にする
-                colorPalette.style.display = 'none';
-                
-                // 内容をリセット
-                colorPalette.innerHTML = `
-                    <div class="text-center text-muted">
-                        <div class="mb-2">素材を選択してください</div>
-                        <div>選択した素材の色を変更できます</div>
-                    </div>
-                `;
+                colorPalette.innerHTML = '';
                 colorPalette.classList.remove('loaded');
             }
         }
@@ -4356,9 +5372,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 console.log('colorPalette element not found');
                 return;
             }
-            
-            // カラーパレットを確実に表示（Flexレイアウトを維持）
-            colorPalette.style.display = 'flex';
             
             // ローディング状態を表示（固定サイズ）
             colorPalette.innerHTML = `
@@ -4416,9 +5429,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         function generateColorPalette(colors, layer) {
             const colorPalette = document.getElementById('colorPalette');
             if (!colorPalette) return;
-            
-            // カラーパレットを確実に表示（Flexレイアウトを維持）
-            colorPalette.style.display = 'flex';
             
             // 既存のグローバル隠しカラーピッカーをクリア（テーマ変更後の古い参照を削除）
             const globalHiddenPicker = document.getElementById('global-hidden-color-picker');
@@ -4654,12 +5664,42 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         document.addEventListener('DOMContentLoaded', function() {
             console.log('ページ読み込み完了');
             
-            // ローカルストレージから編集内容を復元
-            const restored = loadFromLocalStorage();
-            if (restored) {
-                console.log('編集内容を復元しました');
-            } else {
-                console.log('新規セッションを開始します');
+            // URLパラメータからartwork_idを取得してSVGデータを読み込み
+            const urlParams = new URLSearchParams(window.location.search);
+            const artworkId = urlParams.get('artwork_id');
+            
+            // テキストサイズスライダーのイベントリスナー
+            const textSizeSlider = document.getElementById('textSize');
+            const textSizeValue = document.getElementById('textSizeValue');
+            if (textSizeSlider && textSizeValue) {
+                textSizeSlider.addEventListener('input', function() {
+                    textSizeValue.textContent = `${this.value}px`;
+                });
+            }
+
+            // モーダル外クリックで閉じる
+            const textModal = document.getElementById('textModal');
+            if (textModal) {
+                textModal.addEventListener('click', function(e) {
+                    if (e.target === textModal) {
+                        closeTextModal();
+                    }
+                });
+            }
+            
+            // artwork_idがない場合のみローカルストレージから復元
+            if (!artworkId) {
+                const restored = loadFromLocalStorage();
+                if (restored) {
+                    console.log('編集内容を復元しました');
+                } else {
+                    console.log('新規セッションを開始します');
+                }
+            }
+            
+            // artwork_idがある場合はSVGデータを読み込み
+            if (artworkId) {
+                loadArtworkSVG(artworkId);
             }
             
             // 既存のすべてのレイヤーにSVG線形品質を適用し、元の色情報を保存
@@ -4678,11 +5718,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // ページネーション使用時の検索状態管理
         initializePaginationSearch();
         
-        // カラーパレットを初期化（初期状態は非表示）
-        const colorPalette = document.getElementById('colorPalette');
-        if (colorPalette) {
-            // レイヤー未選択時は非表示
-            colorPalette.style.display = 'none';
+        // カラーセクションを初期化
+        const colorSection = document.getElementById('color-section');
+        if (colorSection) {
+            // カラーセクションを常に表示状態にする
+            colorSection.style.display = 'block';
         }
         
         // 素材にクリックイベントを追加
@@ -4758,58 +5798,20 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 e.stopPropagation();
                 exportToPNG();
             });
+            document.getElementById('uploadBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                uploadArtwork();
+            });
             document.getElementById('clearBtn').addEventListener('click', function(e) {
                 e.stopPropagation();
                 clearAll();
             });
             
-            // アップロードボタンのイベントリスナー
-            document.getElementById('uploadBtn').addEventListener('click', function(e) {
-                e.stopPropagation();
-                openUploadModal();
-            });
+
             
-            // アップロードモーダルのイベントリスナー
-            document.getElementById('submitUploadBtn').addEventListener('click', submitArtwork);
+
             
-            // フォームバリデーション
-            const artworkTitle = document.getElementById('artworkTitle');
-            const penName = document.getElementById('penName');
-            const agreeUploadTerms = document.getElementById('agreeUploadTerms');
-            const submitUploadBtn = document.getElementById('submitUploadBtn');
-            
-            function validateUploadForm() {
-                const titleValid = artworkTitle.value.trim().length > 0 && artworkTitle.value.trim().length <= 100;
-                const penNameValid = penName.value.trim().length > 0 && penName.value.trim().length <= 50;
-                const termsAgreed = agreeUploadTerms.checked;
-                
-                submitUploadBtn.disabled = !(titleValid && penNameValid && termsAgreed);
-            }
-            
-            artworkTitle.addEventListener('input', validateUploadForm);
-            penName.addEventListener('input', validateUploadForm);
-            agreeUploadTerms.addEventListener('change', validateUploadForm);
-            
-            // 文字数カウンター
-            const descriptionTextarea = document.getElementById('artworkDescription');
-            const descriptionCount = document.getElementById('descriptionCount');
-            
-            descriptionTextarea.addEventListener('input', function() {
-                const count = this.value.length;
-                descriptionCount.textContent = count;
-                
-                if (count > 1000) {
-                    descriptionCount.style.color = '#dc3545';
-                } else {
-                    descriptionCount.style.color = '#6c757d';
-                }
-            });
-            
-            // モーダル表示時にフォームリセット
-            document.getElementById('uploadArtworkModal').addEventListener('show.bs.modal', function() {
-                resetUploadModal();
-                validateUploadForm();
-            });
+
             
             // 背景色パネルのイベントリスナーを設定
             const transparentBtn = document.querySelector('.bg-color-btn[data-color="transparent"]');
@@ -4866,16 +5868,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 const canvas = document.getElementById('mainCanvas');
                 const manipulationControls = document.querySelector('.manipulation-controls');
                 const actionControls = document.querySelector('.action-controls');
-                const colorPalette = document.getElementById('colorPalette');
+                const colorSection = document.getElementById('color-section');
                 
                 // 旧モバイルピッカー関連の処理は削除（新実装では不要）
                 
-                // キャンバス、レイヤー要素、操作ボタンエリア、カラーパレットのクリックは除外
+                // キャンバス、レイヤー要素、操作ボタンエリア、カラーセクションのクリックは除外
                 if (!canvas.contains(e.target) && 
                     !e.target.closest('.layer-element') && 
                     !manipulationControls.contains(e.target) &&
                     !actionControls.contains(e.target) &&
-                    !(colorPalette && colorPalette.contains(e.target))) {
+                    !(colorSection && colorSection.contains(e.target))) {
                     deselectLayer();
                 }
             });
@@ -4901,98 +5903,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         });
     </script>
 
-    <!-- 作品アップロードモーダル -->
-    <div class="modal fade" id="uploadArtworkModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="uploadModalLabel">
-                        <i class="bi bi-cloud-upload"></i> みんなの作品集に投稿
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="閉じる"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="upload-preview-section">
-                                <h6><i class="bi bi-image"></i> 作品プレビュー</h6>
-                                <div id="uploadPreviewContainer" class="upload-preview-container">
-                                    <div class="preview-placeholder">
-                                        <i class="bi bi-image"></i>
-                                        <p>作品のプレビューがここに表示されます</p>
-                                    </div>
-                                </div>
-                                <div class="upload-file-info mt-3">
-                                    <small class="text-muted">
-                                        <i class="bi bi-info-circle"></i> 
-                                        PNG形式で出力された作品が投稿されます。最大2MB、2500px以内に自動調整されます。
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <form id="uploadArtworkForm" enctype="multipart/form-data">
-                                <div class="mb-3">
-                                    <label for="artworkTitle" class="form-label">作品タイトル <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="artworkTitle" name="title" required maxlength="100" 
-                                           placeholder="例：春の花畑">
-                                    <div class="form-text">100文字以内で入力してください</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="penName" class="form-label">ペンネーム <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="penName" name="pen_name" required maxlength="50" 
-                                           placeholder="例：花子">
-                                    <div class="form-text">50文字以内で入力してください</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="artworkDescription" class="form-label">作品説明（任意）</label>
-                                    <textarea class="form-control" id="artworkDescription" name="description" rows="3" 
-                                              maxlength="1000" placeholder="作品について簡単に説明してください（1000文字以内）"></textarea>
-                                    <div class="form-text">
-                                        <span id="descriptionCount">0</span>/1000文字
-                                    </div>
-                                </div>
-                                
-                                <!-- フリー素材同意は投稿時に自動的に同意したものとみなす -->
-                                
-                                <div class="alert alert-warning">
-                                    <h6><i class="bi bi-info-circle"></i> 重要：投稿に関する同意事項</h6>
-                                    <ul class="mb-0 small">
-                                        <li><strong>投稿すると、作品をフリー素材として公開することに同意したものとみなします</strong></li>
-                                        <li>他のユーザーがあなたの作品をダウンロード・利用できるようになります</li>
-                                        <li>投稿された作品は管理者による承認後に公開されます</li>
-                                        <li>marutto素材を使用した作品のみ投稿可能です</li>
-                                        <li>不適切な内容は削除される場合があります</li>
-                                        <li>1日1件まで投稿可能です</li>
-                                    </ul>
-                                </div>
-                                
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="agreeUploadTerms" required>
-                                    <label class="form-check-label" for="agreeUploadTerms">
-                                        <a href="/terms-of-use.php" target="_blank">利用規約</a>に同意し、作品をフリー素材として公開することを許諾します <span class="text-danger">*</span>
-                                    </label>
-                                </div>
 
-                                <!-- 隠しファイル入力 -->
-                                <input type="file" id="artworkFile" name="artwork" accept="image/png,image/webp,image/svg+xml" style="display: none;">
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> キャンセル
-                    </button>
-                    <button type="button" class="btn btn-success" id="submitUploadBtn" disabled>
-                        <i class="bi bi-cloud-upload"></i> 作品を投稿
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
+
 
     <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
     <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
@@ -5070,5 +5983,89 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- カスタムサイズ機能のJavaScript -->
+    <script>
+        // カスタムサイズ機能の追加
+        let currentCanvasWidth = 1024;
+        let currentCanvasHeight = 1024;
+        
+        // プリセットサイズを設定
+        function setCanvasSize(width, height) {
+            document.getElementById('canvasWidth').value = width;
+            document.getElementById('canvasHeight').value = height;
+            applyCanvasSize();
+        }
+        
+        // キャンバスサイズを適用
+        function applyCanvasSize() {
+            const widthInput = document.getElementById('canvasWidth');
+            const heightInput = document.getElementById('canvasHeight');
+            
+            let width = parseInt(widthInput.value);
+            let height = parseInt(heightInput.value);
+            
+            // 値の検証
+            if (isNaN(width) || width < 100 || width > 2000) {
+                alert('幅は100px〜2000pxの範囲で入力してください');
+                widthInput.value = currentCanvasWidth;
+                return;
+            }
+            
+            if (isNaN(height) || height < 100 || height > 2000) {
+                alert('高さは100px〜2000pxの範囲で入力してください');
+                heightInput.value = currentCanvasHeight;
+                return;
+            }
+            
+            // キャンバスサイズを更新
+            currentCanvasWidth = width;
+            currentCanvasHeight = height;
+            
+            const svgCanvas = document.getElementById('mainCanvas');
+            if (svgCanvas) {
+                svgCanvas.setAttribute('width', width);
+                svgCanvas.setAttribute('height', height);
+                svgCanvas.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                
+                // キャンバス背景の更新
+                const canvasBackground = document.getElementById('canvasBackground');
+                if (canvasBackground) {
+                    canvasBackground.setAttribute('width', width);
+                    canvasBackground.setAttribute('height', height);
+                }
+            }
+            
+            // 現在のサイズ表示を更新
+            document.getElementById('currentSizeDisplay').textContent = `${width} × ${height} px`;
+            
+            // キャンバスサイズ変更をローカルストレージに保存
+            saveToLocalStorage();
+            
+            console.log(`キャンバスサイズを ${width}×${height} に変更しました`);
+        }
+        
+        // Enterキーでサイズ適用
+        document.addEventListener('DOMContentLoaded', function() {
+            const widthInput = document.getElementById('canvasWidth');
+            const heightInput = document.getElementById('canvasHeight');
+            
+            if (widthInput) {
+                widthInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        applyCanvasSize();
+                    }
+                });
+            }
+            
+            if (heightInput) {
+                heightInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        applyCanvasSize();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -252,7 +252,6 @@ foreach ($categories as $category) {
                 <a href="/list.php" class="main-link">イラスト素材一覧</a>
                 <a href="/everyone-works.php" class="main-link">みんなのアトリエ</a>
                 <a href="/compose2/" class="main-link">あなたのアトリエ</a>
-                <a href="/compose2/custom-size.php" class="main-link">カスタムサイズのアトリエ</a>
                 <a href="/privacy-policy.php" class="main-link">プライバシーポリシー</a>
                 <a href="/terms-of-use.php" class="main-link">利用規約</a>
             </div>

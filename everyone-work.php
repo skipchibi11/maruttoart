@@ -57,6 +57,15 @@ function getArtworkImageUrl($artwork) {
 
 // ダウンロード用の画像パスを取得（オリジナルファイルを優先）
 function getDownloadImagePath($artwork) {
+    // file_pathカラムを優先的に使用（新しいカスタム作品用）
+    if (!empty($artwork['file_path'])) {
+        $filePath = __DIR__ . '/' . $artwork['file_path'];
+        if (file_exists($filePath)) {
+            return "/{$artwork['file_path']}";
+        }
+    }
+    
+    // 従来のeveryone-worksディレクトリもチェック
     $basePath = __DIR__ . '/uploads/everyone-works/';
     
     // オリジナルファイルが存在する場合は優先
@@ -1142,10 +1151,24 @@ try {
             <section class="download-section">
                 <div class="text-center">
                     <?php if (!empty($downloadImagePath)): ?>
-                    <a href="/download-artwork.php?id=<?= $artwork['id'] ?>" 
-                       class="btn btn-outline-primary btn-lg">
-                        <i class="bi bi-download"></i> PNGダウンロード
-                    </a>
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <a href="/download-artwork.php?id=<?= $artwork['id'] ?>" 
+                           class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-download"></i> PNGダウンロード
+                        </a>
+                        <?php
+                        // SVGデータの有無を確認
+                        $hasSvgData = !empty($artwork['svg_data']);
+                        
+                        if ($hasSvgData):
+                        ?>
+                        <a href="/compose2/?artwork_id=<?= $artwork['id'] ?>" 
+                           class="btn btn-outline-success btn-lg"
+                           onclick="return confirmCustomizeArtwork(event);">
+                            <i class="bi bi-brush"></i> この作品をカスタマイズ
+                        </a>
+                        <?php endif; ?>
+                    </div>
                     <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #6c757d;">
                         フリー素材として商用・非商用問わずご利用いただけます（PNG形式）
                     </p>
@@ -1555,5 +1578,26 @@ try {
             </div>
         </div>
     </div>
+
+    <script>
+    function confirmCustomizeArtwork(event) {
+        // ローカルストレージにデータがあるかチェック
+        const savedData = localStorage.getItem('compose2_custom_size_editor_data');
+        
+        if (savedData) {
+            // データがある場合は確認ダイアログを表示
+            const confirmed = confirm('現在編集中のデータがあります。\n作品をカスタマイズすると、現在のデータは削除されます。\n\nよろしいですか?');
+            
+            if (!confirmed) {
+                // キャンセルされた場合は遷移しない
+                event.preventDefault();
+                return false;
+            }
+        }
+        
+        // OKの場合は遷移を許可
+        return true;
+    }
+    </script>
 </body>
 </html>
