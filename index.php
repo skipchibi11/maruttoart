@@ -1410,7 +1410,7 @@ try {
                          style="background-color: #f8f9fa;">
                     
                     <div class="card-body">
-                        <p class="card-text text-muted small">by <?= h($artwork['pen_name']) ?></p>
+                        <h3 class="card-title"><?= h($artwork['title']) ?></h3>
                     </div>
                 </a>
             </div>
