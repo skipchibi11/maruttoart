@@ -58,7 +58,7 @@ $storyArtworks = $storyStmt->fetchAll();
     <meta name="description" content="任意のサイズでベクター素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
     
     <!-- カノニカルURL設定 -->
-    <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose2/">
+    <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose/">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3962,8 +3962,8 @@ $storyArtworks = $storyStmt->fetchAll();
                     timestamp: Date.now()
                 };
                 
-                localStorage.setItem('compose2_custom_size_editor_data', JSON.stringify(editorData));
-                console.log('編集内容をローカルストレージに保存しました (カスタムサイズ版)');
+                localStorage.setItem('compose_editor_data', JSON.stringify(editorData));
+                console.log('編集内容をローカルストレージに保存しました');
             } catch (error) {
                 console.error('ローカルストレージ保存エラー:', error);
             }
@@ -3972,7 +3972,21 @@ $storyArtworks = $storyStmt->fetchAll();
         // ローカルストレージから編集内容を読み込み
         function loadFromLocalStorage() {
             try {
-                const savedData = localStorage.getItem('compose2_custom_size_editor_data');
+                // 新キーで取得
+                let savedData = localStorage.getItem('compose_editor_data');
+                
+                // 旧キーから移行
+                if (!savedData) {
+                    savedData = localStorage.getItem('compose2_custom_size_editor_data');
+                    if (savedData) {
+                        console.log('旧キー(compose2)からデータを移行します');
+                        // 新キーで保存
+                        localStorage.setItem('compose_editor_data', savedData);
+                        // 旧キーを削除
+                        localStorage.removeItem('compose2_custom_size_editor_data');
+                    }
+                }
+                
                 if (savedData) {
                     const editorData = JSON.parse(savedData);
                     
@@ -4026,7 +4040,7 @@ $storyArtworks = $storyStmt->fetchAll();
                     setBackgroundColor(currentBackgroundColor);
                     updateBackgroundColorSelection(currentBackgroundColor);
                     
-                    console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました (カスタムサイズ版: ${currentCanvasWidth}×${currentCanvasHeight})`);
+                    console.log(`${layers.length}個のレイヤーをローカルストレージから復元しました (${currentCanvasWidth}×${currentCanvasHeight})`);
                     return true;
                 }
             } catch (error) {
@@ -4038,8 +4052,8 @@ $storyArtworks = $storyStmt->fetchAll();
         // ローカルストレージをクリア
         function clearLocalStorage() {
             try {
-                localStorage.removeItem('compose2_custom_size_editor_data');
-                console.log('ローカルストレージをクリアしました (カスタムサイズ版)');
+                localStorage.removeItem('compose_editor_data');
+                console.log('ローカルストレージをクリアしました');
             } catch (error) {
                 console.error('ローカルストレージクリアエラー:', error);
             }
@@ -4937,7 +4951,7 @@ $storyArtworks = $storyStmt->fetchAll();
                 console.log('全ての素材を削除しました');
                 
                 // ローカルストレージを完全に削除
-                localStorage.removeItem('compose2_custom_size_editor_data');
+                localStorage.removeItem('compose_editor_data');
                 console.log('ローカルストレージを完全に削除しました');
             }
         }

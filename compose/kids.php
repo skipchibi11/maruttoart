@@ -87,7 +87,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <meta name="description" content="えをかいて、たのしいさくひんをつくろう！かんたんにつかえるこども用のアトリエです。">
     
     <!-- カノニカルURL設定 -->
-    <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose2/kids.php">
+    <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose/kids.php">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3289,7 +3289,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 };
                 
                 const jsonData = JSON.stringify(editorData);
-                localStorage.setItem('compose2_editor_data', jsonData);
+                localStorage.setItem('compose_kids_editor_data', jsonData);
                 console.log('編集内容を保存:', {
                     レイヤー数: layers.length,
                     背景色: currentBackgroundColor,
@@ -3297,7 +3297,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
                 });
                 
                 // 保存直後に確認
-                const saved = localStorage.getItem('compose2_editor_data');
+                const saved = localStorage.getItem('compose_kids_editor_data');
                 const parsed = JSON.parse(saved);
                 console.log('保存確認 - レイヤー数:', parsed.layers.length);
             } catch (error) {
@@ -3311,7 +3311,21 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // ローカルストレージから編集内容を読み込み
         function loadFromLocalStorage() {
             try {
-                const savedData = localStorage.getItem('compose2_editor_data');
+                // 新キーで取得
+                let savedData = localStorage.getItem('compose_kids_editor_data');
+                
+                // 旧キーから移行
+                if (!savedData) {
+                    savedData = localStorage.getItem('compose2_editor_data');
+                    if (savedData) {
+                        console.log('旧キー(compose2)からデータを移行します');
+                        // 新キーで保存
+                        localStorage.setItem('compose_kids_editor_data', savedData);
+                        // 旧キーを削除
+                        localStorage.removeItem('compose2_editor_data');
+                    }
+                }
+                
                 console.log('localStorage読み込み:', savedData ? 'データあり' : 'データなし');
                 
                 if (savedData) {
@@ -3359,7 +3373,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         // ローカルストレージをクリア
         function clearLocalStorage() {
             try {
-                localStorage.removeItem('compose2_editor_data');
+                localStorage.removeItem('compose_kids_editor_data');
                 console.log('ローカルストレージをクリアしました');
             } catch (error) {
                 console.error('ローカルストレージクリアエラー:', error);
@@ -4915,7 +4929,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         document.getElementById('shuffleBtn').addEventListener('click', function() {
             // キャッシュをバイパスしてページをリロード
             const timestamp = new Date().getTime();
-            window.location.href = '/compose2/kids.php?refresh=' + timestamp;
+            window.location.href = '/compose/kids.php?refresh=' + timestamp;
         });
     </script>
 </body>

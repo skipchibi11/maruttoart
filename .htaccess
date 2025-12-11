@@ -60,6 +60,10 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 
 RewriteEngine On
 
+# compose2からcomposeへのリダイレクト（後方互換性）
+RewriteRule ^compose2/?$ /compose/ [R=301,L]
+RewriteRule ^compose2/(.*)$ /compose/$1 [R=301,L]
+
 # HTTPからHTTPSへのリダイレクト（最優先で処理）
 # ローカル環境では無効化
 # RewriteCond %{HTTPS} !=on

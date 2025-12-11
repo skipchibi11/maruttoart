@@ -1076,7 +1076,7 @@ try {
                         
                         if ($hasSvgData):
                         ?>
-                        <a href="/compose2/?artwork_id=<?= $artwork['id'] ?>" 
+                        <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
                            class="btn btn-outline-success btn-lg"
                            onclick="return confirmCustomizeArtwork(event);">
                             <i class="bi bi-brush"></i> この作品をカスタマイズ
@@ -1317,7 +1317,7 @@ try {
     <script>
     function confirmCustomizeArtwork(event) {
         // ローカルストレージにデータがあるかチェック
-        const savedData = localStorage.getItem('compose2_custom_size_editor_data');
+        const savedData = localStorage.getItem('compose_editor_data');
         
         if (savedData) {
             // データがある場合は確認ダイアログを表示

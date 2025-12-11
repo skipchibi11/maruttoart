@@ -126,13 +126,13 @@
     <div class="kids-container">
         <div class="kids-header-content">
             <div class="kids-brand-wrapper">
-                <a class="kids-brand" href="/compose2/kids.php">
+                <a class="kids-brand" href="/compose/kids.php">
                     まるっとあーと
                 </a>
             </div>
             
             <div class="kids-tool-navigation">
-                <a href="/compose2/kids.php" class="kids-tool-nav-link<?= $currentPage === 'kids' ? ' active' : '' ?>" title="つくる">
+                <a href="/compose/kids.php" class="kids-tool-nav-link<?= $currentPage === 'kids' ? ' active' : '' ?>" title="つくる">
                     つくる
                 </a>
                 <a href="/kids-works.php" class="kids-tool-nav-link<?= $currentPage === 'kids-works' || $currentPage === 'kids-work' ? ' active' : '' ?>" title="みる">

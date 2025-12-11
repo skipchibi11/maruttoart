@@ -1356,14 +1356,14 @@ try {
                             </svg>
                             <span class="hero-tile-label">みんなの<br>アトリエ</span>
                         </a>
-                        <a href="/compose2" class="hero-tile">
+                        <a href="/compose" class="hero-tile">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
                                 <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
                                 <path d="m15 5 4 4"/>
                             </svg>
                             <span class="hero-tile-label">あなたの<br>アトリエ</span>
                         </a>
-                        <a href="/compose2/kids.php" class="hero-tile">
+                        <a href="/compose/kids.php" class="hero-tile">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
                                 <path d="M15.236 22a3 3 0 0 0-2.2-5"/>
                                 <path d="M16 20a3 3 0 0 1 3-3h1a2 2 0 0 0 2-2v-2a4 4 0 0 0-4-4V4"/>
@@ -1429,7 +1429,7 @@ try {
         <!-- 作品作成誘導 -->
         <div class="row mt-4">
             <div class="col-12 text-center load-more-button">
-                <a href="/compose2" class="btn btn-outline-primary btn-lg">
+                <a href="/compose" class="btn btn-outline-primary btn-lg">
                     あなたのアトリエで作る
                 </a>
             </div>
@@ -1447,7 +1447,7 @@ try {
             <div class="col-12 text-center">
                 <p class="text-muted">
                     まだ作品が投稿されていません。<br>
-                    <a href="/compose2" class="text-decoration-none">あなたのアトリエ</a>で作品を作ってみませんか？
+                    <a href="/compose" class="text-decoration-none">あなたのアトリエ</a>で作品を作ってみませんか？
                 </p>
             </div>
         </div>
