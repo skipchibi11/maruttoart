@@ -6072,9 +6072,9 @@ $storyArtworks = $storyStmt->fetchAll();
 
     <!-- Google AdSense 広告 -->
     <div class="mt-5" style="display: flex; justify-content: center; gap: 100px; flex-wrap: wrap;">
-        <?php include __DIR__ . '/includes/ad-display.php'; ?>
+        <?php include __DIR__ . '/../includes/ad-display.php'; ?>
         <div class="ad-desktop-only">
-            <?php include __DIR__ . '/includes/ad-display.php'; ?>
+            <?php include __DIR__ . '/../includes/ad-display.php'; ?>
         </div>
     </div>
 
