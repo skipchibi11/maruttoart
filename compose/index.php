@@ -214,6 +214,12 @@ $storyArtworks = $storyStmt->fetchAll();
             color: #adb5bd;
         }
 
+        /* スピンアニメーション（ローディング用） */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* カスタムサイズ設定パネルのスタイル */
         .canvas-size-controls {
             background: #f8f9fa;
@@ -1946,22 +1952,22 @@ $storyArtworks = $storyStmt->fetchAll();
                 <div class="pagination-container">
                     <!-- 前のページ -->
                     <?php if ($page > 1): ?>
-                        <a href="?page=<?= $page - 1 ?>" class="pagination-btn">
+                        <button type="button" class="pagination-btn" data-page="<?= $page - 1 ?>" onclick="loadPage(<?= $page - 1 ?>)">
                             前へ
-                        </a>
+                        </button>
                     <?php endif; ?>
                     
                     <!-- 次のページ -->
                     <?php if ($page < $totalPages): ?>
-                        <a href="?page=<?= $page + 1 ?>" class="pagination-btn">
+                        <button type="button" class="pagination-btn" data-page="<?= $page + 1 ?>" onclick="loadPage(<?= $page + 1 ?>)">
                             次へ
-                        </a>
+                        </button>
                     <?php endif; ?>
                 </div>
                 
                 <!-- ページ情報 -->
                 <div class="pagination-info">
-                    <?= $page ?> / <?= $totalPages ?> ページ （全 <?= $totalItems ?> 件）
+                    <span id="currentPage"><?= $page ?></span> / <span id="totalPages"><?= $totalPages ?></span> ページ （全 <span id="totalItems"><?= $totalItems ?></span> 件）
                 </div>
                 <?php endif; ?>
                 
@@ -5320,26 +5326,95 @@ $storyArtworks = $storyStmt->fetchAll();
             }
         }
         
-        // ページネーション時の検索状態管理
-        function initializePaginationSearch() {
-            const paginationLinks = document.querySelectorAll('.pagination-btn');
-            const searchInput = document.getElementById('materialSearch');
+        // ページ読み込み（非同期）
+        function loadPage(pageNumber) {
+            console.log(`Loading page ${pageNumber}`);
             
-            // ページ変更時は検索をリセット
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (searchInput && searchInput.value.trim()) {
-                        // 検索中の場合は確認ダイアログを表示
-                        const confirm = window.confirm('ページを移動すると検索がリセットされます。続行しますか？');
-                        if (!confirm) {
-                            event.preventDefault();
-                            return false;
-                        }
+            // ローディング表示
+            showPaginationLoadingMessage();
+            
+            // Ajax APIを呼び出し
+            fetch(`/admin/api/load-materials.php?page=${pageNumber}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTPエラー: ${response.status} ${response.statusText}`);
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // 素材グリッドを更新
+                        updateMaterialsGridWithPagination(data.materials, pageNumber, data.total_pages, data.total_items);
+                        console.log(`Page ${pageNumber} loaded: ${data.materials.length} materials`);
+                    } else {
+                        throw new Error(data.error || 'ページ読み込みエラー');
+                    }
+                })
+                .catch(error => {
+                    console.error('Page load error:', error);
+                    showPaginationErrorMessage(error.message);
                 });
+        }
+        
+        // ページネーション付き素材グリッド更新
+        function updateMaterialsGridWithPagination(materials, currentPage, totalPages, totalItems) {
+            const materialsGrid = document.querySelector('.materials-grid');
+            if (!materialsGrid) return;
+            
+            // グリッドを更新
+            materialsGrid.innerHTML = '';
+            materials.forEach(material => {
+                const materialItem = createMaterialItem(material);
+                materialsGrid.appendChild(materialItem);
             });
             
+            // ページ情報を更新
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            document.getElementById('totalItems').textContent = totalItems;
+            
+            // ページネーションボタンを更新
+            updatePaginationButtons(currentPage, totalPages);
+            
+            // ローディングメッセージを非表示
+            hidePaginationLoadingMessage();
+            
+            // 素材グリッドの先頭にスクロール
+            materialsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // ページネーションボタンを更新
+        function updatePaginationButtons(currentPage, totalPages) {
+            const paginationContainer = document.querySelector('.pagination-container');
+            if (!paginationContainer) return;
+            
+            paginationContainer.innerHTML = '';
+            
+            // 前へボタン
+            if (currentPage > 1) {
+                const prevBtn = document.createElement('button');
+                prevBtn.type = 'button';
+                prevBtn.className = 'pagination-btn';
+                prevBtn.textContent = '前へ';
+                prevBtn.onclick = () => loadPage(currentPage - 1);
+                paginationContainer.appendChild(prevBtn);
+            }
+            
+            // 次へボタン
+            if (currentPage < totalPages) {
+                const nextBtn = document.createElement('button');
+                nextBtn.type = 'button';
+                nextBtn.className = 'pagination-btn';
+                nextBtn.textContent = '次へ';
+                nextBtn.onclick = () => loadPage(currentPage + 1);
+                paginationContainer.appendChild(nextBtn);
+            }
+        }
+        
+        // ページネーション時の検索状態管理
+        function initializePaginationSearch() {
             // 検索中はページネーションを非表示にする
+            const searchInput = document.getElementById('materialSearch');
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
                     const paginationContainer = document.querySelector('.pagination-container');
@@ -5356,6 +5431,38 @@ $storyArtworks = $storyStmt->fetchAll();
                     }
                 });
             }
+        }
+        
+        // ローディングメッセージ表示（ページネーション用）
+        function showPaginationLoadingMessage() {
+            const materialsGrid = document.querySelector('.materials-grid');
+            if (!materialsGrid) return;
+            
+            materialsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #6c757d;">
+                    <i class="bi bi-arrow-clockwise" style="font-size: 2rem; animation: spin 1s linear infinite;"></i>
+                    <div style="margin-top: 1rem;">読み込み中...</div>
+                </div>
+            `;
+        }
+        
+        // ローディングメッセージ非表示（ページネーション用）
+        function hidePaginationLoadingMessage() {
+            // 処理完了後は特に何もしない（グリッドが更新される）
+        }
+        
+        // エラーメッセージ表示（ページネーション用）
+        function showPaginationErrorMessage(errorMessage) {
+            const materialsGrid = document.querySelector('.materials-grid');
+            if (!materialsGrid) return;
+            
+            materialsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #dc3545;">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                    <div style="margin-top: 1rem;">エラー: ${errorMessage}</div>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem;">ページを再読み込みしてください</div>
+                </div>
+            `;
         }
 
         // カラーパネル表示
