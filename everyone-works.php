@@ -96,7 +96,59 @@ if (!empty($artworks)) {
             padding-right: 15px;
         }
 
-        /* グリッドシステム */
+        /* グリッドシステム - Pinterestスタイルのマソンリーレイアウト */
+        .masonry-grid {
+            column-count: 5;
+            column-gap: 20px;
+            padding: 0;
+        }
+
+        @media (max-width: 1400px) {
+            .masonry-grid {
+                column-count: 4;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .masonry-grid {
+                column-count: 3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .masonry-grid {
+                column-count: 2;
+                column-gap: 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .masonry-grid {
+                column-count: 2;
+                column-gap: 10px;
+            }
+        }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .masonry-item {
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .masonry-item {
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Row調整（不要になる） */
         .row {
             display: flex;
             flex-wrap: wrap;
@@ -262,63 +314,38 @@ if (!empty($artworks)) {
         }
 
         .material-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
             text-decoration: none;
             color: inherit;
             display: block;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            position: relative;
-            border-radius: 8px;
-            will-change: transform, box-shadow;
-            background-color: #F9F5E9;
-            margin-bottom: 0.5rem;
-            padding: 20px;
-            overflow: hidden;
         }
 
         .material-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            color: inherit;
             text-decoration: none;
+            color: inherit;
         }
 
         .material-card:focus {
             outline: none;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            color: inherit;
             text-decoration: none;
+            color: inherit;
         }
 
-        .card-body {
-            flex: 1 1 auto;
-            padding: 0.5rem 1rem 0.1rem 1rem;
-        }
-
-        .card-title {
-            color: #666;
-            font-weight: 300;
+        .artwork-title {
+            color: #333;
+            font-weight: 500;
             font-size: 0.9rem;
-            text-align: center;
+            margin-top: 8px;
             margin-bottom: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* h3のcard-titleで既存のh5と同じ見た目を維持 */
-        h3.card-title {
-            color: #666;
-            font-weight: 300;
-            font-size: 0.9rem;
-            text-align: center;
-            margin-bottom: 0;
-            margin-top: 0;
-        }
-
-        .material-card:hover .card-title,
-        .material-card:hover h3.card-title {
-            color: #666;
+        .material-card:hover .artwork-title {
+            color: #667eea;
         }
 
         .artwork-meta {
@@ -342,10 +369,14 @@ if (!empty($artworks)) {
         .material-image {
             width: 100%;
             height: auto;
-            aspect-ratio: 1 / 1;
-            object-fit: contain;
-            border-radius: 4px;
-            transition: opacity 0.3s ease-in-out;
+            display: block;
+            border-radius: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .material-card:hover .material-image {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         /* aspect-ratioをサポートしていないブラウザ向けフォールバック */
@@ -800,12 +831,11 @@ if (!empty($artworks)) {
 
 
 
-        <div class="row">
+        <div class="masonry-grid">
             <?php foreach ($artworks as $artwork): ?>
-            <div class="col-6 col-md-4 col-lg-3 col-xl-2 col-xxl-2 mb-4">
-
+            <div class="masonry-item">
                 <a href="/everyone-work.php?id=<?= $artwork['id'] ?>" 
-                   class="card material-card h-100" 
+                   class="material-card" 
                    role="button" 
                    tabindex="0" 
                    aria-label="<?= h($artwork['title']) ?>の詳細を見る">
@@ -813,15 +843,9 @@ if (!empty($artworks)) {
                          class="material-image" 
                          alt="<?= h($artwork['title']) ?>"
                          loading="lazy"
-                         decoding="async"
-                         style="background-color: #F9F5E9;">
+                         decoding="async">
                     
-                    <div class="card-body">
-                        <div class="artwork-meta">
-                            <div class="pen-name">作：<?= h($artwork['pen_name']) ?></div>
-                            <div class="material-provider">素材提供：marutto.art</div>
-                        </div>
-                    </div>
+                    <h3 class="artwork-title"><?= h($artwork['title']) ?></h3>
                 </a>
             </div>
             <?php endforeach; ?>
