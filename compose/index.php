@@ -1880,13 +1880,13 @@ $storyArtworks = $storyStmt->fetchAll();
                 
                 <div class="size-input-group">
                     <span class="size-label">幅:</span>
-                    <input type="number" id="canvasWidth" class="size-input" value="1024" min="100" max="2000">
+                    <input type="number" id="canvasWidth" class="size-input" value="1024" min="500" max="2000">
                     <span class="size-unit">px</span>
                     
                     <span class="size-separator">×</span>
                     
                     <span class="size-label">高さ:</span>
-                    <input type="number" id="canvasHeight" class="size-input" value="1024" min="100" max="2000">
+                    <input type="number" id="canvasHeight" class="size-input" value="1024" min="500" max="2000">
                     <span class="size-unit">px</span>
                     
                     <button class="apply-size-btn" onclick="applyCanvasSize()">適用</button>
@@ -1894,10 +1894,11 @@ $storyArtworks = $storyStmt->fetchAll();
                 
                 <div class="size-presets">
                     <strong>プリセット:</strong>
-                    <button class="preset-btn" onclick="setCanvasSize(1000, 1500)">1000×1500</button>
-                    <button class="preset-btn" onclick="setCanvasSize(1080, 1080)">1080×1080</button>
-                    <button class="preset-btn" onclick="setCanvasSize(1280, 670)">1280×670</button>
-                    <button class="preset-btn" onclick="setCanvasSize(1920, 1006)">1920×1006</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1080, 1080)">SNS（1080×1080）</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1280, 720)">YouTube/ブログ（1280×720）</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1920, 1080)">PC壁紙（1920×1080）</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1080, 1920)">スマホ壁紙（1080×1920）</button>
+                    <button class="preset-btn" onclick="setCanvasSize(1000, 1500)">ポスター風（1000×1500）</button>
                 </div>
                 
                 <div class="current-size-info">
@@ -6105,14 +6106,14 @@ $storyArtworks = $storyStmt->fetchAll();
             let height = parseInt(heightInput.value);
             
             // 値の検証
-            if (isNaN(width) || width < 100 || width > 2000) {
-                alert('幅は100px〜2000pxの範囲で入力してください');
+            if (isNaN(width) || width < 500 || width > 2000) {
+                alert('幅は500px〜2000pxの範囲で入力してください');
                 widthInput.value = currentCanvasWidth;
                 return;
             }
             
-            if (isNaN(height) || height < 100 || height > 2000) {
-                alert('高さは100px〜2000pxの範囲で入力してください');
+            if (isNaN(height) || height < 500 || height > 2000) {
+                alert('高さは500px〜2000pxの範囲で入力してください');
                 heightInput.value = currentCanvasHeight;
                 return;
             }
