@@ -4685,6 +4685,17 @@ $storyArtworks = $storyStmt->fetchAll();
                     backgroundColor: currentBackgroundColor
                 };
                 formData.append('svg_data', JSON.stringify(svgData));
+                
+                // 使用素材IDを抽出して送信
+                const usedMaterialIds = layers
+                    .filter(layer => layer.type !== 'text' && layer.materialId)
+                    .map(layer => layer.materialId)
+                    .filter((id, index, self) => self.indexOf(id) === index) // 重複削除
+                    .join(',');
+                
+                if (usedMaterialIds) {
+                    formData.append('used_material_ids', usedMaterialIds);
+                }
 
                 // サーバーにアップロード
                 fetch('../api/upload-custom-artwork.php', {

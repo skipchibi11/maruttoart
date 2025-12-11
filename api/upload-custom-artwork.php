@@ -56,6 +56,21 @@ try {
         sendError('1日の投稿制限に達しました。明日また投稿してください。', 429);
     }
 
+    // 使用素材IDの取得（オプション）
+    $usedMaterialIds = trim($_POST['used_material_ids'] ?? '');
+    
+    // 使用素材IDの検証
+    if (!empty($usedMaterialIds)) {
+        // カンマ区切りの数値のみ許可
+        if (!preg_match('/^[0-9,]+$/', $usedMaterialIds)) {
+            sendError('使用素材IDの形式が正しくありません');
+        }
+        // 最大長制限（1000文字以内）
+        if (mb_strlen($usedMaterialIds) > 1000) {
+            sendError('使用素材IDが長すぎます');
+        }
+    }
+
     // ファイルアップロードチェック
     if (!isset($_FILES['artwork']) || $_FILES['artwork']['error'] !== UPLOAD_ERR_OK) {
         sendError('ファイルのアップロードに失敗しました');
@@ -151,25 +166,58 @@ try {
     $originalFilename = $filename;
     $fileHash = hash_file('sha256', $destinationPath);
     
-    $stmt = $pdo->prepare("
-        INSERT INTO community_artworks 
-        (title, pen_name, description, original_filename, file_path, webp_path, file_size, file_hash, mime_type, svg_data, status, free_material_consent, created_at) 
-        VALUES 
-        (:title, :pen_name, :description, :original_filename, :file_path, :webp_path, :file_size, :file_hash, :mime_type, :svg_data, 'approved', 1, NOW())
-    ");
-
-    $stmt->execute([
-        ':title' => $defaultTitle,
-        ':pen_name' => 'カスタム作品',
-        ':description' => '',
-        ':original_filename' => $originalFilename,
-        ':file_path' => $relativePath,
-        ':webp_path' => $webpPath,
-        ':file_size' => $fileSize,
-        ':file_hash' => $fileHash,
-        ':mime_type' => $mimeType,
-        ':svg_data' => $svgData
-    ]);
+    // used_material_idsカラムの存在確認
+    $hasUsedMaterialIds = false;
+    try {
+        $pdo->query("SELECT used_material_ids FROM community_artworks LIMIT 1");
+        $hasUsedMaterialIds = true;
+    } catch (Exception $e) {
+        $hasUsedMaterialIds = false;
+        error_log("used_material_ids column not found: " . $e->getMessage());
+    }
+    
+    if ($hasUsedMaterialIds) {
+        $stmt = $pdo->prepare("
+            INSERT INTO community_artworks 
+            (title, pen_name, description, original_filename, file_path, webp_path, file_size, file_hash, mime_type, svg_data, used_material_ids, status, free_material_consent, created_at) 
+            VALUES 
+            (:title, :pen_name, :description, :original_filename, :file_path, :webp_path, :file_size, :file_hash, :mime_type, :svg_data, :used_material_ids, 'approved', 1, NOW())
+        ");
+        
+        $stmt->execute([
+            ':title' => $defaultTitle,
+            ':pen_name' => 'カスタム作品',
+            ':description' => '',
+            ':original_filename' => $originalFilename,
+            ':file_path' => $relativePath,
+            ':webp_path' => $webpPath,
+            ':file_size' => $fileSize,
+            ':file_hash' => $fileHash,
+            ':mime_type' => $mimeType,
+            ':svg_data' => $svgData,
+            ':used_material_ids' => $usedMaterialIds
+        ]);
+    } else {
+        $stmt = $pdo->prepare("
+            INSERT INTO community_artworks 
+            (title, pen_name, description, original_filename, file_path, webp_path, file_size, file_hash, mime_type, svg_data, status, free_material_consent, created_at) 
+            VALUES 
+            (:title, :pen_name, :description, :original_filename, :file_path, :webp_path, :file_size, :file_hash, :mime_type, :svg_data, 'approved', 1, NOW())
+        ");
+        
+        $stmt->execute([
+            ':title' => $defaultTitle,
+            ':pen_name' => 'カスタム作品',
+            ':description' => '',
+            ':original_filename' => $originalFilename,
+            ':file_path' => $relativePath,
+            ':webp_path' => $webpPath,
+            ':file_size' => $fileSize,
+            ':file_hash' => $fileHash,
+            ':mime_type' => $mimeType,
+            ':svg_data' => $svgData
+        ]);
+    }
 
     $artworkId = $pdo->lastInsertId();
 
