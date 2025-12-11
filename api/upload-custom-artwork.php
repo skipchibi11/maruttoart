@@ -81,8 +81,9 @@ try {
         sendError('PNG、JPEGファイルのみアップロード可能です');
     }
 
-    // アップロードディレクトリの準備
-    $uploadBaseDir = '../uploads/community_artworks';
+    // アップロードディレクトリの準備（年月フォルダ構成）
+    $yearMonth = date('Y/m');
+    $uploadBaseDir = '../uploads/everyone-works/' . $yearMonth;
     if (!is_dir($uploadBaseDir)) {
         if (!mkdir($uploadBaseDir, 0755, true)) {
             sendError('アップロードディレクトリの作成に失敗しました', 500);
@@ -94,7 +95,7 @@ try {
     $uniqueId = uniqid('custom_', true);
     $filename = $uniqueId . '.' . $extension;
     $destinationPath = $uploadBaseDir . '/' . $filename;
-    $relativePath = 'uploads/community_artworks/' . $filename;
+    $relativePath = 'uploads/everyone-works/' . $yearMonth . '/' . $filename;
 
     // ファイル移動
     if (!move_uploaded_file($tmpPath, $destinationPath)) {
@@ -103,6 +104,39 @@ try {
 
     // 権限設定
     chmod($destinationPath, 0644);
+
+    // WebP変換処理
+    $webpPath = null;
+    try {
+        // 元画像を読み込み
+        $sourceImage = null;
+        if ($mimeType === 'image/png') {
+            $sourceImage = imagecreatefrompng($destinationPath);
+        } elseif ($mimeType === 'image/jpeg' || $mimeType === 'image/jpg') {
+            $sourceImage = imagecreatefromjpeg($destinationPath);
+        }
+
+        if ($sourceImage) {
+            // WebPファイル名生成
+            $webpFilename = $uniqueId . '.webp';
+            $webpDestination = $uploadBaseDir . '/' . $webpFilename;
+            $webpRelativePath = 'uploads/everyone-works/' . $yearMonth . '/' . $webpFilename;
+
+            // WebP形式で保存（品質80）
+            if (imagewebp($sourceImage, $webpDestination, 80)) {
+                chmod($webpDestination, 0644);
+                $webpPath = $webpRelativePath;
+                error_log("WebP created: " . $webpRelativePath);
+            } else {
+                error_log("Failed to create WebP: " . $webpDestination);
+            }
+
+            imagedestroy($sourceImage);
+        }
+    } catch (Exception $e) {
+        error_log("WebP conversion error: " . $e->getMessage());
+        // WebP変換失敗しても処理は継続
+    }
 
     // データベース接続
     $pdo = getDB();
@@ -119,9 +153,9 @@ try {
     
     $stmt = $pdo->prepare("
         INSERT INTO community_artworks 
-        (title, pen_name, description, original_filename, file_path, file_size, file_hash, mime_type, svg_data, status, free_material_consent, created_at) 
+        (title, pen_name, description, original_filename, file_path, webp_path, file_size, file_hash, mime_type, svg_data, status, free_material_consent, created_at) 
         VALUES 
-        (:title, :pen_name, :description, :original_filename, :file_path, :file_size, :file_hash, :mime_type, :svg_data, 'approved', 1, NOW())
+        (:title, :pen_name, :description, :original_filename, :file_path, :webp_path, :file_size, :file_hash, :mime_type, :svg_data, 'approved', 1, NOW())
     ");
 
     $stmt->execute([
@@ -130,6 +164,7 @@ try {
         ':description' => '',
         ':original_filename' => $originalFilename,
         ':file_path' => $relativePath,
+        ':webp_path' => $webpPath,
         ':file_size' => $fileSize,
         ':file_hash' => $fileHash,
         ':mime_type' => $mimeType,

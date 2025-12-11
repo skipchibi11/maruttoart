@@ -8,6 +8,7 @@
 4. 素材ファイルの整理・統合
 5. **コミュニティ作品のベクトル化と類似作品検出**
 6. **子供の作品用タイトルとストーリーの自動生成**
+7. **みんなのアトリエ作品用タイトルと説明の自動生成**
 
 ## 機能
 
@@ -397,6 +398,38 @@ tail -f logs/kids_story_generation.log
 - このスクリプトが定期的に実行され、NULLの作品を検出して生成
 - 子供には「おはなしをつくっています」というメッセージが表示される
 - 5分ごとに実行することで、ほぼリアルタイムでストーリーが生成される
+
+### 7. みんなのアトリエ作品の説明生成
+**スクリプト**: `generate_community_artwork_descriptions.php`, `generate_community_artwork_descriptions.sh`
+
+#### 機能
+- 説明が空の作品に対して、AIが自動的にタイトルと説明を生成
+- OpenAI Vision APIで画像を分析
+- 魅力的なタイトル（20文字以内）を生成
+- 作品の特徴を伝える説明文（80〜150文字）を生成
+- 「カスタム作品」などのデフォルトタイトルを具体的な内容に変更
+
+#### 実行方法
+```bash
+cd /path/to/maruttoart/cron
+./generate_community_artwork_descriptions.sh
+```
+
+#### cron設定（10分ごとに実行）
+```bash
+*/10 * * * * /path/to/maruttoart/cron/generate_community_artwork_descriptions.sh
+```
+
+#### ログ確認
+```bash
+tail -f logs/community_description_generation.log
+```
+
+#### 特徴
+- 説明が空の作品を自動検出
+- 1回の実行で最大10件を処理（API制限対応）
+- WebP画像を優先的に使用（高速化）
+- 現在のタイトルを考慮して、より良いタイトルを生成
 
 ## セキュリティ
 - cronフォルダは`.htaccess`でWebアクセスを完全に制限
