@@ -2,6 +2,7 @@
 require_once 'config.php';
 
 $id = intval($_GET['id'] ?? 0);
+$type = $_GET['type'] ?? 'community'; // 'community' または 'kids'
 
 if (empty($id)) {
     http_response_code(404);
@@ -11,22 +12,39 @@ if (empty($id)) {
 
 $pdo = getDB();
 
-// 作品情報を取得（承認済みのみ）
-$stmt = $pdo->prepare("
-    SELECT * FROM community_artworks 
-    WHERE id = ? AND status = 'approved'
-");
-$stmt->execute([$id]);
+// テーブルを選択
+$table = ($type === 'kids') ? 'kids_artworks' : 'community_artworks';
+
+// 作品情報を取得
+// kids_artworksにはstatusカラムがないため、テーブルに応じて異なるクエリを使用
+if ($type === 'kids') {
+    // 子供のアトリエは全て公開
+    $stmt = $pdo->prepare("SELECT * FROM kids_artworks WHERE id = ?");
+    $stmt->execute([$id]);
+} else {
+    // みんなのアトリエは承認済みのみ
+    $stmt = $pdo->prepare("SELECT * FROM community_artworks WHERE id = ? AND status = 'approved'");
+    $stmt->execute([$id]);
+}
+
 $artwork = $stmt->fetch();
 
 if (!$artwork) {
-    // 作品が存在するか確認（ステータス関係なく）
-    $checkStmt = $pdo->prepare("SELECT id, status FROM community_artworks WHERE id = ?");
+    // 作品が存在するか確認
+    if ($type === 'kids') {
+        $checkStmt = $pdo->prepare("SELECT id FROM kids_artworks WHERE id = ?");
+    } else {
+        $checkStmt = $pdo->prepare("SELECT id, status FROM community_artworks WHERE id = ?");
+    }
     $checkStmt->execute([$id]);
     $checkArtwork = $checkStmt->fetch();
     
     if ($checkArtwork) {
-        echo 'Artwork not approved for download';
+        if ($type === 'kids') {
+            echo 'Artwork not found';
+        } else {
+            echo 'Artwork not approved for download';
+        }
     } else {
         echo 'Artwork not found';
     }
@@ -34,26 +52,33 @@ if (!$artwork) {
     exit;
 }
 
-// ダウンロード数を増加（カラムが存在する場合のみ）
+// ダウンロード数を増加
 try {
-    $updateDownloadStmt = $pdo->prepare("UPDATE community_artworks SET download_count = download_count + 1 WHERE id = ?");
+    // kids_artworksはdownloadsカラム、community_artworksはdownload_countカラム
+    if ($type === 'kids') {
+        $updateDownloadStmt = $pdo->prepare("UPDATE kids_artworks SET downloads = downloads + 1 WHERE id = ?");
+    } else {
+        $updateDownloadStmt = $pdo->prepare("UPDATE community_artworks SET download_count = download_count + 1 WHERE id = ?");
+    }
     $updateDownloadStmt->execute([$id]);
 } catch (PDOException $e) {
-    // download_count カラムが存在しない場合は無視
+    // カラムが存在しない場合は無視
 }
 
 // ファイルパスを特定（PNG優先）
-function findArtworkFile($artwork) {
+function findArtworkFile($artwork, $type = 'community') {
     $basePath = __DIR__ . '/';
     
-    // file_path（PNGファイル）を探す - file_pathにフルパスが含まれている場合
-    if (!empty($artwork['file_path'])) {
-        $filePath = $basePath . $artwork['file_path'];
+    // kids_artworksはimage_pathカラム、community_artworksはfile_pathカラム
+    $pathColumn = ($type === 'kids') ? 'image_path' : 'file_path';
+    
+    if (!empty($artwork[$pathColumn])) {
+        $filePath = $basePath . $artwork[$pathColumn];
         if (file_exists($filePath)) {
             return [
                 'path' => $filePath,
-                'filename' => basename($artwork['file_path']),
-                'type' => 'png_file_path'
+                'filename' => basename($artwork[$pathColumn]),
+                'type' => 'png_' . $pathColumn
             ];
         }
     }
@@ -61,7 +86,7 @@ function findArtworkFile($artwork) {
     return null;
 }
 
-$fileInfo = findArtworkFile($artwork);
+$fileInfo = findArtworkFile($artwork, $type);
 
 if (!$fileInfo) {
     http_response_code(404);

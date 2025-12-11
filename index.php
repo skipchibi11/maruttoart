@@ -1123,45 +1123,42 @@ try {
 
         /* ストーリーのある素材セクション */
         .story-materials-section {
-            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
             padding: 3rem 0;
         }
 
         .story-materials-section h2 {
-            color: #d4a574;
+            color: #5a7bb5;
             font-weight: 700;
         }
 
         .story-materials-section .text-muted {
-            color: #a68b6a !important;
+            color: #6c757d !important;
         }
 
         .story-materials-list {
             display: flex;
             flex-direction: column;
             gap: 3rem;
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
         .story-material-item {
             background: #ffffff;
             border-radius: 1.5rem;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .story-material-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            padding: 3rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
         }
 
         .story-item-image-wrapper {
             width: 100%;
             display: flex;
             justify-content: center;
-            padding: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e8eef5;
         }
 
         .story-item-image {
@@ -1182,26 +1179,20 @@ try {
         }
 
         .story-item-content {
-            padding: 0 2rem 2rem 2rem;
+            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
         }
 
         .story-item-title {
             font-size: 1.3rem;
             font-weight: 700;
-            color: #d4a574;
-            margin-bottom: 1.25rem;
-            text-align: center;
+            color: #5a7bb5;
+            margin-bottom: 1.5rem;
         }
 
         .story-item-text {
             font-size: 1rem;
             line-height: 2;
             color: #555;
-            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
-            background: #fff9f0;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border-left: 4px solid #d4a574;
         }
 
         @media (max-width: 768px) {
@@ -1213,16 +1204,17 @@ try {
                 gap: 2rem;
             }
 
+            .story-material-item {
+                padding: 2rem 1.5rem;
+            }
+
             .story-item-image-wrapper {
-                padding: 1.5rem;
+                padding-bottom: 1rem;
+                margin-bottom: 1.5rem;
             }
 
             .story-item-image {
                 max-width: 250px;
-            }
-
-            .story-item-content {
-                padding: 0 1.5rem 1.5rem 1.5rem;
             }
 
             .story-item-title {
@@ -1231,7 +1223,6 @@ try {
 
             .story-item-text {
                 font-size: 0.95rem;
-                padding: 1rem;
             }
         }
 

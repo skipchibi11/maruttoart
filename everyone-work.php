@@ -580,12 +580,6 @@ try {
             white-space: nowrap;
         }
 
-        .related-artwork-author {
-            font-size: 0.75rem;
-            color: #666;
-            margin-bottom: 0.25rem;
-        }
-
         .related-artwork-similarity {
             font-size: 0.7rem;
             color: #ff9800;
@@ -1215,7 +1209,6 @@ try {
                                 </div>
                                 <div class="related-artwork-info">
                                     <div class="related-artwork-title"><?= h($relatedArtwork['title']) ?></div>
-                                    <div class="related-artwork-author">by <?= h($relatedArtwork['pen_name']) ?></div>
                                 </div>
                             </a>
                         </div>

@@ -772,14 +772,7 @@ if (!empty($artworks)) {
             font-size: 1.5rem;
             font-weight: 700;
             color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        .kind-story-author {
-            font-size: 0.9rem;
-            color: #d47ca5;
-            margin-bottom: 1rem;
-            font-weight: 600;
+            margin-bottom: 1.5rem;
         }
 
         .kind-story-text {
@@ -913,7 +906,6 @@ if (!empty($artworks)) {
                     <!-- 説明（リンクなし） -->
                     <div class="kind-story-content">
                         <h3 class="kind-story-title"><?= h($story['title']) ?></h3>
-                        <p class="kind-story-author">by <?= h($story['pen_name']) ?></p>
                         <div class="kind-story-text">
                             <?= nl2br(h($story['description'])) ?>
                         </div>

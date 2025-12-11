@@ -1798,13 +1798,6 @@ $storyArtworks = $storyStmt->fetchAll();
             color: #d4a574;
         }
 
-        .story-author {
-            font-size: 0.9rem;
-            color: #d47ca5;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
         .story-material-text {
             font-size: 1rem;
             line-height: 2;
@@ -6074,7 +6067,6 @@ $storyArtworks = $storyStmt->fetchAll();
                                 <?= h($story['title']) ?>
                             </a>
                         </h3>
-                        <p class="story-author">by <?= h($story['pen_name']) ?></p>
                         <div class="story-material-text">
                             <?= nl2br(h($story['description'])) ?>
                         </div>

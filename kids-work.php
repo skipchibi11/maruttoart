@@ -557,12 +557,6 @@ try {
             white-space: nowrap;
         }
 
-        .related-artwork-author {
-            font-size: 0.75rem;
-            color: #666;
-            margin-bottom: 0.25rem;
-        }
-
         .related-artwork-similarity {
             font-size: 0.7rem;
             color: #ff9800;
@@ -1036,7 +1030,7 @@ try {
             <section class="download-section">
                 <div class="text-center">
                     <?php if (!empty($downloadImagePath)): ?>
-                    <a href="/download-artwork.php?id=<?= $artwork['id'] ?>" 
+                    <a href="/download-artwork.php?id=<?= $artwork['id'] ?>&type=kids" 
                        class="btn btn-outline-primary btn-lg">
                         <i class="bi bi-download"></i> PNGダウンロード
                     </a>
@@ -1172,7 +1166,6 @@ try {
                                 </div>
                                 <div class="related-artwork-info">
                                     <div class="related-artwork-title"><?= h($relatedArtwork['title']) ?></div>
-                                    <div class="related-artwork-author">by <?= h($relatedArtwork['pen_name']) ?></div>
                                 </div>
                             </a>
                         </div>

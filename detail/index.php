@@ -1218,16 +1218,19 @@ try {
 
         /* ミニストーリーセクション */
         .mini-story-section {
-            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
             padding: 3rem 0;
             margin: 3rem 0;
         }
 
         .mini-story-container {
+            max-width: 700px;
+            margin: 0 auto;
             background: #ffffff;
             border-radius: 1.5rem;
-            padding: 2.5rem;
+            padding: 3rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
         }
 
         .mini-story-row {
@@ -1241,11 +1244,12 @@ try {
             width: 100%;
             text-align: center;
             margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e8eef5;
         }
 
         .mini-story-text-col {
             width: 100%;
-            max-width: 800px;
         }
 
         .mini-story-image-wrapper {
@@ -1260,8 +1264,6 @@ try {
             max-width: 300px;
             aspect-ratio: 1;
             border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1276,15 +1278,13 @@ try {
 
         .mini-story-content {
             padding: 0;
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
+            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
         }
 
         .mini-story-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            color: #d4a574;
+            color: #5a7bb5;
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
@@ -1293,20 +1293,15 @@ try {
         }
 
         .mini-story-icon {
-            color: #d4a574;
+            color: #5a7bb5;
             flex-shrink: 0;
         }
 
         .mini-story-text {
-            font-size: 1.1rem;
+            font-size: 1rem;
             line-height: 2;
-            color: #333;
-            background: #fff9f0;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border-left: 4px solid #d4a574;
-            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
-            text-align: left;
+            color: #555;
+            text-align: center;
         }
 
         @media (max-width: 768px) {
@@ -1316,24 +1311,20 @@ try {
             }
 
             .mini-story-container {
-                padding: 1.5rem;
+                padding: 2rem 1.5rem;
             }
 
             .mini-story-image-col {
                 margin-bottom: 1.5rem;
-            }
-
-            .mini-story-content {
-                padding: 0;
+                padding-bottom: 1rem;
             }
 
             .mini-story-title {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
             }
 
             .mini-story-text {
-                font-size: 1rem;
-                padding: 1rem;
+                font-size: 0.95rem;
             }
 
             .mini-story-image {
