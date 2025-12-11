@@ -8,7 +8,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <?php include 'includes/gdpr-gtm-inline.php'; ?>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+     crossorigin="anonymous"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,9 +18,6 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
-    
-    <!-- GDPR CSS -->
-    <link rel="stylesheet" href="/assets/css/gdpr.css">
     
     <!-- Canonical tag -->
     <link rel="canonical" href="https://marutto.art/terms-of-use.php">
@@ -210,46 +208,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             text-decoration: underline !important;
         }
 
-        /* GDPR Cookie Banner のスタイル */
-        #gdpr-banner {
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            background-color: #212529 !important;
-            color: #ffffff !important;
-            padding: 1rem !important;
-            z-index: 1050 !important;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
-        }
-        
-        #gdpr-banner.hidden {
-            display: none !important;
-        }
-        
-        .gdpr-text {
-            font-size: 0.9rem !important;
-            line-height: 1.4 !important;
-            color: #ffffff !important;
-        }
-        
-        .gdpr-text a {
-            color: #ffffff !important;
-            text-decoration: underline !important;
-        }
-        
-        .gdpr-text a:hover {
-            color: #e9ecef !important;
-        }
-        
-        .gdpr-buttons {
-            margin-top: 1rem !important;
-            display: flex !important;
-            gap: 0.5rem !important;
-            flex-wrap: wrap !important;
-        }
-        
-        .gdpr-buttons .btn {
+        .btn {
             flex: 0 0 auto !important;
             white-space: nowrap !important;
         }
@@ -305,45 +264,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             line-height: 1.5;
             border-radius: 0.2rem;
         }
-
-        /* GDPR専用のボタンスタイル */
-        #gdpr-banner .btn-outline-light {
-            color: #ffffff !important;
-            border-color: #ffffff !important;
-            background-color: transparent !important;
-        }
-
-        #gdpr-banner .btn-outline-light:hover {
-            color: #212529 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success {
-            color: #000000 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success:hover {
-            color: #000000 !important;
-            background-color: #f8f9fa !important;
-            border-color: #f8f9fa !important;
-        }
         
-        @media (min-width: 768px) {
-            .gdpr-buttons {
-                margin-top: 0 !important;
-                justify-content: flex-end !important;
-            }
-        }
-        
-        @media (max-width: 767px) {
-            .gdpr-buttons {
-                justify-content: center !important;
-            }
-        }
-
         /* レスポンシブ調整 */
         @media (max-width: 768px) {
             .container {
@@ -379,7 +300,6 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     </style>
 </head>
 <body>
-    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
     
     <?php 
     $currentPage = 'terms-of-use';
@@ -567,25 +487,5 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 
     <?php include 'includes/footer.php'; ?>
 
-    <!-- GDPR Cookie Banner -->
-    <div id="gdpr-banner" class="hidden">
-        <div class="container">
-            <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 300px;">
-                    <div class="gdpr-text">
-                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                        <a href="/privacy-policy.php" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
-                        をご確認ください。
-                    </div>
-                </div>
-                <div style="margin-left: auto;">
-                    <div class="gdpr-buttons">
-                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
-                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

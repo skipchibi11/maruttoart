@@ -48,7 +48,8 @@ $storyArtworks = $storyStmt->fetchAll();
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <?php include '../includes/gdpr-gtm-inline.php'; ?>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+     crossorigin="anonymous"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,9 +66,6 @@ $storyArtworks = $storyStmt->fetchAll();
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <!-- 外部CSSファイル -->
-    <link rel="stylesheet" href="/assets/css/gdpr.css">
     
     <!-- レイアウト専用CSS -->
     <link rel="stylesheet" href="assets/css/layout.css">
@@ -1825,13 +1823,9 @@ $storyArtworks = $storyStmt->fetchAll();
                 font-size: 1.3rem;
             }
         }
-
-        /* GDPR Cookie Banner は外部CSS (assets/css/gdpr.css) で管理 */
     </style>
 </head>
 <body>
-    <?php include '../includes/gdpr-gtm-noscript.php'; ?>
-    
     <?php 
     $currentPage = 'custom-size';
     include '../includes/header.php'; 
@@ -5909,28 +5903,6 @@ $storyArtworks = $storyStmt->fetchAll();
 
 
 
-
-    <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
-    <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-12 col-md-8">
-                    <div class="gdpr-text">
-                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                        <a href="/terms-of-use.php" class="text-white text-decoration-underline">利用規約</a>・
-                        <a href="/privacy-policy.php" class="text-white text-decoration-underline">プライバシーポリシー</a>
-                        をご確認ください。
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="gdpr-buttons text-md-end">
-                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
-                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- みんなの作品セクション -->
     <?php if (!empty($storyArtworks)): ?>

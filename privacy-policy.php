@@ -8,7 +8,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <?php include 'includes/gdpr-gtm-inline.php'; ?>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+     crossorigin="anonymous"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,78 +72,9 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             border-radius: 8px;
             margin-bottom: 1.5rem;
         }
-        
-        /* GDPR Cookie Banner のスタイル */
-        #gdpr-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #212529;
-            color: #ffffff;
-            padding: 1rem;
-            z-index: 1050;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-        }
-        
-        #gdpr-banner.hidden {
-            display: none;
-        }
-        
-        .gdpr-text {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            color: #ffffff;
-        }
-        
-        .gdpr-buttons {
-            margin-top: 1rem;
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .gdpr-buttons .btn {
-            flex: 0 0 auto;
-            white-space: nowrap;
-        }
-        
-        /* GDPR専用のボタンスタイル */
-        #gdpr-banner .btn-outline-light {
-            color: #ffffff;
-            border-color: #ffffff;
-            background-color: transparent;
-        }
-
-        #gdpr-banner .btn-outline-light:hover {
-            color: #212529;
-            background-color: #ffffff;
-            border-color: #ffffff;
-        }
-
-        #gdpr-banner .btn-success {
-            color: #000000;
-            background-color: #ffffff;
-            border-color: #ffffff;
-        }
-
-        #gdpr-banner .btn-success:hover {
-            color: #000000;
-            background-color: #f8f9fa;
-            border-color: #f8f9fa;
-        }
-        
-        @media (min-width: 768px) {
-            .gdpr-buttons {
-                margin-top: 0;
-                justify-content: flex-end;
-            }
-        }
     </style>
 </head>
 <body>
-    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
-    
     <?php 
     $currentPage = 'privacy-policy';
     include 'includes/header.php'; 
@@ -173,10 +105,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     
                     <h4>Cookieおよび類似技術による情報</h4>
                     <ul>
-                        <li><strong>Google Analytics Cookie</strong>: _ga, _ga_*, _gid等（同意した場合のみ）</li>
-                        <li><strong>Google AdSense Cookie</strong>: _gads, _gac_*, __gpi, IDE, test_cookie等（同意した場合のみ）</li>
-                        <li><strong>YouTube Cookie</strong>: 動画視聴に関する設定・履歴（動画閲覧時のみ）</li>
-                        <li><strong>同意管理Cookie</strong>: GDPR同意状況の記録（localStorage使用）</li>
+                        <li><strong>Google AdSense Cookie</strong>: _gads, _gac_*, __gpi, IDE, test_cookie等</li>
                     </ul>
                     
                     <h4>検索エンジン経由の情報</h4>
@@ -202,9 +131,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     <p>収集した情報は、以下の目的で利用します：</p>
                     <ul>
                         <li><strong>サービスの提供・改善</strong>: ウェブサイトの基本機能、コンテンツ配信</li>
-                        <li><strong>サイトの利用状況分析</strong>: Google Analytics 4を使用したアクセス解析、ユーザー行動分析</li>
                         <li><strong>検索エンジン最適化</strong>: Google Search Consoleを使用した検索パフォーマンス分析</li>
-                        <li><strong>マーケティング・改善施策</strong>: Google Tag Managerを使用したデータ収集と分析</li>
                         <li><strong>広告配信・最適化</strong>: Google AdSenseを使用した関連性の高い広告配信、広告効果の測定</li>
                         <li><strong>お問い合わせ対応</strong>: お問い合わせフォームから送信された情報を用いた、ユーザーへの返信・対応</li>
                         <li><strong>セキュリティの維持・向上</strong>: 不正アクセスの検知・防止、スパム対策</li>
@@ -223,56 +150,22 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                         <li>これらのCookieは無効にできません</li>
                     </ul>
                     
-                    <h4>分析Cookie（同意が必要）</h4>
-                    <ul>
-                        <li><strong>Google Analytics 4</strong>: サイトの利用状況分析、改善のためのデータ収集</li>
-                        <li><strong>Google Tag Manager</strong>: 各種分析ツールの管理・配信</li>
-                        <li>これらは匿名化されたデータを収集し、個人を特定することはありません</li>
-                        <li>Cookie同意バナーで拒否することができます</li>
-                    </ul>
-                    
-                    <h4>広告Cookie（同意が必要）</h4>
+                    <h4>広告Cookie</h4>
                     <ul>
                         <li><strong>Google AdSense</strong>: 興味に基づく広告配信、広告効果測定</li>
                         <li>これらのCookieにより、ユーザーの興味に関連する広告が表示されます</li>
-                        <li>Cookie同意バナーで拒否することができます（コンテキスト広告が代わりに表示されます）</li>
-                    </ul>
-                    
-                    <h4>機能性Cookie（同意が必要）</h4>
-                    <ul>
-                        <li><strong>YouTube</strong>: 動画の再生、ユーザー設定の保存</li>
-                        <li>Cookie使用に同意していない場合、これらの機能は制限されます</li>
                     </ul>
                     
                     <p><strong>Cookieの管理：</strong></p>
                     <ul>
                         <li>ブラウザの設定でCookieを管理できます</li>
-                        <li>当サイトのCookie同意バナーで選択を変更できます（localStorage に保存）</li>
-                        <li>必須Cookie以外は、同意しない限り設置されません</li>
-                        <li>同意を撤回したい場合は、ブラウザのデータを削除するか、当サイトにお問い合わせください</li>
+                        <li>Cookieを無効にした場合、一部の機能が制限される場合があります</li>
                     </ul>
                 </div>
 
                 <div class="policy-section">
                     <h3>5. 第三者サービスについて</h3>
                     <p>当サイトでは、以下の第三者サービスを利用しています：</p>
-                    
-                    <h4>Google Tag Manager（GTM）・Google Analytics 4（GA4）</h4>
-                    <ul>
-                        <li><strong>提供会社</strong>: Google LLC</li>
-                        <li><strong>利用目的</strong>: ウェブサイトのアクセス解析、ユーザー行動の分析、サイト改善のためのデータ収集</li>
-                        <li><strong>収集される情報</strong>: 
-                            <ul>
-                                <li>ページビュー、セッション情報</li>
-                                <li>リファラー情報（どのサイトから訪問したか）</li>
-                                <li>デバイス情報（ブラウザ、OS、画面解像度等）</li>
-                                <li>地理的位置情報（国、地域レベル）</li>
-                                <li>サイト内での行動データ（クリック、スクロール等）</li>
-                            </ul>
-                        </li>
-                        <li><strong>データ保持期間</strong>: 14ヶ月（Google Analytics 4の設定による）</li>
-                        <li><strong>制御方法</strong>: 当サイトのCookie設定で無効にできます。また、<a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics オプトアウト アドオン</a>でブラウザレベルで無効化可能です</li>
-                    </ul>
                     
                     <h4>Google Search Console</h4>
                     <ul>
@@ -282,10 +175,12 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                         <li><strong>データの性質</strong>: 個人を特定しない集計データのみを使用</li>
                     </ul>
                     
-                    <h4>その他のサービス</h4>
+                    <h4>Google AdSense</h4>
                     <ul>
-                        <li><strong>YouTube</strong>: 動画コンテンツの埋め込み表示（Cookieに同意した場合のみ）</li>
-                        <li><strong>Google AdSense</strong>: 興味に基づく広告配信サービス（Cookieに同意した場合のみ）</li>
+                        <li><strong>提供会社</strong>: Google LLC</li>
+                        <li><strong>利用目的</strong>: 興味に基づく広告配信サービス</li>
+                        <li><strong>制御方法</strong>: ブラウザの設定でCookieを無効にできます</li>
+                    </ul>
                     </ul>
                     
                     <h4>Google AdSense について</h4>
@@ -308,27 +203,18 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                                 <li>これらのCookieは広告配信の最適化と頻度制御に使用されます</li>
                             </ul>
                         </li>
-                        <li><strong>広告のパーソナライゼーション</strong>: 
-                            <ul>
-                                <li>Cookieに同意した場合、ユーザーの興味に基づいた広告が表示されます</li>
-                                <li>同意しない場合は、コンテキスト広告（ページ内容に基づく広告）が表示されます</li>
-                            </ul>
-                        </li>
+                        <li><strong>広告のパーソナライゼーション</strong>: ユーザーの興味に基づいた関連性の高い広告が表示されます</li>
                         <li><strong>広告設定の変更</strong>: 
                             <ul>
                                 <li><a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google広告設定</a>でパーソナライズ広告をオフにできます</li>
                                 <li><a href="https://optout.aboutads.info/" target="_blank" rel="noopener">Digital Advertising Alliance</a>でオプトアウト可能です</li>
                                 <li>当サイトのCookie設定でAdSense Cookieを拒否できます</li>
                             </ul>
-                        </li>
-                    </ul>
                     
                     <p><strong>重要な注意事項：</strong></p>
                     <ul>
                         <li>これらのサービスは、それぞれ独自のプライバシーポリシーに従って運営されています</li>
                         <li>詳細については<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googleプライバシーポリシー</a>をご確認ください</li>
-                        <li>Google Analytics および Google Tag Manager は、Cookieの使用に同意した場合のみ動作します</li>
-                        <li>YouTube動画は、Cookieの使用に同意していない場合は自動的に読み込まれません</li>
                     </ul>
                 </div>
 
@@ -351,13 +237,10 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     <p>当サイトは、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供することはありません。お問い合わせフォームで提供された個人情報は、お問い合わせ対応の目的のみに使用し、マーケティングや広告配信等の目的では使用しません。</p>
                     
                     <h4>Google サービスでのデータ処理</h4>
-                    <p>ユーザーがCookieの使用に同意した場合、以下のGoogleサービスで情報が処理されます：</p>
+                    <p>当サイトでは、以下のGoogleサービスで情報が処理されます：</p></p>
                     <ul>
-                        <li><strong>Google Analytics</strong>: 匿名化されたアクセス解析データ</li>
-                        <li><strong>Google Tag Manager</strong>: タグ管理・配信のためのデータ</li>
                         <li><strong>Google AdSense</strong>: 広告配信最適化のための匿名化されたデータ</li>
                         <li><strong>Google Search Console</strong>: 検索パフォーマンスの集計データ</li>
-                        <li><strong>YouTube</strong>: 動画視聴データ（動画閲覧時のみ）</li>
                     </ul>
                     
                     <p><strong>データ転送について：</strong></p>
@@ -449,131 +332,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
 
     <?php include 'includes/footer.php'; ?>
 
-    <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
-    <div id="gdpr-banner" class="hidden">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-12 col-md-8">
-                    <div class="gdpr-text">
-                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                        <a href="/privacy-policy.php" class="text-white text-decoration-underline">プライバシーポリシー</a>
-                        をご確認ください。
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="gdpr-buttons text-md-end">
-                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
-                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
-    <script>
-    // GDPR Cookie Consent (セッション・Cookie不使用版)
-    (function() {
-        const GDPR_KEY = 'gdpr_consent_v1';
-        const banner = document.getElementById('gdpr-banner');
-        const acceptBtn = document.getElementById('gdpr-accept');
-        const declineBtn = document.getElementById('gdpr-decline');
-        
-        // localStorage から同意状況をチェック
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem(GDPR_KEY);
-            } catch (e) {
-                return null; // localStorage が使用できない場合
-            }
-        }
-        
-        // 同意状況を保存
-        function setGdprConsent(value) {
-            try {
-                localStorage.setItem(GDPR_KEY, value);
-                return true;
-            } catch (e) {
-                return false; // localStorage が使用できない場合
-            }
-        }
-        
-        // バナーを表示
-        function showBanner() {
-            if (banner) {
-                banner.classList.remove('hidden');
-            }
-        }
-        
-        // バナーを非表示
-        function hideBanner() {
-            if (banner) {
-                banner.classList.add('hidden');
-            }
-        }
-        
-        // 同意処理
-        function acceptConsent() {
-            setGdprConsent('accepted');
-            hideBanner();
-            enableAnalytics();
-        }
-        
-        // 拒否処理
-        function declineConsent() {
-            setGdprConsent('declined');
-            hideBanner();
-            disableAnalytics();
-        }
-        
-        // アナリティクス有効化（プレースホルダー）
-        function enableAnalytics() {
-            console.log('Analytics enabled (privacy policy page)');
-            // ここに Google Analytics などの初期化コードを追加
-        }
-        
-        // アナリティクス無効化（プレースホルダー）
-        function disableAnalytics() {
-            console.log('Analytics disabled (privacy policy page)');
-            // ここにアナリティクス無効化のコードを追加
-        }
-        
-        // 初期化
-        function init() {
-            const consent = getGdprConsent();
-            
-            if (consent === null) {
-                // 未設定の場合はバナーを表示
-                showBanner();
-            } else if (consent === 'accepted') {
-                // 同意済みの場合はアナリティクスを有効化
-                enableAnalytics();
-            } else if (consent === 'declined') {
-                // 拒否済みの場合はアナリティクスを無効化
-                disableAnalytics();
-            }
-        }
-        
-        // イベントリスナーを設定
-        if (acceptBtn) {
-            acceptBtn.addEventListener('click', acceptConsent);
-        }
-        
-        if (declineBtn) {
-            declineBtn.addEventListener('click', declineConsent);
-        }
-        
-        // DOMContentLoaded で初期化
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    })();
-    </script>
-
     <!-- お問い合わせフォームのJavaScript -->
     <script>
     (function() {

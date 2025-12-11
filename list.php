@@ -71,16 +71,14 @@ if (!empty($materials)) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <?php include 'includes/gdpr-gtm-inline.php'; ?>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+     crossorigin="anonymous"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ミニマルなフリーイラスト素材｜maruttoart（商用利用OK）</title>
     <meta name="description" content="ミニマルなフリーイラスト素材の一覧ページ！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただける無料素材集です。">
     <link rel="icon" href="/favicon.ico">
-    
-    <!-- External CSS -->
-    <link rel="stylesheet" href="/assets/css/gdpr.css">
     
     <!-- カノニカルタグ -->
     <?php
@@ -1057,8 +1055,6 @@ if (!empty($materials)) {
     </style>
 </head>
 <body>
-    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
-    
     <?php 
     $currentPage = 'list';
     include 'includes/header.php'; 
@@ -1291,28 +1287,6 @@ if (!empty($materials)) {
             </div>
         </div>
         <?php endif; ?>
-    </div>
-
-    <!-- GDPR Cookie Banner -->
-    <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-12 col-md-8">
-                    <div class="gdpr-text">
-                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                        <a href="/terms-of-use.php" class="text-white text-decoration-underline">利用規約</a>・
-                        <a href="/privacy-policy.php" class="text-white text-decoration-underline">プライバシーポリシー</a>
-                        をご確認ください。
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="gdpr-buttons text-md-end">
-                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
-                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <?php include 'includes/footer.php'; ?>

@@ -37,7 +37,8 @@ foreach ($categories as $category) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <?php include 'includes/gdpr-gtm-inline.php'; ?>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>サイトマップ｜maruttoart（商用利用OK）</title>
@@ -235,7 +236,6 @@ foreach ($categories as $category) {
     </style>
 </head>
 <body>
-    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
     <?php include 'includes/header.php'; ?>
     
     <div class="container">

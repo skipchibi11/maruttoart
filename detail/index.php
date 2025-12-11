@@ -151,7 +151,9 @@ try {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <?php include '../includes/gdpr-gtm-inline.php'; ?>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+         crossorigin="anonymous"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -924,91 +926,6 @@ try {
             font-size: 10px;
         }
 
-        /* GDPR Cookie Banner のスタイル */
-        #gdpr-banner {
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            background-color: #212529 !important;
-            color: #ffffff !important;
-            padding: 1rem !important;
-            z-index: 1050 !important;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3) !important;
-        }
-        
-        #gdpr-banner.hidden,
-        .gdpr-cookie-banner.hidden {
-            display: none !important;
-        }
-        
-        .gdpr-text {
-            font-size: 0.9rem !important;
-            line-height: 1.4 !important;
-            color: #ffffff !important;
-        }
-        
-        .gdpr-text a {
-            color: #ffffff !important;
-            text-decoration: underline !important;
-        }
-        
-        .gdpr-text a:hover {
-            color: #e9ecef !important;
-        }
-        
-        .gdpr-buttons {
-            margin-top: 1rem !important;
-            display: flex !important;
-            gap: 0.5rem !important;
-            flex-wrap: wrap !important;
-        }
-        
-        .gdpr-buttons .btn {
-            flex: 0 0 auto !important;
-            white-space: nowrap !important;
-        }
-        
-        /* GDPR専用のボタンスタイル（より強力な優先度） */
-        #gdpr-banner .btn-outline-light {
-            color: #ffffff !important;
-            border-color: #ffffff !important;
-            background-color: transparent !important;
-            border-width: 1px !important;
-            border-style: solid !important;
-        }
-
-        #gdpr-banner .btn-outline-light:hover {
-            color: #212529 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success {
-            color: #000000 !important;
-            background-color: #ffffff !important;
-            border-color: #ffffff !important;
-        }
-
-        #gdpr-banner .btn-success:hover {
-            color: #000000 !important;
-            background-color: #f8f9fa !important;
-            border-color: #f8f9fa !important;
-        }
-        
-        @media (min-width: 768px) {
-            .gdpr-buttons {
-                margin-top: 0 !important;
-                justify-content: flex-end !important;
-            }
-        }
-        
-        @media (max-width: 767px) {
-            .gdpr-buttons {
-                justify-content: center !important;
-            }
-        }
-        
         /* レスポンシブ調整 */
         @media (max-width: 768px) {
             .container {
@@ -1133,73 +1050,6 @@ try {
             color: #222;
             font-size: 1rem;
             font-weight: 400;
-        }
-        
-        /* GDPR Cookie Banner のスタイル */
-        #gdpr-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #212529;
-            color: #ffffff;
-            padding: 1rem;
-            z-index: 1050;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-        }
-        
-        #gdpr-banner.hidden {
-            display: none;
-        }
-        
-        .gdpr-text {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            color: #ffffff;
-        }
-        
-        .gdpr-buttons {
-            margin-top: 1rem;
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .gdpr-buttons .btn {
-            flex: 0 0 auto;
-            white-space: nowrap;
-        }
-        
-        /* GDPR専用のボタンスタイル */
-        #gdpr-banner .btn-outline-light {
-            color: #ffffff;
-            border-color: #ffffff;
-            background-color: transparent;
-        }
-
-        #gdpr-banner .btn-outline-light:hover {
-            color: #212529;
-            background-color: #ffffff;
-            border-color: #ffffff;
-        }
-
-        #gdpr-banner .btn-success {
-            color: #000000;
-            background-color: #ffffff;
-            border-color: #ffffff;
-        }
-
-        #gdpr-banner .btn-success:hover {
-            color: #000000;
-            background-color: #f8f9fa;
-            border-color: #f8f9fa;
-        }
-        
-        @media (min-width: 768px) {
-            .gdpr-buttons {
-                margin-top: 0;
-                justify-content: flex-end;
-            }
         }
         
         .tags-section {
@@ -2665,8 +2515,6 @@ try {
     </style>
 </head>
 <body>
-    <?php include '../includes/gdpr-gtm-noscript.php'; ?>
-    
     <?php 
     $currentPage = 'detail';
     include '../includes/header.php'; 
@@ -3355,134 +3203,6 @@ try {
     </div>
 
     <?php include '../includes/footer.php'; ?>
-
-    <!-- GDPR Cookie Banner (CDN対応・セッション不使用) -->
-    <div id="gdpr-banner" class="hidden">
-        <div class="container">
-            <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 300px;">
-                    <div class="gdpr-text">
-                        当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                        <a href="/terms-of-use.php" style="color: #ffffff; text-decoration: underline;">利用規約</a>・
-                        <a href="/privacy-policy.php" style="color: #ffffff; text-decoration: underline;">プライバシーポリシー</a>
-                        をご確認ください。
-                    </div>
-                </div>
-                <div style="margin-left: auto;">
-                    <div class="gdpr-buttons">
-                        <button id="gdpr-accept" class="btn btn-success btn-sm">同意する</button>
-                        <button id="gdpr-decline" class="btn btn-outline-light btn-sm">拒否する</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- GDPR Cookie Consent Script (CDN対応・localStorage使用) -->
-    <script>
-    // GDPR Cookie Consent (セッション・Cookie不使用版)
-    (function() {
-        const GDPR_KEY = 'gdpr_consent_v1';
-        const banner = document.getElementById('gdpr-banner');
-        const acceptBtn = document.getElementById('gdpr-accept');
-        const declineBtn = document.getElementById('gdpr-decline');
-        
-        // localStorage から同意状況をチェック
-        function getGdprConsent() {
-            try {
-                return localStorage.getItem(GDPR_KEY);
-            } catch (e) {
-                return null; // localStorage が使用できない場合
-            }
-        }
-        
-        // 同意状況を保存
-        function setGdprConsent(value) {
-            try {
-                localStorage.setItem(GDPR_KEY, value);
-                return true;
-            } catch (e) {
-                return false; // localStorage が使用できない場合
-            }
-        }
-        
-        // バナーを表示
-        function showBanner() {
-            if (banner) {
-                banner.classList.remove('hidden');
-            }
-        }
-        
-        // バナーを非表示
-        function hideBanner() {
-            if (banner) {
-                banner.classList.add('hidden');
-            }
-        }
-        
-        // 同意処理
-        function acceptConsent() {
-            setGdprConsent('accepted');
-            hideBanner();
-            
-            // GTM読み込みイベントを発火
-            const event = new CustomEvent('gdpr-consent-accepted');
-            window.dispatchEvent(event);
-        }
-        
-        // 拒否処理
-        function declineConsent() {
-            setGdprConsent('declined');
-            hideBanner();
-            
-            // 拒否イベントを発火
-            const event = new CustomEvent('gdpr-consent-declined');
-            window.dispatchEvent(event);
-        }
-        
-        // アナリティクス有効化（プレースホルダー）
-        function enableAnalytics() {
-            // ここに Google Analytics などの初期化コードを追加
-        }
-        
-        // アナリティクス無効化（プレースホルダー）
-        function disableAnalytics() {
-            // ここにアナリティクス無効化のコードを追加する
-        }
-        
-        // 初期化
-        function init() {
-            const consent = getGdprConsent();
-            
-            if (consent === null) {
-                // 未設定の場合はバナーを表示
-                showBanner();
-            } else if (consent === 'accepted') {
-                // 同意済みの場合はアナリティクスを有効化
-                enableAnalytics();
-            } else if (consent === 'declined') {
-                // 拒否済みの場合はアナリティクスを無効化
-                disableAnalytics();
-            }
-        }
-        
-        // イベントリスナーを設定
-        if (acceptBtn) {
-            acceptBtn.addEventListener('click', acceptConsent);
-        }
-        
-        if (declineBtn) {
-            declineBtn.addEventListener('click', declineConsent);
-        }
-        
-        // DOMContentLoaded で初期化
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    })();
-    </script>
 
     <!-- YouTube動画モーダル用JavaScript -->
     <script>

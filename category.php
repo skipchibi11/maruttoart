@@ -74,7 +74,8 @@ if (!empty($materials)) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <?php include 'includes/gdpr-gtm-inline.php'; ?>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8053468089362860"
+     crossorigin="anonymous"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,9 +83,6 @@ if (!empty($materials)) {
     
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
-    
-    <!-- External CSS -->
-    <link rel="stylesheet" href="/assets/css/gdpr.css">
     
     <meta name="description" content="<?= h($category['title']) ?>のフリーイラスト素材一覧。ミニマルなフリーイラスト素材を商用利用OK">
 
@@ -541,8 +539,6 @@ if (!empty($materials)) {
     </style>
 </head>
 <body>
-    <?php include 'includes/gdpr-gtm-noscript.php'; ?>
-    
     <?php 
     $currentPage = 'category';
     include 'includes/header.php'; 
@@ -750,21 +746,5 @@ if (!empty($materials)) {
         </div>
     </footer>
 
-    <!-- GDPR Cookie Banner -->
-    <div id="gdpr-banner" class="gdpr-cookie-banner hidden">
-        <div class="gdpr-content">
-            <div class="gdpr-text">
-                当サイトではサイトの利便性向上のためCookieを使用しています。詳細は
-                <a href="/terms-of-use.php">利用規約</a>・
-                <a href="/privacy-policy.php">プライバシーポリシー</a>
-                をご確認ください。
-            </div>
-            <div class="gdpr-buttons">
-                <button id="gdpr-accept" class="btn btn-success">同意する</button>
-                <button id="gdpr-decline" class="btn btn-outline-light">拒否する</button>
-            </div>
-        </div>
-    </div>
-    
 </body>
 </html>
