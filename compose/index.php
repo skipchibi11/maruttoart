@@ -74,7 +74,7 @@ $storyArtworks = $storyStmt->fetchAll();
         /* 使い方セクション */
         .how-to-use-section {
             background: linear-gradient(135deg, #ffe9f3 0%, #ffebf0 100%);
-            padding: 3rem 0;
+            padding: 2rem 0;
             margin-bottom: 2rem;
         }
 
@@ -82,15 +82,57 @@ $storyArtworks = $storyStmt->fetchAll();
             color: #d47ca5;
             font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
             text-align: center;
+        }
+
+        .how-to-toggle {
+            background: white;
+            border: 2px solid #d47ca5;
+            color: #d47ca5;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+            max-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .how-to-toggle:hover {
+            background: #d47ca5;
+            color: white;
+        }
+
+        .how-to-toggle i {
+            transition: transform 0.3s ease;
+        }
+
+        .how-to-toggle.active i {
+            transform: rotate(180deg);
+        }
+
+        .how-to-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .how-to-details.active {
+            max-height: 2000px;
+            padding-top: 2rem;
         }
 
         .how-to-content h2 {
             color: #d47ca5;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             text-align: center;
             display: flex;
             align-items: center;
@@ -1835,35 +1877,37 @@ $storyArtworks = $storyStmt->fetchAll();
         <div class="container">
             <div class="how-to-content">
                 <h1 class="page-title">あなたのアトリエ</h1>
-                <h2><i class="bi bi-book"></i> 使い方</h2>
-                <div class="steps-grid">
-                    <div class="step-item">
-                        <div class="step-number">1</div>
-                        <div class="step-text">最初に、キャンバスのサイズを指定します。<br>幅と高さを入力して、目的に合わせた作業スペースを作成してください。</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">2</div>
-                        <div class="step-text">「テキストを追加」ボタンで見出しやメッセージを入力できます。フォント、サイズ、色も自由に設定可能です。</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">3</div>
-                        <div class="step-text">素材一覧から、使いたい素材をクリックしてキャンバスに追加します。</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">4</div>
-                        <div class="step-text">追加した素材やテキストは、ドラッグして好きな位置へ動かせます。</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">5</div>
-                        <div class="step-text">レイヤーを選択して「変形」ボタンでサイズ変更や回転ができます。テキストはダブルクリックで再編集できます。</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">6</div>
-                        <div class="step-text">素材を選択すると、対応しているものは色の変更ができます。</div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-number">7</div>
-                        <div class="step-text">完成したら、PNG でダウンロードして完了です。</div>
+                <button class="how-to-toggle" onclick="toggleHowTo()">
+                    <i class="bi bi-chevron-down"></i>
+                    使い方を見る
+                </button>
+                <div class="how-to-details" id="howToDetails">
+                    <h2><i class="bi bi-book"></i> 使い方</h2>
+                    <div class="steps-grid">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-text">最初に、キャンバスのサイズを指定します。</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-text">素材一覧から、使いたい素材をクリックしてキャンバスに追加します。</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-text">追加した素材は、ドラッグして好きな位置へ動かせます。</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-text">レイヤーを選択して「変形」ボタンでサイズ変更や回転ができます。</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-text">素材を選択すると、色の変更ができます。</div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">6</div>
+                            <div class="step-text">完成したら、PNGでダウンロードして完了です。みんなのアトリエにも1日1回まで投稿できます。</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -6143,6 +6187,21 @@ $storyArtworks = $storyStmt->fetchAll();
             saveToLocalStorage();
             
             console.log(`キャンバスサイズを ${width}×${height} に変更しました`);
+        }
+        
+        // アコーディオンのトグル機能
+        function toggleHowTo() {
+            const details = document.getElementById('howToDetails');
+            const toggle = document.querySelector('.how-to-toggle');
+            
+            details.classList.toggle('active');
+            toggle.classList.toggle('active');
+            
+            if (details.classList.contains('active')) {
+                toggle.innerHTML = '<i class="bi bi-chevron-up"></i> 使い方を閉じる';
+            } else {
+                toggle.innerHTML = '<i class="bi bi-chevron-down"></i> 使い方を見る';
+            }
         }
         
         // Enterキーでサイズ適用
