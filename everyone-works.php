@@ -873,6 +873,14 @@ if (!empty($artworks)) {
         </nav>
         <?php endif; ?>
 
+        <!-- Google AdSense 広告 -->
+        <div class="mt-5" style="display: flex; justify-content: center; gap: 100px; flex-wrap: wrap;">
+            <?php include __DIR__ . '/includes/ad-display.php'; ?>
+            <div class="ad-desktop-only">
+                <?php include __DIR__ . '/includes/ad-display.php'; ?>
+            </div>
+        </div>
+
         <!-- 優しい出会いセクション -->
         <?php if (!empty($kindStories)): ?>
         <section class="kind-stories-section mt-5 mb-5">
