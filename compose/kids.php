@@ -4,9 +4,6 @@ require_once '../config.php';
 // 公開ページなのでキャッシュを有効化
 setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
-// アクセスログ記録
-logAccess();
-
 $pdo = getDB();
 
 // キッズ版は5つまで表示
@@ -1813,6 +1810,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             isolation: isolate;
         }
     </style>
+    
+    <?php include __DIR__ . '/../includes/analytics-script.php'; ?>
 </head>
 <body>
     <!-- PC用：背景に流れる素材 -->

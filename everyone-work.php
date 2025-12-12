@@ -4,9 +4,6 @@ require_once 'config.php';
 // 公開ページなのでキャッシュを有効化
 setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
-// アクセスログ記録
-logAccess();
-
 $id = intval($_GET['id'] ?? 0);
 
 if (empty($id)) {
@@ -990,6 +987,8 @@ try {
             }
         }
     </style>
+    
+    <?php include __DIR__ . '/includes/analytics-script.php'; ?>
 </head>
 <body>
     <?php 

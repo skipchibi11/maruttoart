@@ -959,6 +959,8 @@ try {
             }
         }
     </style>
+    
+    <?php include __DIR__ . '/includes/analytics-script.php'; ?>
 </head>
 <body>
     <?php 
