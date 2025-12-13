@@ -29,6 +29,38 @@ echo "    <changefreq>daily</changefreq>\n";
 echo "    <priority>0.8</priority>\n";
 echo "  </url>\n";
 
+// みんなのアトリエ一覧
+echo "  <url>\n";
+echo "    <loc>{$baseUrl}/everyone-works.php</loc>\n";
+echo "    <lastmod>" . date('Y-m-d') . "</lastmod>\n";
+echo "    <changefreq>daily</changefreq>\n";
+echo "    <priority>0.8</priority>\n";
+echo "  </url>\n";
+
+// 子供のアトリエ一覧
+echo "  <url>\n";
+echo "    <loc>{$baseUrl}/kids-works.php</loc>\n";
+echo "    <lastmod>" . date('Y-m-d') . "</lastmod>\n";
+echo "    <changefreq>daily</changefreq>\n";
+echo "    <priority>0.8</priority>\n";
+echo "  </url>\n";
+
+// あなたのアトリエ
+echo "  <url>\n";
+echo "    <loc>{$baseUrl}/compose/</loc>\n";
+echo "    <lastmod>" . date('Y-m-d') . "</lastmod>\n";
+echo "    <changefreq>monthly</changefreq>\n";
+echo "    <priority>0.7</priority>\n";
+echo "  </url>\n";
+
+// 子供のアトリエ作成
+echo "  <url>\n";
+echo "    <loc>{$baseUrl}/compose/kids.php</loc>\n";
+echo "    <lastmod>" . date('Y-m-d') . "</lastmod>\n";
+echo "    <changefreq>monthly</changefreq>\n";
+echo "    <priority>0.7</priority>\n";
+echo "  </url>\n";
+
 // プライバシーポリシー
 echo "  <url>\n";
 echo "    <loc>{$baseUrl}/privacy-policy.php</loc>\n";
@@ -100,6 +132,43 @@ foreach ($materials as $material) {
     echo "    <lastmod>{$lastmod}</lastmod>\n";
     echo "    <changefreq>monthly</changefreq>\n";
     echo "    <priority>0.5</priority>\n";
+    echo "  </url>\n";
+}
+
+// みんなのアトリエ詳細ページ
+$communityArtworksSql = "SELECT id, created_at 
+                        FROM community_artworks 
+                        WHERE status = 'approved' 
+                        ORDER BY created_at DESC";
+$communityArtworksStmt = $pdo->prepare($communityArtworksSql);
+$communityArtworksStmt->execute();
+$communityArtworks = $communityArtworksStmt->fetchAll();
+
+foreach ($communityArtworks as $artwork) {
+    $lastmod = $artwork['created_at'] ? date('Y-m-d', strtotime($artwork['created_at'])) : date('Y-m-d');
+    echo "  <url>\n";
+    echo "    <loc>{$baseUrl}/everyone-work.php?id={$artwork['id']}</loc>\n";
+    echo "    <lastmod>{$lastmod}</lastmod>\n";
+    echo "    <changefreq>monthly</changefreq>\n";
+    echo "    <priority>0.6</priority>\n";
+    echo "  </url>\n";
+}
+
+// 子供のアトリエ詳細ページ
+$kidsArtworksSql = "SELECT id, created_at 
+                   FROM kids_artworks 
+                   ORDER BY created_at DESC";
+$kidsArtworksStmt = $pdo->prepare($kidsArtworksSql);
+$kidsArtworksStmt->execute();
+$kidsArtworks = $kidsArtworksStmt->fetchAll();
+
+foreach ($kidsArtworks as $artwork) {
+    $lastmod = $artwork['created_at'] ? date('Y-m-d', strtotime($artwork['created_at'])) : date('Y-m-d');
+    echo "  <url>\n";
+    echo "    <loc>{$baseUrl}/kids-work.php?id={$artwork['id']}</loc>\n";
+    echo "    <lastmod>{$lastmod}</lastmod>\n";
+    echo "    <changefreq>monthly</changefreq>\n";
+    echo "    <priority>0.6</priority>\n";
     echo "  </url>\n";
 }
 

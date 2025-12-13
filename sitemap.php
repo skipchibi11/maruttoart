@@ -24,6 +24,25 @@ $tagStmt = $pdo->prepare($tagSql);
 $tagStmt->execute();
 $tags = $tagStmt->fetchAll();
 
+// みんなのアトリエ（最新20件）
+$communityArtworksSql = "SELECT id, title, created_at 
+                        FROM community_artworks 
+                        WHERE status = 'approved' 
+                        ORDER BY created_at DESC 
+                        LIMIT 20";
+$communityArtworksStmt = $pdo->prepare($communityArtworksSql);
+$communityArtworksStmt->execute();
+$communityArtworks = $communityArtworksStmt->fetchAll();
+
+// 子供のアトリエ（最新20件）
+$kidsArtworksSql = "SELECT id, title, created_at 
+                   FROM kids_artworks 
+                   ORDER BY created_at DESC 
+                   LIMIT 20";
+$kidsArtworksStmt = $pdo->prepare($kidsArtworksSql);
+$kidsArtworksStmt->execute();
+$kidsArtworks = $kidsArtworksStmt->fetchAll();
+
 // 各カテゴリの素材一覧を取得
 $categoryMaterials = [];
 foreach ($categories as $category) {
@@ -251,9 +270,57 @@ foreach ($categories as $category) {
                 <a href="/" class="main-link">トップページ</a>
                 <a href="/list.php" class="main-link">イラスト素材一覧</a>
                 <a href="/everyone-works.php" class="main-link">みんなのアトリエ</a>
+                <a href="/kids-works.php" class="main-link">子供たちのアトリエ</a>
                 <a href="/compose/" class="main-link">あなたのアトリエ</a>
+                <a href="/compose/kids.php" class="main-link">子供のアトリエ</a>
                 <a href="/privacy-policy.php" class="main-link">プライバシーポリシー</a>
                 <a href="/terms-of-use.php" class="main-link">利用規約</a>
+            </div>
+        </div>
+
+        <!-- みんなのアトリエ -->
+        <div class="sitemap-section">
+            <h2 class="section-title">みんなのアトリエ</h2>
+            <div class="sitemap-grid">
+                <?php 
+                $chunks = array_chunk($communityArtworks, 10);
+                foreach ($chunks as $artworkChunk): 
+                ?>
+                <div class="category-section">
+                    <ul class="material-list">
+                        <?php foreach ($artworkChunk as $artwork): ?>
+                        <li>
+                            <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>" class="material-link">
+                                <?= h($artwork['title']) ?>
+                            </a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <!-- 子供のアトリエ -->
+        <div class="sitemap-section">
+            <h2 class="section-title">子供のアトリエ</h2>
+            <div class="sitemap-grid">
+                <?php 
+                $kidsChunks = array_chunk($kidsArtworks, 10);
+                foreach ($kidsChunks as $artworkChunk): 
+                ?>
+                <div class="category-section">
+                    <ul class="material-list">
+                        <?php foreach ($artworkChunk as $artwork): ?>
+                        <li>
+                            <a href="/kids-work.php?id=<?= h($artwork['id']) ?>" class="material-link">
+                                <?= h($artwork['title']) ?>
+                            </a>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endforeach; ?>
             </div>
         </div>
 
