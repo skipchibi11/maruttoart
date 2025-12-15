@@ -237,8 +237,8 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="c5fko6zCuEianJGT3hyZsHgvNx5QAuuHKZ4TWgvV6J0">
-    <title><?= h($artwork['title']) ?> - みんなのアトリエ｜marutto.art</title>
-    <meta name="description" content="<?= h($artwork['title']) ?>のコミュニティ作品。フリー素材として自由にご利用いただけます。">
+    <title><?= h($artwork['title']) ?>｜組み合わせで作れるフリーイラスト素材｜marutto.ar</title>
+    <meta name="description" content="<?= h($artwork['title']) ?>は、複数のフリーイラスト素材を組み合わせて作られたコミュニティ作品です。Web・資料・子ども向けコンテンツなどに無料でご利用いただけます。">
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -249,15 +249,15 @@ try {
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/everyone-work.php?id=<?= $artwork['id'] ?>">
-    <meta property="og:title" content="<?= h($artwork['title']) ?> - みんなのアトリエ">
-    <meta property="og:description" content="<?= h($artwork['title']) ?>のコミュニティ作品。フリー素材として自由にご利用いただけます。">
+    <meta property="og:title" content="<?= h($artwork['title']) ?>｜組み合わせで作れるフリーイラスト素材｜marutto.art">
+    <meta property="og:description" content="<?= h($artwork['title']) ?>は、複数のフリーイラスト素材を組み合わせて作られたコミュニティ作品です。Web・資料・子ども向けコンテンツなどに無料でご利用いただけます。">
     <meta property="og:image" content="<?= h($artworkImageUrl) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/everyone-work.php?id=<?= $artwork['id'] ?>">
-    <meta property="twitter:title" content="<?= h($artwork['title']) ?> - みんなのアトリエ">
-    <meta property="twitter:description" content="<?= h($artwork['title']) ?>のコミュニティ作品。フリー素材として自由にご利用いただけます。">
+    <meta property="twitter:title" content="<?= h($artwork['title']) ?>｜組み合わせで作れるフリーイラスト素材｜marutto.ar">
+    <meta property="twitter:description" content="<?= h($artwork['title']) ?>は、複数のフリーイラスト素材を組み合わせて作られたコミュニティ作品です。Web・資料・子ども向けコンテンツなどに無料でご利用いただけます。">
     <meta property="twitter:image" content="<?= h($artworkImageUrl) ?>">
 
     <style>
