@@ -4923,13 +4923,83 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- シャッフルボタン機能 -->
+    <!-- シャッフルボタン機能（非同期版） -->
     <script>
-        document.getElementById('shuffleBtn').addEventListener('click', function() {
-            // キャッシュをバイパスしてページをリロード
-            const timestamp = new Date().getTime();
-            window.location.href = '/compose/kids.php?refresh=' + timestamp;
+        document.getElementById('shuffleBtn').addEventListener('click', async function() {
+            const materialsGrid = document.querySelector('.materials-grid');
+            const materialsPanel = document.getElementById('materials');
+            
+            // ローディング表示
+            const shuffleBtn = document.getElementById('shuffleBtn');
+            shuffleBtn.disabled = true;
+            shuffleBtn.style.opacity = '0.5';
+            
+            try {
+                // 新しい素材を取得
+                const response = await fetch('/compose/kids.php?ajax=1&t=' + Date.now());
+                const data = await response.json();
+                
+                // 既存の素材アイテムを削除（シャッフルボタンは残す）
+                const materialItems = materialsGrid.querySelectorAll('.material-item:not(.shuffle-btn)');
+                materialItems.forEach(item => item.remove());
+                
+                // 新しい素材を先頭に追加（シャッフルボタンの前）
+                data.materials.forEach(material => {
+                    const div = document.createElement('div');
+                    div.className = 'material-item';
+                    div.dataset.materialId = material.id;
+                    div.dataset.svgPath = material.svg_path;
+                    div.dataset.title = material.title;
+                    div.title = material.title;
+                    
+                    const img = document.createElement('img');
+                    img.src = '/' + (material.webp_medium_path || material.image_path);
+                    img.alt = material.title;
+                    img.loading = 'lazy';
+                    
+                    div.appendChild(img);
+                    materialsGrid.insertBefore(div, shuffleBtn);
+                });
+                
+                // 素材アイテムに再度クリックイベントを設定
+                setupMaterialClickEvents();
+                
+            } catch (error) {
+                console.error('素材の読み込みに失敗:', error);
+                alert('しばらくしてからもういちどためしてください');
+            } finally {
+                // ローディング解除
+                shuffleBtn.disabled = false;
+                shuffleBtn.style.opacity = '1';
+            }
         });
+        
+        // 素材クリックイベントのセットアップ関数
+        function setupMaterialClickEvents() {
+            document.querySelectorAll('.material-item:not(.shuffle-btn)').forEach(item => {
+                item.onclick = async function() {
+                    const svgPath = this.dataset.svgPath;
+                    const materialId = this.dataset.materialId;
+                    const title = this.dataset.title;
+                    
+                    if (!svgPath) return;
+                    
+                    try {
+                        const response = await fetch(`/api/get-artwork-svg.php?type=material&id=${materialId}`);
+                        const data = await response.json();
+                        
+                        if (data.success && data.svg) {
+                            addLayerFromSVG(data.svg, title);
+                        }
+                    } catch (error) {
+                        console.error('SVG読み込みエラー:', error);
+                    }
+                };
+            });
+        }
+        
+        // 初期化時に素材クリックイベントを設定
+        setupMaterialClickEvents();
     </script>
 </body>
 </html>
