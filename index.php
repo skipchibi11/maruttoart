@@ -39,6 +39,18 @@ $communityArtworksStmt = $pdo->prepare($communityArtworksSql);
 $communityArtworksStmt->execute();
 $communityArtworks = $communityArtworksStmt->fetchAll();
 
+// トライアル用のSVGデータを持つ作品をランダムに1件取得（正方形キャンバスのみ）
+$trialArtworkSql = "SELECT id, title, svg_data
+                   FROM community_artworks 
+                   WHERE status = 'approved' 
+                   AND svg_data IS NOT NULL 
+                   AND JSON_EXTRACT(svg_data, '$.canvasWidth') = JSON_EXTRACT(svg_data, '$.canvasHeight')
+                   ORDER BY RAND() 
+                   LIMIT 1";
+$trialArtworkStmt = $pdo->prepare($trialArtworkSql);
+$trialArtworkStmt->execute();
+$trialArtwork = $trialArtworkStmt->fetch();
+
 // タイル表示用のランダムベクター素材を取得
 // 1. ベクター素材（svg_pathがある）の総数と最大IDを取得
 $totalVectorMaterials = $pdo->query("SELECT COUNT(*) FROM materials WHERE svg_path IS NOT NULL")->fetchColumn();
@@ -75,24 +87,6 @@ if ($tileCount > 0 && $maxVectorId > 0) {
         $tileStmt->execute($selectedIds);
         $tileMaterials = $tileStmt->fetchAll();
     }
-}
-
-// ミニストーリーがある素材をランダムに3件取得
-$storyMaterials = [];
-try {
-    $storyStmt = $pdo->query("
-        SELECT m.id, m.title, m.slug, m.mini_story,
-               m.image_path, m.webp_small_path, m.structured_bg_color,
-               c.slug as category_slug
-        FROM materials m
-        LEFT JOIN categories c ON m.category_id = c.id
-        WHERE m.mini_story IS NOT NULL 
-        ORDER BY RAND()
-        LIMIT 3
-    ");
-    $storyMaterials = $storyStmt->fetchAll();
-} catch (Exception $e) {
-    error_log('Error fetching story materials: ' . $e->getMessage());
 }
 ?>
 
@@ -1014,7 +1008,7 @@ try {
 
         /* ランダム素材セクション */
         .random-materials-section {
-            background-color: #f9f9f9; /* 薄いグレー */
+            background-color: #fefbf3; /* ソフトな黄色ベージュ */
             padding-bottom: 40px;
         }
 
@@ -1023,7 +1017,7 @@ try {
             font-size: 24px;
             font-weight: 600;
             margin: 40px 0;
-            color: #333;
+            color: #5d4037;
         }
 
         /* 素材タイルグリッド - レスポンシブ対応 */
@@ -1118,93 +1112,6 @@ try {
             }
         }
 
-        /* ストーリーのある素材セクション */
-        .story-materials-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
-            padding: 3rem 0;
-        }
-
-        .story-materials-section h2 {
-            color: #5a7bb5;
-            font-weight: 700;
-        }
-
-        .story-materials-section .text-muted {
-            color: #6c757d !important;
-        }
-
-        .story-materials-list {
-            display: flex;
-            flex-direction: column;
-            gap: 3rem;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .story-material-item {
-            background: #ffffff;
-            border-radius: 1.5rem;
-            padding: 3rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-
-        .story-item-image-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 2px solid #e8eef5;
-        }
-
-        .story-item-image {
-            width: 100%;
-            max-width: 300px;
-            aspect-ratio: 1;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-        }
-
-        .story-item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .story-item-content {
-            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
-        }
-
-        .story-item-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #5a7bb5;
-            margin-bottom: 1.5rem;
-        }
-
-        .story-item-text {
-            font-size: 1rem;
-            line-height: 2;
-            color: #555;
-        }
-
-        @media (max-width: 768px) {
-            .story-materials-section {
-                padding: 2rem 0;
-            }
-
-            .story-materials-list {
-                gap: 2rem;
-            }
-
-            .story-material-item {
-                padding: 2rem 1.5rem;
-            }
-
             .story-item-image-wrapper {
                 padding-bottom: 1rem;
                 margin-bottom: 1.5rem;
@@ -1223,75 +1130,231 @@ try {
             }
         }
 
-        /* 自己紹介セクション */
-        .profile-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
-            padding: 3rem 0;
+        /* アトリエトライアルセクション */
+        .trial-section {
+            background: linear-gradient(135deg, #fefbf3 0%, #fef5e7 100%);
+            padding: 4rem 0;
+            margin-bottom: 3rem;
         }
 
-        .profile-card {
-            max-width: 700px;
+        .trial-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            color: #5d4037;
+            margin-bottom: 1rem;
+        }
+
+        .trial-description {
+            text-align: center;
+            color: #5d4037;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        .trial-workspace {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .trial-canvas-area {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .trial-canvas {
+            width: 300px;
+            height: 300px;
+            max-width: 100%;
             margin: 0 auto;
             background: #ffffff;
-            border-radius: 1.5rem;
-            padding: 3rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e0e0e0;
+            border-radius: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trial-canvas svg {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .trial-canvas g {
+            cursor: move;
+            transition: opacity 0.2s ease;
+            pointer-events: all;
+        }
+
+        .trial-canvas g:hover {
+            opacity: 0.8;
+        }
+
+        .trial-canvas g.selected {
+            filter: drop-shadow(0 0 8px rgba(90, 123, 181, 0.6));
+        }
+
+        .trial-info {
+            margin-top: 1rem;
             text-align: center;
         }
 
-        .profile-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 2px solid #e8eef5;
-        }
-
-        .profile-role {
+        .trial-artwork-title {
             font-size: 0.9rem;
             color: #6c757d;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.05em;
-        }
-
-        .profile-name {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #5a7bb5;
             margin: 0;
         }
 
-        .profile-content {
-            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
+        .trial-controls {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            width: 100%;
+            max-width: 300px;
         }
 
-        .profile-content p {
-            line-height: 2;
-            color: #555;
-            margin-bottom: 1.5rem;
+        .trial-download-link {
+            text-align: center;
+            margin-top: 0.5rem;
         }
 
-        .profile-message {
-            font-weight: 600;
+        .trial-download-link a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s ease;
+        }
+
+        .trial-download-link a:hover {
             color: #5a7bb5;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e8eef5;
+            text-decoration: underline;
         }
 
-        @media (max-width: 768px) {
-            .profile-section {
+        .trial-download-link svg {
+            flex-shrink: 0;
+        }
+
+        .trial-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .trial-btn svg {
+            flex-shrink: 0;
+        }
+
+        .trial-btn-primary {
+            background: #5a7bb5;
+            color: white;
+        }
+
+        .trial-btn-primary:hover {
+            background: #4a6ba5;
+        }
+
+        .trial-btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .trial-btn-danger:hover {
+            background: #c82333;
+        }
+
+        .trial-btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .trial-btn-success:hover {
+            background: #218838;
+        }
+
+        .trial-btn-link {
+            background: #fef9e7;
+            color: #7a6d62;
+            border: 2px solid #e0d8c8;
+        }
+
+        .trial-btn-link:hover {
+            background: #f7f0e6;
+            color: #5d4037;
+        }
+
+        .trial-layer-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .trial-layer-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .trial-layer-info strong {
+            color: #5a7bb5;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 992px) {
+            .trial-workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .trial-controls {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .trial-section {
                 padding: 2rem 0;
             }
 
-            .profile-card {
-                padding: 2rem 1.5rem;
-            }
-
-            .profile-name {
+            .trial-title {
                 font-size: 1.5rem;
             }
 
-            .profile-content p {
-                font-size: 0.95rem;
+            .trial-description {
+                font-size: 1rem;
+            }
+
+            .trial-canvas-area {
+                padding: 1rem;
+            }
+
+            .trial-controls {
+                flex-direction: column;
+            }
+
+            .trial-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -1367,6 +1430,48 @@ try {
             </div>
         </div>
     </section>
+
+    <!-- アトリエトライアルセクション -->
+    <?php if ($trialArtwork): ?>
+    <section class="trial-section">
+        <div class="container">
+            <h2 class="trial-title">ミニアトリエ</h2>
+            <p class="trial-description">イラストの色や配置を楽しもう</p>
+            
+            <div class="trial-workspace">
+                <div class="trial-canvas-area">
+                    <div id="trialCanvas" class="trial-canvas"></div>
+                    <div class="trial-info">
+                        <p class="trial-artwork-title">元作品: <?= h($trialArtwork['title']) ?></p>
+                    </div>
+                </div>
+                
+                <div class="trial-controls">
+                    <button id="randomizeColors" class="trial-btn trial-btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                        </svg>
+                        色を変更してみる
+                    </button>
+                </div>
+                <div class="trial-download-link">
+                    <a href="#" id="downloadTrial">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" x2="12" y1="15" y2="3"/>
+                        </svg>
+                        ダウンロード
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        const trialSvgData = <?= json_encode($trialArtwork['svg_data']) ?>;
+    </script>
+    <?php endif; ?>
 
     <!-- みんなのアトリエセクション -->
     <div class="container mt-5" id="community-artworks">
@@ -1575,72 +1680,445 @@ try {
     </div>
     <?php endif; ?>
 
-    <!-- ストーリーのある素材セクション -->
-    <?php if (!empty($storyMaterials)): ?>
-    <section class="story-materials-section mt-5 mb-5">
-        <div class="container">
-            <h2 class="text-center mb-2">おはなしのある子たち</h2>
-            <p class="text-center text-muted mb-4">ちいさな物語とともに、やさしい時間をどうぞ</p>
-            
-            <div class="story-materials-list">
-                <?php foreach ($storyMaterials as $storyMat): ?>
-                <div class="story-material-item">
-                    <!-- 画像（リンク） -->
-                    <a href="/<?= h($storyMat['category_slug']) ?>/<?= h($storyMat['slug']) ?>/" class="text-decoration-none">
-                        <div class="story-item-image-wrapper">
-                            <?php
-                            $storyImageSrc = !empty($storyMat['webp_small_path']) 
-                                ? '/' . h($storyMat['webp_small_path'])
-                                : '/' . h($storyMat['image_path']);
-                            $storyBgColor = !empty($storyMat['structured_bg_color']) 
-                                ? h($storyMat['structured_bg_color']) 
-                                : '#ffffff';
-                            ?>
-                            <div class="story-item-image" style="background-color: <?= $storyBgColor ?>;">
-                                <img src="<?= $storyImageSrc ?>" 
-                                     alt="<?= h($storyMat['title']) ?>"
-                                     loading="lazy"
-                                     decoding="async">
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <!-- ストーリー（リンクなし） -->
-                    <div class="story-item-content">
-                        <h3 class="story-item-title"><?= h($storyMat['title']) ?></h3>
-                        <div class="story-item-text">
-                            <?= nl2br(h($storyMat['mini_story'])) ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-    <?php endif; ?>
 
-    <!-- 自己紹介セクション -->
-    <section class="profile-section mt-5 mb-5">
-        <div class="container">
-            <div class="profile-card">
-                <div class="profile-header">
-                    <p class="profile-role">サイト開発・イラスト制作担当</p>
-                    <h2 class="profile-name">たかせ さとる</h2>
-                </div>
-                <div class="profile-content">
-                    <p>まるくてやさしい世界をつくりたくて、<br>
-                    毎日すこしずつイラストを描いています。<br>
-                    一部の素材は色変更や組み合わせにも対応しており、<br>
-                    みなさんが自由にアレンジして楽しめるようにしています。</p>
-                    <p class="profile-message">あなたの日常に、ふわっと寄り添う素材になれたら嬉しいです。</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <?php include 'includes/footer.php'; ?>
 
     <script>
+    // トライアル機能のJavaScript
+    if (typeof trialSvgData !== 'undefined' && trialSvgData) {
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('trialCanvas');
+            const currentLayerText = document.getElementById('currentLayerText');
+            
+            // データ構造の確認
+            console.log('Type of trialSvgData:', typeof trialSvgData);
+            console.log('Raw trial data:', trialSvgData);
+            
+            let svgData;
+            
+            // 文字列の場合はパース
+            if (typeof trialSvgData === 'string') {
+                try {
+                    svgData = JSON.parse(trialSvgData);
+                    console.log('Parsed from string:', svgData);
+                } catch (e) {
+                    console.error('Failed to parse string data:', e);
+                    canvas.innerHTML = '<p style="text-align:center;padding:2rem;color:#6c757d;">SVGデータの形式が不正です</p>';
+                    return;
+                }
+            } else {
+                svgData = trialSvgData;
+            }
+            
+            console.log('Has layers?', svgData.layers);
+            console.log('Layer count:', svgData.layers?.length);
+            
+            // layersが存在しない、または空の場合はエラー
+            if (!svgData || !svgData.layers || !Array.isArray(svgData.layers) || svgData.layers.length === 0) {
+                console.log('No valid SVG layers found');
+                canvas.innerHTML = '<p style="text-align:center;padding:2rem;color:#6c757d;">SVGデータが見つかりませんでした</p>';
+                return;
+            }
+            
+            console.log('Successfully loaded', svgData.layers.length, 'layers');
+            
+            let currentLayerIndex = 0;
+            let isDragging = false;
+            let hasMoved = false;
+            let startX, startY, initialX, initialY;
+
+            // 初期描画
+            renderSvg();
+
+            function renderSvg() {
+                canvas.innerHTML = '';
+                
+                const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                // 元のキャンバスサイズをviewBoxとして使用（正方形）
+                const originalWidth = svgData.canvasWidth || 1920;
+                const originalHeight = svgData.canvasHeight || 1006;
+                
+                // viewBoxは元のサイズをそのまま使用
+                svgElement.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
+                svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                svgElement.setAttribute('width', '100%');
+                svgElement.setAttribute('height', '100%');
+                svgElement.id = 'trialSvgCanvas';
+                
+                // 背景色を設定
+                if (svgData.backgroundColor && svgData.backgroundColor !== 'transparent') {
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('width', '100%');
+                    rect.setAttribute('height', '100%');
+                    rect.setAttribute('fill', svgData.backgroundColor);
+                    rect.id = 'canvasBackground';
+                    svgElement.appendChild(rect);
+                }
+
+                svgData.layers.forEach((layer, index) => {
+                    if (!layer.visible) return;
+                    if (!layer.svgContent) return;
+                    
+                    const layerGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    layerGroup.id = `trial-layer-${layer.id}`;
+                    layerGroup.classList.add('trial-layer-element');
+                    layerGroup.innerHTML = layer.svgContent;
+                    layerGroup.dataset.layerIndex = index;
+                    
+                    // レイヤーのtransform情報を適用（composeと同じロジック）
+                    const centerX = layer.originalCenter ? layer.originalCenter.x : 0;
+                    const centerY = layer.originalCenter ? layer.originalCenter.y : 0;
+                    
+                    // transformオブジェクトまたは直接プロパティから値を取得
+                    const x = layer.transform ? layer.transform.x : (layer.x || 0);
+                    const y = layer.transform ? layer.transform.y : (layer.y || 0);
+                    const scale = layer.transform ? layer.transform.scale : (layer.scale || 1);
+                    const rotation = layer.transform ? layer.transform.rotation : (layer.rotation || 0);
+                    const flipHorizontal = layer.transform ? layer.transform.flipHorizontal : false;
+                    const flipVertical = layer.transform ? layer.transform.flipVertical : false;
+                    const flipX = layer.flipX !== undefined ? layer.flipX : 1;
+                    const flipY = layer.flipY !== undefined ? layer.flipY : 1;
+                    
+                    // 変換を適用: 移動→スケール→反転→中心回転
+                    let scaleX = scale * flipX;
+                    let scaleY = scale * flipY;
+                    
+                    if (flipHorizontal) {
+                        scaleX = -scaleX;
+                    }
+                    
+                    if (flipVertical) {
+                        scaleY = -scaleY;
+                    }
+                    
+                    const transformString = `translate(${x}, ${y}) scale(${scaleX}, ${scaleY}) rotate(${rotation}, ${centerX}, ${centerY})`;
+                    layerGroup.setAttribute('transform', transformString);
+                    
+                    // 選択中のレイヤーにクラスを追加
+                    if (index === currentLayerIndex) {
+                        layerGroup.classList.add('selected');
+                    }
+                    
+                    // レイヤークリックイベント（選択のみ）
+                    layerGroup.addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const idx = parseInt(this.dataset.layerIndex);
+                        currentLayerIndex = idx;
+                        
+                        const svgRect = svgElement.getBoundingClientRect();
+                        const viewBoxWidth = parseFloat(svgElement.getAttribute('viewBox').split(' ')[2]);
+                        const viewBoxHeight = parseFloat(svgElement.getAttribute('viewBox').split(' ')[3]);
+                        const scaleXRatio = viewBoxWidth / svgRect.width;
+                        const scaleYRatio = viewBoxHeight / svgRect.height;
+                        
+                        startX = (e.clientX - svgRect.left) * scaleXRatio;
+                        startY = (e.clientY - svgRect.top) * scaleYRatio;
+                        
+                        const currentLayer = svgData.layers[idx];
+                        initialX = currentLayer.transform ? currentLayer.transform.x : (currentLayer.x || 0);
+                        initialY = currentLayer.transform ? currentLayer.transform.y : (currentLayer.y || 0);
+                        
+                        isDragging = true;
+                        renderSvg();
+                    });
+                    
+                    layerGroup.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const idx = parseInt(this.dataset.layerIndex);
+                        currentLayerIndex = idx;
+                        
+                        const touch = e.touches[0];
+                        const svgRect = svgElement.getBoundingClientRect();
+                        const viewBoxWidth = parseFloat(svgElement.getAttribute('viewBox').split(' ')[2]);
+                        const viewBoxHeight = parseFloat(svgElement.getAttribute('viewBox').split(' ')[3]);
+                        const scaleXRatio = viewBoxWidth / svgRect.width;
+                        const scaleYRatio = viewBoxHeight / svgRect.height;
+                        
+                        startX = (touch.clientX - svgRect.left) * scaleXRatio;
+                        startY = (touch.clientY - svgRect.top) * scaleYRatio;
+                        
+                        const currentLayer = svgData.layers[idx];
+                        initialX = currentLayer.transform ? currentLayer.transform.x : (currentLayer.x || 0);
+                        initialY = currentLayer.transform ? currentLayer.transform.y : (currentLayer.y || 0);
+                        
+                        isDragging = true;
+                        hasMoved = false;
+                        hasMoved = false;
+                        // 選択状態のみ更新
+                        const allLayers = svgElement.querySelectorAll('.trial-layer-element');
+                        allLayers.forEach(l => l.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                    
+                    svgElement.appendChild(layerGroup);
+                });
+                
+                // マウス移動イベント（SVG要素に設定）
+                svgElement.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    hasMoved = true;
+                    
+                    const svgRect = this.getBoundingClientRect();
+                    const viewBoxWidth = parseFloat(this.getAttribute('viewBox').split(' ')[2]);
+                    const viewBoxHeight = parseFloat(this.getAttribute('viewBox').split(' ')[3]);
+                    const scaleXRatio = viewBoxWidth / svgRect.width;
+                    const scaleYRatio = viewBoxHeight / svgRect.height;
+                    
+                    const currentX = (e.clientX - svgRect.left) * scaleXRatio;
+                    const currentY = (e.clientY - svgRect.top) * scaleYRatio;
+                    
+                    const deltaX = currentX - startX;
+                    const deltaY = currentY - startY;
+                    
+                    const currentLayer = svgData.layers[currentLayerIndex];
+                    if (!currentLayer.transform) {
+                        currentLayer.transform = {
+                            x: currentLayer.x || 0,
+                            y: currentLayer.y || 0,
+                            scale: currentLayer.scale || 1,
+                            rotation: currentLayer.rotation || 0,
+                            flipHorizontal: false,
+                            flipVertical: false
+                        };
+                    }
+                    
+                    currentLayer.transform.x = initialX + deltaX;
+                    currentLayer.transform.y = initialY + deltaY;
+                    
+                    // 該当レイヤーのtransformのみ更新（再描画しない）
+                    const layerElement = document.getElementById(`trial-layer-${currentLayer.id}`);
+                    if (layerElement) {
+                        const centerX = currentLayer.originalCenter ? currentLayer.originalCenter.x : 0;
+                        const centerY = currentLayer.originalCenter ? currentLayer.originalCenter.y : 0;
+                        const scale = currentLayer.transform.scale || 1;
+                        const rotation = currentLayer.transform.rotation || 0;
+                        const flipHorizontal = currentLayer.transform.flipHorizontal || false;
+                        const flipVertical = currentLayer.transform.flipVertical || false;
+                        const flipX = currentLayer.flipX !== undefined ? currentLayer.flipX : 1;
+                        const flipY = currentLayer.flipY !== undefined ? currentLayer.flipY : 1;
+                        
+                        let scaleX = scale * flipX;
+                        let scaleY = scale * flipY;
+                        
+                        if (flipHorizontal) scaleX = -scaleX;
+                        if (flipVertical) scaleY = -scaleY;
+                        
+                        const transformString = `translate(${currentLayer.transform.x}, ${currentLayer.transform.y}) scale(${scaleX}, ${scaleY}) rotate(${rotation}, ${centerX}, ${centerY})`;
+                        layerElement.setAttribute('transform', transformString);
+                    }
+                });
+                
+                svgElement.addEventListener('touchmove', function(e) {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    hasMoved = true;
+                    
+                    const touch = e.touches[0];
+                    const svgRect = this.getBoundingClientRect();
+                    const viewBoxWidth = parseFloat(this.getAttribute('viewBox').split(' ')[2]);
+                    const viewBoxHeight = parseFloat(this.getAttribute('viewBox').split(' ')[3]);
+                    const scaleXRatio = viewBoxWidth / svgRect.width;
+                    const scaleYRatio = viewBoxHeight / svgRect.height;
+                    
+                    const currentX = (touch.clientX - svgRect.left) * scaleXRatio;
+                    const currentY = (touch.clientY - svgRect.top) * scaleYRatio;
+                    
+                    const deltaX = currentX - startX;
+                    const deltaY = currentY - startY;
+                    
+                    const currentLayer = svgData.layers[currentLayerIndex];
+                    if (!currentLayer.transform) {
+                        currentLayer.transform = {
+                            x: currentLayer.x || 0,
+                            y: currentLayer.y || 0,
+                            scale: currentLayer.scale || 1,
+                            rotation: currentLayer.rotation || 0,
+                            flipHorizontal: false,
+                            flipVertical: false
+                        };
+                    }
+                    
+                    currentLayer.transform.x = initialX + deltaX;
+                    currentLayer.transform.y = initialY + deltaY;
+                    
+                    // 該当レイヤーのtransformのみ更新（再描画しない）
+                    const layerElement = document.getElementById(`trial-layer-${currentLayer.id}`);
+                    if (layerElement) {
+                        const centerX = currentLayer.originalCenter ? currentLayer.originalCenter.x : 0;
+                        const centerY = currentLayer.originalCenter ? currentLayer.originalCenter.y : 0;
+                        const scale = currentLayer.transform.scale || 1;
+                        const rotation = currentLayer.transform.rotation || 0;
+                        const flipHorizontal = currentLayer.transform.flipHorizontal || false;
+                        const flipVertical = currentLayer.transform.flipVertical || false;
+                        const flipX = currentLayer.flipX !== undefined ? currentLayer.flipX : 1;
+                        const flipY = currentLayer.flipY !== undefined ? currentLayer.flipY : 1;
+                        
+                        let scaleX = scale * flipX;
+                        let scaleY = scale * flipY;
+                        
+                        if (flipHorizontal) scaleX = -scaleX;
+                        if (flipVertical) scaleY = -scaleY;
+                        
+                        const transformString = `translate(${currentLayer.transform.x}, ${currentLayer.transform.y}) scale(${scaleX}, ${scaleY}) rotate(${rotation}, ${centerX}, ${centerY})`;
+                        layerElement.setAttribute('transform', transformString);
+                    }
+                });
+                
+                svgElement.addEventListener('mouseup', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        // 実際にドラッグした場合のみ再描画
+                        if (hasMoved) {
+                            renderSvg();
+                        }
+                    }
+                });
+                
+                svgElement.addEventListener('touchend', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        if (hasMoved) {
+                            renderSvg();
+                        }
+                    }
+                });
+                
+                svgElement.addEventListener('mouseleave', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        if (hasMoved) {
+                            renderSvg();
+                        }
+                    }
+                });
+
+                canvas.appendChild(svgElement);
+            }
+
+            // ランダム色変更（優しいパステルカラー、レイヤーごとに色マッピング）
+            document.getElementById('randomizeColors').addEventListener('click', function() {
+                // 優しいパステルカラーを生成する関数
+                function generatePastelColor() {
+                    const hue = Math.floor(Math.random() * 360);
+                    const saturation = 20 + Math.floor(Math.random() * 20); // 20-40%（さらに柔らかく）
+                    const lightness = 80 + Math.floor(Math.random() * 15); // 80-95%（さらに明るく）
+                    
+                    // HSLをRGBに変換
+                    const h = hue / 360;
+                    const s = saturation / 100;
+                    const l = lightness / 100;
+                    
+                    let r, g, b;
+                    if (s === 0) {
+                        r = g = b = l;
+                    } else {
+                        const hue2rgb = (p, q, t) => {
+                            if (t < 0) t += 1;
+                            if (t > 1) t -= 1;
+                            if (t < 1/6) return p + (q - p) * 6 * t;
+                            if (t < 1/2) return q;
+                            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                            return p;
+                        };
+                        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                        const p = 2 * l - q;
+                        r = hue2rgb(p, q, h + 1/3);
+                        g = hue2rgb(p, q, h);
+                        b = hue2rgb(p, q, h - 1/3);
+                    }
+                    
+                    const toHex = x => {
+                        const hex = Math.round(x * 255).toString(16);
+                        return hex.length === 1 ? '0' + hex : hex;
+                    };
+                    
+                    return '#' + toHex(r) + toHex(g) + toHex(b);
+                }
+                
+                // 背景色も変更
+                if (svgData.backgroundColor && svgData.backgroundColor !== 'transparent') {
+                    svgData.backgroundColor = generatePastelColor();
+                }
+                
+                svgData.layers.forEach(layer => {
+                    if (!layer.svgContent) return;
+                    
+                    // レイヤーごとに色のマッピングを作成
+                    const colorMap = new Map();
+                    
+                    // fill属性を置換（同じレイヤー内の同じ色は同じ新しい色に）
+                    layer.svgContent = layer.svgContent.replace(/fill="([^"]*)"/g, (match, color) => {
+                        if (!colorMap.has(color)) {
+                            colorMap.set(color, generatePastelColor());
+                        }
+                        return `fill="${colorMap.get(color)}"`;
+                    });
+                    
+                    // style属性内のfillを置換（同じレイヤー内の同じ色は同じ新しい色に）
+                    layer.svgContent = layer.svgContent.replace(/fill:\s*([^;}"]+)/g, (match, color) => {
+                        const trimmedColor = color.trim();
+                        if (!colorMap.has(trimmedColor)) {
+                            colorMap.set(trimmedColor, generatePastelColor());
+                        }
+                        return `fill:${colorMap.get(trimmedColor)}`;
+                    });
+                });
+                renderSvg();
+            });
+
+            // ダウンロード（PNG形式）
+            document.getElementById('downloadTrial').addEventListener('click', function(e) {
+                e.preventDefault();
+                const svgElement = canvas.querySelector('svg');
+                if (!svgElement) return;
+                
+                // SVGをシリアライズ
+                const svgString = new XMLSerializer().serializeToString(svgElement);
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+                
+                // 画像として読み込み
+                const img = new Image();
+                img.onload = function() {
+                    // Canvasに描画
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = 1200; // 高解像度で出力
+                    tempCanvas.height = 1200;
+                    const ctx = tempCanvas.getContext('2d');
+                    
+                    // 白背景を設定
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // SVG画像を描画
+                    ctx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // PNGとしてダウンロード
+                    tempCanvas.toBlob(function(blob) {
+                        const pngUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = pngUrl;
+                        a.download = 'trial-artwork.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(pngUrl);
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                };
+                img.src = url;
+            });
+        });
+    }
+
     // カードのキーボードナビゲーション対応
     document.addEventListener('DOMContentLoaded', function() {
         const cards = document.querySelectorAll('.material-card');
