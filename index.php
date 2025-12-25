@@ -1186,6 +1186,14 @@ if ($tileCount > 0 && $maxVectorId > 0) {
             overflow: hidden;
         }
 
+        .trial-canvas svg path,
+        .trial-canvas svg line,
+        .trial-canvas svg polyline,
+        .trial-canvas svg polygon {
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         .trial-canvas g {
             cursor: move;
             transition: opacity 0.2s ease;
