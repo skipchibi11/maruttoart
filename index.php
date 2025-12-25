@@ -2063,7 +2063,11 @@ if ($tileCount > 0 && $maxVectorId > 0) {
                     const colorMap = new Map();
                     
                     // fill属性を置換（同じレイヤー内の同じ色は同じ新しい色に）
+                    // ただし、none/transparentは変更しない
                     layer.svgContent = layer.svgContent.replace(/fill="([^"]*)"/g, (match, color) => {
+                        if (color === 'none' || color === 'transparent' || color === '') {
+                            return match; // そのまま返す
+                        }
                         if (!colorMap.has(color)) {
                             colorMap.set(color, generatePastelColor());
                         }
@@ -2071,8 +2075,12 @@ if ($tileCount > 0 && $maxVectorId > 0) {
                     });
                     
                     // style属性内のfillを置換（同じレイヤー内の同じ色は同じ新しい色に）
+                    // ただし、none/transparentは変更しない
                     layer.svgContent = layer.svgContent.replace(/fill:\s*([^;}"]+)/g, (match, color) => {
                         const trimmedColor = color.trim();
+                        if (trimmedColor === 'none' || trimmedColor === 'transparent' || trimmedColor === '') {
+                            return match; // そのまま返す
+                        }
                         if (!colorMap.has(trimmedColor)) {
                             colorMap.set(trimmedColor, generatePastelColor());
                         }
