@@ -105,6 +105,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     
                     <h4>Cookieおよび類似技術による情報</h4>
                     <ul>
+                        <li><strong>Google Analytics Cookie</strong>: _ga, _ga_*, _gid等（アクセス解析のため）</li>
                         <li><strong>Google AdSense Cookie</strong>: _gads, _gac_*, __gpi, IDE, test_cookie等</li>
                     </ul>
                     
@@ -131,6 +132,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     <p>収集した情報は、以下の目的で利用します：</p>
                     <ul>
                         <li><strong>サービスの提供・改善</strong>: ウェブサイトの基本機能、コンテンツ配信</li>
+                        <li><strong>アクセス解析</strong>: Google Analyticsを使用したサイト利用状況の分析、ユーザー体験の改善</li>
                         <li><strong>検索エンジン最適化</strong>: Google Search Consoleを使用した検索パフォーマンス分析</li>
                         <li><strong>広告配信・最適化</strong>: Google AdSenseを使用した関連性の高い広告配信、広告効果の測定</li>
                         <li><strong>お問い合わせ対応</strong>: お問い合わせフォームから送信された情報を用いた、ユーザーへの返信・対応</li>
@@ -166,6 +168,24 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                 <div class="policy-section">
                     <h3>5. 第三者サービスについて</h3>
                     <p>当サイトでは、以下の第三者サービスを利用しています：</p>
+                    
+                    <h4>Google Analytics</h4>
+                    <ul>
+                        <li><strong>提供会社</strong>: Google LLC</li>
+                        <li><strong>利用目的</strong>: ウェブサイトのアクセス解析、ユーザー行動分析、サービス改善</li>
+                        <li><strong>収集される情報</strong>: 
+                            <ul>
+                                <li>ページビュー、セッション時間、離脱率</li>
+                                <li>参照元情報、流入経路</li>
+                                <li>デバイス情報（ブラウザ、OS、画面解像度等）</li>
+                                <li>地理的情報（国、地域レベル）</li>
+                                <li>ユーザーの行動パターン（クリック、スクロール等）</li>
+                            </ul>
+                        </li>
+                        <li><strong>Cookie情報</strong>: _ga, _ga_*, _gid等</li>
+                        <li><strong>データの性質</strong>: 匿名化されたデータで、個人を特定することはできません</li>
+                        <li><strong>オプトアウト</strong>: <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics オプトアウト アドオン</a>で無効化できます</li>
+                    </ul>
                     
                     <h4>Google Search Console</h4>
                     <ul>
@@ -239,6 +259,7 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
                     <h4>Google サービスでのデータ処理</h4>
                     <p>当サイトでは、以下のGoogleサービスで情報が処理されます：</p></p>
                     <ul>
+                        <li><strong>Google Analytics</strong>: ウェブサイトアクセス解析のための匿名化されたデータ</li>
                         <li><strong>Google AdSense</strong>: 広告配信最適化のための匿名化されたデータ</li>
                         <li><strong>Google Search Console</strong>: 検索パフォーマンスの集計データ</li>
                     </ul>
