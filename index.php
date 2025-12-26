@@ -2011,81 +2011,178 @@ if ($tileCount > 0 && $maxVectorId > 0) {
                 canvas.appendChild(svgElement);
             }
 
-            // ランダム色変更（優しいパステルカラー、レイヤーごとに色マッピング）
+            // ランダム色変更（配列から色を選択）
             document.getElementById('randomizeColors').addEventListener('click', function() {
-                // 優しいパステルカラーを生成する関数
-                function generatePastelColor() {
-                    const hue = Math.floor(Math.random() * 360);
-                    const saturation = 20 + Math.floor(Math.random() * 20); // 20-40%（さらに柔らかく）
-                    const lightness = 80 + Math.floor(Math.random() * 15); // 80-95%（さらに明るく）
-                    
-                    // HSLをRGBに変換
-                    const h = hue / 360;
-                    const s = saturation / 100;
-                    const l = lightness / 100;
-                    
-                    let r, g, b;
-                    if (s === 0) {
-                        r = g = b = l;
-                    } else {
-                        const hue2rgb = (p, q, t) => {
-                            if (t < 0) t += 1;
-                            if (t > 1) t -= 1;
-                            if (t < 1/6) return p + (q - p) * 6 * t;
-                            if (t < 1/2) return q;
-                            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                            return p;
-                        };
-                        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                        const p = 2 * l - q;
-                        r = hue2rgb(p, q, h + 1/3);
-                        g = hue2rgb(p, q, h);
-                        b = hue2rgb(p, q, h - 1/3);
-                    }
-                    
-                    const toHex = x => {
-                        const hex = Math.round(x * 255).toString(16);
-                        return hex.length === 1 ? '0' + hex : hex;
-                    };
-                    
-                    return '#' + toHex(r) + toHex(g) + toHex(b);
+                // 背景用カラーパレット
+                const backgroundColors = [
+                    // クリーム・生成り系
+                    '#FFFDF5', '#FFF8E8', '#FFF5E1', '#FFF2D8',
+                    '#FDF6EC', '#FAF3E8', '#F7EFE4', '#F5EEDD',
+
+                    // ピンク・ピーチ系
+                    '#FFF0F3', '#FFEFF0', '#FFE8EC', '#FFE4E1',
+                    '#FADDE1', '#F6D6DB', '#F2CED4', '#EEC6CD',
+
+                    // グリーン系
+                    '#F1F7EC', '#EAF4E1', '#E3EED7', '#DCE7CD',
+                    '#EEF6E9', '#E6F0E1', '#DEE9D8', '#D6E2CF',
+
+                    // ブルー系
+                    '#EEF5FB', '#E7F0F7', '#DFEAF3', '#D7E4EF',
+                    '#F0F6FA', '#E8F0F6', '#E0EAF2', '#D8E4EE',
+
+                    // グレー・ベージュ寄り
+                    '#F5F5F2', '#EFEFEA', '#E9E8E3', '#E3E2DC',
+                    '#F1F0EB', '#EBEAE4', '#E5E4DD', '#DFDED6'
+                ];
+
+                // 素材用カラーパレット
+                const materialColors = [
+                    // ピンク・赤系
+                    '#F7C1CC', '#F4B6C2', '#F1A9B8', '#EE9DAC',
+                    '#F6D1D8', '#F2C3CC', '#EEB5C0', '#EAA7B4',
+
+                    // イエロー・オレンジ系
+                    '#FFE4B5', '#FFD9A0', '#FFCE8A', '#FFC374',
+                    '#FFE8C7', '#FFDEB0', '#FFD499', '#FFCA82',
+
+                    // グリーン系
+                    '#CDE8D6', '#BFE0CB', '#B1D8C0', '#A3D0B5',
+                    '#D6EFE3', '#C7E6D7', '#B8DDCB', '#A9D4BF',
+
+                    // ブルー系
+                    '#CFE4F6', '#BDD8EF', '#ABCBE8', '#99BFE1',
+                    '#D9ECFA', '#C9E1F4', '#B9D6EE', '#A9CBE8',
+
+                    // パープル・アクセント
+                    '#E6DDF2', '#DAD0EB', '#CEC3E4', '#C2B6DD',
+                    '#F0E9FA', '#E6DDF4', '#DCCFEE', '#D2C1E8'
+                ];
+                
+                // 背景色用の色を選択する関数
+                function getRandomBackgroundColor() {
+                    return backgroundColors[Math.floor(Math.random() * backgroundColors.length)];
                 }
                 
-                // 背景色も変更
+                // 素材用の色を選択する関数
+                function getRandomMaterialColor() {
+                    return materialColors[Math.floor(Math.random() * materialColors.length)];
+                }
+                
+                // 小さい要素かどうかを判定する関数（目などの小さいパーツ）
+                function isSmallElement(element) {
+                    const tagName = element.tagName ? element.tagName.toLowerCase() : '';
+                    
+                    // 円形要素のチェック
+                    if (tagName === 'circle') {
+                        const r = parseFloat(element.getAttribute('r') || 0);
+                        // 半径30以下は小さい要素（目など）
+                        return r <= 30;
+                    }
+                    
+                    // 楕円形要素のチェック
+                    if (tagName === 'ellipse') {
+                        const rx = parseFloat(element.getAttribute('rx') || 0);
+                        const ry = parseFloat(element.getAttribute('ry') || 0);
+                        // 両方30以下の場合は小さい要素
+                        return rx <= 30 && ry <= 30;
+                    }
+                    
+                    return false;
+                }
+                
+                // 色を変更すべきかどうかを判定する関数
+                function shouldChangeColor(color) {
+                    if (!color || color === 'none' || color === 'transparent' || color === '') {
+                        return false;
+                    }
+                    return true;
+                }
+                
+                // 背景色も変更（背景用パレットから選択）
                 if (svgData.backgroundColor && svgData.backgroundColor !== 'transparent') {
-                    svgData.backgroundColor = generatePastelColor();
+                    svgData.backgroundColor = getRandomBackgroundColor();
                 }
                 
                 svgData.layers.forEach(layer => {
                     if (!layer.svgContent) return;
                     
+                    // SVGコンテンツをDOMとしてパース
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(`<svg xmlns="http://www.w3.org/2000/svg">${layer.svgContent}</svg>`, 'image/svg+xml');
+                    
                     // レイヤーごとに色のマッピングを作成
                     const colorMap = new Map();
                     
-                    // fill属性を置換（同じレイヤー内の同じ色は同じ新しい色に）
-                    // ただし、none/transparentは変更しない
-                    layer.svgContent = layer.svgContent.replace(/fill="([^"]*)"/g, (match, color) => {
-                        if (color === 'none' || color === 'transparent' || color === '') {
-                            return match; // そのまま返す
+                    // すべての要素を走査
+                    function processElement(element) {
+                        // 小さい要素は色を変更しない
+                        if (isSmallElement(element)) {
+                            return;
                         }
-                        if (!colorMap.has(color)) {
-                            colorMap.set(color, generatePastelColor());
+                        
+                        // fill属性の処理
+                        if (element.hasAttribute('fill')) {
+                            const color = element.getAttribute('fill');
+                            if (shouldChangeColor(color)) {
+                                if (!colorMap.has(color)) {
+                                    colorMap.set(color, getRandomMaterialColor());
+                                }
+                                element.setAttribute('fill', colorMap.get(color));
+                            }
                         }
-                        return `fill="${colorMap.get(color)}"`;
-                    });
+                        
+                        // stroke属性の処理
+                        if (element.hasAttribute('stroke')) {
+                            const color = element.getAttribute('stroke');
+                            if (shouldChangeColor(color)) {
+                                if (!colorMap.has(color)) {
+                                    colorMap.set(color, getRandomMaterialColor());
+                                }
+                                element.setAttribute('stroke', colorMap.get(color));
+                            }
+                        }
+                        
+                        // style属性の処理
+                        if (element.hasAttribute('style')) {
+                            let style = element.getAttribute('style');
+                            
+                            // style内のfill
+                            style = style.replace(/fill:\s*([^;}"]+)/g, (match, color) => {
+                                const trimmedColor = color.trim();
+                                if (shouldChangeColor(trimmedColor)) {
+                                    if (!colorMap.has(trimmedColor)) {
+                                        colorMap.set(trimmedColor, getRandomMaterialColor());
+                                    }
+                                    return `fill:${colorMap.get(trimmedColor)}`;
+                                }
+                                return match;
+                            });
+                            
+                            // style内のstroke
+                            style = style.replace(/stroke:\s*([^;}"]+)/g, (match, color) => {
+                                const trimmedColor = color.trim();
+                                if (shouldChangeColor(trimmedColor)) {
+                                    if (!colorMap.has(trimmedColor)) {
+                                        colorMap.set(trimmedColor, getRandomMaterialColor());
+                                    }
+                                    return `stroke:${colorMap.get(trimmedColor)}`;
+                                }
+                                return match;
+                            });
+                            
+                            element.setAttribute('style', style);
+                        }
+                        
+                        // 子要素を再帰的に処理
+                        Array.from(element.children).forEach(child => processElement(child));
+                    }
                     
-                    // style属性内のfillを置換（同じレイヤー内の同じ色は同じ新しい色に）
-                    // ただし、none/transparentは変更しない
-                    layer.svgContent = layer.svgContent.replace(/fill:\s*([^;}"]+)/g, (match, color) => {
-                        const trimmedColor = color.trim();
-                        if (trimmedColor === 'none' || trimmedColor === 'transparent' || trimmedColor === '') {
-                            return match; // そのまま返す
-                        }
-                        if (!colorMap.has(trimmedColor)) {
-                            colorMap.set(trimmedColor, generatePastelColor());
-                        }
-                        return `fill:${colorMap.get(trimmedColor)}`;
-                    });
+                    // ルート要素から処理開始
+                    Array.from(svgDoc.documentElement.children).forEach(child => processElement(child));
+                    
+                    // 変更後のSVGコンテンツを取得（svg要素の内側のみ）
+                    layer.svgContent = svgDoc.documentElement.innerHTML;
                 });
                 renderSvg();
             });
