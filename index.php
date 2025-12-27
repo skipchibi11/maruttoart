@@ -419,52 +419,6 @@ if ($tileCount > 0 && $maxVectorId > 0) {
             opacity: 0.95;
         }
 
-        /* ヒーローボタンコンテナ - タイル型 */
-        .hero-buttons {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-top: 2rem;
-            width: 100%;
-            max-width: 100%;
-        }
-
-        /* タイル型ボタン */
-        .hero-tile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            aspect-ratio: 1 / 1;
-            background: #ffffff;
-            border: 1px solid #e0d8c8;
-            border-radius: 14px;
-            padding: 1rem;
-            text-decoration: none;
-            color: #7a6d62;
-            transition: all 0.2s ease;
-            gap: 0.5rem;
-        }
-
-        .hero-tile:hover {
-            background: #f7f0e6;
-            text-decoration: none;
-            color: #5d4037;
-        }
-
-        .hero-tile-icon {
-            width: 36px;
-            height: 36px;
-            color: #7a6d62;
-        }
-
-        .hero-tile-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-            line-height: 1.3;
-        }
-
         .hero-image {
             display: none;
         }
@@ -479,6 +433,101 @@ if ($tileCount > 0 && $maxVectorId > 0) {
             opacity: 0.15;
             z-index: 1;
             pointer-events: none;
+        }
+
+        /* ヒーロー内のフローカード */
+        .hero-flow-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .hero-flow-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .hero-flow-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            text-decoration: none;
+        }
+
+        .hero-flow-card-no-link {
+            cursor: default;
+        }
+
+        .hero-flow-card-no-link:hover {
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .hero-flow-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .hero-flow-link {
+            flex: 1;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #fef9e7 0%, #fff8e1 100%);
+            border: 1px solid #e0d8c8;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5d4037;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .hero-flow-link:hover {
+            background: #f7f0e6;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .hero-flow-image {
+            width: 100%;
+            max-width: 180px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .hero-flow-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #5d4037;
+        }
+
+        .hero-flow-description {
+            font-size: 0.9rem;
+            color: #7a6d62;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .hero-flow-action {
+            display: inline-block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #ff9a9e;
+            margin-top: 5px;
+        }
+
+        .hero-flow-card:hover .hero-flow-action {
+            text-decoration: underline;
         }
 
         /* ヒーローセクション - レスポンシブ対応 */
@@ -506,29 +555,33 @@ if ($tileCount > 0 && $maxVectorId > 0) {
                 font-size: 1.1rem;
             }
 
-            .hero-buttons {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
-            }
-
-            .hero-tile {
-                padding: 0.8rem;
-            }
-
-            .hero-tile-icon {
-                width: 32px;
-                height: 32px;
-            }
-
-            .hero-tile-label {
-                font-size: 0.75rem;
-            }
-
             /* スマホでの装飾素材サイズ調整 */
             .hero-decoration {
                 width: 205px;
                 right: 10px;
                 bottom: -30px;
+            }
+
+            /* フローカード - モバイル対応 */
+            .hero-flow-cards {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .hero-flow-card {
+                padding: 15px;
+            }
+
+            .hero-flow-image {
+                max-width: 150px;
+            }
+
+            .hero-flow-title {
+                font-size: 1rem;
+            }
+
+            .hero-flow-description {
+                font-size: 0.85rem;
             }
         }
 
@@ -1395,43 +1448,23 @@ if ($tileCount > 0 && $maxVectorId > 0) {
                         一部の素材は色の変更や組み合わせにも対応しており、自分だけの作品をつくってアレンジできます。<br />
                         また、アレンジした作品を「みんなのアトリエ」で共有し合い、世界中のやさしい作品に触れることもできます。<br />
                     </p>
-                    <div class="hero-buttons">
-                        <a href="/list.php" class="hero-tile">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
-                                <rect width="7" height="7" x="3" y="3" rx="1"/>
-                                <rect width="7" height="7" x="3" y="14" rx="1"/>
-                                <path d="M14 4h7"/>
-                                <path d="M14 9h7"/>
-                                <path d="M14 15h7"/>
-                                <path d="M14 20h7"/>
-                            </svg>
-                            <span class="hero-tile-label">素材を見る</span>
+                    
+                    <!-- フローカード -->
+                    <div class="hero-flow-cards">
+                        <a href="/list.php" class="hero-flow-card">
+                            <img src="/assets/images/search.webp" alt="素材を探す" class="hero-flow-image">
+                            <h3 class="hero-flow-title">素材を探す</h3>
+                            <p class="hero-flow-description">動物、植物、食べものなど豊富な素材を探そう。</p>
                         </a>
-                        <a href="/everyone-works.php" class="hero-tile">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
-                                <path d="m11 17 2 2a1 1 0 1 0 3-3"/>
-                                <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l .47.28a2 2 0 0 0 1.42.25L21 4"/>
-                                <path d="m21 3 1 11h-2"/>
-                                <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/>
-                                <path d="M3 4h8"/>
-                            </svg>
-                            <span class="hero-tile-label">みんなの<br>アトリエ</span>
+                        <a href="/compose" class="hero-flow-card">
+                            <img src="/assets/images/custom.webp" alt="素材を組み合わせる" class="hero-flow-image">
+                            <h3 class="hero-flow-title">素材を組み合わせる</h3>
+                            <p class="hero-flow-description">色を変えたり組み合わせて、あなただけの作品をつくろう。</p>
                         </a>
-                        <a href="/compose" class="hero-tile">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
-                                <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-                                <path d="m15 5 4 4"/>
-                            </svg>
-                            <span class="hero-tile-label">あなたの<br>アトリエ</span>
-                        </a>
-                        <a href="/compose/kids.php" class="hero-tile">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-tile-icon">
-                                <path d="M15.236 22a3 3 0 0 0-2.2-5"/>
-                                <path d="M16 20a3 3 0 0 1 3-3h1a2 2 0 0 0 2-2v-2a4 4 0 0 0-4-4V4"/>
-                                <path d="M18 13h.01"/>
-                                <path d="M18 6a4 4 0 0 0-4 4 7 7 0 0 0-7 7c0-5 4-5 4-10.5a4.5 4.5 0 1 0-9 0 2.5 2.5 0 0 0 5 0C7 10 3 11 3 17c0 2.8 2.2 5 5 5h10"/>
-                            </svg>
-                            <span class="hero-tile-label">子供用の<br>アトリエ</span>
+                        <a href="/everyone-works.php" class="hero-flow-card">
+                            <img src="/assets/images/share.webp" alt="作品をシェアする" class="hero-flow-image">
+                            <h3 class="hero-flow-title">作品をシェアする</h3>
+                            <p class="hero-flow-description">作った作品を「みんなのアトリエ」に投稿して、ほかの人の作品も見てみよう。</p>
                         </a>
                     </div>
                 </div>

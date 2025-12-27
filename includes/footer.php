@@ -2,6 +2,8 @@
     <div class="container">
         <div class="text-center">
             <div class="mb-2">
+                <a href="/compose/kids.php" class="footer-text text-decoration-none me-3">こども向けアトリエ</a>
+                <a href="/blog/" class="footer-text text-decoration-none me-3">使い方とブログ</a>
                 <a href="/terms-of-use.php" class="footer-text text-decoration-none me-3">利用規約</a>
                 <a href="/privacy-policy.php" class="footer-text text-decoration-none me-3">プライバシーポリシー</a>
                 <a href="/sitemap.php" class="footer-text text-decoration-none">サイトマップ</a>
