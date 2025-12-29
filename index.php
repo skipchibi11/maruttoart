@@ -412,6 +412,18 @@ if ($tileCount > 0 && $maxVectorId > 0) {
             line-height: 1.2;
         }
 
+        .hero-title__line {
+            display: inline;
+        }
+
+        .hero-title-mobile {
+            display: none;
+        }
+
+        .hero-title-desktop {
+            display: block;
+        }
+
         .hero-description {
             font-size: 1.25rem;
             margin-bottom: 30px;
@@ -548,7 +560,7 @@ if ($tileCount > 0 && $maxVectorId > 0) {
             }
 
             .hero-title {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
 
             .hero-description {
@@ -587,7 +599,7 @@ if ($tileCount > 0 && $maxVectorId > 0) {
 
         @media (max-width: 576px) {
             .hero-title {
-                font-size: 2rem;
+                font-size: 1.6rem;
             }
 
             .hero-description {
@@ -601,6 +613,26 @@ if ($tileCount > 0 && $maxVectorId > 0) {
             .hero-cta-secondary {
                 font-size: 0.9rem;
                 padding: 8px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.25rem;
+                line-height: 1.4;
+                font-weight: 700;
+            }
+
+            .hero-title__line {
+                display: block;
+            }
+
+            .hero-title-desktop {
+                display: none;
+            }
+
+            .hero-title-mobile {
+                display: block;
             }
         }
 
@@ -1440,13 +1472,14 @@ if ($tileCount > 0 && $maxVectorId > 0) {
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="hero-title">ミニマルなフリーイラスト素材集</h1>
+                    <h1 class="hero-title">
+                        <span class="hero-title__line">物語は、組み合わせから生まれる。</span>
+                        <span class="hero-title__line">やさしいミニマル素材で、</span>
+                        <span class="hero-title__line">あなただけの一枚をつくろう。</span>
+                    </h1>
                     <p class="hero-description">
                         まるく、やさしく、シンプルに。<br />
-                        動物、植物、食べものなどのミニマルなイラスト素材を、商用・個人問わずご利用いただけます。<br />
-                        <br />
-                        一部の素材は色の変更や組み合わせにも対応しており、自分だけの作品をつくってアレンジできます。<br />
-                        また、アレンジした作品を「みんなのアトリエ」で共有し合い、世界中のやさしい作品に触れることもできます。<br />
+                        商用・個人利用OKのミニマルイラスト素材です。
                     </p>
                     
                     <!-- フローカード -->
