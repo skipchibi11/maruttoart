@@ -36,7 +36,7 @@ try {
     
     // 説明が空の作品を取得（最大10件を処理）
     $stmt = $pdo->prepare("
-        SELECT id, file_path, webp_path, title, pen_name, created_at
+        SELECT id, file_path, webp_path, title, pen_name, created_at, used_material_ids
         FROM community_artworks
         WHERE (description IS NULL OR description = '')
         AND status = 'approved'
@@ -77,7 +77,7 @@ try {
         }
         
         // AI生成を実行
-        $aiContent = generateAIContent($imagePath, $artwork['title'], $artwork['pen_name']);
+        $aiContent = generateAIContent($imagePath, $artwork['title'], $artwork['pen_name'], $artwork['used_material_ids'], $pdo);
         
         if ($aiContent === null) {
             error_log("AI generation failed for artwork ID {$artworkId}");
@@ -129,12 +129,32 @@ try {
 /**
  * AIでタイトルと説明を生成する関数
  */
-function generateAIContent($imagePath, $currentTitle, $penName) {
+function generateAIContent($imagePath, $currentTitle, $penName, $usedMaterialIds = null, $pdo = null) {
     try {
+        // 使用素材のタイトルを取得
+        $materialTitles = [];
+        if ($usedMaterialIds && $pdo) {
+            // カンマ区切りのIDを配列に変換
+            $materialIds = array_filter(array_map('trim', explode(',', $usedMaterialIds)));
+            
+            if (!empty($materialIds)) {
+                $placeholders = implode(',', array_fill(0, count($materialIds), '?'));
+                $stmt = $pdo->prepare("SELECT title FROM materials WHERE id IN ($placeholders)");
+                $stmt->execute($materialIds);
+                $materialTitles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            }
+        }
+        
         // 画像を読み込んでbase64エンコード
         $imageData = file_get_contents($imagePath);
         $base64Image = base64_encode($imageData);
         $mimeType = mime_content_type($imagePath);
+        
+        // プロンプトの作成（素材タイトルがあれば追加）
+        $materialsInfo = '';
+        if (!empty($materialTitles)) {
+            $materialsInfo = "\n\nこの作品は以下の素材を使って作られました：\n" . implode('、', $materialTitles);
+        }
         
         $prompt = "この作品の画像を見て、以下の2つを生成してください：
 
@@ -145,7 +165,7 @@ function generateAIContent($imagePath, $currentTitle, $penName) {
 2. 説明: 作品の魅力や特徴を伝える説明文（80〜150文字程度）
    - 2〜3文に分けて、各文の間に改行（\\n）を入れてください
    - 作品の内容、色使い、雰囲気、感じられる世界観などを含めてください
-   - 親しみやすく、読みやすい文章にしてください
+   - 親しみやすく、読みやすい文章にしてください{$materialsInfo}
 
 以下のJSON形式で返してください（descriptionの中には\\nで改行を入れてください）：
 {
