@@ -4296,7 +4296,7 @@ $storyArtworks = $storyStmt->fetchAll();
             // すぐにURLパラメータを削除（リロード対策）
             removeArtworkIdFromURL();
             
-            fetch(`../api/get-artwork-svg.php?id=${artworkId}`)
+            fetch(`/api/get-artwork-svg.php?id=${artworkId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.svg_data) {
@@ -4741,7 +4741,7 @@ $storyArtworks = $storyStmt->fetchAll();
                 }
 
                 // サーバーにアップロード
-                fetch('../api/upload-custom-artwork.php', {
+                fetch('/api/upload-custom-artwork.php', {
                     method: 'POST',
                     body: formData
                 })
