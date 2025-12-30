@@ -2984,12 +2984,12 @@ try {
         <div class="share-section text-center">
             <?php
             $currentUrl = urlencode(($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-            $shareText = urlencode($material['title'] . ' - ミニマルなフリーイラスト素材 #kawaiiilustrations #freeclipart #maruttoart');
+            $shareText = urlencode($material['title'] . ' - ミニマルなフリーイラスト素材 #フリー素材 #イラスト素材 #freeillustration #minimalart');
             $twitterShareUrl = "https://twitter.com/intent/tweet?url={$currentUrl}&text={$shareText}";
             
             // Pinterest用のパラメータ
             $pinterestUrl = urldecode($currentUrl);
-            $pinterestDescription = urlencode($material['title'] . ' - ミニマルなフリーイラスト素材（商用利用OK） #kawaiiilustrations #freeclipart #maruttoart');
+            $pinterestDescription = urlencode($material['title'] . ' - ミニマルなフリーイラスト素材（商用利用OK） #フリー素材 #イラスト素材 #freeillustration #minimalart');
             $pinterestImageUrl = urlencode(($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . '/' . $displayImagePath);
             $pinterestShareUrl = "https://pinterest.com/pin/create/button/?url={$currentUrl}&media={$pinterestImageUrl}&description={$pinterestDescription}";
             ?>
