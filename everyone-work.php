@@ -1098,7 +1098,7 @@ try {
                 <div class="text-center">
                     <?php
                     $currentUrl = urlencode(($_SERVER['REQUEST_SCHEME'] ?? 'https') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-                    $shareText = urlencode($artwork['title'] . ' - みんなのアトリエ作品 #フリー素材 #無料素材 #イラスト #みんなのアトリエ');
+                    $shareText = urlencode($artwork['title'] . ' - みんなのアトリエ作品 #組み合わせイラスト #フリー素材 #みんなのアトリエ');
                     $twitterShareUrl = "https://twitter.com/intent/tweet?url={$currentUrl}&text={$shareText}";
                     
                     $pinterestDescription = urlencode($artwork['title'] . ' - みんなのアトリエ作品（商用利用OK）');
