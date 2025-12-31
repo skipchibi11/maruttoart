@@ -54,8 +54,12 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             
             $materialUrl = $baseUrl . '/' . $material['category_slug'] . '/' . $material['slug'] . '/';
             
-            // 説明文を構築
-            $description = htmlspecialchars($material['title'], ENT_XML1);
+            // 説明文を構築（タグを除いた部分が100文字を超えたら省略）
+            $baseDescription = !empty($material['description']) ? $material['description'] : $material['title'];
+            if (mb_strlen($baseDescription) > 100) {
+                $baseDescription = mb_substr($baseDescription, 0, 100) . '...';
+            }
+            $description = htmlspecialchars($baseDescription, ENT_XML1);
             $description .= ' #フリー素材 #イラスト素材 #freeillustration #minimalart';
         ?>
         <item>

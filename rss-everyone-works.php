@@ -46,11 +46,15 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             $imageUrl = $baseUrl . '/' . $artwork['file_path'];
             $artworkUrl = $baseUrl . '/everyone-work.php?id=' . $artwork['id'];
             
-            // 説明文を構築
-            $description = '';
+            // 説明文を構築（タグを除いた部分が100文字を超えたら省略）
+            $baseDescription = '';
             if (!empty($artwork['description'])) {
-                $description = htmlspecialchars($artwork['description'], ENT_XML1);
+                $baseDescription = $artwork['description'];
+                if (mb_strlen($baseDescription) > 100) {
+                    $baseDescription = mb_substr($baseDescription, 0, 100) . '...';
+                }
             }
+            $description = htmlspecialchars($baseDescription, ENT_XML1);
             $description .= ' #組み合わせイラスト #フリー素材 #みんなのアトリエ #freeillustration #minimalart';
         ?>
         <item>
