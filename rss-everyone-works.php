@@ -51,12 +51,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             if (!empty($artwork['description'])) {
                 $description = htmlspecialchars($artwork['description'], ENT_XML1);
             }
-            if (!empty($artwork['pen_name'])) {
-                $description .= ' / 作者: ' . htmlspecialchars($artwork['pen_name'], ENT_XML1);
-            }
-            if (!empty($artwork['views'])) {
-                $description .= ' / 閲覧数: ' . number_format($artwork['views']) . '回';
-            }
+            $description .= ' #組み合わせイラスト #フリー素材 #みんなのアトリエ #freeillustration #minimalart';
         ?>
         <item>
             <title><?= htmlspecialchars($artwork['title'], ENT_XML1) ?></title>

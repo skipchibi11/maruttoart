@@ -46,10 +46,8 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         <?php
             // 背景色が設定された画像（ai_product_image_path）を優先、なければfile_path
             $imageUrl = $baseUrl . '/';
-            if (!empty($material['ai_product_image_path'])) {
-                $imageUrl .= $material['ai_product_image_path'];
-            } elseif (!empty($material['file_path'])) {
-                $imageUrl .= $material['file_path'];
+            if (!empty($material['structured_image_path'])) {
+                $imageUrl .= $material['structured_image_path'];
             } else {
                 continue; // 画像がない場合はスキップ
             }
@@ -58,9 +56,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             
             // 説明文を構築
             $description = htmlspecialchars($material['title'], ENT_XML1);
-            if (!empty($material['category_name'])) {
-                $description .= ' - カテゴリー: ' . htmlspecialchars($material['category_name'], ENT_XML1);
-            }
+            $description .= ' #フリー素材 #イラスト素材 #freeillustration #minimalart';
         ?>
         <item>
             <title><?= htmlspecialchars($material['title'], ENT_XML1) ?></title>
