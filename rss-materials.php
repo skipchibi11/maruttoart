@@ -16,15 +16,11 @@ $stmt = $pdo->prepare("
     SELECT 
         m.*,
         c.title as category_name,
-        c.slug as category_slug,
-        GROUP_CONCAT(DISTINCT t.name ORDER BY t.name SEPARATOR ', ') as tag_names
+        c.slug as category_slug
     FROM materials m
     LEFT JOIN categories c ON m.category_id = c.id
-    LEFT JOIN material_tags mt ON m.id = mt.material_id
-    LEFT JOIN tags t ON mt.tag_id = t.id
     WHERE m.svg_path IS NOT NULL 
     AND m.svg_path != ''
-    GROUP BY m.id
     ORDER BY m.created_at DESC
     LIMIT 50
 ");
@@ -64,12 +60,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             $description = htmlspecialchars($material['title'], ENT_XML1);
             if (!empty($material['category_name'])) {
                 $description .= ' - カテゴリー: ' . htmlspecialchars($material['category_name'], ENT_XML1);
-            }
-            if (!empty($material['tag_names'])) {
-                $description .= ' / タグ: ' . htmlspecialchars($material['tag_names'], ENT_XML1);
-            }
-            if (!empty($material['primary_color'])) {
-                $description .= ' / メインカラー: ' . htmlspecialchars($material['primary_color'], ENT_XML1);
             }
         ?>
         <item>
