@@ -60,7 +60,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
                 $baseDescription = mb_substr($baseDescription, 0, 100) . '...';
             }
             $description = htmlspecialchars($baseDescription, ENT_XML1);
-            $description .= ' #フリー素材 #イラスト素材 #freeillustration #minimalart';
         ?>
         <item>
             <title><?= htmlspecialchars($material['title'], ENT_XML1) ?></title>

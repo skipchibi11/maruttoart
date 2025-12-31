@@ -55,7 +55,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
                 }
             }
             $description = htmlspecialchars($baseDescription, ENT_XML1);
-            $description .= ' #組み合わせイラスト #フリー素材 #みんなのアトリエ #freeillustration #minimalart';
         ?>
         <item>
             <title><?= htmlspecialchars($artwork['title'], ENT_XML1) ?></title>
