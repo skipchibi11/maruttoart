@@ -107,36 +107,34 @@ try {
     $selected = $candidates[array_rand($candidates)];
     $baseUrl = 'https://marutto.art';
     
-    // Claude APIを使用して英語翻訳
-    function translateToClaude($title, $description) {
-        $anthropicApiKey = getenv('ANTHROPIC_API_KEY');
-        if (empty($anthropicApiKey)) {
-            echo "警告: ANTHROPIC_API_KEYが設定されていません。翻訳をスキップします。\n";
+    // OpenAI APIを使用して英語翻訳
+    function translateToEnglish($title, $description) {
+        if (!defined('OPENAI_API_KEY') || empty(OPENAI_API_KEY)) {
+            echo "警告: OPENAI_API_KEYが設定されていません。翻訳をスキップします。\n";
             return ['title' => $title, 'description' => $description];
         }
         
-        $prompt = "以下の日本語のタイトルと説明を自然な英語に翻訳してください。タイトルは短く簡潔に、説明は100文字以内で。JSON形式で返してください。\n\nタイトル: {$title}\n説明: {$description}\n\n期待する出力形式:\n{\"title\": \"英語のタイトル\", \"description\": \"英語の説明\"}";
+        $prompt = "Translate the following Japanese title and description to natural English. Keep the title short and concise, and the description within 100 characters. Return in JSON format.\n\nTitle: {$title}\nDescription: {$description}\n\nExpected output format:\n{\"title\": \"English title\", \"description\": \"English description\"}";
         
         $data = [
-            'model' => 'claude-3-5-sonnet-20241022',
-            'max_tokens' => 500,
+            'model' => 'gpt-4o-mini',
             'messages' => [
                 [
                     'role' => 'user',
                     'content' => $prompt
                 ]
-            ]
+            ],
+            'max_tokens' => 300
         ];
         
-        $ch = curl_init('https://api.anthropic.com/v1/messages');
+        $ch = curl_init('https://api.openai.com/v1/chat/completions');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'x-api-key: ' . $anthropicApiKey,
-                'anthropic-version: 2023-06-01'
+                'Authorization: Bearer ' . OPENAI_API_KEY
             ]
         ]);
         
@@ -146,10 +144,10 @@ try {
         
         if ($httpCode === 200 && $response) {
             $result = json_decode($response, true);
-            if (isset($result['content'][0]['text'])) {
-                $text = $result['content'][0]['text'];
+            if (isset($result['choices'][0]['message']['content'])) {
+                $content = $result['choices'][0]['message']['content'];
                 // JSON部分を抽出
-                if (preg_match('/\{[^}]+\}/', $text, $matches)) {
+                if (preg_match('/\{[^}]+\}/', $content, $matches)) {
                     $translation = json_decode($matches[0], true);
                     if ($translation && isset($translation['title']) && isset($translation['description'])) {
                         return $translation;
@@ -169,7 +167,7 @@ try {
         $description = !empty($data['description']) ? $data['description'] : $data['title'];
         
         // 英語翻訳
-        $translated = translateToClaude($data['title'], $description);
+        $translated = translateToEnglish($data['title'], $description);
         
         $insertStmt = $pdo->prepare("
             INSERT INTO reintroduction_items 
@@ -193,7 +191,7 @@ try {
         $description = $data['description'] ?? '';
         
         // 英語翻訳
-        $translated = translateToClaude($data['title'], $description);
+        $translated = translateToEnglish($data['title'], $description);
         
         $insertStmt = $pdo->prepare("
             INSERT INTO reintroduction_items 
