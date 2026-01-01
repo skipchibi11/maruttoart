@@ -48,8 +48,9 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             }
             $description = htmlspecialchars($baseDescription, ENT_XML1);
             
-            // 固有ID（GUID）を生成: RSS用の永続的な識別子
-            $guid = $baseUrl . '/reintroduction/' . $item['id'];
+            // 固有ID（GUID）を生成: 年月 + アイテムタイプ + ID（一巡目、二巡目で別ID）
+            $yearMonth = date('Ym', strtotime($item['created_at']));
+            $guid = $baseUrl . '/reintroduction/' . $yearMonth . '-' . $item['item_type'] . '-' . $item['item_id'];
         ?>
         <item>
             <title><?= htmlspecialchars($item['title'], ENT_XML1) ?></title>

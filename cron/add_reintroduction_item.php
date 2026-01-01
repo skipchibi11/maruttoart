@@ -168,7 +168,7 @@ try {
     if ($selected['type'] === 'material') {
         $data = $selected['data'];
         $imageUrl = $baseUrl . '/' . $data['structured_image_path'];
-        $pageUrl = $baseUrl . '/' . $data['category_slug'] . '/' . $data['slug'] . '/';
+        $pageUrl = $baseUrl . '/en/' . $data['category_slug'] . '/' . $data['slug'] . '/';
         $description = !empty($data['description']) ? $data['description'] : $data['title'];
         
         // 英語翻訳
@@ -192,7 +192,7 @@ try {
     } else {
         $data = $selected['data'];
         $imageUrl = $baseUrl . '/' . $data['file_path'];
-        $pageUrl = $baseUrl . '/everyone-work.php?id=' . $data['id'];
+        $pageUrl = $baseUrl . '/en/everyone-work.php?id=' . $data['id'];
         $description = $data['description'] ?? '';
         
         // 英語翻訳
