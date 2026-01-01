@@ -2017,7 +2017,7 @@ $storyArtworks = $storyStmt->fetchAll();
             </div>
 
             <!-- キャンバスエリア -->
-            <div class="canvas-area">
+            <div class="canvas-area" id="canvas-area">
                 <div class="canvas-header">
                     <h3>あなたのキャンバス</h3>
                 </div>
@@ -5866,6 +5866,14 @@ $storyArtworks = $storyStmt->fetchAll();
             // artwork_idがある場合はSVGデータを読み込み
             if (artworkId) {
                 loadArtworkSVG(artworkId);
+                
+                // キャンバスエリアまでスムーススクロール
+                setTimeout(() => {
+                    const canvasArea = document.getElementById('canvas-area');
+                    if (canvasArea) {
+                        canvasArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 500);
             }
             
             // 既存のすべてのレイヤーにSVG線形品質を適用し、元の色情報を保存

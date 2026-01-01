@@ -192,7 +192,7 @@ try {
     } else {
         $data = $selected['data'];
         $imageUrl = $baseUrl . '/' . $data['file_path'];
-        $pageUrl = $baseUrl . '/en/everyone-work.php?id=' . $data['id'];
+        $pageUrl = $baseUrl . '/en/compose/?artwork_id=' . $data['id'];
         $description = $data['description'] ?? '';
         
         // 英語翻訳
