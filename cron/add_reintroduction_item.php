@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
+// OpenAI設定ファイルを読み込み
+if (file_exists(__DIR__ . '/../includes/openai.php')) {
+    require_once __DIR__ . '/../includes/openai.php';
+}
+
 // 偶数時間のみ実行（0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22時）
 $currentHour = (int)date('G');
 if ($currentHour % 2 !== 0) {
