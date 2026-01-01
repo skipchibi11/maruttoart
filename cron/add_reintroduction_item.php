@@ -13,10 +13,12 @@ try {
     ");
     $totalMaterials = $materialCountStmt->fetchColumn();
     
-    // 2. 作品の総数（承認済み）
+    // 2. 作品の総数（承認済み、SVGデータがあるもの）
     $artworkCountStmt = $pdo->query("
         SELECT COUNT(*) FROM community_artworks 
         WHERE status = 'approved'
+        AND svg_data IS NOT NULL
+        AND svg_data != ''
     ");
     $totalArtworks = $artworkCountStmt->fetchColumn();
     
@@ -58,7 +60,7 @@ try {
     ");
     $material = $materialStmt->fetch();
     
-    // 再紹介されていない作品をランダムに取得
+    // 再紹介されていない作品をランダムに取得（SVGデータがあるもの）
     $artworkStmt = $pdo->query("
         SELECT 
             id,
@@ -67,6 +69,8 @@ try {
             file_path
         FROM community_artworks
         WHERE status = 'approved'
+        AND svg_data IS NOT NULL
+        AND svg_data != ''
         AND NOT EXISTS (
             SELECT 1 FROM reintroduction_items 
             WHERE item_type = 'artwork' AND item_id = community_artworks.id
