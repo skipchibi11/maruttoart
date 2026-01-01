@@ -48,13 +48,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
             }
             $description = htmlspecialchars($baseDescription, ENT_XML1);
             
-            // タイプに応じてタグを追加
-            if ($item['item_type'] === 'material') {
-                $description .= ' #フリー素材 #イラスト素材 #freeillustration #minimalart';
-            } else {
-                $description .= ' #組み合わせイラスト #フリー素材 #みんなのアトリエ #freeillustration #minimalart';
-            }
-            
             // 固有ID（GUID）を生成: RSS用の永続的な識別子
             $guid = $baseUrl . '/reintroduction/' . $item['id'];
         ?>
