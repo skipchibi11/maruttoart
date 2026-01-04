@@ -135,13 +135,26 @@ try {
     $clientIP = getClientIP();
     $today = date('Y-m-d');
 
-    // セッション開始（管理者判定用）- config.phpの関数を使用
-    startAdminSession();
-    $isAdmin = isset($_SESSION['admin_id']);
+    // セッション開始（管理者判定用）- 直接session_startを呼ぶ
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     
-    // デバッグ用ログ
-    error_log("Upload API - Admin check: isAdmin=" . ($isAdmin ? 'true' : 'false') . ", Session ID=" . session_id() . ", admin_id=" . ($_SESSION['admin_id'] ?? 'not set'));
-    error_log("Upload API - Session data: " . print_r($_SESSION, true));
+    $isAdmin = isset($_SESSION['admin_id']);
+    $sessionId = session_id();
+    $adminId = $_SESSION['admin_id'] ?? null;
+    
+    // デバッグ情報
+    $debugInfo = [
+        'session_id' => $sessionId,
+        'session_status' => session_status(),
+        'is_admin' => $isAdmin,
+        'admin_id' => $adminId,
+        'session_keys' => array_keys($_SESSION),
+        'session_cookie_params' => session_get_cookie_params()
+    ];
+    
+    error_log("Upload API Debug: " . json_encode($debugInfo, JSON_UNESCAPED_UNICODE));
 
     // 管理者は投稿制限を完全に除外
     $todayCount = 0;
@@ -158,7 +171,7 @@ try {
 
         // 1日1件まで
         if ($todayCount >= 1) {
-            sendError('1日の投稿上限（1件）に達しています。明日再度お試しください。', 429);
+            sendError('1日の投稿上限（1件）に達しています。明日再度お試しください。', 429, $debugInfo);
         }
     } else {
         error_log("Upload API - Admin user detected, skipping limit check");
