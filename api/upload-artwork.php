@@ -135,11 +135,13 @@ try {
     $clientIP = getClientIP();
     $today = date('Y-m-d');
 
-    // セッション開始（管理者判定用）
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+    // セッション開始（管理者判定用）- config.phpの関数を使用
+    startAdminSession();
     $isAdmin = isset($_SESSION['admin_id']);
+    
+    // デバッグ用ログ
+    error_log("Upload API - Admin check: isAdmin=" . ($isAdmin ? 'true' : 'false') . ", Session ID=" . session_id() . ", admin_id=" . ($_SESSION['admin_id'] ?? 'not set'));
+    error_log("Upload API - Session data: " . print_r($_SESSION, true));
 
     // 管理者は投稿制限を完全に除外
     $todayCount = 0;
@@ -152,10 +154,14 @@ try {
         $stmt->execute([$clientIP, $today]);
         $todayCount = $stmt->fetchColumn() ?: 0;
 
+        error_log("Upload API - Non-admin user: IP={$clientIP}, today_count={$todayCount}");
+
         // 1日1件まで
         if ($todayCount >= 1) {
             sendError('1日の投稿上限（1件）に達しています。明日再度お試しください。', 429);
         }
+    } else {
+        error_log("Upload API - Admin user detected, skipping limit check");
     }
 
     // ファイル保存処理
