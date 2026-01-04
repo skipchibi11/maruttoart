@@ -141,16 +141,17 @@ try {
     }
     $isAdmin = isset($_SESSION['admin_id']);
 
-    // 今日のアップロード数を取得（管理者・一般共通）
-    $stmt = $pdo->prepare("
-        SELECT upload_count FROM artwork_upload_limits 
-        WHERE ip_address = ? AND upload_date = ?
-    ");
-    $stmt->execute([$clientIP, $today]);
-    $todayCount = $stmt->fetchColumn() ?: 0;
-
-    // 管理者以外は1日1件制限
+    // 管理者は投稿制限を完全に除外
+    $todayCount = 0;
     if (!$isAdmin) {
+        // 今日のアップロード数を取得（一般ユーザーのみ）
+        $stmt = $pdo->prepare("
+            SELECT upload_count FROM artwork_upload_limits 
+            WHERE ip_address = ? AND upload_date = ?
+        ");
+        $stmt->execute([$clientIP, $today]);
+        $todayCount = $stmt->fetchColumn() ?: 0;
+
         // 1日1件まで
         if ($todayCount >= 1) {
             sendError('1日の投稿上限（1件）に達しています。明日再度お試しください。', 429);
@@ -239,7 +240,8 @@ try {
             'pen_name' => $penName,
             'file_path' => $relativePath,
             'webp_path' => $webpPath,
-            'remaining_uploads' => $isAdmin ? 999 : max(0, 1 - ($todayCount + 1)), // 管理者は999、一般は1日1件
+            'remaining_uploads' => $isAdmin ? '無制限' : max(0, 1 - ($todayCount + 1)),
+            'is_admin' => $isAdmin,
             'used_material_ids' => $usedMaterialIds
         ]);
 
