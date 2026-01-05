@@ -661,175 +661,132 @@ $storyArtworks = $storyStmt->fetchAll();
             background: #e9ecef;
         }
 
-        /* ガイダンスポップアップ */
-        .guidance-popup {
+        /* キャンバス上のヒントポップアップ */
+        .canvas-hint-popup {
             display: none;
-            position: fixed;
-            z-index: 10000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .guidance-content {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            margin: 10% auto;
-            padding: 0;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
-            animation: slideUp 0.4s ease-out;
-            overflow: hidden;
-        }
-
-        .guidance-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
             background: linear-gradient(135deg, #d47ca5 0%, #e99bb8 100%);
             color: white;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-        }
-
-        .guidance-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .guidance-body {
-            padding: 30px;
-        }
-
-        .guidance-tips {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .guidance-tip {
-            background: white;
+            padding: 15px 25px;
             border-radius: 12px;
-            padding: 20px;
+            box-shadow: 0 8px 25px rgba(212, 124, 165, 0.4);
+            animation: slideDown 0.4s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .canvas-hint-popup.show {
+            display: block;
+        }
+
+        .hint-content {
             display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s ease;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            font-weight: 600;
         }
 
-        .guidance-tip:hover {
-            transform: translateX(5px);
-        }
-
-        .tip-icon {
+        .hint-icon {
+            font-size: 1.5rem;
             flex-shrink: 0;
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #d47ca5 0%, #e99bb8 100%);
+        }
+
+        .hint-text {
+            flex: 1;
+        }
+
+        .hint-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
             color: white;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
+            line-height: 1;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
-        .tip-content h3 {
-            color: #d47ca5;
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 0 0 8px 0;
+        .hint-close:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        .tip-content p {
-            color: #666;
-            margin: 0;
-            line-height: 1.6;
-        }
-
-        .guidance-footer {
-            padding: 0 30px 30px;
-        }
-
-        .guidance-close-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #d47ca5 0%, #e99bb8 100%);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(212, 124, 165, 0.3);
-        }
-
-        .guidance-close-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212, 124, 165, 0.4);
-        }
-
-        @keyframes slideUp {
+        @keyframes slideDown {
             from {
-                transform: translateY(50px);
+                transform: translateX(-50%) translateY(-20px);
                 opacity: 0;
             }
             to {
-                transform: translateY(0);
+                transform: translateX(-50%) translateY(0);
                 opacity: 1;
             }
         }
 
         @media (max-width: 576px) {
-            .guidance-content {
-                margin: 15% auto;
-                width: 95%;
+            .canvas-hint-popup {
+                padding: 12px 20px;
+                top: 15px;
             }
 
-            .guidance-header h2 {
-                font-size: 1.25rem;
-            }
-
-            .guidance-body {
-                padding: 20px;
-            }
-
-            .guidance-tip {
-                padding: 15px;
-                gap: 12px;
-            }
-
-            .tip-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-            }
-
-            .tip-content h3 {
-                font-size: 1rem;
-            }
-
-            .tip-content p {
+            .hint-content {
                 font-size: 0.9rem;
+                gap: 10px;
+            }
+
+            .hint-icon {
+                font-size: 1.3rem;
+            }
+
+            .hint-close {
+                width: 22px;
+                height: 22px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* レスポンシブ対応 */
+            }
+
+            .step-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
+                margin-bottom: 15px;
+            }
+
+            .step-title {
+                font-size: 1.15rem;
+                margin-bottom: 12px;
+            }
+
+            .step-description {
+                font-size: 0.95rem;
+                line-height: 1.6;
             }
 
             .guidance-footer {
-                padding: 0 20px 20px;
+                padding: 0 20px 25px;
+                gap: 8px;
             }
 
-            .guidance-close-btn {
-                padding: 12px;
-                font-size: 1rem;
+            .tour-btn {
+                padding: 10px 16px;
+                font-size: 0.95rem;
+            }
+
+            .tour-btn-skip {
+                top: 10px;
+                right: 10px;
             }
         }
 
@@ -1037,6 +994,7 @@ $storyArtworks = $storyStmt->fetchAll();
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .canvas-header {
@@ -2190,6 +2148,15 @@ $storyArtworks = $storyStmt->fetchAll();
 
             <!-- キャンバスエリア -->
             <div class="canvas-area" id="canvas-area">
+                <!-- ヒントポップアップ -->
+                <div class="canvas-hint-popup" id="canvasHint">
+                    <div class="hint-content">
+                        <span class="hint-icon">💡</span>
+                        <span class="hint-text">素材をクリックすると、移動できます</span>
+                        <button class="hint-close" onclick="closeCanvasHint()">×</button>
+                    </div>
+                </div>
+                
                 <div class="canvas-header">
                     <h3>あなたのキャンバス</h3>
                 </div>
@@ -2374,42 +2341,6 @@ $storyArtworks = $storyStmt->fetchAll();
         </div>
     </div>
 
-    <!-- ガイダンスポップアップ -->
-    <div id="guidancePopup" class="guidance-popup">
-        <div class="guidance-content">
-            <div class="guidance-header">
-                <h2><i class="bi bi-lightbulb"></i> 作品の編集方法</h2>
-            </div>
-            <div class="guidance-body">
-                <div class="guidance-tips">
-                    <div class="guidance-tip">
-                        <div class="tip-icon">
-                            <i class="bi bi-cursor"></i>
-                        </div>
-                        <div class="tip-content">
-                            <h3>素材をクリックして移動</h3>
-                            <p>キャンバス上の素材をクリックして、好きな位置にドラッグして配置できます。</p>
-                        </div>
-                    </div>
-                    <div class="guidance-tip">
-                        <div class="tip-icon">
-                            <i class="bi bi-palette"></i>
-                        </div>
-                        <div class="tip-content">
-                            <h3>素材をクリックして色を変更</h3>
-                            <p>素材を選択した状態でカラーパレットの色をクリックすると、素材の色を変更できます。</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="guidance-footer">
-                <button class="guidance-close-btn" onclick="closeGuidancePopup()">
-                    <i class="bi bi-check-circle"></i> はじめる
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
         console.log('シンプルSVG編集ツール開始');
         
@@ -2429,6 +2360,29 @@ $storyArtworks = $storyStmt->fetchAll();
 
         // テキスト編集中のレイヤーID
         let editingTextLayerId = null;
+
+        // キャンバスヒント表示関数
+        function showCanvasHint() {
+            const hint = document.getElementById('canvasHint');
+            if (hint) {
+                hint.classList.add('show');
+                console.log('キャンバスヒントを表示しました');
+                
+                // 5秒後に自動で非表示
+                setTimeout(() => {
+                    closeCanvasHint();
+                }, 5000);
+            }
+        }
+
+        // キャンバスヒント非表示関数
+        function closeCanvasHint() {
+            const hint = document.getElementById('canvasHint');
+            if (hint) {
+                hint.classList.remove('show');
+                console.log('キャンバスヒントを閉じました');
+            }
+        }
 
         // テキストボタンをクリックしたときの処理
         function handleTextButton() {
@@ -4600,8 +4554,10 @@ $storyArtworks = $storyStmt->fetchAll();
                                             saveToLocalStorage();
                                             console.log(`${layers.length}個のレイヤーを読み込みました`);
                                             
-                                            // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
-                                            setTimeout(showGuidancePopup, 800);
+                                            // 読み込み完了後、少し遅延してキャンバスヒントを表示
+                                            setTimeout(() => {
+                                                showCanvasHint();
+                                            }, 800);
                                         }
                                     } else if (layerData.svgPath) {
                                         console.log('svgPathから読み込み:', layerData.svgPath);
@@ -4637,6 +4593,11 @@ $storyArtworks = $storyStmt->fetchAll();
                                                 if (loadedLayersCount === totalLayers) {
                                                     saveToLocalStorage();
                                                     console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                                    
+                                                    // 読み込み完了後、少し遅延してキャンバスヒントを表示
+                                                    setTimeout(() => {
+                                                        showCanvasHint();
+                                                    }, 800);
                                                 }
                                             })
                                             .catch(error => {
@@ -4646,8 +4607,10 @@ $storyArtworks = $storyStmt->fetchAll();
                                                     saveToLocalStorage();
                                                     console.log(`${layers.length}個のレイヤーを読み込みました`);
                                                     
-                                                    // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
-                                                    setTimeout(showGuidancePopup, 800);
+                                                    // 読み込み完了後、少し遅延してキャンバスヒントを表示
+                                                    setTimeout(() => {
+                                                        showCanvasHint();
+                                                    }, 800);
                                                 }
                                             });
                                     } else {
@@ -4658,8 +4621,10 @@ $storyArtworks = $storyStmt->fetchAll();
                                             saveToLocalStorage();
                                             console.log(`${layers.length}個のレイヤーを読み込みました`);
                                             
-                                            // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
-                                            setTimeout(showGuidancePopup, 800);
+                                            // 読み込み完了後、少し遅延してキャンバスヒントを表示
+                                            setTimeout(() => {
+                                                showCanvasHint();
+                                            }, 800);
                                         }
                                     }
                                 } else if (layerData.type === 'text') {
@@ -4684,8 +4649,10 @@ $storyArtworks = $storyStmt->fetchAll();
                                         saveToLocalStorage();
                                         console.log(`${layers.length}個のレイヤーを読み込みました (nextLayerId: ${nextLayerId})`);
                                         
-                                        // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
-                                        setTimeout(showGuidancePopup, 800);
+                                        // 読み込み完了後、少し遅延してキャンバスヒントを表示
+                                        setTimeout(() => {
+                                            showCanvasHint();
+                                        }, 800);
                                     }
                                 } else {
                                     // 不明なタイプ
@@ -4695,8 +4662,10 @@ $storyArtworks = $storyStmt->fetchAll();
                                         saveToLocalStorage();
                                         console.log(`${layers.length}個のレイヤーを読み込みました (nextLayerId: ${nextLayerId})`);
                                         
-                                        // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
-                                        setTimeout(showGuidancePopup, 800);
+                                        // 読み込み完了後、少し遅延してキャンバスヒントを表示
+                                        setTimeout(() => {
+                                            showCanvasHint();
+                                        }, 800);
                                     }
                                 }
                             });
@@ -4724,8 +4693,11 @@ $storyArtworks = $storyStmt->fetchAll();
         function showGuidancePopup() {
             const popup = document.getElementById('guidancePopup');
             if (popup) {
+                // ツアーを最初のステップにリセット
+                currentTourStep = 0;
+                updateTourStep();
                 popup.style.display = 'block';
-                console.log('ガイダンスポップアップを表示しました');
+                console.log('ガイダンスツアーを表示しました');
             }
         }
 
@@ -4734,7 +4706,9 @@ $storyArtworks = $storyStmt->fetchAll();
             const popup = document.getElementById('guidancePopup');
             if (popup) {
                 popup.style.display = 'none';
-                console.log('ガイダンスポップアップを閉じました');
+                // ツアーをリセット
+                currentTourStep = 0;
+                console.log('ガイダンスツアーを閉じました');
             }
         }
 
