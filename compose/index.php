@@ -661,6 +661,178 @@ $storyArtworks = $storyStmt->fetchAll();
             background: #e9ecef;
         }
 
+        /* ガイダンスポップアップ */
+        .guidance-popup {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .guidance-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            animation: slideUp 0.4s ease-out;
+            overflow: hidden;
+        }
+
+        .guidance-header {
+            background: linear-gradient(135deg, #d47ca5 0%, #e99bb8 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .guidance-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .guidance-body {
+            padding: 30px;
+        }
+
+        .guidance-tips {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .guidance-tip {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .guidance-tip:hover {
+            transform: translateX(5px);
+        }
+
+        .tip-icon {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #d47ca5 0%, #e99bb8 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .tip-content h3 {
+            color: #d47ca5;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+
+        .tip-content p {
+            color: #666;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .guidance-footer {
+            padding: 0 30px 30px;
+        }
+
+        .guidance-close-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #d47ca5 0%, #e99bb8 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 124, 165, 0.3);
+        }
+
+        .guidance-close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 124, 165, 0.4);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .guidance-content {
+                margin: 15% auto;
+                width: 95%;
+            }
+
+            .guidance-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .guidance-body {
+                padding: 20px;
+            }
+
+            .guidance-tip {
+                padding: 15px;
+                gap: 12px;
+            }
+
+            .tip-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .tip-content h3 {
+                font-size: 1rem;
+            }
+
+            .tip-content p {
+                font-size: 0.9rem;
+            }
+
+            .guidance-footer {
+                padding: 0 20px 20px;
+            }
+
+            .guidance-close-btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+
         /* レスポンシブ対応 */
         @media (max-width: 576px) {
             .search-form {
@@ -2198,6 +2370,42 @@ $storyArtworks = $storyStmt->fetchAll();
             <div class="text-modal-footer">
                 <button class="text-modal-btn text-modal-btn-secondary" onclick="closeTextModal()">キャンセル</button>
                 <button class="text-modal-btn text-modal-btn-primary" onclick="addTextToCanvas()">追加</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ガイダンスポップアップ -->
+    <div id="guidancePopup" class="guidance-popup">
+        <div class="guidance-content">
+            <div class="guidance-header">
+                <h2><i class="bi bi-lightbulb"></i> 作品の編集方法</h2>
+            </div>
+            <div class="guidance-body">
+                <div class="guidance-tips">
+                    <div class="guidance-tip">
+                        <div class="tip-icon">
+                            <i class="bi bi-cursor"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h3>素材をクリックして移動</h3>
+                            <p>キャンバス上の素材をクリックして、好きな位置にドラッグして配置できます。</p>
+                        </div>
+                    </div>
+                    <div class="guidance-tip">
+                        <div class="tip-icon">
+                            <i class="bi bi-palette"></i>
+                        </div>
+                        <div class="tip-content">
+                            <h3>素材をクリックして色を変更</h3>
+                            <p>素材を選択した状態でカラーパレットの色をクリックすると、素材の色を変更できます。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="guidance-footer">
+                <button class="guidance-close-btn" onclick="closeGuidancePopup()">
+                    <i class="bi bi-check-circle"></i> はじめる
+                </button>
             </div>
         </div>
     </div>
@@ -4391,6 +4599,9 @@ $storyArtworks = $storyStmt->fetchAll();
                                         if (loadedLayersCount === totalLayers) {
                                             saveToLocalStorage();
                                             console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                            
+                                            // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
+                                            setTimeout(showGuidancePopup, 800);
                                         }
                                     } else if (layerData.svgPath) {
                                         console.log('svgPathから読み込み:', layerData.svgPath);
@@ -4434,6 +4645,9 @@ $storyArtworks = $storyStmt->fetchAll();
                                                 if (loadedLayersCount === totalLayers) {
                                                     saveToLocalStorage();
                                                     console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                                    
+                                                    // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
+                                                    setTimeout(showGuidancePopup, 800);
                                                 }
                                             });
                                     } else {
@@ -4443,6 +4657,9 @@ $storyArtworks = $storyStmt->fetchAll();
                                         if (loadedLayersCount === totalLayers) {
                                             saveToLocalStorage();
                                             console.log(`${layers.length}個のレイヤーを読み込みました`);
+                                            
+                                            // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
+                                            setTimeout(showGuidancePopup, 800);
                                         }
                                     }
                                 } else if (layerData.type === 'text') {
@@ -4466,6 +4683,9 @@ $storyArtworks = $storyStmt->fetchAll();
                                     if (loadedLayersCount === totalLayers) {
                                         saveToLocalStorage();
                                         console.log(`${layers.length}個のレイヤーを読み込みました (nextLayerId: ${nextLayerId})`);
+                                        
+                                        // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
+                                        setTimeout(showGuidancePopup, 800);
                                     }
                                 } else {
                                     // 不明なタイプ
@@ -4474,6 +4694,9 @@ $storyArtworks = $storyStmt->fetchAll();
                                     if (loadedLayersCount === totalLayers) {
                                         saveToLocalStorage();
                                         console.log(`${layers.length}個のレイヤーを読み込みました (nextLayerId: ${nextLayerId})`);
+                                        
+                                        // すべてのレイヤーが読み込まれたらガイダンスポップアップを表示
+                                        setTimeout(showGuidancePopup, 800);
                                     }
                                 }
                             });
@@ -4495,6 +4718,24 @@ $storyArtworks = $storyStmt->fetchAll();
             url.searchParams.delete('artwork_id');
             window.history.replaceState({}, '', url);
             console.log('URLパラメータを削除しました');
+        }
+
+        // ガイダンスポップアップを表示
+        function showGuidancePopup() {
+            const popup = document.getElementById('guidancePopup');
+            if (popup) {
+                popup.style.display = 'block';
+                console.log('ガイダンスポップアップを表示しました');
+            }
+        }
+
+        // ガイダンスポップアップを閉じる
+        function closeGuidancePopup() {
+            const popup = document.getElementById('guidancePopup');
+            if (popup) {
+                popup.style.display = 'none';
+                console.log('ガイダンスポップアップを閉じました');
+            }
         }
 
         // PNG出力機能
