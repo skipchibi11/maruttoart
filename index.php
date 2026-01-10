@@ -20,6 +20,23 @@ $totalCountStmt = $pdo->prepare($totalCountSql);
 $totalCountStmt->execute();
 $totalMaterialsCount = $totalCountStmt->fetchColumn();
 
+// 統計情報を取得
+// 単体素材数（SVGあり）
+$materialCountStmt = $pdo->query("SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''");
+$totalMaterialCount = $materialCountStmt->fetchColumn();
+
+// アトリエ作品数（承認済み）
+$artworkCountStmt = $pdo->query("SELECT COUNT(*) FROM community_artworks WHERE status = 'approved'");
+$totalArtworkCount = $artworkCountStmt->fetchColumn();
+
+// ベクター数（単体素材）- SVGパスがあるものがベクター
+$vectorMaterialCountStmt = $pdo->query("SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''");
+$vectorMaterialCount = $vectorMaterialCountStmt->fetchColumn();
+
+// ベクター数（アトリエ作品）- svg_dataがnullでないものがベクター
+$vectorArtworkCountStmt = $pdo->query("SELECT COUNT(*) FROM community_artworks WHERE status = 'approved' AND svg_data IS NOT NULL");
+$vectorArtworkCount = $vectorArtworkCountStmt->fetchColumn();
+
 // ヒーロー背景用のランダムSVG素材を取得（1個）
 $heroDecorationSql = "SELECT svg_path 
                       FROM materials 
@@ -99,14 +116,14 @@ if ($tileCount > 0 && $maxVectorId > 0) {
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ミニマルなフリーイラスト素材集｜marutto.art（商用利用OK）</title>
-    <meta name="description" content="ミニマルなフリーイラスト素材サイト。動物や植物、食べものの素材を配布しています。組み合わせや色変更に対応した素材もあり、作品を作って共有する「みんなのアトリエ」もご利用いただけます。">
+    <title>marutto.art｜やさしいミニマルイラスト素材を組み合わせてつくる</title>
+    <meta name="description" content="まるく、やさしく、シンプルに。商用・個人利用OKのミニマルイラスト素材サイト。素材を組み合わせたり色を変えたりして、あなただけの一枚をつくれます。">
     
     <!-- Open Graph Protocol (OGP) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/">
-    <meta property="og:title" content="ミニマルなフリーイラスト素材集｜marutto.art（商用利用OK）">
-    <meta property="og:description" content="ミニマルなフリーイラスト素材サイト。動物や植物、食べものの素材を配布しています。組み合わせや色変更に対応した素材もあり、作品を作って共有する「みんなのアトリエ」もご利用いただけます。">
+    <meta property="og:title" content="marutto.art｜やさしいミニマルイラスト素材を組み合わせてつくる">
+    <meta property="og:description" content="まるく、やさしく、シンプルに。商用・個人利用OKのミニマルイラスト素材サイト。素材を組み合わせたり色を変えたりして、あなただけの一枚をつくれます。">
     <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png">
     <meta property="og:image:alt" content="marutto.art - ミニマルなフリーイラスト素材集のロゴ">
     <meta property="og:site_name" content="marutto.art">
@@ -116,8 +133,8 @@ if ($tileCount > 0 && $maxVectorId > 0) {
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@maruttoart">
     <meta name="twitter:creator" content="@maruttoart">
-    <meta name="twitter:title" content="ミニマルなフリーイラスト素材集｜marutto.art（商用利用OK）">
-    <meta name="twitter:description" content="ミニマルなフリーイラスト素材サイト。動物や植物、食べものの素材を配布しています。組み合わせや色変更に対応した素材もあり、作品を作って共有する「みんなのアトリエ」もご利用いただけます。">
+    <meta name="twitter:title" content="marutto.art｜やさしいミニマルイラスト素材を組み合わせてつくる">
+    <meta name="twitter:description" content="まるく、やさしく、シンプルに。商用・個人利用OKのミニマルイラスト素材サイト。素材を組み合わせたり色を変えたりして、あなただけの一枚をつくれます。">
     <meta name="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png">
     <meta name="twitter:image:alt" content="marutto.art - ミニマルなフリーイラスト素材集のロゴ">
     
@@ -196,6 +213,134 @@ if ($tileCount > 0 && $maxVectorId > 0) {
     </script>
 
     <style>
+        /* 統計情報セクション（アピール版） */
+        .stats-appeal-section {
+            background: linear-gradient(135deg, #ffe9f3 0%, #fff5f8 100%);
+            padding: 3rem 0;
+            margin: 2rem 0;
+        }
+
+        .stats-appeal-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #d47ca5;
+            margin-bottom: 1rem;
+        }
+
+        .stats-appeal-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2.5rem;
+        }
+
+        .stats-appeal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stats-appeal-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(212, 124, 165, 0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stats-appeal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(212, 124, 165, 0.2);
+        }
+
+        .stats-appeal-card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .stats-appeal-card-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #d47ca5;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-appeal-card-vector {
+            font-size: 0.95rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .stats-appeal-card-vector strong {
+            color: #d47ca5;
+            font-weight: 600;
+        }
+
+        .stats-appeal-note {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stats-appeal-note-text {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .stats-appeal-note-text strong {
+            color: #d47ca5;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .stats-appeal-section {
+                padding: 2rem 0;
+            }
+
+            .stats-appeal-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-appeal-subtitle {
+                font-size: 0.95rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .stats-appeal-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .stats-appeal-card {
+                padding: 1.5rem;
+            }
+
+            .stats-appeal-card-number {
+                font-size: 2rem;
+            }
+
+            .stats-appeal-note {
+                padding: 1rem;
+            }
+
+            .stats-appeal-note-text {
+                font-size: 0.9rem;
+            }
+        }
+
         /* リセットCSS */
         * {
             margin: 0;
@@ -1501,6 +1646,39 @@ if ($tileCount > 0 && $maxVectorId > 0) {
                         </a>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 統計情報セクション（アピール版） -->
+    <section class="stats-appeal-section">
+        <div class="container">
+            <h2 class="stats-appeal-title">豊富な素材とアトリエ作品</h2>
+            <p class="stats-appeal-subtitle">商用・個人利用OKのミニマル素材が使い放題</p>
+            
+            <div class="stats-appeal-grid">
+                <div class="stats-appeal-card">
+                    <h3 class="stats-appeal-card-title">単体素材</h3>
+                    <div class="stats-appeal-card-number"><?= number_format($totalMaterialCount) ?></div>
+                    <div class="stats-appeal-card-vector">
+                        ベクター: <strong><?= number_format($vectorMaterialCount) ?></strong>
+                    </div>
+                </div>
+                
+                <div class="stats-appeal-card">
+                    <h3 class="stats-appeal-card-title">アトリエ作品</h3>
+                    <div class="stats-appeal-card-number"><?= number_format($totalArtworkCount) ?></div>
+                    <div class="stats-appeal-card-vector">
+                        ベクター: <strong><?= number_format($vectorArtworkCount) ?></strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-appeal-note">
+                <p class="stats-appeal-note-text">
+                    <strong>ベクター画像</strong>については、ユーザーが<strong>アレンジ可能</strong>です<br>
+                    色の変更、サイズ調整、回転、組み合わせなど自由に編集できます
+                </p>
             </div>
         </div>
     </section>

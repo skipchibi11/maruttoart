@@ -11,12 +11,29 @@ $perPage = 20; // 1ページあたりの表示件数
 $page = max(1, intval($_GET['page'] ?? 1)); // 現在のページ（最小値は1）
 $offset = ($page - 1) * $perPage;
 
-// 総件数を取得
+// 総件数を取得（ページネーション用）
 $countSql = "SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''";
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute();
 $totalItems = $countStmt->fetchColumn();
 $totalPages = ceil($totalItems / $perPage);
+
+// 統計情報を取得
+// 単体素材数（SVGあり）
+$materialCountStmt = $pdo->query("SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''");
+$totalMaterialCount = $materialCountStmt->fetchColumn();
+
+// アトリエ作品数（承認済み）
+$artworkCountStmt = $pdo->query("SELECT COUNT(*) FROM community_artworks WHERE status = 'approved'");
+$totalArtworkCount = $artworkCountStmt->fetchColumn();
+
+// ベクター数（単体素材）- SVGパスがあるものがベクター
+$vectorMaterialCountStmt = $pdo->query("SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''");
+$vectorMaterialCount = $vectorMaterialCountStmt->fetchColumn();
+
+// ベクター数（アトリエ作品）- svg_dataがnullでないものがベクター
+$vectorArtworkCountStmt = $pdo->query("SELECT COUNT(*) FROM community_artworks WHERE status = 'approved' AND svg_data IS NOT NULL");
+$vectorArtworkCount = $vectorArtworkCountStmt->fetchColumn();
 
 // ページネーション付きでSVG素材を取得
 $stmt = $pdo->prepare("
@@ -68,6 +85,57 @@ $storyArtworks = $storyStmt->fetchAll();
     <link rel="stylesheet" href="assets/css/layout.css">
 
     <style>
+        /* 統計情報セクション */
+        .stats-section {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.75rem 0;
+        }
+
+        .stats-text {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin: 0;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .stats-item {
+            white-space: nowrap;
+        }
+
+        .stats-text strong {
+            color: #495057;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .stats-text .vector-count {
+            color: #d47ca5;
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        @media (max-width: 768px) {
+            .stats-text {
+                font-size: 0.95rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .stats-text strong {
+                font-size: 1.1rem;
+            }
+            
+            .stats-text .vector-count {
+                font-size: 1rem;
+            }
+        }
+
         /* 使い方セクション */
         .how-to-use-section {
             background: linear-gradient(135deg, #ffe9f3 0%, #ffebf0 100%);
@@ -2000,6 +2068,16 @@ $storyArtworks = $storyStmt->fetchAll();
     $currentPage = 'custom-size';
     include '../includes/header.php'; 
     ?>
+
+    <!-- 統計情報セクション -->
+    <div class="stats-section">
+        <div class="container">
+            <div class="stats-text">
+                <span class="stats-item">単体素材: <strong><?= number_format($totalMaterialCount) ?></strong>（ベクター: <span class="vector-count"><?= number_format($vectorMaterialCount) ?></span>）</span>
+                <span class="stats-item">アトリエ作品: <strong><?= number_format($totalArtworkCount) ?></strong>（ベクター: <span class="vector-count"><?= number_format($vectorArtworkCount) ?></span>）</span>
+            </div>
+        </div>
+    </div>
 
     <!-- 使い方セクション -->
     <div class="how-to-use-section">
