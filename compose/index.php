@@ -19,8 +19,8 @@ $totalItems = $countStmt->fetchColumn();
 $totalPages = ceil($totalItems / $perPage);
 
 // 統計情報を取得
-// 単体素材数（SVGあり）
-$materialCountStmt = $pdo->query("SELECT COUNT(DISTINCT id) FROM materials WHERE svg_path IS NOT NULL AND svg_path != ''");
+// 単体素材数（すべて）
+$materialCountStmt = $pdo->query("SELECT COUNT(DISTINCT id) FROM materials");
 $totalMaterialCount = $materialCountStmt->fetchColumn();
 
 // アトリエ作品数（承認済み）
