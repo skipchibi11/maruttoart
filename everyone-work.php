@@ -260,6 +260,51 @@ try {
     <meta property="twitter:description" content="<?= h($artwork['title']) ?>は、無料で組み合わせて作られています。ブログ・資料・SNSに使えるシンプルなイラスト素材です。">
     <meta property="twitter:image" content="<?= h($artworkImageUrl) ?>">
 
+    <!-- JSON-LD構造化データ -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        "contentUrl": "<?= h($artworkImageUrl) ?>",
+        "license": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "acquireLicensePage": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/terms-of-use.php",
+        "creditText": "marutto.art",
+        "creator": {
+            "@type": "Organization",
+            "name": "marutto.art"
+        },
+        "copyrightNotice": "marutto.art"
+    }
+    </script>
+
+    <!-- パンくずリスト構造化データ -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "ホーム",
+                "item": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "みんなのアトリエ",
+                "item": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/everyone-works.php"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "<?= h($artwork['title']) ?>",
+                "item": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/everyone-work.php?id=<?= $artwork['id'] ?>"
+            }
+        ]
+    }
+    </script>
+
     <style>
         /* リセットCSS */
         * {

@@ -155,7 +155,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h($material['title']) ?>  - ミニマルなフリーイラスト素材（商用利用OK）｜marutto.art</title>
-    <meta name="description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。<?= h($category['title']) ?>カテゴリのフリーイラストをお楽しみください。">
+    <meta name="description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。ブログや資料に使いやすい、主張しすぎないやさしいデザインです。">
 
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -175,14 +175,14 @@ try {
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
-    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。">
+    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。ブログや資料に使いやすい、主張しすぎないやさしいデザインです。">
     <meta property="og:image" content="<?= h($structuredImageUrl) ?>">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
     <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
-    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。">
+    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。ブログや資料に使いやすい、主張しすぎないやさしいデザインです。">
     <meta property="twitter:image" content="<?= h($structuredImageUrl) ?>">
     
     <!-- JSON-LD structured data -->
