@@ -68,8 +68,8 @@ $storyArtworks = $storyStmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
-    <title>あなたのアトリエ - maruttoart</title>
-    <meta name="description" content="任意のサイズでベクター素材を組み合わせて作品を作成できるシンプルな編集ツールです。">
+    <title>無料イラスト作成ツール｜パーツを組み合わせて作る｜marutto.art</title>
+    <meta name="description" content="このイラスト、全部無料で組み合わせて作れます。ブログ・資料・SNSに使えるシンプルなイラストを、ブラウザ上で簡単作成。">
     
     <!-- カノニカルURL設定 -->
     <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose/">

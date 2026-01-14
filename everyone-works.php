@@ -56,8 +56,8 @@ if (!empty($artworks)) {
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>みんなのアトリエ｜組み合わせで作られたフリーイラスト作品一覧</title>
-    <meta name="description" content="みんなのアトリエは、複数のフリーイラスト素材を組み合わせて作られたコミュニティ作品の一覧ページです。Web・資料・子ども向けコンテンツなどに無料で利用できます。">
+    <title>無料イラスト作品一覧｜組み合わせて作られた例｜marutto.art</title>
+    <meta name="description" content="marutto.artで作られたイラスト作品一覧。すべて無料で利用可能。ブログや資料での使い方の参考にも。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- カノニカルタグ -->

@@ -80,8 +80,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
-    <title>こどもアトリエ - maruttoart</title>
-    <meta name="description" content="えをかいて、たのしいさくひんをつくろう！かんたんにつかえるこども用のアトリエです。">
+    <title>こども向けイラスト作成｜えをくみあわせてつくる｜marutto.art</title>
+    <meta name="description" content="こどもでもかんたん。えをえらんで、くみあわせて、オリジナルのイラストをつくれます。ぜんぶ無料。">
     
     <!-- カノニカルURL設定 -->
     <link rel="canonical" href="https://<?= $_SERVER['HTTP_HOST'] ?>/compose/kids.php">

@@ -116,14 +116,14 @@ if ($tileCount > 0 && $maxVectorId > 0) {
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>marutto.art｜やさしいミニマルイラスト素材を組み合わせてつくる</title>
-    <meta name="description" content="まるく、やさしく、シンプルに。商用・個人利用OKのミニマルイラスト素材サイト。素材を組み合わせたり色を変えたりして、あなただけの一枚をつくれます。">
+    <title>無料で使えるイラスト素材と作成ツール｜marutto.art</title>
+    <meta name="description" content="marutto.artは、イラストを無料で作って使える素材サイトです。組み合わせるだけで、やさしいイラストが完成します。">
     
     <!-- Open Graph Protocol (OGP) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/">
-    <meta property="og:title" content="marutto.art｜やさしいミニマルイラスト素材を組み合わせてつくる">
-    <meta property="og:description" content="まるく、やさしく、シンプルに。商用・個人利用OKのミニマルイラスト素材サイト。素材を組み合わせたり色を変えたりして、あなただけの一枚をつくれます。">
+    <meta property="og:title" content="無料で使えるイラスト素材と作成ツール｜marutto.art">
+    <meta property="og:description" content="marutto.artは、イラストを無料で作って使える素材サイトです。組み合わせるだけで、やさしいイラストが完成します。">
     <meta property="og:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png">
     <meta property="og:image:alt" content="marutto.art - ミニマルなフリーイラスト素材集のロゴ">
     <meta property="og:site_name" content="marutto.art">
@@ -133,8 +133,8 @@ if ($tileCount > 0 && $maxVectorId > 0) {
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@maruttoart">
     <meta name="twitter:creator" content="@maruttoart">
-    <meta name="twitter:title" content="marutto.art｜やさしいミニマルイラスト素材を組み合わせてつくる">
-    <meta name="twitter:description" content="まるく、やさしく、シンプルに。商用・個人利用OKのミニマルイラスト素材サイト。素材を組み合わせたり色を変えたりして、あなただけの一枚をつくれます。">
+    <meta name="twitter:title" content="無料で使えるイラスト素材と作成ツール｜marutto.art">
+    <meta name="twitter:description" content="marutto.artは、イラストを無料で作って使える素材サイトです。組み合わせるだけで、やさしいイラストが完成します。">
     <meta name="twitter:image" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png">
     <meta name="twitter:image:alt" content="marutto.art - ミニマルなフリーイラスト素材集のロゴ">
     
@@ -171,8 +171,8 @@ if ($tileCount > 0 && $maxVectorId > 0) {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "marutto.art",
-        "alternateName": "ミニマルなフリーイラスト素材集",
-        "description": "ミニマルなフリーイラスト素材をダウンロード！ミニマルに描かれた動物、植物、食べ物などの素材を商用利用OK。個人・法人問わずご利用いただけるフリー素材集です。",
+        "alternateName": "無料で使えるイラスト素材と作成ツール｜marutto.art",
+        "description": "marutto.artは、イラストを無料で作って使える素材サイトです。組み合わせるだけで、やさしいイラストが完成します。",
         "url": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/",
         "image": "<?= h($_SERVER['REQUEST_SCHEME'] ?? 'https') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/assets/icons/logo-ogp.png",
         "publisher": {
