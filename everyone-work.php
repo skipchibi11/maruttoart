@@ -988,9 +988,11 @@ try {
         }
     </style>
     
-    <?php include __DIR__ . '/includes/analytics-script.php'; ?>
+    <?php include __DIR__ . '/includes/gtm-head.php'; ?>
 </head>
 <body>
+    <?php include __DIR__ . '/includes/gtm-body.php'; ?>
+    
     <?php 
     $currentPage = 'everyone-work';
     include 'includes/header.php'; 

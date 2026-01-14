@@ -1811,9 +1811,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
         }
     </style>
     
-    <?php include __DIR__ . '/../includes/analytics-script.php'; ?>
+    <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
 </head>
 <body>
+    <?php include __DIR__ . '/../includes/gtm-body.php'; ?>
+    
     <!-- PC用：背景に流れる素材 -->
     <div class="floating-materials-container" id="floatingMaterialsContainer"></div>
     
