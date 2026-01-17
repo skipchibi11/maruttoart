@@ -12,9 +12,10 @@ $artworksStmt = $pdo->prepare($artworksSql);
 $artworksStmt->execute();
 $artworks = $artworksStmt->fetchAll();
 
-// ランダムに素材を6件取得
+// ランダムにベクター素材を6件取得
 $materialsSql = "SELECT m.*, c.slug as category_slug FROM materials m 
         LEFT JOIN categories c ON m.category_id = c.id 
+        WHERE m.svg_path IS NOT NULL AND m.svg_path != ''
         ORDER BY RAND() LIMIT 6";
 $materialsStmt = $pdo->prepare($materialsSql);
 $materialsStmt->execute();
@@ -700,7 +701,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                 <?php foreach ($randomMaterials as $material): ?>
                     <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-item">
                         <?php
-                        $materialImageUrl = !empty($material['webp_small_path']) ? $material['webp_small_path'] : $material['image_path'];
+                        $materialImageUrl = !empty($material['structured_image_path']) ? $material['structured_image_path'] : $material['image_path'];
                         ?>
                         <img src="/<?= h($materialImageUrl) ?>" alt="<?= h($material['title']) ?>" loading="lazy">
                     </a>
