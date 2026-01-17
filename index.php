@@ -13,7 +13,7 @@ $artworksStmt->execute();
 $artworks = $artworksStmt->fetchAll();
 
 // ランダムにベクター素材を6件取得
-$materialsSql = "SELECT m.*, c.slug as category_slug FROM materials m 
+$materialsSql = "SELECT m.*, c.slug as category_slug, m.webp_small_path, m.structured_bg_color FROM materials m 
         LEFT JOIN categories c ON m.category_id = c.id 
         WHERE m.svg_path IS NOT NULL AND m.svg_path != ''
         ORDER BY RAND() LIMIT 6";
@@ -47,7 +47,7 @@ $scrollItems = array_merge($scrollMaterials, $scrollArtworks);
 shuffle($scrollItems);
 
 // 背景浮遊用の素材を取得（8件）
-$floatingMaterialsSql = "SELECT m.webp_small_path as image_path FROM materials m ORDER BY RAND() LIMIT 8";
+$floatingMaterialsSql = "SELECT m.webp_small_path as image_path, m.structured_bg_color FROM materials m ORDER BY RAND() LIMIT 8";
 $floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
 $floatingMaterialsStmt->execute();
 $floatingMaterials = $floatingMaterialsStmt->fetchAll();
@@ -266,6 +266,8 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             grid-template-columns: repeat(6, 1fr);
             gap: 16px;
             margin-bottom: 30px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .material-item {
@@ -281,6 +283,8 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             display: flex;
             align-items: center;
             justify-content: center;
+            min-width: 0;
+            box-sizing: border-box;
         }
 
         .material-item:hover {
@@ -395,7 +399,6 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             position: absolute;
             opacity: 0;
             animation: floatUp linear infinite;
-            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(8px);
             border-radius: 50%;
             padding: 10px;
@@ -561,7 +564,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             }
 
             .section .container {
-                padding: 24px 12px;
+                padding: 20px 8px;
                 border-radius: 16px;
                 width: 90%;
             }
@@ -572,15 +575,18 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             }
 
             .materials-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
                 width: 100%;
+                max-width: 100%;
             }
 
             .material-item {
-                padding: 8px;
+                padding: 6px;
                 aspect-ratio: 1;
                 width: 100%;
+                max-width: 100%;
+                min-width: 0;
             }
         }
 
@@ -611,8 +617,10 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
     <!-- 浮遊素材背景 -->
     <div class="floating-container">
         <?php foreach ($floatingMaterials as $index => $material): 
-            if (!empty($material['image_path'])): ?>
-        <div class="floating-material">
+            if (!empty($material['image_path'])): 
+                $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+            ?>
+        <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
             <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
         </div>
         <?php endif; endforeach; ?>
@@ -706,10 +714,13 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             
             <div class="materials-grid">
                 <?php foreach ($randomMaterials as $material): ?>
-                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" class="material-item">
-                        <?php
-                        $materialImageUrl = !empty($material['structured_image_path']) ? $material['structured_image_path'] : $material['image_path'];
-                        ?>
+                    <?php
+                    $materialImageUrl = !empty($material['webp_small_path']) ? $material['webp_small_path'] : $material['image_path'];
+                    $bgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+                    ?>
+                    <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" 
+                       class="material-item" 
+                       style="background-color: <?= h($bgColor) ?>; backdrop-filter: none;">
                         <img src="/<?= h($materialImageUrl) ?>" alt="<?= h($material['title']) ?>" loading="lazy">
                     </a>
                 <?php endforeach; ?>
