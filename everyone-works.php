@@ -40,17 +40,17 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>みんなの作品｜marutto.art</title>
-    <meta name="description" content="marutto.artで作られたイラスト作品一覧。すべて無料で利用可能。">
+    <title>無料イラスト作品一覧｜組み合わせて作られた例｜marutto.art</title>
+    <meta name="description" content="marutto.artで作られたイラスト作品一覧。すべて無料で利用可能。ブログや資料での使い方の参考にも。">
     <link rel="icon" href="/favicon.ico">
     
     <!-- hreflang tags -->
-    <link rel="alternate" hreflang="ja" href="https://marutto.art/everyone-works2.php" />
-    <link rel="alternate" hreflang="en" href="https://marutto.art/en/everyone-works2.php" />
-    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/everyone-works2.php" />
-    <link rel="alternate" hreflang="es" href="https://marutto.art/es/everyone-works2.php" />
-    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/everyone-works2.php" />
-    <link rel="alternate" hreflang="x-default" href="https://marutto.art/everyone-works2.php" />
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/everyone-works.php" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/everyone-works.php" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/everyone-works.php" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/everyone-works.php" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/everyone-works.php" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/everyone-works.php" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>
     
