@@ -23,7 +23,7 @@ $randomMaterials = $materialsStmt->fetchAll();
 
 // スクロールアニメーション用の素材・作品を取得（15件）
 // 素材10件を取得
-$scrollMaterialsSql = "SELECT 'material' as type, m.id, m.slug, c.slug as category_slug, m.webp_small_path as image_path, m.title
+$scrollMaterialsSql = "SELECT 'material' as type, m.id, m.slug, c.slug as category_slug, m.webp_small_path as image_path, m.structured_bg_color, m.title
     FROM materials m
     LEFT JOIN categories c ON m.category_id = c.id
     ORDER BY RAND()
@@ -361,8 +361,6 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             width: 120px;
             height: 120px;
             flex-shrink: 0;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
             border-radius: 12px;
             padding: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -665,15 +663,18 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     $imageUrl = $item['image_path'] ?? '';
                     if (empty($imageUrl)) continue;
                     
+                    $scrollBgColor = '';
                     if ($item['type'] === 'material' && !empty($item['category_slug']) && !empty($item['slug'])) {
                         $link = '/' . h($item['category_slug']) . '/' . h($item['slug']) . '/';
+                        $scrollBgColor = !empty($item['structured_bg_color']) ? $item['structured_bg_color'] : '#ffffff';
                     } elseif ($item['type'] === 'artwork') {
                         $link = '/everyone-work.php?id=' . h($item['id']);
+                        $scrollBgColor = '#ffffff';
                     } else {
                         continue;
                     }
             ?>
-                <a href="<?= $link ?>" class="scroll-item">
+                <a href="<?= $link ?>" class="scroll-item" style="background-color: <?= h($scrollBgColor) ?>; backdrop-filter: none;">
                     <img src="/<?= h($imageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy">
                 </a>
             <?php 
