@@ -17,16 +17,16 @@
     }
 }
 
-/* ナビゲーション - Bootstrap標準に合わせる */
+/* ナビゲーション - 統一スタイル */
 .navbar {
     position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 0rem;
-    background-color: #ffffff;
-    border-bottom: 1px solid rgba(0,0,0,.125);
+    padding: 1.5rem 0rem;
+    background: transparent;
+    border-bottom: none;
 }
 
 .navbar-brand {
@@ -35,13 +35,14 @@
     padding-bottom: 0.3125rem;
     margin-right: 1rem;
     font-size: 2rem;
-    font-weight: bold;
-    color: #333;
+    font-weight: 700;
+    color: #A0675C;
     text-decoration: none;
+    letter-spacing: 0.5px;
 }
 
 .navbar-brand:hover {
-    color: #333;
+    color: #8B5A4F;
     text-decoration: none;
 }
 
@@ -51,6 +52,47 @@
     align-items: center;
     padding-top: 0px;
     padding-bottom: 0px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ホームページ専用ヘッダー */
+.navbar-home {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 0rem;
+    background: transparent;
+    border-bottom: none;
+}
+
+.navbar-home .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.navbar-home .navbar-brand {
+    display: inline-block;
+    padding-top: 0.3125rem;
+    padding-bottom: 0.3125rem;
+    margin-right: 1rem;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #A0675C;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+}
+
+.navbar-home .navbar-brand:hover {
+    color: #8B5A4F;
+    text-decoration: none;
 }
 
 .tool-navigation {
@@ -91,32 +133,102 @@
     flex-shrink: 0;
 }
 
-/* 他のページ用ナビゲーション */
+/* ナビゲーション - 統一スタイル */
 .main-navigation {
     display: flex;
-    gap: 1rem;
+    gap: 2rem;
     align-items: center;
 }
 
 .nav-link {
-    color: #6c757d;
+    color: #8B7355;
     text-decoration: none;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0;
     border-radius: 4px;
     transition: all 0.2s ease;
     font-weight: 500;
+    font-size: 1rem;
+    position: relative;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #A0675C;
+    transition: width 0.3s ease;
 }
 
 .nav-link:hover {
-    color: #495057;
-    background-color: rgba(0, 0, 0, 0.05);
+    color: #A0675C;
     text-decoration: none;
+    background-color: transparent;
+}
+
+.nav-link:hover::after {
+    width: 100%;
 }
 
 .nav-link.active {
-    color: #495057;
-    background-color: rgba(0, 0, 0, 0.1);
+    color: #A0675C;
     font-weight: 600;
+    background-color: transparent;
+}
+
+.nav-link.active::after {
+    width: 100%;
+}
+
+/* ホームページ用ナビゲーション（統一済み） */
+.navbar-home .main-navigation {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.navbar-home .nav-link {
+    color: #8B7355;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 1rem;
+    position: relative;
+}
+
+.navbar-home .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #A0675C;
+    transition: width 0.3s ease;
+}
+
+.navbar-home .nav-link:hover {
+    color: #A0675C;
+    text-decoration: none;
+    background-color: transparent;
+}
+
+.navbar-home .nav-link:hover::after {
+    width: 100%;
+}
+
+.navbar-home .nav-link.active {
+    color: #A0675C;
+    font-weight: 600;
+    background-color: transparent;
+}
+
+.navbar-home .nav-link.active::after {
+    width: 100%;
 }
 
 /* SNSリンク */
@@ -172,47 +284,95 @@
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
+    .navbar {
+        padding: 1rem 0rem;
+    }
+    
     .navbar-brand {
         font-size: 1.5rem;
     }
+    
     .container {
         padding-left: 15px;
         padding-right: 15px;
     }
+    
+    .main-navigation {
+        gap: 1rem;
+    }
+    
+    .nav-link {
+        font-size: 0.9rem;
+        padding: 0.4rem 0;
+    }
+    
+    .navbar-home {
+        padding: 1rem 0rem;
+    }
+    
+    .navbar-home .navbar-brand {
+        font-size: 1.5rem;
+    }
+    
+    .navbar-home .main-navigation {
+        gap: 1rem;
+    }
+    
+    .navbar-home .nav-link {
+        font-size: 0.9rem;
+        padding: 0.4rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-brand {
+        font-size: 1.3rem;
+    }
+    
+    .main-navigation {
+        gap: 0.8rem;
+    }
+    
+    .nav-link {
+        font-size: 0.85rem;
+    }
+    
+    .navbar-home .navbar-brand {
+        font-size: 1.3rem;
+    }
+    
+    .navbar-home .main-navigation {
+        gap: 0.8rem;
+    }
+    
+    .navbar-home .nav-link {
+        font-size: 0.85rem;
+    }
 }
 </style>
 
-<nav class="navbar">
+<?php if (isset($currentPage) && $currentPage === 'home'): ?>
+<nav class="navbar-home">
     <div class="container">
-        <a class="navbar-brand" href="/">maruttoart</a>
+        <a class="navbar-brand" href="/">marutto.art</a>
         
-        <!-- 全ページ共通ツールナビゲーション -->
-        <div class="tool-navigation">
-            <a href="/list.php" class="tool-nav-link<?= $currentPage === 'list' ? ' active' : '' ?>" title="作品一覧">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-list-icon lucide-layout-list">
-                    <rect width="7" height="7" x="3" y="3" rx="1"/>
-                    <rect width="7" height="7" x="3" y="14" rx="1"/>
-                    <path d="M14 4h7"/>
-                    <path d="M14 9h7"/>
-                    <path d="M14 15h7"/>
-                    <path d="M14 20h7"/>
-                </svg>
-            </a>
-            <a href="/everyone-works.php" class="tool-nav-link<?= $currentPage === 'everyone-works' ? ' active' : '' ?>" title="みんなのアトリエ">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake-icon lucide-handshake">
-                    <path d="m11 17 2 2a1 1 0 1 0 3-3"/>
-                    <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l .47.28a2 2 0 0 0 1.42.25L21 4"/>
-                    <path d="m21 3 1 11h-2"/>
-                    <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/>
-                    <path d="M3 4h8"/>
-                </svg>
-            </a>
-            <a href="/compose/index.php" class="tool-nav-link<?= $currentPage === 'index' ? ' active' : '' ?>" title="標準編集">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-icon lucide-pencil">
-                    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-                    <path d="m15 5 4 4"/>
-                </svg>
-            </a>
+        <div class="main-navigation">
+            <a href="/list.php" class="nav-link">Materials</a>
+            <a href="/everyone-works.php" class="nav-link">Works</a>
+            <a href="/compose/" class="nav-link">Atelier</a>
         </div>
     </div>
 </nav>
+<?php else: ?>
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="/">marutto.art</a>
+        
+        <div class="main-navigation">
+            <a href="/list.php" class="nav-link<?= isset($currentPage) && $currentPage === 'list' ? ' active' : '' ?>">Materials</a>
+            <a href="/everyone-works.php" class="nav-link<?= isset($currentPage) && $currentPage === 'everyone-works' ? ' active' : '' ?>">Works</a>
+            <a href="/compose/" class="nav-link<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">Atelier</a>
+        </div>
+    </div>
+</nav>
+<?php endif; ?>
