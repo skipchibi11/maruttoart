@@ -170,17 +170,6 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
 
         <div class="footer-divider"></div>
 
-        <!-- 下段メニュー（言語切り替え） -->
-        <div class="footer-language">
-            <a href="/" hreflang="ja">日本語</a>
-            <a href="/en/" hreflang="en">English</a>
-            <a href="/fr/" hreflang="fr">Français</a>
-            <a href="/es/" hreflang="es">Español</a>
-            <a href="/nl/" hreflang="nl">Nederlands</a>
-        </div>
-
-        <div class="footer-divider"></div>
-
         <!-- みんなの作品スクロール -->
         <?php if (!empty($footerArtworks)): ?>
         <div class="footer-artworks-scroll">

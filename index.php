@@ -62,6 +62,14 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
     
     <link rel="icon" href="/favicon.ico">
     
+    <!-- hreflang tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/" />
+    
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>
     
     <style>
