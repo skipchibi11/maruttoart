@@ -566,7 +566,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             .section .container {
                 padding: 20px 8px;
                 border-radius: 16px;
-                width: 90%;
+                width: 100%;
             }
 
             .artworks-grid {
@@ -575,8 +575,8 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             }
 
             .materials-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 8px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
                 width: 100%;
                 max-width: 100%;
             }
