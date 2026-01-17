@@ -221,8 +221,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
         .artwork-image-wrapper {
             width: 100%;
-            max-width: 100%;
-            height: 200px;
+            aspect-ratio: 1 / 1;
             max-height: 200px;
             border-radius: 8px;
             overflow: hidden;
@@ -558,7 +557,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             }
 
             .section .container {
-                padding: 24px 16px;
+                padding: 24px 12px;
                 border-radius: 16px;
             }
 
@@ -567,13 +566,13 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                 gap: 16px;
             }
 
-            .artwork-image-wrapper {
-                height: 200px;
-            }
-
             .materials-grid {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 12px;
+                gap: 8px;
+            }
+
+            .material-item {
+                padding: 8px;
             }
         }
 
