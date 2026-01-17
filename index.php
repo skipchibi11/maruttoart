@@ -573,10 +573,13 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             .materials-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
+                width: 100%;
             }
 
             .material-item {
                 padding: 8px;
+                aspect-ratio: 1;
+                width: 100%;
             }
         }
 
