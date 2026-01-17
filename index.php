@@ -198,6 +198,9 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 20px;
             margin-bottom: 40px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .artwork-card {
@@ -559,6 +562,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             .section .container {
                 padding: 24px 12px;
                 border-radius: 16px;
+                width: 90%;
             }
 
             .artworks-grid {
@@ -567,8 +571,8 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             }
 
             .materials-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 8px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
             }
 
             .material-item {
