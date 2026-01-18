@@ -244,14 +244,13 @@ foreach ($allMaterials as $material) {
             border-radius: 12px;
             box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
             padding: 20px;
-            overflow: auto; /* スクロール有効化 */
-            position: relative;
+            overflow: hidden;
         }
 
         #canvas {
+            max-width: 100%;
+            max-height: 100%;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: block;
-            margin: auto; /* 中央配置 */
         }
 
         /* コントロールパネル */
@@ -331,8 +330,64 @@ foreach ($allMaterials as $material) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
+            cursor: grab;
             border: 2px solid transparent;
+            transition: all 0.2s;
+            gap: 12px;
+        }
+
+        .layer-item:active {
+            cursor: grabbing;
+        }
+
+        .layer-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .layer-item.drag-over {
+            border-top: 3px solid var(--primary-color);
+        }
+
+        .drag-handle {
+            display: grid;
+            grid-template-columns: repeat(2, 4px);
+            grid-template-rows: repeat(3, 4px);
+            gap: 3px;
+            cursor: grab;
+            flex-shrink: 0;
+        }
+
+        .drag-handle::before,
+        .drag-handle::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background-color: #999;
+            border-radius: 50%;
+        }
+
+        .drag-handle::before {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .drag-handle::after {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .drag-dot {
+            width: 4px;
+            height: 4px;
+            background-color: #999;
+            border-radius: 50%;
+        }
+
+        .layer-item:hover .drag-handle .drag-dot,
+        .layer-item:hover .drag-handle::before,
+        .layer-item:hover .drag-handle::after {
+            background-color: var(--primary-color);
         }
 
         .layer-item.selected {
@@ -716,18 +771,6 @@ foreach ($allMaterials as $material) {
                         </select>
                         <button class="control-btn" onclick="applyCanvasSize()">適用</button>
                     </div>
-                    <div class="canvas-size-selector">
-                        <label>表示:</label>
-                        <select id="zoomLevel" onchange="setCanvasZoom()">
-                            <option value="0.25">25%</option>
-                            <option value="0.5">50%</option>
-                            <option value="0.75">75%</option>
-                            <option value="1" selected>100%</option>
-                            <option value="1.25">125%</option>
-                            <option value="1.5">150%</option>
-                            <option value="2">200%</option>
-                        </select>
-                    </div>
                     <button class="control-btn" onclick="clearAll()">全削除</button>
                 </div>
                 <div class="canvas-wrapper">
@@ -737,24 +780,29 @@ foreach ($allMaterials as $material) {
 
             <!-- コントロールパネル -->
         <div class="control-panel">
-            <!-- 選択中の素材操作 -->
-            <div class="control-section">
-                <h3 class="control-title">選択中の素材</h3>
-                <div class="control-buttons">
-                    <button class="control-btn" onclick="scaleUp()">拡大</button>
-                    <button class="control-btn" onclick="scaleDown()">縮小</button>
-                    <button class="control-btn" onclick="rotateLeft()">左回転</button>
-                    <button class="control-btn" onclick="rotateRight()">右回転</button>
-                    <button class="control-btn" onclick="flipHorizontal()">左右反転</button>
-                    <button class="control-btn" onclick="flipVertical()">上下反転</button>
-                </div>
-            </div>
-
             <!-- 色変更 -->
             <div class="control-section">
                 <h3 class="control-title">色変更</h3>
+                <div id="colorPickerContainer">
+                    <p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px 0;">素材を選択してください</p>
+                </div>
+            </div>
+
+            <!-- 背景設定 -->
+            <div class="control-section">
+                <h3 class="control-title">背景</h3>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+                        <input type="radio" name="bgType" value="transparent" checked onchange="toggleBackgroundType()">
+                        <span>透明</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="bgType" value="color" onchange="toggleBackgroundType()">
+                        <span>背景色</span>
+                    </label>
+                </div>
                 <div class="color-picker-wrapper">
-                    <input type="color" id="colorPicker" class="color-picker" value="#000000" onchange="changeColor()">
+                    <input type="color" id="bgColorPicker" class="color-picker" value="#ffffff" oninput="changeBackgroundColor()" onchange="changeBackgroundColor()" disabled>
                 </div>
             </div>
 
@@ -806,6 +854,7 @@ foreach ($allMaterials as $material) {
         const STORAGE_KEY = 'maruttoart_canvas_state';
         let originalCanvasWidth = 800;  // 原寸の幅
         let originalCanvasHeight = 800; // 原寸の高さ
+        let isTransparentBg = true;     // 背景が透明かどうか
 
         // LocalStorageに保存
         function saveToLocalStorage() {
@@ -814,6 +863,7 @@ foreach ($allMaterials as $material) {
                     width: canvas.width,
                     height: canvas.height,
                     backgroundColor: canvas.backgroundColor,
+                    isTransparentBg: isTransparentBg,
                     objects: canvas.getObjects().map(obj => ({
                         materialData: obj.materialData,
                         left: obj.left,
@@ -863,6 +913,22 @@ foreach ($allMaterials as $material) {
                 if (canvasData.backgroundColor) {
                     canvas.backgroundColor = canvasData.backgroundColor;
                 }
+                
+                // 背景タイプを復元
+                if (typeof canvasData.isTransparentBg !== 'undefined') {
+                    isTransparentBg = canvasData.isTransparentBg;
+                    if (isTransparentBg) {
+                        document.querySelector('input[name="bgType"][value="transparent"]').checked = true;
+                        canvas.backgroundColor = 'transparent';
+                        document.getElementById('bgColorPicker').disabled = true;
+                    } else {
+                        document.querySelector('input[name="bgType"][value="color"]').checked = true;
+                        document.getElementById('bgColorPicker').disabled = false;
+                        if (canvasData.backgroundColor) {
+                            document.getElementById('bgColorPicker').value = canvasData.backgroundColor;
+                        }
+                    }
+                }
 
                 // オブジェクトを復元
                 if (canvasData.objects && canvasData.objects.length > 0) {
@@ -898,7 +964,6 @@ foreach ($allMaterials as $material) {
                     });
                 }
 
-                fitCanvasToContainer();
                 console.log('キャンバス状態を復元しました');
             } catch (error) {
                 console.error('復元エラー:', error);
@@ -910,7 +975,7 @@ foreach ($allMaterials as $material) {
             canvas = new fabric.Canvas('canvas', {
                 width: 800,
                 height: 800,
-                backgroundColor: '#ffffff'
+                backgroundColor: 'transparent'
             });
             
             // 原寸サイズを設定
@@ -920,16 +985,19 @@ foreach ($allMaterials as $material) {
             canvas.on('selection:created', function(e) {
                 selectedObject = e.selected[0];
                 updateLayerList();
+                updateColorPickers();
             });
 
             canvas.on('selection:updated', function(e) {
                 selectedObject = e.selected[0];
                 updateLayerList();
+                updateColorPickers();
             });
 
             canvas.on('selection:cleared', function() {
                 selectedObject = null;
                 updateLayerList();
+                updateColorPickers();
             });
 
             canvas.on('object:added', function() {
@@ -952,8 +1020,8 @@ foreach ($allMaterials as $material) {
             // 保存データを復元
             loadFromLocalStorage();
             
-            // ズームレベルを復元（データ復元後に実行）
-            loadZoomLevel();
+            // 表示エリアに収まるように調整
+            fitCanvasToContainer();
             
             // ウィンドウリサイズ時にも調整
             window.addEventListener('resize', fitCanvasToContainer);
@@ -982,9 +1050,11 @@ foreach ($allMaterials as $material) {
                 .then(svgText => {
                     fabric.loadSVGFromString(svgText, function(objects, options) {
                         const obj = fabric.util.groupSVGElements(objects, options);
+                        
+                        // 原寸サイズを基準に中心位置を計算（ズームの影響を受けない）
                         obj.set({
-                            left: canvas.width / 2,
-                            top: canvas.height / 2,
+                            left: originalCanvasWidth / 2,
+                            top: originalCanvasHeight / 2,
                             originX: 'center',
                             originY: 'center',
                             materialData: material
@@ -1023,53 +1093,13 @@ foreach ($allMaterials as $material) {
             // 実際のキャンバスサイズを設定（データサイズ）
             canvas.setDimensions({ width, height });
             
-            // 現在のズームレベルを適用
-            const zoomSelect = document.getElementById('zoomLevel');
-            const zoom = parseFloat(zoomSelect.value);
-            canvas.setZoom(zoom);
-            canvas.setWidth(width * zoom);
-            canvas.setHeight(height * zoom);
+            // 表示エリアに収まるようにスケーリング
+            fitCanvasToContainer();
             
             canvas.renderAll();
             
             // サイズ変更を保存
             saveToLocalStorage();
-        }
-        
-        // ズーム機能
-        function setCanvasZoom() {
-            const zoomSelect = document.getElementById('zoomLevel');
-            const zoom = parseFloat(zoomSelect.value);
-            
-            // 原寸サイズを基準にズームを適用
-            canvas.setZoom(zoom);
-            canvas.setWidth(originalCanvasWidth * zoom);
-            canvas.setHeight(originalCanvasHeight * zoom);
-            canvas.renderAll();
-            
-            saveZoomLevel();
-        }
-
-        function saveZoomLevel() {
-            try {
-                const zoomSelect = document.getElementById('zoomLevel');
-                localStorage.setItem('maruttoart_zoom_level', zoomSelect.value);
-            } catch (error) {
-                console.error('ズームレベル保存エラー:', error);
-            }
-        }
-
-        function loadZoomLevel() {
-            try {
-                const savedZoom = localStorage.getItem('maruttoart_zoom_level');
-                if (savedZoom) {
-                    const zoomSelect = document.getElementById('zoomLevel');
-                    zoomSelect.value = savedZoom;
-                    setCanvasZoom();
-                }
-            } catch (error) {
-                console.error('ズームレベル読み込みエラー:', error);
-            }
         }
         
         // キャンバスを表示エリアに収める
@@ -1094,59 +1124,137 @@ foreach ($allMaterials as $material) {
             canvas.setHeight(canvasHeight * scale);
         }
 
-        // 拡大・縮小
-        function scaleUp() {
-            if (!selectedObject) return;
-            selectedObject.scale(selectedObject.scaleX * 1.1);
-            canvas.renderAll();
-        }
-
-        function scaleDown() {
-            if (!selectedObject) return;
-            selectedObject.scale(selectedObject.scaleX * 0.9);
-            canvas.renderAll();
-        }
-
-        // 回転
-        function rotateLeft() {
-            if (!selectedObject) return;
-            selectedObject.rotate(selectedObject.angle - 15);
-            canvas.renderAll();
-        }
-
-        function rotateRight() {
-            if (!selectedObject) return;
-            selectedObject.rotate(selectedObject.angle + 15);
-            canvas.renderAll();
-        }
-
-        // 反転
-        function flipHorizontal() {
-            if (!selectedObject) return;
-            selectedObject.set('flipX', !selectedObject.flipX);
-            canvas.renderAll();
-        }
-
-        function flipVertical() {
-            if (!selectedObject) return;
-            selectedObject.set('flipY', !selectedObject.flipY);
-            canvas.renderAll();
-        }
-
         // 色変更
-        function changeColor() {
+        function updateColorPickers() {
+            const container = document.getElementById('colorPickerContainer');
+            
+            if (!selectedObject) {
+                container.innerHTML = '<p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px 0;">素材を選択してください</p>';
+                return;
+            }
+            
+            // 素材から色を抽出
+            const colors = extractColors(selectedObject);
+            
+            if (colors.length === 0) {
+                container.innerHTML = '<p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px 0;">色変更できません</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            colors.forEach((colorInfo, index) => {
+                const colorItem = document.createElement('div');
+                colorItem.style.cssText = 'display: flex; align-items: center; gap: 12px; margin-bottom: 12px;';
+                
+                const preview = document.createElement('div');
+                preview.style.cssText = `width: 40px; height: 40px; border-radius: 8px; background-color: ${colorInfo.color}; border: 2px solid #ddd;`;
+                
+                const picker = document.createElement('input');
+                picker.type = 'color';
+                picker.className = 'color-picker';
+                picker.value = colorInfo.color;
+                picker.style.flex = '1';
+                picker.dataset.colorIndex = index;
+                
+                picker.addEventListener('input', function() {
+                    changeObjectColor(colorInfo.color, this.value);
+                    preview.style.backgroundColor = this.value;
+                });
+                
+                colorItem.appendChild(preview);
+                colorItem.appendChild(picker);
+                container.appendChild(colorItem);
+            });
+        }
+        
+        function extractColors(obj) {
+            const colors = new Map();
+            
+            if (obj._objects) {
+                // グループオブジェクトの場合
+                obj._objects.forEach(child => {
+                    if (child.fill && child.fill !== 'transparent' && typeof child.fill === 'string') {
+                        const normalizedColor = normalizeColor(child.fill);
+                        if (normalizedColor) {
+                            colors.set(normalizedColor, { color: normalizedColor, objects: (colors.get(normalizedColor)?.objects || []).concat([child]) });
+                        }
+                    }
+                });
+            } else if (obj.fill && obj.fill !== 'transparent' && typeof obj.fill === 'string') {
+                // 単一オブジェクトの場合
+                const normalizedColor = normalizeColor(obj.fill);
+                if (normalizedColor) {
+                    colors.set(normalizedColor, { color: normalizedColor, objects: [obj] });
+                }
+            }
+            
+            return Array.from(colors.values());
+        }
+        
+        function normalizeColor(color) {
+            // rgb形式を16進数に変換
+            if (color.startsWith('rgb')) {
+                const match = color.match(/\d+/g);
+                if (match && match.length >= 3) {
+                    const r = parseInt(match[0]).toString(16).padStart(2, '0');
+                    const g = parseInt(match[1]).toString(16).padStart(2, '0');
+                    const b = parseInt(match[2]).toString(16).padStart(2, '0');
+                    return `#${r}${g}${b}`;
+                }
+            }
+            // 既に16進数の場合はそのまま
+            if (color.startsWith('#')) {
+                return color.toLowerCase();
+            }
+            return color;
+        }
+        
+        function changeObjectColor(oldColor, newColor) {
             if (!selectedObject) return;
-            const color = document.getElementById('colorPicker').value;
+            
+            const normalizedOld = normalizeColor(oldColor);
+            const normalizedNew = normalizeColor(newColor);
             
             if (selectedObject._objects) {
                 selectedObject._objects.forEach(obj => {
-                    if (obj.fill) obj.set('fill', color);
+                    if (obj.fill && normalizeColor(obj.fill) === normalizedOld) {
+                        obj.set('fill', normalizedNew);
+                    }
                 });
-            } else if (selectedObject.fill) {
-                selectedObject.set('fill', color);
+            } else if (selectedObject.fill && normalizeColor(selectedObject.fill) === normalizedOld) {
+                selectedObject.set('fill', normalizedNew);
             }
             
             canvas.renderAll();
+        }
+
+        // 背景タイプの切り替え
+        function toggleBackgroundType() {
+            const bgType = document.querySelector('input[name="bgType"]:checked').value;
+            const bgColorPicker = document.getElementById('bgColorPicker');
+            
+            if (bgType === 'transparent') {
+                isTransparentBg = true;
+                canvas.backgroundColor = 'transparent';
+                bgColorPicker.disabled = true;
+            } else {
+                isTransparentBg = false;
+                bgColorPicker.disabled = false;
+                canvas.backgroundColor = bgColorPicker.value;
+            }
+            
+            canvas.renderAll();
+            saveToLocalStorage();
+        }
+
+        // 背景色の変更
+        function changeBackgroundColor() {
+            if (!isTransparentBg) {
+                const color = document.getElementById('bgColorPicker').value;
+                canvas.backgroundColor = color;
+                canvas.renderAll();
+                saveToLocalStorage();
+            }
         }
 
         // レイヤーリスト更新
@@ -1154,29 +1262,45 @@ foreach ($allMaterials as $material) {
             const layerList = document.getElementById('layerList');
             layerList.innerHTML = '';
             
-            const objects = canvas.getObjects().reverse();
-            objects.forEach((obj, index) => {
-                const actualIndex = canvas.getObjects().length - 1 - index;
+            const objects = canvas.getObjects();
+            // 逆順で表示（リストの一番上が最前面）
+            const reversedObjects = [...objects].reverse();
+            
+            reversedObjects.forEach((obj, displayIndex) => {
+                const actualIndex = objects.length - 1 - displayIndex; // 実際のインデックス
                 const isSelected = obj === selectedObject;
                 
                 const layerItem = document.createElement('div');
                 layerItem.className = 'layer-item' + (isSelected ? ' selected' : '');
+                layerItem.draggable = true;
+                layerItem.dataset.index = actualIndex;
+                
+                // ドラッグイベント
+                layerItem.addEventListener('dragstart', handleDragStart);
+                layerItem.addEventListener('dragover', handleDragOver);
+                layerItem.addEventListener('drop', handleDrop);
+                layerItem.addEventListener('dragend', handleDragEnd);
+                layerItem.addEventListener('dragleave', handleDragLeave);
+                
                 layerItem.onclick = () => selectLayer(actualIndex);
                 
                 const materialData = obj.materialData || {};
                 const bgColor = materialData.structured_bg_color || '#f0f0f0';
                 
                 layerItem.innerHTML = `
+                    <div class="drag-handle">
+                        <div class="drag-dot"></div>
+                        <div class="drag-dot"></div>
+                        <div class="drag-dot"></div>
+                        <div class="drag-dot"></div>
+                    </div>
                     <div class="layer-info">
                         <div class="layer-preview" style="background-color: ${bgColor}">
                             <img src="/${materialData.webp_small_path || ''}" alt="">
                         </div>
-                        <span>${materialData.title || 'レイヤー ' + (actualIndex + 1)}</span>
                     </div>
                     <div class="layer-actions">
-                        <button class="layer-action-btn" onclick="event.stopPropagation(); moveLayerUp(${actualIndex})">↑</button>
-                        <button class="layer-action-btn" onclick="event.stopPropagation(); moveLayerDown(${actualIndex})">↓</button>
-                        <button class="layer-action-btn" onclick="event.stopPropagation(); deleteLayer(${actualIndex})">×</button>
+                        <button class="layer-action-btn" onclick="event.stopPropagation(); deleteLayer(${actualIndex})">Delete</button>
                     </div>
                 `;
                 
@@ -1184,23 +1308,64 @@ foreach ($allMaterials as $material) {
             });
         }
 
+        let draggedIndex = null;
+
+        function handleDragStart(e) {
+            draggedIndex = parseInt(e.currentTarget.dataset.index);
+            e.currentTarget.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const target = e.currentTarget;
+            if (!target.classList.contains('dragging')) {
+                target.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dropIndex = parseInt(e.currentTarget.dataset.index);
+            e.currentTarget.classList.remove('drag-over');
+            
+            if (draggedIndex !== null && draggedIndex !== dropIndex) {
+                moveLayerToPosition(draggedIndex, dropIndex);
+            }
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.layer-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+            draggedIndex = null;
+        }
+
+        function moveLayerToPosition(fromIndex, toIndex) {
+            const objects = canvas.getObjects();
+            const movedObject = objects[fromIndex];
+            
+            // オブジェクトを削除して新しい位置に挿入
+            canvas.remove(movedObject);
+            canvas.insertAt(movedObject, toIndex);
+            
+            canvas.renderAll();
+            updateLayerList();
+            saveToLocalStorage();
+        }
+
         // レイヤー選択
         function selectLayer(index) {
             const obj = canvas.item(index);
             canvas.setActiveObject(obj);
-            canvas.renderAll();
-        }
-
-        // レイヤー移動
-        function moveLayerUp(index) {
-            const obj = canvas.item(index);
-            canvas.bringForward(obj);
-            canvas.renderAll();
-        }
-
-        function moveLayerDown(index) {
-            const obj = canvas.item(index);
-            canvas.sendBackwards(obj);
             canvas.renderAll();
         }
 
@@ -1215,7 +1380,14 @@ foreach ($allMaterials as $material) {
         function clearAll() {
             if (confirm('すべての素材を削除しますか？')) {
                 canvas.clear();
-                canvas.backgroundColor = '#ffffff';
+                
+                // 背景を再設定
+                if (isTransparentBg) {
+                    canvas.backgroundColor = 'transparent';
+                } else {
+                    canvas.backgroundColor = document.getElementById('bgColorPicker').value;
+                }
+                
                 canvas.renderAll();
                 saveToLocalStorage();
             }
@@ -1226,18 +1398,10 @@ foreach ($allMaterials as $material) {
             canvas.discardActiveObject();
             canvas.renderAll();
             
-            // ズームをリセットして実サイズで出力
-            const currentZoom = canvas.getZoom();
-            canvas.setZoom(1);
-            
             const dataURL = canvas.toDataURL({
                 format: 'png',
                 quality: 1
             });
-            
-            // ズームを戻す
-            canvas.setZoom(currentZoom);
-            canvas.renderAll();
             
             const link = document.createElement('a');
             link.download = 'marutto-art-' + Date.now() + '.png';
@@ -1269,16 +1433,8 @@ foreach ($allMaterials as $material) {
             const penName = document.getElementById('postPenName').value;
             const description = document.getElementById('postDescription').value;
             
-            // ズームをリセットして実サイズで出力
-            const currentZoom = canvas.getZoom();
-            canvas.setZoom(1);
-            
             const imageData = canvas.toDataURL('image/png');
             const svgData = canvas.toSVG();
-            
-            // ズームを戻す
-            canvas.setZoom(currentZoom);
-            canvas.renderAll();
             
             // 使用素材ID
             const usedMaterials = canvas.getObjects()
