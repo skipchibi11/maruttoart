@@ -1612,7 +1612,8 @@ foreach ($allMaterials as $material) {
             });
             canvas.renderAll();
             
-            setTimeout(() => {
+            // わずかな待機後に画像を生成（レンダリング完了を待つ）
+            requestAnimationFrame(() => {
                 const dataURL = canvas.toDataURL({
                     format: 'png',
                     quality: 1,
@@ -1624,17 +1625,29 @@ foreach ($allMaterials as $material) {
                 canvas.setZoom(currentZoom);
                 canvas.renderAll();
                 
-                // DataURLを直接使用（iOSで確実に動作する）
-                const link = document.createElement('a');
-                link.href = dataURL;
-                link.download = `marutto-art-${originalCanvasWidth}x${originalCanvasHeight}-${Date.now()}.png`;
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                console.log(`PNG出力完了 (${originalCanvasWidth}x${originalCanvasHeight}px)`);
-            }, 100);
+                // Blobに変換してダウンロード
+                fetch(dataURL)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `marutto-art-${originalCanvasWidth}x${originalCanvasHeight}-${Date.now()}.png`;
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // URLを解放
+                        URL.revokeObjectURL(url);
+                        
+                        console.log(`PNG出力完了 (${originalCanvasWidth}x${originalCanvasHeight}px)`);
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        showMessage('ダウンロードに失敗しました');
+                    });
+            });
         }
 
         // 作品投稿
