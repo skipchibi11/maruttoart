@@ -959,7 +959,7 @@ foreach ($allMaterials as $material) {
         // LocalStorageに保存（compose/index.php互換形式）
         function saveToLocalStorage() {
             try {
-                const objects = canvas.getObjects().map(obj => {
+                const objects = canvas.getObjects().map((obj, zIndex) => {
                     // Fabric.jsのcenter originから左上基準に変換
                     const centerX = obj.width ? (obj.width / 2) : 0;
                     const centerY = obj.height ? (obj.height / 2) : 0;
@@ -986,6 +986,7 @@ foreach ($allMaterials as $material) {
                             flipVertical: obj.scaleY < 0
                         },
                         visible: true,
+                        zIndex: zIndex,
                         // 互換性のため古い形式も保持
                         left: obj.left,
                         top: obj.top,
@@ -996,7 +997,21 @@ foreach ($allMaterials as $material) {
                         flipY: obj.scaleY < 0,
                         originX: obj.originX,
                         originY: obj.originY,
-                        materialData: obj.materialData
+                        materialData: obj.materialData,
+                        // 色情報を保存
+                        colors: (() => {
+                            const colors = [];
+                            if (obj.type === 'group' && obj._objects) {
+                                obj._objects.forEach((child, index) => {
+                                    colors.push({
+                                        index: index,
+                                        fill: child.fill,
+                                        stroke: child.stroke
+                                    });
+                                });
+                            }
+                            return colors;
+                        })()
                     };
                 });
                 
@@ -1135,12 +1150,43 @@ foreach ($allMaterials as $material) {
                                         }
                                         
                                         canvas.add(obj);
+                                        
+                                        // 色情報を復元（canvas追加後に適用）
+                                        if (objData.colors && objData.colors.length > 0) {
+                                            console.log('色情報を復元:', objData.colors);
+                                            console.log('obj._objects:', obj._objects);
+                                            
+                                            if (obj._objects) {
+                                                objData.colors.forEach(colorData => {
+                                                    const child = obj._objects[colorData.index];
+                                                    if (child) {
+                                                        console.log(`Index ${colorData.index}: ${child.fill} -> ${colorData.fill}`);
+                                                        // 直接プロパティを設定
+                                                        child.fill = colorData.fill;
+                                                        child.stroke = colorData.stroke;
+                                                        child.dirty = true;
+                                                    }
+                                                });
+                                                obj.dirty = true;
+                                            }
+                                        }
+                                        
                                         canvas.renderAll();
                                         
                                         // 全てのオブジェクトが読み込まれたら再度フィット
                                         loadedCount++;
                                         if (loadedCount === totalCount) {
                                             setTimeout(() => {
+                                                // zIndexでソートして順序を保証
+                                                const allObjects = canvas.getObjects();
+                                                const sortedObjects = allObjects.slice().sort((a, b) => {
+                                                    const zIndexA = a.materialData?.zIndex ?? 999;
+                                                    const zIndexB = b.materialData?.zIndex ?? 999;
+                                                    return zIndexA - zIndexB;
+                                                });
+                                                canvas.remove(...allObjects);
+                                                sortedObjects.forEach(obj => canvas.add(obj));
+                                                
                                                 fitCanvasToContainer();
                                                 canvas.renderAll();
                                             }, 100);
@@ -1152,6 +1198,16 @@ foreach ($allMaterials as $material) {
                                     loadedCount++;
                                     if (loadedCount === totalCount) {
                                         setTimeout(() => {
+                                            // zIndexでソートして順序を保証
+                                            const allObjects = canvas.getObjects();
+                                            const sortedObjects = allObjects.slice().sort((a, b) => {
+                                                const zIndexA = a.materialData?.zIndex ?? 999;
+                                                const zIndexB = b.materialData?.zIndex ?? 999;
+                                                return zIndexA - zIndexB;
+                                            });
+                                            canvas.remove(...allObjects);
+                                            sortedObjects.forEach(obj => canvas.add(obj));
+                                            
                                             fitCanvasToContainer();
                                             canvas.renderAll();
                                         }, 100);
@@ -1388,16 +1444,43 @@ foreach ($allMaterials as $material) {
                                         angle: rotation,
                                         originX: 'center',
                                         originY: 'center',
-                                        materialData: fullMaterialData
+                                        materialData: {
+                                            ...fullMaterialData,
+                                            zIndex: index
+                                        }
                                     });
                                     
                                     canvas.add(obj);
+                                    
+                                    // 色情報を復元
+                                    if (materialData.colors && materialData.colors.length > 0 && obj._objects) {
+                                        materialData.colors.forEach(colorData => {
+                                            const child = obj._objects[colorData.index];
+                                            if (child) {
+                                                child.fill = colorData.fill;
+                                                child.stroke = colorData.stroke;
+                                                child.dirty = true;
+                                            }
+                                        });
+                                        obj.dirty = true;
+                                    }
+                                    
                                     canvas.renderAll();
                                     
                                     loadedCount++;
                                     
                                     if (loadedCount === totalCount) {
                                         setTimeout(() => {
+                                            // zIndexでソートして順序を保証
+                                            const allObjects = canvas.getObjects();
+                                            allObjects.sort((a, b) => {
+                                                const zIndexA = a.materialData?.zIndex ?? 999;
+                                                const zIndexB = b.materialData?.zIndex ?? 999;
+                                                return zIndexA - zIndexB;
+                                            });
+                                            canvas.remove(...canvas.getObjects());
+                                            allObjects.forEach(obj => canvas.add(obj));
+                                            
                                             fitCanvasToContainer();
                                             saveToLocalStorage();
                                             
@@ -1415,6 +1498,16 @@ foreach ($allMaterials as $material) {
                                 
                                 if (loadedCount === totalCount) {
                                     setTimeout(() => {
+                                        // zIndexでソートして順序を保証
+                                        const allObjects = canvas.getObjects();
+                                        const sortedObjects = allObjects.slice().sort((a, b) => {
+                                            const zIndexA = a.materialData?.zIndex ?? 999;
+                                            const zIndexB = b.materialData?.zIndex ?? 999;
+                                            return zIndexA - zIndexB;
+                                        });
+                                        canvas.remove(...allObjects);
+                                        sortedObjects.forEach(obj => canvas.add(obj));
+                                        
                                         fitCanvasToContainer();
                                         saveToLocalStorage();
                                         
@@ -1669,6 +1762,7 @@ foreach ($allMaterials as $material) {
             }
             
             canvas.renderAll();
+            saveToLocalStorage();
         }
 
         // 背景タイプの切り替え
@@ -2063,6 +2157,18 @@ foreach ($allMaterials as $material) {
                         const absScaleY = Math.abs(obj.scaleY);
                         const scale = (absScaleX + absScaleY) / 2;
                         
+                        // 色情報を抽出
+                        const colors = [];
+                        if (obj.type === 'group' && obj._objects) {
+                            obj._objects.forEach((child, index) => {
+                                colors.push({
+                                    index: index,
+                                    fill: child.fill,
+                                    stroke: child.stroke
+                                });
+                            });
+                        }
+                        
                         return {
                             id: obj.materialData?.id || Math.floor(Math.random() * 10000),
                             type: 'svg',
@@ -2081,7 +2187,8 @@ foreach ($allMaterials as $material) {
                                 flipHorizontal: obj.scaleX < 0,
                                 flipVertical: obj.scaleY < 0
                             },
-                            visible: true
+                            visible: true,
+                            colors: colors
                         };
                     });
                     
