@@ -1598,17 +1598,7 @@ foreach ($allMaterials as $material) {
             canvas.discardActiveObject();
             canvas.renderAll();
             
-            // iOS/iPadOSを検出
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            
-            // iOSの場合は直接ダウンロードのみ実行
-            if (isIOS) {
-                executeDownload();
-                return;
-            }
-            
-            // その他のデバイスでは選択肢を表示
+            // 選択肢を表示
             const choice = confirm('画像をどうしますか？\n\nOK: ダウンロード\nキャンセル: ブラウザで表示');
             
             if (choice) {
