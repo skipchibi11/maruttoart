@@ -1624,16 +1624,29 @@ foreach ($allMaterials as $material) {
                 canvas.setZoom(currentZoom);
                 canvas.renderAll();
                 
-                // シンプルなダウンロード（スマホでは「ダウンロード」または「表示」の選択が出る）
-                const link = document.createElement('a');
-                link.href = dataURL;
-                link.download = `marutto-art-${originalCanvasWidth}x${originalCanvasHeight}-${Date.now()}.png`;
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                console.log(`PNG出力完了 (${originalCanvasWidth}x${originalCanvasHeight}px)`);
+                // DataURLからBlobに変換してダウンロード
+                fetch(dataURL)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `marutto-art-${originalCanvasWidth}x${originalCanvasHeight}-${Date.now()}.png`;
+                        link.target = '_blank';
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        // URLを解放
+                        setTimeout(() => URL.revokeObjectURL(url), 100);
+                        
+                        console.log(`PNG出力完了 (${originalCanvasWidth}x${originalCanvasHeight}px)`);
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        showMessage('ダウンロードに失敗しました');
+                    });
             }, 100);
         }
 
