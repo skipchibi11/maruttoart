@@ -579,26 +579,29 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
         /* 関連素材・作品セクション */
         .related-items-section {
-            margin: 60px 0;
+            margin: 3rem 0;
+            padding: 2rem 0;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
         }
 
         .related-items-grid {
             column-count: 4;
-            column-gap: 30px;
-            padding: 0;
-        }
-
-        @media (max-width: 992px) {
-            .related-items-grid {
-                column-count: 3;
-                column-gap: 24px;
-            }
+            column-gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
 
         @media (max-width: 768px) {
             .related-items-grid {
                 column-count: 2;
-                column-gap: 20px;
+                column-gap: 1rem;
+                padding: 0 0.5rem;
+            }
+
+            .related-item {
+                margin-bottom: 1rem;
             }
         }
 
