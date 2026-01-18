@@ -731,7 +731,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     <div class="detail-meta">
                         <div class="meta-item">
                             <span class="meta-label">カテゴリ:</span>
-                            <a href="/list.php?category=<?= h($category['slug']) ?>" style="color: var(--primary-color); text-decoration: none;">
+                            <a href="/<?= h($category['slug']) ?>/" style="color: var(--primary-color); text-decoration: none;">
                                 <?= h($category['title']) ?>
                             </a>
                         </div>
@@ -744,7 +744,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     <?php if (!empty($materialTags)): ?>
                     <div class="tags-container">
                         <?php foreach ($materialTags as $tag): ?>
-                        <a href="/tag.php?slug=<?= h($tag['slug']) ?>" class="tag">
+                        <a href="/tag/<?= h($tag['slug']) ?>/" class="tag">
                             #<?= h($tag['name']) ?>
                         </a>
                         <?php endforeach; ?>

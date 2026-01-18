@@ -35,9 +35,10 @@ $countStmt->execute([$category['id']]);
 $totalItems = $countStmt->fetchColumn();
 $totalPages = ceil($totalItems / $perPage);
 
-// そのカテゴリの素材を取得（ページング付き）
+// そのカテゴリの素材を取得（ページング付き、category_slugも含める）
 $materialsStmt = $pdo->prepare("
-    SELECT m.* FROM materials m 
+    SELECT m.*, c.slug as category_slug FROM materials m 
+    LEFT JOIN categories c ON m.category_id = c.id
     WHERE m.category_id = ? 
     ORDER BY m.upload_date DESC 
     LIMIT ? OFFSET ?
@@ -45,27 +46,11 @@ $materialsStmt = $pdo->prepare("
 $materialsStmt->execute([$category['id'], $perPage, $offset]);
 $materials = $materialsStmt->fetchAll();
 
-// 現在表示されている素材からミニストーリーがあるものをランダムに3件取得
-$storyMaterials = [];
-if (!empty($materials)) {
-    $materialIds = array_column($materials, 'id');
-    if (!empty($materialIds)) {
-        $placeholders = implode(',', array_fill(0, count($materialIds), '?'));
-        $storyStmt = $pdo->prepare("
-            SELECT m.id, m.title, m.slug, m.mini_story,
-                   m.image_path, m.webp_small_path, m.structured_bg_color,
-                   c.slug as category_slug
-            FROM materials m
-            LEFT JOIN categories c ON m.category_id = c.id
-            WHERE m.id IN ($placeholders)
-            AND m.mini_story IS NOT NULL
-            ORDER BY RAND()
-            LIMIT 3
-        ");
-        $storyStmt->execute($materialIds);
-        $storyMaterials = $storyStmt->fetchAll();
-    }
-}
+// 背景浮遊用の素材を取得（8件）
+$floatingMaterialsSql = "SELECT m.webp_small_path as image_path, m.structured_bg_color FROM materials m ORDER BY RAND() LIMIT 8";
+$floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
+$floatingMaterialsStmt->execute();
+$floatingMaterials = $floatingMaterialsStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -99,8 +84,16 @@ if (!empty($materials)) {
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/<?= h($slug) ?>/" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/<?= h($slug) ?>/" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/<?= h($slug) ?>/" />
+    
+    <?php include __DIR__ . '/includes/gtm-head.php'; ?>
+    
     <style>
-        /* リセット */
+        :root {
+            --primary-color: #E8A87C;
+            --secondary-color: #C38E70;
+            --text-dark: #5A4A42;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -108,17 +101,157 @@ if (!empty($materials)) {
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #ffffff;
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(180deg, #FFF0E5 0%, #FFF5F8 100%);
+            min-height: 100vh;
         }
 
-        /* コンテナ */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+        }
+
+        /* 浮遊素材背景 */
+        .floating-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-material {
+            position: absolute;
+            opacity: 0;
+            animation: floatUp linear infinite;
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .floating-material img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) translateX(var(--drift)) scale(1) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .floating-material:nth-child(1) {
+            left: 10%;
+            width: 100px;
+            height: 100px;
+            animation-duration: 15s;
+            animation-delay: 0s;
+            --drift: 30px;
+        }
+
+        .floating-material:nth-child(2) {
+            left: 25%;
+            width: 85px;
+            height: 85px;
+            animation-duration: 18s;
+            animation-delay: 2s;
+            --drift: -20px;
+        }
+
+        .floating-material:nth-child(3) {
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            animation-duration: 20s;
+            animation-delay: 4s;
+            --drift: 40px;
+        }
+
+        .floating-material:nth-child(4) {
+            left: 70%;
+            width: 90px;
+            height: 90px;
+            animation-duration: 16s;
+            animation-delay: 1s;
+            --drift: -35px;
+        }
+
+        .floating-material:nth-child(5) {
+            left: 85%;
+            width: 110px;
+            height: 110px;
+            animation-duration: 19s;
+            animation-delay: 3s;
+            --drift: 25px;
+        }
+
+        .floating-material:nth-child(6) {
+            left: 5%;
+            width: 95px;
+            height: 95px;
+            animation-duration: 17s;
+            animation-delay: 5s;
+            --drift: -30px;
+        }
+
+        .floating-material:nth-child(7) {
+            left: 40%;
+            width: 105px;
+            height: 105px;
+            animation-duration: 21s;
+            animation-delay: 6s;
+            --drift: 35px;
+        }
+
+        .floating-material:nth-child(8) {
+            left: 60%;
+            width: 80px;
+            height: 80px;
+            animation-duration: 14s;
+            animation-delay: 7s;
+            --drift: -25px;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            position: relative;
+            z-index: 1;
+            padding: 40px 0 80px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #A0675C;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: #8B7355;
+            margin-bottom: 30px;
+            font-weight: 500;
         }
 
         /* パンくずリスト */
@@ -141,397 +274,225 @@ if (!empty($materials)) {
         .breadcrumb-item:not(:last-child)::after {
             content: ">";
             margin: 0 8px;
-            color: #6c757d;
+            color: #8B7355;
         }
 
         .breadcrumb-item a {
-            color: #6c757d;
+            color: #8B7355;
             text-decoration: none;
         }
 
         .breadcrumb-item a:hover {
-            color: #495057;
+            color: var(--primary-color);
             text-decoration: underline;
         }
 
         .breadcrumb-item.active {
-            color: #6c757d;
+            color: #8B7355;
         }
 
-        /* カテゴリヘッダー */
-        .category-header {
+        /* 結果表示 */
+        .results-info {
             text-align: center;
-            color: #6c757d;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 1rem;
-            margin: 2rem 0;
+            font-size: 1rem;
+            color: #8B7355;
+            margin-bottom: 30px;
         }
 
-        .category-header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
+        .results-info strong {
+            color: var(--primary-color);
+            font-weight: 600;
         }
 
-        /* グリッドレイアウト */
-        .materials-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 2rem 0;
+        /* マソンリーレイアウト */
+        .masonry-grid {
+            column-count: 5;
+            column-gap: 30px;
+            padding: 0;
         }
-        
-        /* 768px以上: 3列表示 (list.phpのcol-md-4と同等) */
-        @media (min-width: 768px) {
-            .materials-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        /* 992px以上: 4列表示 (list.phpのcol-lg-3と同等) */
-        @media (min-width: 992px) {
-            .materials-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        
-        /* 1200px以上: 6列表示 (list.phpのcol-xl-2と同等) */
-        @media (min-width: 1200px) {
-            .materials-grid {
-                grid-template-columns: repeat(6, 1fr);
+
+        @media (max-width: 992px) {
+            .masonry-grid {
+                column-count: 3;
+                column-gap: 30px;
             }
         }
 
-        /* マテリアルカード */
+        @media (max-width: 768px) {
+            .masonry-grid {
+                column-count: 2;
+                column-gap: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .masonry-grid {
+                column-count: 2;
+                column-gap: 16px;
+            }
+        }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 40px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        @media (max-width: 992px) {
+            .masonry-item {
+                margin-bottom: 30px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .masonry-item {
+                margin-bottom: 24px;
+            }
+        }
+
         .material-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
+            display: block;
             text-decoration: none;
             color: inherit;
-            display: block;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            position: relative;
-            border-radius: 8px;
-            will-change: transform, box-shadow;
-            background-color: #F9F5E9;
-            margin-bottom: 0.5rem;
-            padding: 20px;
-            overflow: hidden;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .material-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            color: inherit;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             text-decoration: none;
+            color: inherit;
         }
 
         .material-card:focus {
             outline: none;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            color: inherit;
             text-decoration: none;
+            color: inherit;
+        }
+
+        .material-image-wrapper {
+            width: 100%;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .material-image {
             width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: contain;
-            border-radius: 4px;
-            transition: opacity 0.3s ease-in-out;
+            height: auto;
+            display: block;
+            transition: transform 0.2s ease;
         }
 
-        .material-card-body {
-            flex: 1 1 auto;
-            padding: 0.5rem 1rem 0.1rem 1rem;
+        .material-card:hover .material-image {
+            transform: scale(1.02);
         }
 
         .material-title {
-            color: #666;
-            font-weight: 300;
+            color: #333;
+            font-weight: 500;
             font-size: 0.9rem;
-            text-align: center;
+            margin-top: 12px;
             margin-bottom: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* 空の状態 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
+        .material-card:hover .material-title {
+            color: #A0675C;
         }
 
-        .empty-state .icon {
-            font-size: 3rem;
-            color: #6c757d;
-            margin-bottom: 1rem;
+        /* ページネーション */
+        .pagination-container {
+            margin-top: 60px;
+            margin-bottom: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .empty-state h4 {
-            color: #6c757d;
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: #6c757d;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: transparent;
-            color: #0d6efd;
-            border: 1px solid #0d6efd;
-            border-radius: 4px;
+        .pagination-button {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            color: #8B7355;
             text-decoration: none;
-            transition: all 0.2s ease;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
         }
 
-        .btn:hover {
-            background-color: #0d6efd;
+        .pagination-button:hover:not(.disabled) {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .pagination-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .pagination-info {
+            color: #8B7355;
+            font-weight: 500;
+            padding: 0 20px;
+        }
+
+        /* 結果なし */
+        .no-results {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .no-results-title {
+            font-size: 1.5rem;
+            color: #8B7355;
+            margin-bottom: 10px;
+        }
+
+        .no-results-text {
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .no-results-button {
+            display: inline-block;
+            padding: 12px 32px;
+            background: var(--primary-color);
             color: white;
             text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
-        /* フッター */
-        .footer {
-            background-color: #fef9e7;
-            padding: 30px 0;
-            margin-top: 60px;
-        }
-
-        .footer-text {
-            color: #2c3e50;
-            text-align: center;
-            margin: 0;
-        }
-
-        /* レスポンシブ */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 15px;
-            }
-
-            .header-logo {
-                font-size: 1.5rem;
-            }
-
-            .category-header h1 {
-                font-size: 1.5rem;
-            }
-
-            .empty-state {
-                padding: 40px 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .materials-grid {
-                gap: 10px;
-            }
-
-            .material-card-body {
-                padding: 8px;
-            }
-
-            .material-title {
-                font-size: 0.8rem;
-            }
-        }
-        
-        /* ページネーション */
-        .pagination {
-            display: flex;
-            padding-left: 0;
-            list-style: none;
-            border-radius: 0;
-            gap: 5px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .justify-content-center {
-            justify-content: center !important;
-        }
-
-        nav[aria-label="ページネーション"] {
-            margin-top: 3rem;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .page-item {
-            position: relative;
-            display: block;
-        }
-
-        .page-item:first-child .page-link,
-        .page-item:last-child .page-link {
-            border-radius: 8px;
-        }
-
-        .page-item.active .page-link {
-            z-index: 3;
-            background-color: #f5f5f5;
-            color: #444;
-            border: 2px solid #999;
-            font-weight: bold;
-        }
-
-        .page-item.disabled .page-link {
-            color: #adb5bd;
-            pointer-events: none;
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
-        }
-
-        .page-link {
-            position: relative;
-            display: block;
-            padding: 0.75em 1em;
-            margin: 0;
-            line-height: 1.2;
-            background-color: #ffffff;
-            color: #444;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            font-weight: bold;
-            text-decoration: none;
-            min-width: 44px;
-            text-align: center;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .page-link:hover {
-            z-index: 2;
-            background-color: #f5f5f5;
-            border-color: #999;
-            color: #444;
-            text-decoration: none;
-        }
-
-        .page-link:focus {
-            z-index: 3;
-            outline: 0;
-            box-shadow: 0 0 0 3px rgba(204, 204, 204, 0.3);
-        }
-
-        /* ストーリーのある素材セクション */
-        .story-materials-section {
-            background: linear-gradient(135deg, #fff8e1 0%, #ffe9c5 100%);
-            padding: 3rem 2rem;
-            border-radius: 1rem;
-            margin: 2rem 0;
-        }
-
-        .story-materials-section h2 {
-            color: #d4a574;
-            font-weight: 700;
-        }
-
-        .story-materials-section .text-muted {
-            color: #a68b6a !important;
-        }
-
-        .story-materials-list {
-            display: flex;
-            flex-direction: column;
-            gap: 3rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .story-material-item {
-            background: #ffffff;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .story-material-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        }
-
-        .story-item-image-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .story-item-image {
-            width: 100%;
-            max-width: 300px;
-            aspect-ratio: 1;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-        }
-
-        .story-item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .story-item-content {
-            padding: 0 2rem 2rem 2rem;
-        }
-
-        .story-item-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #d4a574;
-            margin-bottom: 1.25rem;
-            text-align: center;
-        }
-
-        .story-item-text {
-            font-size: 1rem;
-            line-height: 2;
-            color: #555;
-            font-family: 'Hiragino Maru Gothic ProN', 'ヒラギノ丸ゴ ProN', 'メイリオ', Meiryo, sans-serif;
-            background: #fff9f0;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            border-left: 4px solid #d4a574;
-        }
-
-        @media (max-width: 768px) {
-            .story-materials-section {
-                padding: 2rem 1rem;
-            }
-
-            .story-materials-list {
-                gap: 2rem;
-            }
-
-            .story-item-image-wrapper {
-                padding: 1.5rem;
-            }
-
-            .story-item-image {
-                max-width: 250px;
-            }
-
-            .story-item-content {
-                padding: 0 1.5rem 1.5rem 1.5rem;
-            }
-
-            .story-item-title {
-                font-size: 1.1rem;
-            }
-
-            .story-item-text {
-                font-size: 0.95rem;
-                padding: 1rem;
-            }
+        .no-results-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
     </style>
     
@@ -540,212 +501,114 @@ if (!empty($materials)) {
 <body>
     <?php include __DIR__ . '/includes/gtm-body.php'; ?>
     
+    <!-- 浮遊素材背景 -->
+    <div class="floating-container">
+        <?php foreach ($floatingMaterials as $index => $material): 
+            if (!empty($material['image_path'])): 
+                $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+            ?>
+        <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
+            <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
+        </div>
+        <?php endif; endforeach; ?>
+    </div>
+    
     <?php 
     $currentPage = 'category';
     include 'includes/header.php'; 
     ?>
-    
-    <!-- パンくずリスト -->
-    <div class="container">
-        <nav class="breadcrumb" aria-label="breadcrumb">
-            <ol class="breadcrumb-list">
-                <li class="breadcrumb-item">
-                    <a href="/">ホーム</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    <?= h($category['title']) ?>
-                </li>
-            </ol>
-        </nav>
-    </div>
-    
-    <div class="container">
-        <div class="category-header">
-            <h1><?= h($category['title']) ?></h1>
-            <p><?= $totalItems ?>個の素材があります<?php if ($totalPages > 1): ?>
-                        (<?= $page ?>/<?= $totalPages ?>ページ)
-                    <?php endif; ?></p>
-        </div>
-        
-        <?php if (empty($materials)): ?>
-            <div class="empty-state">
-                <div class="icon">🖼️</div>
-                <h4>まだ素材がありません</h4>
-                <p>このカテゴリには素材がまだ投稿されていません。</p>
-                <a href="/" class="btn">ホームに戻る</a>
+
+    <div class="main-content">
+        <div class="container">
+            <!-- パンくずリスト -->
+            <nav class="breadcrumb" aria-label="breadcrumb">
+                <ol class="breadcrumb-list">
+                    <li class="breadcrumb-item">
+                        <a href="/">ホーム</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <?= h($category['title']) ?>
+                    </li>
+                </ol>
+            </nav>
+
+            <h1 class="page-title"><?= h($category['title']) ?></h1>
+            <p class="page-subtitle">商用利用OK・クレジット表記不要</p>
+
+            <!-- 結果表示 -->
+            <div class="results-info">
+                全<strong><?= number_format($totalItems) ?></strong>件の素材
+                <?php if ($totalPages > 1): ?>
+                    （<strong><?= $page ?></strong> / <?= $totalPages ?>ページ）
+                <?php endif; ?>
             </div>
-        <?php else: ?>
-            <div class="materials-grid">
-                <?php foreach ($materials as $material): ?>
-                    <?php
-                    // AIが指定した背景色を取得（フォールバックは従来の色）
-                    $backgroundColor = $material['structured_bg_color'] ?? '#F9F5E9';
-                    ?>
-                    <a href="/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" class="material-card">
-                        <picture>
-                            <!-- デスクトップ用：300x300のWebP -->
-                            <source media="(min-width: 768px)" 
-                                    srcset="/<?= h($material['webp_medium_path'] ?? $material['image_path']) ?>" 
-                                    type="image/webp">
-                            <!-- モバイル用：180x180のWebP -->
-                            <source media="(max-width: 767px)" 
-                                    srcset="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" 
-                                    type="image/webp">
-                            <!-- フォールバック：オリジナル画像 -->
-                            <img src="/<?= h($material['image_path']) ?>" 
-                                 class="material-image" 
-                                 alt="<?= h($material['title']) ?>のイラスト" 
-                                 loading="lazy"
-                                 style="background-color: <?= h($backgroundColor) ?>;"
-                        </picture>
-                        
-                        <div class="material-card-body">
-                            <p class="material-title">
-                                <?= h($material['title']) ?>
-                            </p>
+
+            <!-- 素材一覧 -->
+            <?php if (!empty($materials)): ?>
+            <div class="masonry-grid">
+                <?php foreach ($materials as $material): 
+                    // 画像パス（webp_small_pathを優先）
+                    $imagePath = !empty($material['webp_small_path']) ? $material['webp_small_path'] : $material['image_path'];
+                    
+                    // 背景色
+                    $bgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#f0f0f0';
+                    
+                    // リンク先
+                    $detailUrl = "/{$material['category_slug']}/{$material['slug']}/";
+                ?>
+                <div class="masonry-item">
+                    <a href="<?= h($detailUrl) ?>" class="material-card">
+                        <div class="material-image-wrapper" style="background-color: <?= h($bgColor) ?>;">
+                            <img 
+                                src="/<?= h($imagePath) ?>" 
+                                alt="<?= h($material['title']) ?>"
+                                class="material-image"
+                                loading="lazy"
+                            >
                         </div>
+                        <h2 class="material-title"><?= h($material['title']) ?></h2>
                     </a>
+                </div>
                 <?php endforeach; ?>
             </div>
-            
+
             <!-- ページネーション -->
             <?php if ($totalPages > 1): ?>
-            <div style="display: flex; justify-content: center; width: 100%; margin-top: 3rem;">
-                <nav aria-label="ページネーション">
-                    <ul class="pagination justify-content-center">
-                        <!-- 前のページ -->
-                        <?php if ($page > 1): ?>
-                            <li class="page-item">
-                                <a class="page-link" href="?page=<?= $page - 1 ?>" aria-label="前のページ">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                    <?php else: ?>
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-label="前のページ">
-                                <span aria-hidden="true">&laquo;</span>
-                            </span>
-                        </li>
-                    <?php endif; ?>
-
-                    <!-- ページ番号 -->
-                    <?php
-                    $startPage = max(1, $page - 2);
-                    $endPage = min($totalPages, $page + 2);
-                    
-                    // 最初のページを表示
-                    if ($startPage > 1): ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1">1</a>
-                        </li>
-                        <?php if ($startPage > 2): ?>
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        <?php endif;
-                    endif;
-
-                    // 現在のページ周辺を表示
-                    for ($i = $startPage; $i <= $endPage; $i++): ?>
-                        <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                            <?php if ($i == $page): ?>
-                                <span class="page-link"><?= $i ?></span>
-                            <?php else: ?>
-                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
-                            <?php endif; ?>
-                        </li>
-                    <?php endfor;
-
-                    // 最後のページを表示
-                    if ($endPage < $totalPages): ?>
-                        <?php if ($endPage < $totalPages - 1): ?>
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        <?php endif; ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<?= $totalPages ?>"><?= $totalPages ?></a>
-                        </li>
-                    <?php endif; ?>
-
-                    <!-- 次のページ -->
-                    <?php if ($page < $totalPages): ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<?= $page + 1 ?>" aria-label="次のページ">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                    <?php else: ?>
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-label="次のページ">
-                                <span aria-hidden="true">&raquo;</span>
-                            </span>
-                        </li>
-                    <?php endif; ?>
-                    </ul>
-                </nav>
+            <div class="pagination-container">
+                <?php
+                $prevUrl = $page > 1 ? '?page=' . ($page - 1) : null;
+                $nextUrl = $page < $totalPages ? '?page=' . ($page + 1) : null;
+                ?>
+                
+                <?php if ($prevUrl): ?>
+                    <a href="<?= h($prevUrl) ?>" class="pagination-button">← 前へ</a>
+                <?php else: ?>
+                    <span class="pagination-button disabled">← 前へ</span>
+                <?php endif; ?>
+                
+                <span class="pagination-info"><?= $page ?> / <?= $totalPages ?></span>
+                
+                <?php if ($nextUrl): ?>
+                    <a href="<?= h($nextUrl) ?>" class="pagination-button">次へ →</a>
+                <?php else: ?>
+                    <span class="pagination-button disabled">次へ →</span>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
 
-            <!-- ストーリーのある素材セクション -->
-            <?php if (!empty($storyMaterials)): ?>
-            <section class="story-materials-section mt-5 mb-5">
-                <div class="row">
-                    <div class="col-12">
-                        <h2 class="text-center mb-2">おはなしのある子たち</h2>
-                        <p class="text-center text-muted mb-4">ちいさな物語とともに、やさしい時間をどうぞ</p>
-                    </div>
-                </div>
-                
-                <div class="story-materials-list">
-                    <?php foreach ($storyMaterials as $storyMat): ?>
-                    <div class="story-material-item">
-                        <!-- 画像（リンク） -->
-                        <a href="/<?= h($storyMat['category_slug']) ?>/<?= h($storyMat['slug']) ?>/" class="text-decoration-none">
-                            <div class="story-item-image-wrapper">
-                                <?php
-                                $storyImageSrc = !empty($storyMat['webp_small_path']) 
-                                    ? '/' . h($storyMat['webp_small_path'])
-                                    : '/' . h($storyMat['image_path']);
-                                $storyBgColor = !empty($storyMat['structured_bg_color']) 
-                                    ? h($storyMat['structured_bg_color']) 
-                                    : '#ffffff';
-                                ?>
-                                <div class="story-item-image" style="background-color: <?= $storyBgColor ?>;">
-                                    <img src="<?= $storyImageSrc ?>" 
-                                         alt="<?= h($storyMat['title']) ?>"
-                                         loading="lazy"
-                                         decoding="async">
-                                </div>
-                            </div>
-                        </a>
-                        
-                        <!-- ストーリー（リンクなし） -->
-                        <div class="story-item-content">
-                            <h3 class="story-item-title"><?= h($storyMat['title']) ?></h3>
-                            <div class="story-item-text">
-                                <?= nl2br(h($storyMat['mini_story'])) ?>
-                            </div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </section>
+            <?php else: ?>
+            <!-- 結果なし -->
+            <div class="no-results">
+                <div class="no-results-icon">🖼️</div>
+                <h2 class="no-results-title">まだ素材がありません</h2>
+                <p class="no-results-text">このカテゴリには素材がまだ投稿されていません</p>
+                <a href="/" class="no-results-button">ホームに戻る</a>
+            </div>
             <?php endif; ?>
-        <?php endif; ?>
+        </div>
     </div>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="text-center">
-                <div class="mb-2">
-                    <a href="/terms-of-use.php" class="text-decoration-none me-3" style="color: inherit;">利用規約</a>
-                    <a href="/privacy-policy.php" class="text-decoration-none" style="color: inherit;">プライバシーポリシー</a>
-                </div>
-                <p class="footer-text">&copy; 2024 maruttoart. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'includes/footer.php'; ?>
 
 </body>
 </html>
