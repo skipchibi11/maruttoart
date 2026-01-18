@@ -1632,7 +1632,6 @@ foreach ($allMaterials as $material) {
                         const link = document.createElement('a');
                         link.href = url;
                         link.download = `marutto-art-${originalCanvasWidth}x${originalCanvasHeight}-${Date.now()}.png`;
-                        link.target = '_blank';
                         
                         document.body.appendChild(link);
                         link.click();
