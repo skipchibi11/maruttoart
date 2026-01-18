@@ -1594,11 +1594,32 @@ foreach ($allMaterials as $material) {
         }
 
         // ダウンロード
-        // ダウンロード
         function downloadImage() {
             canvas.discardActiveObject();
             canvas.renderAll();
             
+            // iOS/iPadOSを検出
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            
+            // iOSの場合は直接ダウンロードのみ実行
+            if (isIOS) {
+                executeDownload();
+                return;
+            }
+            
+            // その他のデバイスでは選択肢を表示
+            const choice = confirm('画像をどうしますか？\n\nOK: ダウンロード\nキャンセル: ブラウザで表示');
+            
+            if (choice) {
+                executeDownload();
+            } else {
+                displayInBrowser();
+            }
+        }
+        
+        // ダウンロード実行
+        function executeDownload() {
             // 現在の表示状態を保存
             const currentZoom = canvas.getZoom();
             const currentWidth = canvas.width;
@@ -1617,7 +1638,7 @@ foreach ($allMaterials as $material) {
                 // Fabric.jsの内部Canvas要素を取得（ネイティブのHTMLCanvasElement）
                 const nativeCanvas = canvas.lowerCanvasEl;
                 
-                // toBlobを使用（compose/index.phpと同じ方式）
+                // toBlobを使用
                 nativeCanvas.toBlob(function(blob) {
                     // 表示を戻す
                     canvas.setDimensions({ width: currentWidth, height: currentHeight });
@@ -1636,6 +1657,45 @@ foreach ($allMaterials as $material) {
                         
                         URL.revokeObjectURL(url);
                         console.log(`PNG出力完了 (${originalCanvasWidth}x${originalCanvasHeight}px)`);
+                    } else {
+                        showMessage('PNG変換に失敗しました');
+                    }
+                }, 'image/png');
+            });
+        }
+        
+        // ブラウザで表示
+        function displayInBrowser() {
+            // 現在の表示状態を保存
+            const currentZoom = canvas.getZoom();
+            const currentWidth = canvas.width;
+            const currentHeight = canvas.height;
+            
+            // 元のサイズに戻して画像生成
+            canvas.setZoom(1);
+            canvas.setDimensions({ 
+                width: originalCanvasWidth, 
+                height: originalCanvasHeight 
+            });
+            canvas.renderAll();
+            
+            // レンダリング完了を待つ
+            requestAnimationFrame(() => {
+                // Fabric.jsの内部Canvas要素を取得
+                const nativeCanvas = canvas.lowerCanvasEl;
+                
+                nativeCanvas.toBlob(function(blob) {
+                    // 表示を戻す
+                    canvas.setDimensions({ width: currentWidth, height: currentHeight });
+                    canvas.setZoom(currentZoom);
+                    canvas.renderAll();
+                    
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                        
+                        // 少し後にURLを解放
+                        setTimeout(() => URL.revokeObjectURL(url), 60000);
                     } else {
                         showMessage('PNG変換に失敗しました');
                     }
