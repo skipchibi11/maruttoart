@@ -1612,23 +1612,19 @@ foreach ($allMaterials as $material) {
             });
             canvas.renderAll();
             
-            // わずかな待機後に画像を生成（レンダリング完了を待つ）
+            // レンダリング完了を待つ
             requestAnimationFrame(() => {
-                const dataURL = canvas.toDataURL({
-                    format: 'png',
-                    quality: 1,
-                    multiplier: 1
-                });
+                // Fabric.jsの内部Canvas要素を取得（ネイティブのHTMLCanvasElement）
+                const nativeCanvas = canvas.lowerCanvasEl;
                 
-                // 表示を戻す
-                canvas.setDimensions({ width: currentWidth, height: currentHeight });
-                canvas.setZoom(currentZoom);
-                canvas.renderAll();
-                
-                // Blobに変換してダウンロード
-                fetch(dataURL)
-                    .then(res => res.blob())
-                    .then(blob => {
+                // toBlobを使用（compose/index.phpと同じ方式）
+                nativeCanvas.toBlob(function(blob) {
+                    // 表示を戻す
+                    canvas.setDimensions({ width: currentWidth, height: currentHeight });
+                    canvas.setZoom(currentZoom);
+                    canvas.renderAll();
+                    
+                    if (blob) {
                         const url = URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
@@ -1638,15 +1634,12 @@ foreach ($allMaterials as $material) {
                         link.click();
                         document.body.removeChild(link);
                         
-                        // URLを解放
                         URL.revokeObjectURL(url);
-                        
                         console.log(`PNG出力完了 (${originalCanvasWidth}x${originalCanvasHeight}px)`);
-                    })
-                    .catch(error => {
-                        console.error('Download error:', error);
-                        showMessage('ダウンロードに失敗しました');
-                    });
+                    } else {
+                        showMessage('PNG変換に失敗しました');
+                    }
+                }, 'image/png');
             });
         }
 
