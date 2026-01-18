@@ -2,7 +2,7 @@
 require_once '../config.php';
 
 // 公開ページなのでキャッシュを有効化
-setPublicCache(3600, 7200);
+// setPublicCache(3600, 7200);
 
 $pdo = getDB();
 
