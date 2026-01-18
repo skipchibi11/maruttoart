@@ -1598,15 +1598,75 @@ foreach ($allMaterials as $material) {
             canvas.discardActiveObject();
             canvas.renderAll();
             
-            const dataURL = canvas.toDataURL({
-                format: 'png',
-                quality: 1
-            });
+            // 現在の表示状態を保存
+            const currentZoom = canvas.getZoom();
+            const currentWidth = canvas.width;
+            const currentHeight = canvas.height;
             
-            const link = document.createElement('a');
-            link.download = 'marutto-art-' + Date.now() + '.png';
-            link.href = dataURL;
-            link.click();
+            // 元のサイズに戻して画像生成
+            canvas.setZoom(1);
+            canvas.setDimensions({ 
+                width: originalCanvasWidth, 
+                height: originalCanvasHeight 
+            });
+            canvas.renderAll();
+            
+            setTimeout(() => {
+                const dataURL = canvas.toDataURL({
+                    format: 'png',
+                    quality: 1
+                });
+                
+                // 表示を戻す
+                canvas.setDimensions({ width: currentWidth, height: currentHeight });
+                canvas.setZoom(currentZoom);
+                canvas.renderAll();
+                
+                // スマホ対応：新しいタブで画像を開く
+                if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                    // スマホの場合、新しいタブで画像を開く
+                    const newWindow = window.open();
+                    if (newWindow) {
+                        newWindow.document.write(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>ダウンロード - marutto.art</title>
+                                <style>
+                                    body { margin: 0; padding: 20px; background: #f5f5f5; text-align: center; }
+                                    img { max-width: 100%; height: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                                    .download-btn { 
+                                        display: inline-block; 
+                                        margin: 20px 0; 
+                                        padding: 12px 24px; 
+                                        background: #E8A87C; 
+                                        color: white; 
+                                        text-decoration: none; 
+                                        border-radius: 50px; 
+                                        font-weight: 600;
+                                    }
+                                    p { color: #666; margin: 10px 0; }
+                                </style>
+                            </head>
+                            <body>
+                                <h2>作品を保存できます</h2>
+                                <p>画像を長押しして「画像を保存」を選択してください</p>
+                                <img src="${dataURL}" alt="marutto.art">
+                                <br>
+                                <a href="${dataURL}" download="marutto-art-${Date.now()}.png" class="download-btn">ダウンロード</a>
+                            </body>
+                            </html>
+                        `);
+                    }
+                } else {
+                    // PC の場合、通常のダウンロード
+                    const link = document.createElement('a');
+                    link.download = 'marutto-art-' + Date.now() + '.png';
+                    link.href = dataURL;
+                    link.click();
+                }
+            }, 100);
         }
 
         // 作品投稿
