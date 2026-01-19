@@ -126,24 +126,78 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
         }
 
         .hero-cta-pc {
-            margin-top: 10px;
+            margin-top: 50px;
+            position: relative;
+            width: 100%;
         }
 
         .hero-cta-mobile {
             display: none;
+            position: relative;
+            width: 100%;
+            margin-top: 50px;
         }
 
         .cta-button {
             display: inline-block;
-            padding: 14px 40px;
+            padding: 20px 60px;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
             text-decoration: none;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             box-shadow: var(--shadow);
             transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            z-index: 2;
+            overflow: visible;
+            width: 100%;
+            text-align: center;
+        }
+
+        .peek-animal {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .peek-right {
+            left: 50%;
+            bottom: 80%;
+            transform: translateX(-50%);
+        }
+
+        .peek-animal img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes peekFromBottom {
+            0% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            15% {
+                transform: translateY(15px);
+                opacity: 1;
+            }
+            85% {
+                transform: translateY(15px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+        }
+
+        .peek-animal.active {
+            animation: peekFromBottom 3s ease-in-out forwards;
         }
 
         .cta-button:hover {
@@ -528,7 +582,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                 max-width: 100%;
                 width: 100%;
                 order: 2;
-                margin-top: 24px;
+                margin-top: 40px;
             }
 
             .hero-image {
@@ -541,13 +595,24 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                 display: flex;
                 justify-content: center;
                 order: 3;
-                margin-top: 24px;
+                margin-top: 50px;
                 width: 100%;
             }
 
             .cta-button {
                 padding: 12px 36px;
                 font-size: 0.95rem;
+            }
+
+            .peek-right {
+                left: 50%;
+                bottom: 100%;
+                transform: translateX(-50%);
+            }
+
+            .peek-animal {
+                width: 60px;
+                height: 60px;
             }
 
             .section {
@@ -631,6 +696,9 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     <p class="hero-subtitle">今日はどんな一枚をつくる？</p>
                     <div class="hero-cta-pc">
                         <a href="/compose/" class="cta-button">今すぐつくる</a>
+                        <div class="peek-animal peek-right" id="peek-animal-pc">
+                            <img src="" alt="">
+                        </div>
                     </div>
                 </div>
                 
@@ -641,6 +709,9 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                 
                 <div class="hero-cta-mobile">
                     <a href="/compose/" class="cta-button">今すぐつくる</a>
+                    <div class="peek-animal peek-right" id="peek-animal-mobile">
+                        <img src="" alt="">
+                    </div>
                 </div>
             </div>
         </div>
@@ -735,5 +806,53 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
     </div>
 
     <?php include 'includes/footer.php'; ?>
+
+    <script>
+    // 動物がランダムに顔を出すアニメーション
+    const animals = [
+        '/assets/images/penguin.png',
+        '/assets/images/shimaenaga.png'
+    ];
+
+    function showPeekAnimal(elementId) {
+        const peekElement = document.getElementById(elementId);
+        if (!peekElement) return;
+
+        // ランダムな動物を選択
+        const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+        const img = peekElement.querySelector('img');
+        img.src = randomAnimal;
+        img.alt = 'かわいい動物';
+
+        // ランダムな位置（left: 20% 〜 80%）
+        const randomLeft = Math.floor(Math.random() * 61) + 20; // 20〜80の範囲
+        peekElement.style.left = `${randomLeft}%`;
+
+        // アニメーション開始
+        peekElement.classList.add('active');
+
+        // アニメーション終了後にクラスを削除
+        setTimeout(() => {
+            peekElement.classList.remove('active');
+        }, 3000);
+    }
+
+    function scheduleNextPeek(elementId) {
+        // ランダムな間隔（3秒〜8秒）
+        const randomDelay = Math.floor(Math.random() * 5000) + 3000;
+        
+        setTimeout(() => {
+            showPeekAnimal(elementId);
+            scheduleNextPeek(elementId); // 次の表示をスケジュール
+        }, randomDelay);
+    }
+
+    // ページ読み込み後に開始
+    document.addEventListener('DOMContentLoaded', () => {
+        // PC版とモバイル版で独立してアニメーション
+        scheduleNextPeek('peek-animal-pc');
+        scheduleNextPeek('peek-animal-mobile');
+    });
+    </script>
 </body>
 </html>
