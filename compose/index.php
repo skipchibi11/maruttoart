@@ -586,6 +586,42 @@ foreach ($allMaterials as $material) {
             box-shadow: 0 6px 20px rgba(0,0,0,0.2);
         }
 
+        .secondary-btn {
+            width: 100%;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .secondary-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .secondary-btn {
+            width: 100%;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .secondary-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
         /* スクロールバー */
         ::-webkit-scrollbar {
             width: 8px;
@@ -907,6 +943,7 @@ foreach ($allMaterials as $material) {
                 <div id="colorPickerContainer">
                     <p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px 0;">素材を選択してください</p>
                 </div>
+                <button id="randomColorBtn" class="secondary-btn full-width" onclick="applyRandomColors()" style="margin-top: 12px; display: none;">Change Random Color</button>
             </div>
 
             <!-- 背景設定 -->
@@ -937,7 +974,8 @@ foreach ($allMaterials as $material) {
 
             <!-- アクション -->
             <div class="control-section">
-                <button class="primary-btn full-width" onclick="downloadImage()">ダウンロード</button>
+                <button class="primary-btn full-width" onclick="downloadImage()">PNG ダウンロード</button>
+                <button class="secondary-btn full-width" onclick="downloadSVG()" style="margin-top: 12px;">SVG ダウンロード</button>
                 <button class="primary-btn full-width" style="margin-top: 12px;" onclick="uploadArtwork()">作品を投稿</button>
             </div>
         </div>
@@ -1667,9 +1705,11 @@ foreach ($allMaterials as $material) {
         // 色変更
         function updateColorPickers() {
             const container = document.getElementById('colorPickerContainer');
+            const randomColorBtn = document.getElementById('randomColorBtn');
             
             if (!selectedObject) {
                 container.innerHTML = '<p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px 0;">素材を選択してください</p>';
+                if (randomColorBtn) randomColorBtn.style.display = 'none';
                 return;
             }
             
@@ -1678,8 +1718,12 @@ foreach ($allMaterials as $material) {
             
             if (colors.length === 0) {
                 container.innerHTML = '<p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px 0;">色変更できません</p>';
+                if (randomColorBtn) randomColorBtn.style.display = 'none';
                 return;
             }
+            
+            // ランダムカラーボタンを表示
+            if (randomColorBtn) randomColorBtn.style.display = 'block';
             
             container.innerHTML = '';
             colors.forEach((colorInfo, index) => {
@@ -1736,6 +1780,40 @@ foreach ($allMaterials as $material) {
         }
         
         function normalizeColor(color) {
+            // hsl形式を16進数に変換
+            if (color.startsWith('hsl')) {
+                const match = color.match(/hsl\((\d+),\s*([\d.]+)%,\s*([\d.]+)%\)/);
+                if (match) {
+                    const h = parseInt(match[1]);
+                    const s = parseFloat(match[2]) / 100;
+                    const l = parseFloat(match[3]) / 100;
+                    
+                    // HSLをRGBに変換
+                    const c = (1 - Math.abs(2 * l - 1)) * s;
+                    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+                    const m = l - c / 2;
+                    let r = 0, g = 0, b = 0;
+                    
+                    if (h >= 0 && h < 60) {
+                        r = c; g = x; b = 0;
+                    } else if (h >= 60 && h < 120) {
+                        r = x; g = c; b = 0;
+                    } else if (h >= 120 && h < 180) {
+                        r = 0; g = c; b = x;
+                    } else if (h >= 180 && h < 240) {
+                        r = 0; g = x; b = c;
+                    } else if (h >= 240 && h < 300) {
+                        r = x; g = 0; b = c;
+                    } else if (h >= 300 && h < 360) {
+                        r = c; g = 0; b = x;
+                    }
+                    
+                    const rHex = Math.round((r + m) * 255).toString(16).padStart(2, '0');
+                    const gHex = Math.round((g + m) * 255).toString(16).padStart(2, '0');
+                    const bHex = Math.round((b + m) * 255).toString(16).padStart(2, '0');
+                    return `#${rHex}${gHex}${bHex}`;
+                }
+            }
             // rgb形式を16進数に変換
             if (color.startsWith('rgb')) {
                 const match = color.match(/\d+/g);
@@ -1763,13 +1841,40 @@ foreach ($allMaterials as $material) {
                 selectedObject._objects.forEach(obj => {
                     if (obj.fill && normalizeColor(obj.fill) === normalizedOld) {
                         obj.set('fill', normalizedNew);
+                        obj.dirty = true; // 変更をマーク
                     }
                 });
+                selectedObject.dirty = true; // グループもマーク
             } else if (selectedObject.fill && normalizeColor(selectedObject.fill) === normalizedOld) {
                 selectedObject.set('fill', normalizedNew);
+                selectedObject.dirty = true; // 変更をマーク
             }
             
             canvas.renderAll();
+            saveToLocalStorage();
+        }
+
+        // ランダムなソフトカラーを生成
+        function randomSoftColor() {
+            const h = Math.floor(Math.random() * 360);
+            const s = 40 + Math.random() * 20; // 40–60%
+            const l = 65 + Math.random() * 15; // 65–80%
+            return `hsl(${h}, ${s}%, ${l}%)`;
+        }
+
+        // ランダムカラーを適用
+        function applyRandomColors() {
+            if (!selectedObject) return;
+            
+            const colors = extractColors(selectedObject);
+            
+            colors.forEach(colorInfo => {
+                const newColor = randomSoftColor();
+                changeObjectColor(colorInfo.color, newColor);
+            });
+            
+            // カラーピッカーを更新
+            updateColorPickers();
             saveToLocalStorage();
         }
 
@@ -2042,13 +2147,46 @@ foreach ($allMaterials as $material) {
             }
         }
 
-        // ダウンロード
+        // PNGダウンロード
         function downloadImage() {
             canvas.discardActiveObject();
             canvas.renderAll();
             
             // 直接ダウンロードを実行
             executeDownload();
+        }
+
+        // SVGダウンロード
+        function downloadSVG() {
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            
+            // SVGとしてエクスポート
+            const svgData = canvas.toSVG({
+                width: originalCanvasWidth,
+                height: originalCanvasHeight,
+                viewBox: {
+                    x: 0,
+                    y: 0,
+                    width: originalCanvasWidth,
+                    height: originalCanvasHeight
+                }
+            });
+            
+            // SVGデータをBlobに変換
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            // ダウンロードリンクを作成
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `marutto-art-${originalCanvasWidth}x${originalCanvasHeight}-${Date.now()}.svg`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
         }
         
         // ダウンロード実行
