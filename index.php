@@ -21,30 +21,15 @@ $materialsStmt = $pdo->prepare($materialsSql);
 $materialsStmt->execute();
 $randomMaterials = $materialsStmt->fetchAll();
 
-// スクロールアニメーション用の素材・作品を取得（15件）
-// 素材10件を取得
-$scrollMaterialsSql = "SELECT 'material' as type, m.id, m.slug, c.slug as category_slug, m.webp_small_path as image_path, m.structured_bg_color, m.title
-    FROM materials m
-    LEFT JOIN categories c ON m.category_id = c.id
-    ORDER BY RAND()
-    LIMIT 10";
-$scrollMaterialsStmt = $pdo->prepare($scrollMaterialsSql);
-$scrollMaterialsStmt->execute();
-$scrollMaterials = $scrollMaterialsStmt->fetchAll();
-
-// 作品5件を取得
+// スクロールアニメーション用の作品を取得（15件）
 $scrollArtworksSql = "SELECT 'artwork' as type, id, '' as slug, '' as category_slug, webp_path as image_path, title
     FROM community_artworks
     WHERE status = 'approved'
     ORDER BY RAND()
-    LIMIT 5";
+    LIMIT 15";
 $scrollArtworksStmt = $pdo->prepare($scrollArtworksSql);
 $scrollArtworksStmt->execute();
-$scrollArtworks = $scrollArtworksStmt->fetchAll();
-
-// PHPで結合してシャッフル
-$scrollItems = array_merge($scrollMaterials, $scrollArtworks);
-shuffle($scrollItems);
+$scrollItems = $scrollArtworksStmt->fetchAll();
 
 // 背景浮遊用の素材を取得（8件）
 $floatingMaterialsSql = "SELECT m.webp_small_path as image_path, m.structured_bg_color FROM materials m ORDER BY RAND() LIMIT 8";
@@ -352,7 +337,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
         .scroll-divider {
             overflow: hidden;
             position: relative;
-            height: 140px;
+            height: 280px;
             margin: 40px 0;
             display: flex;
             align-items: center;
@@ -366,8 +351,8 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
         }
 
         .scroll-item {
-            width: 120px;
-            height: 120px;
+            width: 240px;
+            height: 240px;
             flex-shrink: 0;
             border-radius: 12px;
             padding: 12px;
