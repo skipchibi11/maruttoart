@@ -558,6 +558,14 @@ foreach ($allMaterials as $material) {
             background: var(--secondary-color);
         }
 
+        .layer-action-btn.duplicate {
+            background: #6c757d;
+        }
+
+        .layer-action-btn.duplicate:hover {
+            background: #5a6268;
+        }
+
         .primary-btn {
             width: 100%;
             padding: 14px 28px;
@@ -1867,7 +1875,8 @@ foreach ($allMaterials as $material) {
                         </div>
                     </div>
                     <div class="layer-actions">
-                        <button class="layer-action-btn">Delete</button>
+                        <button class="layer-action-btn duplicate">Duplicate</button>
+                        <button class="layer-action-btn delete">Delete</button>
                     </div>
                 `;
                 
@@ -1880,8 +1889,17 @@ foreach ($allMaterials as $material) {
                 };
                 dragHandle.addEventListener('click', handleDragHandleClick);
                 
+                // 複製ボタンのイベント
+                const duplicateBtn = layerItem.querySelector('.layer-action-btn.duplicate');
+                const handleDuplicateClick = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    duplicateLayer(actualIndex);
+                };
+                duplicateBtn.addEventListener('click', handleDuplicateClick);
+                
                 // 削除ボタンのイベント
-                const deleteBtn = layerItem.querySelector('.layer-action-btn');
+                const deleteBtn = layerItem.querySelector('.layer-action-btn.delete');
                 const handleDeleteClick = (e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -1969,6 +1987,35 @@ foreach ($allMaterials as $material) {
             const obj = canvas.item(index);
             canvas.setActiveObject(obj);
             canvas.renderAll();
+        }
+
+        // レイヤー複製
+        function duplicateLayer(index) {
+            const obj = canvas.item(index);
+            if (!obj) return;
+            
+            // オブジェクトを複製
+            obj.clone((clonedObj) => {
+                // 少しずらして配置
+                clonedObj.set({
+                    left: clonedObj.left + 20,
+                    top: clonedObj.top + 20
+                });
+                
+                // materialDataも複製
+                if (obj.materialData) {
+                    clonedObj.materialData = JSON.parse(JSON.stringify(obj.materialData));
+                }
+                
+                // 元のレイヤーの1つ上の階層に挿入
+                canvas.insertAt(clonedObj, index + 1);
+                canvas.setActiveObject(clonedObj);
+                canvas.renderAll();
+                
+                // レイヤーリストを更新
+                updateLayerList();
+                saveToLocalStorage();
+            });
         }
 
         // レイヤー削除
