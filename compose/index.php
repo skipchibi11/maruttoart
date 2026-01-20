@@ -1761,18 +1761,47 @@ foreach ($allMaterials as $material) {
             if (obj._objects) {
                 // グループオブジェクトの場合
                 obj._objects.forEach(child => {
+                    // fillを抽出
                     if (child.fill && child.fill !== 'transparent' && typeof child.fill === 'string') {
                         const normalizedColor = normalizeColor(child.fill);
                         if (normalizedColor) {
-                            colors.set(normalizedColor, { color: normalizedColor, objects: (colors.get(normalizedColor)?.objects || []).concat([child]) });
+                            const existing = colors.get(normalizedColor);
+                            if (existing) {
+                                existing.objects.push(child);
+                                if (!existing.properties.includes('fill')) existing.properties.push('fill');
+                            } else {
+                                colors.set(normalizedColor, { color: normalizedColor, objects: [child], properties: ['fill'] });
+                            }
+                        }
+                    }
+                    // strokeを抽出
+                    if (child.stroke && child.stroke !== 'transparent' && typeof child.stroke === 'string') {
+                        const normalizedColor = normalizeColor(child.stroke);
+                        if (normalizedColor) {
+                            const existing = colors.get(normalizedColor);
+                            if (existing) {
+                                if (!existing.objects.includes(child)) existing.objects.push(child);
+                                if (!existing.properties.includes('stroke')) existing.properties.push('stroke');
+                            } else {
+                                colors.set(normalizedColor, { color: normalizedColor, objects: [child], properties: ['stroke'] });
+                            }
                         }
                     }
                 });
-            } else if (obj.fill && obj.fill !== 'transparent' && typeof obj.fill === 'string') {
+            } else {
                 // 単一オブジェクトの場合
-                const normalizedColor = normalizeColor(obj.fill);
-                if (normalizedColor) {
-                    colors.set(normalizedColor, { color: normalizedColor, objects: [obj] });
+                const properties = [];
+                if (obj.fill && obj.fill !== 'transparent' && typeof obj.fill === 'string') {
+                    properties.push('fill');
+                }
+                if (obj.stroke && obj.stroke !== 'transparent' && typeof obj.stroke === 'string') {
+                    properties.push('stroke');
+                }
+                if (properties.length > 0) {
+                    const normalizedColor = normalizeColor(obj.fill || obj.stroke);
+                    if (normalizedColor) {
+                        colors.set(normalizedColor, { color: normalizedColor, objects: [obj], properties: properties });
+                    }
                 }
             }
             
@@ -1839,15 +1868,29 @@ foreach ($allMaterials as $material) {
             
             if (selectedObject._objects) {
                 selectedObject._objects.forEach(obj => {
+                    // fillの変更
                     if (obj.fill && normalizeColor(obj.fill) === normalizedOld) {
                         obj.set('fill', normalizedNew);
-                        obj.dirty = true; // 変更をマーク
+                        obj.dirty = true;
+                    }
+                    // strokeの変更
+                    if (obj.stroke && normalizeColor(obj.stroke) === normalizedOld) {
+                        obj.set('stroke', normalizedNew);
+                        obj.dirty = true;
                     }
                 });
-                selectedObject.dirty = true; // グループもマーク
-            } else if (selectedObject.fill && normalizeColor(selectedObject.fill) === normalizedOld) {
-                selectedObject.set('fill', normalizedNew);
-                selectedObject.dirty = true; // 変更をマーク
+                selectedObject.dirty = true;
+            } else {
+                // fillの変更
+                if (selectedObject.fill && normalizeColor(selectedObject.fill) === normalizedOld) {
+                    selectedObject.set('fill', normalizedNew);
+                    selectedObject.dirty = true;
+                }
+                // strokeの変更
+                if (selectedObject.stroke && normalizeColor(selectedObject.stroke) === normalizedOld) {
+                    selectedObject.set('stroke', normalizedNew);
+                    selectedObject.dirty = true;
+                }
             }
             
             canvas.renderAll();
