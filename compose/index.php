@@ -1011,7 +1011,7 @@ foreach ($allMaterials as $material) {
                     const centerY = obj.height ? (obj.height / 2) : 0;
                     const absScaleX = Math.abs(obj.scaleX);
                     const absScaleY = Math.abs(obj.scaleY);
-                    const scale = (absScaleX + absScaleY) / 2; // 平均スケール
+                    const scale = (absScaleX + absScaleY) / 2; // 平均スケール（後方互換性のため）
                     
                     return {
                         id: obj.materialData?.id || Math.floor(Math.random() * 10000),
@@ -1027,9 +1027,11 @@ foreach ($allMaterials as $material) {
                             x: obj.left - (centerX * absScaleX),
                             y: obj.top - (centerY * absScaleY),
                             scale: scale,
+                            scaleX: absScaleX,
+                            scaleY: absScaleY,
                             rotation: obj.angle,
-                            flipHorizontal: obj.scaleX < 0,
-                            flipVertical: obj.scaleY < 0
+                            flipHorizontal: obj.flipX || obj.scaleX < 0,
+                            flipVertical: obj.flipY || obj.scaleY < 0
                         },
                         visible: true,
                         zIndex: zIndex,
@@ -1039,8 +1041,8 @@ foreach ($allMaterials as $material) {
                         scaleX: obj.scaleX,
                         scaleY: obj.scaleY,
                         angle: obj.angle,
-                        flipX: obj.scaleX < 0,
-                        flipY: obj.scaleY < 0,
+                        flipX: obj.flipX || obj.scaleX < 0,
+                        flipY: obj.flipY || obj.scaleY < 0,
                         originX: obj.originX,
                         originY: obj.originY,
                         materialData: obj.materialData,
@@ -1073,7 +1075,9 @@ foreach ($allMaterials as $material) {
                     objects: objects,
                     canvasSize: document.getElementById('canvasSize').value,
                     customWidth: originalCanvasWidth,
-                    customHeight: originalCanvasHeight
+                    customHeight: originalCanvasHeight,
+                    // カスタマイズモードのartwork_idを保存
+                    artwork_id: <?php echo $customizeArtworkId ?? 'null'; ?>
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(canvasData));
             } catch (error) {
@@ -1374,7 +1378,22 @@ foreach ($allMaterials as $material) {
                 return;
             }
             
-            // LocalStorageをクリア（新規作成）
+            // LocalStorageに保存されたデータがあれば優先的に使用
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    // artwork_idが一致する場合はLocalStorageのデータを使用
+                    if (parsed.artwork_id == <?php echo $customizeArtworkId ?? 'null'; ?>) {
+                        loadFromLocalStorage();
+                        return;
+                    }
+                } catch (e) {
+                    console.log('LocalStorage読み込みエラー:', e);
+                }
+            }
+            
+            // LocalStorageにデータがない、または別の作品の場合はクリアして新規読み込み
             localStorage.removeItem(STORAGE_KEY);
             canvas.clear();
             
@@ -1466,35 +1485,40 @@ foreach ($allMaterials as $material) {
                                     const transform = materialData.transform || {};
                                     const posX = transform.x !== undefined ? transform.x : (materialData.x || materialData.left || (originalCanvasWidth / 2));
                                     const posY = transform.y !== undefined ? transform.y : (materialData.y || materialData.top || (originalCanvasHeight / 2));
-                                    const scaleValue = transform.scale !== undefined ? transform.scale : (materialData.scale || materialData.scaleX || 1);
-                                    const rotation = transform.rotation !== undefined ? transform.rotation : (materialData.rotation || materialData.angle || 0);
-                                    
-                                    // 反転の取得（transform内のflipHorizontal/flipVerticalを優先）
-                                    let flipX = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (materialData.flipX || false);
-                                    let flipY = transform.flipVertical !== undefined ? transform.flipVertical : (materialData.flipY || false);
-                                    
-                                    // originalCenterを使ってFabric.jsの中心座標に変換
-                                    // compose/index.phpではtranslate(x,y)で左上を配置しているため、
-                                    // Fabric.jsのcenter originで同じ結果を得るには、
-                                    // x + (centerX * scale), y + (centerY * scale)が必要
-                                    const originalCenter = materialData.originalCenter || { x: obj.width / 2, y: obj.height / 2 };
-                                    const centerOffsetX = originalCenter.x * scaleValue;
-                                    const centerOffsetY = originalCenter.y * scaleValue;
-                                    
-                                    // 位置とスケールを復元
-                                    obj.set({
-                                        left: posX + centerOffsetX,
-                                        top: posY + centerOffsetY,
-                                        scaleX: flipX ? -scaleValue : scaleValue,
-                                        scaleY: flipY ? -scaleValue : scaleValue,
-                                        angle: rotation,
-                                        originX: 'center',
-                                        originY: 'center',
-                                        materialData: {
-                                            ...fullMaterialData,
-                                            zIndex: index
-                                        }
-                                    });
+                    
+                    // scaleXとscaleYを個別に取得（transform内のscaleX/scaleYを優先）
+                    const scaleXValue = transform.scaleX !== undefined ? Math.abs(transform.scaleX) : 
+                                        (transform.scale !== undefined ? Math.abs(transform.scale) : Math.abs(materialData.scale || materialData.scaleX || 1));
+                    const scaleYValue = transform.scaleY !== undefined ? Math.abs(transform.scaleY) : 
+                                        (transform.scale !== undefined ? Math.abs(transform.scale) : Math.abs(materialData.scale || materialData.scaleY || 1));
+                    const rotation = transform.rotation !== undefined ? transform.rotation : (materialData.rotation || materialData.angle || 0);
+                    
+                    // 反転の取得（transform内のflipHorizontal/flipVerticalを優先）
+                    let flipX = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (materialData.flipX || materialData.scaleX < 0 || false);
+                    let flipY = transform.flipVertical !== undefined ? transform.flipVertical : (materialData.flipY || materialData.scaleY < 0 || false);
+                    
+                    // originalCenterを使ってFabric.jsの中心座標に変換
+                    // compose/index.phpではtranslate(x,y)で左上を配置しているため、
+                    // Fabric.jsのcenter originで同じ結果を得るには、
+                    // x + (centerX * scale), y + (centerY * scale)が必要
+                    const originalCenter = materialData.originalCenter || { x: obj.width / 2, y: obj.height / 2 };
+                    const centerOffsetX = originalCenter.x * scaleXValue;
+                    const centerOffsetY = originalCenter.y * scaleYValue;
+                    
+                    // 位置とスケールを復元
+                    obj.set({
+                        left: posX + centerOffsetX,
+                        top: posY + centerOffsetY,
+                        scaleX: flipX ? -scaleXValue : scaleXValue,
+                        scaleY: flipY ? -scaleYValue : scaleYValue,
+                        angle: rotation,
+                        originX: 'center',
+                        originY: 'center',
+                        materialData: {
+                            ...fullMaterialData,
+                            zIndex: index
+                        }
+                    });
                                     
                                     canvas.add(obj);
                                     
@@ -2383,7 +2407,7 @@ foreach ($allMaterials as $material) {
                         const centerY = obj.height ? (obj.height / 2) : 0;
                         const absScaleX = Math.abs(obj.scaleX);
                         const absScaleY = Math.abs(obj.scaleY);
-                        const scale = (absScaleX + absScaleY) / 2;
+                        const scale = (absScaleX + absScaleY) / 2; // 後方互換性のため
                         
                         // 色情報を抽出
                         const colors = [];
@@ -2411,9 +2435,11 @@ foreach ($allMaterials as $material) {
                                 x: obj.left - (centerX * absScaleX),
                                 y: obj.top - (centerY * absScaleY),
                                 scale: scale,
+                                scaleX: absScaleX,
+                                scaleY: absScaleY,
                                 rotation: obj.angle,
-                                flipHorizontal: obj.scaleX < 0,
-                                flipVertical: obj.scaleY < 0
+                                flipHorizontal: obj.flipX || obj.scaleX < 0,
+                                flipVertical: obj.flipY || obj.scaleY < 0
                             },
                             visible: true,
                             colors: colors
