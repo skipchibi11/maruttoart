@@ -411,9 +411,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                        aria-label="<?= h($artwork['title']) ?>の詳細を見る">
                         <img src="/<?= h($artwork['webp_path'] ?: $artwork['file_path']) ?>" 
                              class="material-image" 
-                             alt="<?= h($artwork['title']) ?>"
-                             loading="lazy"
-                             decoding="async">
+                             alt="<?= h($artwork['title']) ?>">
                         
                         <h3 class="artwork-title"><?= h($artwork['title']) ?></h3>
                     </a>
