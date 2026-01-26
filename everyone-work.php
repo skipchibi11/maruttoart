@@ -417,6 +417,17 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
             transform: translateY(-2px);
         }
 
+        .btn-animation {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(232, 168, 124, 0.3);
+        }
+
+        .btn-animation:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 168, 124, 0.4);
+        }
+
         /* セクションタイトル */
         .section-title {
             font-size: clamp(1.4rem, 3vw, 1.8rem);
@@ -653,12 +664,18 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
                     <a href="/<?= h($downloadPath) ?>" 
                        download 
                        class="btn btn-primary">
-                        ダウンロード
+                        Download
                     </a>
                     <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
                        class="btn btn-secondary">
-                        カスタマイズする
+                        Compose
                     </a>
+                    <?php if (!empty($artwork['svg_data'])): ?>
+                    <a href="/compose/animation.php?artwork_id=<?= $artwork['id'] ?>" 
+                       class="btn btn-animation">
+                        Animate
+                    </a>
+                    <?php endif; ?>
                 </div>
 
                 <!-- 作品情報 -->

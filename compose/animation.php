@@ -1,0 +1,1356 @@
+<?php
+require_once '../config.php';
+
+// ログインチェック（管理者のみアクセス可能）
+// 必要に応じてコメントアウトを解除
+// if (!isset($_SESSION['admin_id'])) {
+//     header('Location: /admin/login.php');
+//     exit;
+// }
+
+$pdo = getDB();
+
+// URLパラメータまたはローカルストレージから作品IDを取得
+$artworkId = isset($_GET['artwork_id']) ? intval($_GET['artwork_id']) : null;
+$artwork = null;
+$artworkMaterials = [];
+$fromLocalStorage = false;
+
+// 作品IDが指定された場合、作品データを取得
+if ($artworkId) {
+    $artworkStmt = $pdo->prepare("
+        SELECT id, title, svg_data, used_material_ids, file_path, webp_path
+        FROM community_artworks 
+        WHERE id = ? AND status = 'approved' AND svg_data IS NOT NULL
+    ");
+    $artworkStmt->execute([$artworkId]);
+    $artwork = $artworkStmt->fetch();
+    
+    // 使用素材の情報を取得
+    if ($artwork && !empty($artwork['used_material_ids'])) {
+        $materialIds = explode(',', $artwork['used_material_ids']);
+        $materialIds = array_map('intval', $materialIds);
+        $materialIds = array_filter($materialIds);
+        
+        if (!empty($materialIds)) {
+            $placeholders = str_repeat('?,', count($materialIds) - 1) . '?';
+            $materialsStmt = $pdo->prepare("
+                SELECT id, title, svg_path, webp_small_path
+                FROM materials
+                WHERE id IN ($placeholders)
+            ");
+            $materialsStmt->execute($materialIds);
+            $artworkMaterials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+    }
+} else {
+    // URLに作品IDがない場合は、ローカルストレージから読み込む指示
+    $fromLocalStorage = true;
+}
+
+// GIF生成はクライアント側で実行
+
+
+
+?>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アニメーションGIF生成 | marutto.art</title>
+    <link rel="icon" href="/favicon.ico">
+    
+    <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
+    
+    <script src="https://cdn.jsdelivr.net/npm/gifshot@0.4.5/dist/gifshot.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #E8A87C;
+            --secondary-color: #C38E70;
+            --text-dark: #5A4A42;
+            --accent-purple: #9B59B6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(180deg, #FFF0E5 0%, #FFF5F8 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 24px 30px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(232, 168, 124, 0.15);
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+        
+        .breadcrumb {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        .preview-panel, .control-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(232, 168, 124, 0.15);
+        }
+        
+        .preview-area {
+            border: 1px solid rgba(232, 168, 124, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            position: relative;
+        }
+        
+        #preview-svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .section {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(232, 168, 124, 0.2);
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+        
+        input[type="number"],
+        input[type="text"],
+        input[type="color"],
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(232, 168, 124, 0.2);
+            border-color: var(--secondary-color);
+        }
+        
+        input[type="color"] {
+            height: 45px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .layer-item {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(232, 168, 124, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .layer-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(232, 168, 124, 0.2);
+        }
+        
+        .layer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .layer-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-dark);
+        }
+        
+        .animation-settings {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid rgba(232, 168, 124, 0.2);
+        }
+        
+        .animation-settings.active {
+            display: block;
+        }
+        
+        .btn {
+            padding: 11px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(232, 168, 124, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 168, 124, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(232, 168, 124, 0.3);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 168, 124, 0.4);
+        }
+        
+        .btn-small {
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 50px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .action-buttons button, .action-buttons a {
+            flex: 1;
+        }
+        
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: rgba(232, 168, 124, 0.1);
+            border-color: var(--primary-color);
+            color: var(--text-dark);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(232, 168, 124, 0.2);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-area {
+            display: none;
+            margin-top: 24px;
+            padding: 24px;
+            background: rgba(232, 168, 124, 0.05);
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .result-area.active {
+            display: block;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            border-radius: 12px;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 浮遊素材背景 */
+        .floating-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-material {
+            position: absolute;
+            opacity: 0;
+            animation: floatUp linear infinite;
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .floating-material img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100px) translateX(var(--drift)) scale(1) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .floating-material:nth-child(1) {
+            left: 10%;
+            width: 100px;
+            height: 100px;
+            animation-duration: 15s;
+            animation-delay: 0s;
+            --drift: 30px;
+        }
+
+        .floating-material:nth-child(2) {
+            left: 25%;
+            width: 85px;
+            height: 85px;
+            animation-duration: 18s;
+            animation-delay: 2s;
+            --drift: -20px;
+        }
+
+        .floating-material:nth-child(3) {
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            animation-duration: 20s;
+            animation-delay: 4s;
+            --drift: 40px;
+        }
+
+        .floating-material:nth-child(4) {
+            left: 70%;
+            width: 95px;
+            height: 95px;
+            animation-duration: 16s;
+            animation-delay: 1s;
+            --drift: -30px;
+        }
+
+        .floating-material:nth-child(5) {
+            left: 85%;
+            width: 110px;
+            height: 110px;
+            animation-duration: 22s;
+            animation-delay: 3s;
+            --drift: 25px;
+        }
+
+        .floating-material:nth-child(6) {
+            left: 15%;
+            width: 80px;
+            height: 80px;
+            animation-duration: 19s;
+            animation-delay: 5s;
+            --drift: -35px;
+        }
+
+        .floating-material:nth-child(7) {
+            left: 60%;
+            width: 90px;
+            height: 90px;
+            animation-duration: 17s;
+            animation-delay: 2.5s;
+            --drift: 20px;
+        }
+
+        .floating-material:nth-child(8) {
+            left: 40%;
+            width: 105px;
+            height: 105px;
+            animation-duration: 21s;
+            animation-delay: 4.5s;
+            --drift: -25px;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-area.active {
+            display: block;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .animation-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .animation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <?php include __DIR__ . '/../includes/gtm-body.php'; ?>
+
+    <!-- 浮遊素材背景 -->
+    <div class="floating-container">
+        <?php 
+        // ランダムに8件の素材を取得
+        $floatingMaterialsSql = "SELECT webp_small_path as image_path, structured_bg_color FROM materials ORDER BY RAND() LIMIT 8";
+        $floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
+        $floatingMaterialsStmt->execute();
+        $floatingMaterials = $floatingMaterialsStmt->fetchAll();
+        
+        foreach ($floatingMaterials as $index => $material): 
+            if (!empty($material['image_path'])): 
+                $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+        ?>
+        <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
+            <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
+        </div>
+        <?php endif; endforeach; ?>
+    </div>
+
+    <?php 
+    $currentPage = 'compose';
+    include __DIR__ . '/../includes/header.php';
+    ?>
+
+    <div class="container">
+        <div class="main-content" style="padding: 40px 0 80px;">
+            <h1 class="page-title" style="text-align: center; font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 600; margin-bottom: 10px; color: #A0675C;">
+                Animate Works
+            </h1>
+            <p class="page-subtitle" style="text-align: center; font-size: clamp(0.9rem, 2vw, 1.1rem); color: #8B7355; margin-bottom: 40px; font-weight: 500;">
+                みんなの作品にアニメーション効果を追加してGIFを生成
+            </p>
+        
+        <?php if (isset($error)): ?>
+        <div class="alert alert-error"><?= h($error) ?></div>
+        <?php endif; ?>
+        
+        <?php if (!$artwork && !$fromLocalStorage): ?>
+        <div class="alert alert-error">
+            作品が見つかりません。<a href="/everyone-works.php">みんなの作品一覧</a>から作品を選択してください。
+        </div>
+        <?php else: ?>
+        
+        <div id="main-content" <?= $fromLocalStorage ? 'style="display:none;"' : '' ?>>
+            <div class="animation-grid">
+            <div class="preview-panel">
+                <h2 class="section-title">プレビュー</h2>
+                <div class="preview-area" id="preview-area">
+                    <div id="preview-svg"></div>
+                </div>
+                
+                <div class="result-area" id="result-area">
+                    <h3 class="section-title">生成されたGIF</h3>
+                    <img id="result-gif" class="result-image" alt="Generated GIF">
+                    <div class="action-buttons">
+                        <a id="download-link" class="btn btn-success" download>ダウンロード</a>
+                        <button class="btn btn-secondary" onclick="resetResult()">新しく作成</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <form id="animation-form" onsubmit="return false;">
+                    
+                    <?php if ($artwork): ?>
+                    <div class="section">
+                        <h2 class="section-title">作品情報</h2>
+                        <p><strong><?= h($artwork['title']) ?></strong></p>
+                        <p style="font-size: 12px; color: #666;">作品ID: <?= $artwork['id'] ?></p>
+                    </div>
+                    <?php else: ?>
+                    <div class="section">
+                        <h2 class="section-title">作品情報</h2>
+                        <p id="artwork-info-title"><strong>読み込み中...</strong></p>
+                        <p id="artwork-info-id" style="font-size: 12px; color: #666;"></p>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="section">
+                        <h2 class="section-title">レイヤーアニメーション</h2>
+                        <div id="layers-container"></div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-success" onclick="generateGif()" id="generate-btn">GIF生成</button>
+                    </div>
+                </form>
+            </div>
+            </div>
+        </div>
+        
+        <script>
+            // ローカルストレージのキー（作品データ用）
+            const ARTWORK_STORAGE_KEY = 'marutto_animation_artwork';
+            
+            // 作品データの初期化
+            let artworkData = <?= $fromLocalStorage ? 'null' : json_encode($artwork) ?>;
+            let materials = <?= $fromLocalStorage ? '[]' : json_encode($artworkMaterials) ?>;
+            let svgData, layers, canvasWidth, canvasHeight, backgroundColor;
+            
+            // ローカルストレージから作品データを復元
+            if (!artworkData) {
+                const savedArtwork = localStorage.getItem(ARTWORK_STORAGE_KEY);
+                if (savedArtwork) {
+                    const parsed = JSON.parse(savedArtwork);
+                    artworkData = parsed.artwork;
+                    materials = parsed.materials;
+                    console.log('作品データをローカルストレージから復元しました');
+                    document.getElementById('main-content').style.display = '';
+                } else {
+                    // 作品データがない場合はエラー表示
+                    document.body.innerHTML = `
+                        <div class="container">
+                            <header>
+                                <h1>🎬 アニメーションGIF生成</h1>
+                            </header>
+                            <div class="alert alert-error">
+                                作品が見つかりません。<a href="/everyone-works.php">みんなの作品一覧</a>から作品を選択してください。
+                            </div>
+                        </div>
+                    `;
+                    throw new Error('作品データがありません');
+                }
+            } else {
+                // 新規読み込み時は作品データをローカルストレージに保存
+                localStorage.setItem(ARTWORK_STORAGE_KEY, JSON.stringify({
+                    artwork: artworkData,
+                    materials: materials
+                }));
+            }
+            
+            // SVGデータを解析
+            svgData = JSON.parse(artworkData.svg_data || '{}');
+            layers = svgData.layers || [];
+            
+            // 作品の元のサイズと背景色を取得
+            canvasWidth = svgData.canvasWidth || svgData.width || 800;
+            canvasHeight = svgData.canvasHeight || svgData.height || 800;
+            backgroundColor = svgData.backgroundColor || '#ffffff';
+            
+            // 作品情報をUIに表示（ローカルストレージから復元した場合）
+            if (!<?= $artwork ? 'true' : 'false' ?>) {
+                document.getElementById('artwork-info-title').innerHTML = '<strong>' + (artworkData.title || '無題') + '</strong>';
+                document.getElementById('artwork-info-id').textContent = '作品ID: ' + artworkData.id;
+            }
+            
+            // 作品の元のサイズと背景色を取得
+            canvasWidth = svgData.canvasWidth || svgData.width || 800;
+            canvasHeight = svgData.canvasHeight || svgData.height || 800;
+            backgroundColor = svgData.backgroundColor || '#ffffff';
+            
+            // アニメーション設定（軽量版・固定）
+            const ANIMATION_DURATION = 1200; // 1.5秒 → 1.2秒に短縮
+            const ANIMATION_FPS = 10; // 15fps → 10fpsに削減
+            
+            // ローカルストレージのキー
+            const STORAGE_KEY = 'marutto_animation_' + artworkData.id;
+            
+            // アニメーション設定を保持
+            let animations = {};
+            
+            // 素材のSVGコンテンツをキャッシュ
+            const materialSvgCache = {};
+            
+            // レイヤー一覧を表示
+            function renderLayers() {
+                const container = document.getElementById('layers-container');
+                container.innerHTML = '';
+                
+                layers.forEach((layer, index) => {
+                    const layerId = layer.id || `layer_${index}`;
+                    
+                    // 素材情報を取得
+                    const material = materials.find(m => m.id == layer.materialId);
+                    const thumbnailUrl = material && material.webp_small_path ? '/' + material.webp_small_path : '';
+                    const materialTitle = material ? material.title : '';
+                    
+                    const layerDiv = document.createElement('div');
+                    layerDiv.className = 'layer-item';
+                    layerDiv.innerHTML = `
+                        <div class="layer-header">
+                            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                ${thumbnailUrl ? `<img src="${thumbnailUrl}" alt="${materialTitle}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #f5f5f5; padding: 4px;">` : ''}
+                                <div style="flex: 1;">
+                                    <span class="layer-name">レイヤー ${index + 1}</span>
+                                    ${materialTitle ? `<div style="font-size: 11px; color: #666; margin-top: 2px;">${materialTitle}</div>` : ''}
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAnimation('${layerId}')">
+                                アニメーション設定
+                            </button>
+                        </div>
+                        <div class="animation-settings" id="settings-${layerId}">
+                            <div class="form-group">
+                                <label>アニメーションタイプ</label>
+                                <select id="type-${layerId}" onchange="updateAnimation('${layerId}', 'type', this.value)">
+                                    <option value="">なし</option>
+                                    <option value="fadeIn">フェードイン</option>
+                                    <option value="fadeOut">フェードアウト</option>
+                                    <option value="slideFromBottom">下から上にスライド</option>
+                                    <option value="slideFromTop">上から下にスライド</option>
+                                    <option value="slideFromLeft">左からスライド</option>
+                                    <option value="slideFromRight">右からスライド</option>
+                                    <option value="scale">スケール</option>
+                                    <option value="rotate">回転</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>イージング</label>
+                                <select id="easing-${layerId}" onchange="updateAnimation('${layerId}', 'easing', this.value)">
+                                    <option value="linear">リニア</option>
+                                    <option value="easeIn">イーズイン</option>
+                                    <option value="easeOut">イーズアウト</option>
+                                    <option value="easeInOut">イーズインアウト</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>開始タイミング</label>
+                                <select id="delay-${layerId}" onchange="updateAnimation('${layerId}', 'delay', parseFloat(this.value) || 0)">
+                                    <option value="0">すぐに開始</option>
+                                    <option value="0.5">0.5秒後</option>
+                                    <option value="1">1秒後</option>
+                                    <option value="1.5">1.5秒後</option>
+                                    <option value="2">2秒後</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>維持時間</label>
+                                <select id="hold-${layerId}" onchange="updateAnimation('${layerId}', 'hold', parseFloat(this.value) || 0)">
+                                    <option value="0">なし（すぐループ）</option>
+                                    <option value="0.5">0.5秒維持</option>
+                                    <option value="1">1秒維持</option>
+                                    <option value="1.5">1.5秒維持</option>
+                                    <option value="2">2秒維持</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(layerDiv);
+                });
+            }
+            
+            // アニメーション設定の表示/非表示
+            function toggleAnimation(layerId) {
+                const settings = document.getElementById(`settings-${layerId}`);
+                settings.classList.toggle('active');
+            }
+            
+            // アニメーション設定を更新
+            function updateAnimation(layerId, property, value) {
+                if (!animations[layerId]) {
+                    animations[layerId] = { layerId: layerId };
+                }
+                animations[layerId][property] = value;
+                
+                // ローカルストレージに保存
+                saveToLocalStorage();
+            }
+            
+            // ローカルストレージに保存
+            function saveToLocalStorage() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(animations));
+                } catch (error) {
+                    console.error('ローカルストレージへの保存に失敗:', error);
+                }
+            }
+            
+            // ローカルストレージから復元
+            function loadFromLocalStorage() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        animations = JSON.parse(saved);
+                        console.log('アニメーション設定を復元しました:', animations);
+                    } else {
+                        console.log('保存されたアニメーション設定はありません');
+                    }
+                } catch (error) {
+                    console.error('ローカルストレージからの読み込みに失敗:', error);
+                }
+            }
+            
+            // 保存されたアニメーション設定をUIに反映
+            function applyAnimationsToUI() {
+                console.log('アニメーション設定をUIに反映開始', animations);
+                
+                Object.keys(animations).forEach(layerId => {
+                    const animation = animations[layerId];
+                    
+                    // ID属性で直接要素を取得
+                    const typeSelect = document.getElementById(`type-${layerId}`);
+                    const easingSelect = document.getElementById(`easing-${layerId}`);
+                    const delayInput = document.getElementById(`delay-${layerId}`);
+                    const holdInput = document.getElementById(`hold-${layerId}`);
+                    
+                    console.log(`レイヤー ${layerId}:`, animation);
+                    
+                    if (typeSelect && animation.type !== undefined) {
+                        typeSelect.value = animation.type;
+                        console.log(`  → タイプを "${animation.type}" に設定しました`);
+                    }
+                    
+                    if (easingSelect && animation.easing !== undefined) {
+                        easingSelect.value = animation.easing;
+                        console.log(`  → イージングを "${animation.easing}" に設定しました`);
+                    }
+                    
+                    if (delayInput && animation.delay !== undefined) {
+                        delayInput.value = animation.delay;
+                        console.log(`  → 開始タイミングを "${animation.delay}" に設定しました`);
+                    }
+                    
+                    if (holdInput && animation.hold !== undefined) {
+                        holdInput.value = animation.hold;
+                        console.log(`  → 維持時間を "${animation.hold}" に設定しました`);
+                    }
+                });
+                
+                console.log('アニメーション設定をUIに反映完了');
+            }
+            
+            // 素材のSVGコンテンツを取得
+            async function fetchMaterialSvg(materialId) {
+                if (materialSvgCache[materialId]) {
+                    return materialSvgCache[materialId];
+                }
+                
+                const material = materials.find(m => m.id == materialId);
+                if (!material || !material.svg_path) {
+                    return { content: '', viewBox: { width: 100, height: 100 } };
+                }
+                
+                try {
+                    const response = await fetch('/' + material.svg_path);
+                    const text = await response.text();
+                    
+                    // SVGタグを除去してコンテンツのみを取得
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, 'image/svg+xml');
+                    const svgElement = doc.querySelector('svg');
+                    
+                    if (svgElement) {
+                        // viewBoxまたはwidth/heightを取得
+                        let viewBox = { width: 100, height: 100 };
+                        
+                        if (svgElement.hasAttribute('viewBox')) {
+                            const vb = svgElement.getAttribute('viewBox').split(' ');
+                            viewBox = {
+                                x: parseFloat(vb[0]) || 0,
+                                y: parseFloat(vb[1]) || 0,
+                                width: parseFloat(vb[2]) || 100,
+                                height: parseFloat(vb[3]) || 100
+                            };
+                        } else {
+                            viewBox = {
+                                x: 0,
+                                y: 0,
+                                width: parseFloat(svgElement.getAttribute('width')) || 100,
+                                height: parseFloat(svgElement.getAttribute('height')) || 100
+                            };
+                        }
+                        
+                        const result = {
+                            content: svgElement.innerHTML,
+                            viewBox: viewBox
+                        };
+                        
+                        materialSvgCache[materialId] = result;
+                        return result;
+                    }
+                } catch (error) {
+                    console.error('SVG fetch error:', error);
+                }
+                
+                return { content: '', viewBox: { width: 100, height: 100 } };
+            }
+            
+            // SVGを生成してプレビューに表示
+            async function renderPreview() {
+                const width = canvasWidth;
+                const height = canvasHeight;
+                const bgColor = backgroundColor;
+                
+                let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`;
+                svg += `<rect width="100%" height="100%" fill="${bgColor}"/>`;
+                
+                // レイヤーを描画
+                for (let index = 0; index < layers.length; index++) {
+                    const layer = layers[index];
+                    const layerId = layer.id || `layer_${index}`;
+                    
+                    let svgData = null;
+                    
+                    // 素材IDからSVGコンテンツを取得
+                    if (layer.materialId) {
+                        svgData = await fetchMaterialSvg(layer.materialId);
+                    }
+                    
+                    if (svgData && svgData.content) {
+                        // SVGのviewBoxサイズを取得
+                        const vbWidth = svgData.viewBox.width;
+                        const vbHeight = svgData.viewBox.height;
+                        const vbX = svgData.viewBox.x || 0;
+                        const vbY = svgData.viewBox.y || 0;
+                        
+                        // transform情報を取得
+                        const transform = layer.transform || {};
+                        const scaleX = transform.scaleX || layer.scaleX || 1;
+                        const scaleY = transform.scaleY || layer.scaleY || 1;
+                        const rotation = transform.rotation || layer.angle || 0;
+                        const flipH = transform.flipHorizontal || layer.flipX || false;
+                        const flipV = transform.flipVertical || layer.flipY || false;
+                        
+                        // 位置を取得
+                        let x, y;
+                        if (transform.x !== undefined && transform.y !== undefined) {
+                            // transform.x/yは左上基準の座標
+                            x = transform.x;
+                            y = transform.y;
+                        } else if (layer.left !== undefined && layer.top !== undefined) {
+                            // Fabric.jsのleft/topから左上基準に変換
+                            const centerX = vbWidth / 2;
+                            const centerY = vbHeight / 2;
+                            x = layer.left - (centerX * Math.abs(scaleX));
+                            y = layer.top - (centerY * Math.abs(scaleY));
+                        } else {
+                            x = 0;
+                            y = 0;
+                        }
+                        
+                        // スケールとフリップを適用
+                        const finalScaleX = scaleX * (flipH ? -1 : 1);
+                        const finalScaleY = scaleY * (flipV ? -1 : 1);
+                        
+                        // 外側のグループ：位置のみ
+                        svg += `<g id="${layerId}" transform="translate(${x}, ${y})">`;
+                        
+                        // 内側のグループ：スケール、回転、フリップ
+                        let innerTransform = '';
+                        
+                        // スケールとフリップを適用
+                        if (finalScaleX !== 1 || finalScaleY !== 1) {
+                            innerTransform += ` scale(${finalScaleX}, ${finalScaleY})`;
+                        }
+                        
+                        // 回転を適用（SVGの中心で回転）
+                        if (rotation !== 0) {
+                            const centerX = vbWidth / 2;
+                            const centerY = vbHeight / 2;
+                            innerTransform += ` rotate(${rotation}, ${centerX}, ${centerY})`;
+                        }
+                        
+                        if (innerTransform) {
+                            svg += `<g transform="${innerTransform.trim()}">`;
+                        }
+                        
+                        // SVG要素
+                        svg += `<svg viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">`;
+                        svg += svgData.content;
+                        svg += `</svg>`;
+                        
+                        if (innerTransform) {
+                            svg += `</g>`;
+                        }
+                        
+                        svg += `</g>`;
+                    }
+                }
+                
+                svg += '</svg>';
+                
+                document.getElementById('preview-svg').innerHTML = svg;
+            }
+            
+            // アニメーションフレームを生成
+            async function generateAnimatedFrame(progress) {
+                const width = canvasWidth;
+                const height = canvasHeight;
+                const bgColor = backgroundColor;
+                const animationDuration = ANIMATION_DURATION;
+                
+                let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`;
+                svg += `<rect width="100%" height="100%" fill="${bgColor}"/>`;
+                
+                // レイヤーを描画（アニメーション適用）
+                for (let index = 0; index < layers.length; index++) {
+                    const layer = layers[index];
+                    const layerId = layer.id || `layer_${index}`;
+                    const animation = animations[layerId];
+                    
+                    // delay（開始タイミング）とhold（維持時間）を考慮した進捗を計算
+                    const delay = animation && animation.delay ? parseFloat(animation.delay) : 0;
+                    const hold = animation && animation.hold ? parseFloat(animation.hold) : 0;
+                    const totalDuration = animationDuration + delay * 1000 + hold * 1000;
+                    const currentTime = progress * totalDuration;
+                    
+                    let layerProgress = 0;
+                    if (currentTime < delay * 1000) {
+                        // 遅延中：アニメーション開始前
+                        layerProgress = 0;
+                    } else if (currentTime < delay * 1000 + animationDuration) {
+                        // アニメーション実行中
+                        layerProgress = (currentTime - delay * 1000) / animationDuration;
+                    } else {
+                        // アニメーション完了後（維持時間中）
+                        layerProgress = 1;
+                    }
+                    
+                    let svgData = null;
+                    
+                    if (layer.materialId) {
+                        svgData = await fetchMaterialSvg(layer.materialId);
+                    }
+                    
+                    if (svgData && svgData.content) {
+                        const vbWidth = svgData.viewBox.width;
+                        const vbHeight = svgData.viewBox.height;
+                        const vbX = svgData.viewBox.x || 0;
+                        const vbY = svgData.viewBox.y || 0;
+                        
+                        const transform = layer.transform || {};
+                        const scaleX = transform.scaleX || layer.scaleX || 1;
+                        const scaleY = transform.scaleY || layer.scaleY || 1;
+                        const rotation = transform.rotation || layer.angle || 0;
+                        const flipH = transform.flipHorizontal || layer.flipX || false;
+                        const flipV = transform.flipVertical || layer.flipY || false;
+                        
+                        let x, y;
+                        if (transform.x !== undefined && transform.y !== undefined) {
+                            x = transform.x;
+                            y = transform.y;
+                        } else if (layer.left !== undefined && layer.top !== undefined) {
+                            const centerX = vbWidth / 2;
+                            const centerY = vbHeight / 2;
+                            x = layer.left - (centerX * Math.abs(scaleX));
+                            y = layer.top - (centerY * Math.abs(scaleY));
+                        } else {
+                            x = 0;
+                            y = 0;
+                        }
+                        
+                        // アニメーション適用
+                        let animX = x;
+                        let animY = y;
+                        let animScaleX = scaleX;
+                        let animScaleY = scaleY;
+                        let animRotation = rotation;
+                        let opacity = 1;
+                        
+                        if (animation && animation.type) {
+                            const easing = animation.easing || 'linear';
+                            const easedProgress = applyEasing(layerProgress, easing);
+                            
+                            switch (animation.type) {
+                                case 'fadeIn':
+                                    opacity = easedProgress;
+                                    break;
+                                case 'fadeOut':
+                                    opacity = 1 - easedProgress;
+                                    break;
+                                case 'slideFromBottom':
+                                    const startYBottom = height;
+                                    animY = startYBottom + (y - startYBottom) * easedProgress;
+                                    break;
+                                case 'slideFromTop':
+                                    const startYTop = -vbHeight;
+                                    animY = startYTop + (y - startYTop) * easedProgress;
+                                    break;
+                                case 'slideFromLeft':
+                                    const startXLeft = -vbWidth;
+                                    animX = startXLeft + (x - startXLeft) * easedProgress;
+                                    break;
+                                case 'slideFromRight':
+                                    const startXRight = width;
+                                    animX = startXRight + (x - startXRight) * easedProgress;
+                                    break;
+                                case 'scale':
+                                    const startScale = animation.startScale || 0;
+                                    const endScale = animation.endScale || 1;
+                                    const scale = startScale + (endScale - startScale) * easedProgress;
+                                    animScaleX = scaleX * scale;
+                                    animScaleY = scaleY * scale;
+                                    break;
+                                case 'rotate':
+                                    const startRotate = animation.startRotate || 0;
+                                    const endRotate = animation.endRotate || 360;
+                                    animRotation = startRotate + (endRotate - startRotate) * easedProgress;
+                                    break;
+                            }
+                        }
+                        
+                        const finalScaleX = animScaleX * (flipH ? -1 : 1);
+                        const finalScaleY = animScaleY * (flipV ? -1 : 1);
+                        
+                        svg += `<g id="${layerId}" transform="translate(${animX}, ${animY})" style="opacity: ${opacity}">`;
+                        
+                        let innerTransform = '';
+                        if (finalScaleX !== 1 || finalScaleY !== 1) {
+                            innerTransform += ` scale(${finalScaleX}, ${finalScaleY})`;
+                        }
+                        if (animRotation !== 0) {
+                            const centerX = vbWidth / 2;
+                            const centerY = vbHeight / 2;
+                            innerTransform += ` rotate(${animRotation}, ${centerX}, ${centerY})`;
+                        }
+                        
+                        if (innerTransform) {
+                            svg += `<g transform="${innerTransform.trim()}">`;
+                        }
+                        
+                        svg += `<svg viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">`;
+                        svg += svgData.content;
+                        svg += `</svg>`;
+                        
+                        if (innerTransform) {
+                            svg += `</g>`;
+                        }
+                        svg += `</g>`;
+                    }
+                }
+                
+                svg += '</svg>';
+                return svg;
+            }
+            
+            // イージング関数
+            function applyEasing(t, easing) {
+                switch (easing) {
+                    case 'easeInOut':
+                        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                    case 'easeIn':
+                        return t * t;
+                    case 'easeOut':
+                        return 1 - (1 - t) * (1 - t);
+                    case 'linear':
+                    default:
+                        return t;
+                }
+            }
+            
+            // GIF生成（gifshotを使用）
+            async function generateGif() {
+                const generateBtn = document.getElementById('generate-btn');
+                const previewArea = document.getElementById('preview-area');
+                const resultArea = document.getElementById('result-area');
+                
+                try {
+                    // ボタンを無効化
+                    generateBtn.disabled = true;
+                    generateBtn.textContent = '生成中...';
+                    
+                    // ローディング表示
+                    previewArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>フレームを生成中...</p></div>';
+                    
+                    const width = canvasWidth;
+                    const height = canvasHeight;
+                    const duration = ANIMATION_DURATION;
+                    const fps = ANIMATION_FPS;
+                    
+                    console.log('GIF生成開始:', { width, height, duration, fps });
+                    
+                    // 最も長いレイヤーの総時間を計算（delay + animation + hold）
+                    let maxTotalDuration = duration;
+                    layers.forEach((layer, index) => {
+                        const layerId = layer.id || `layer_${index}`;
+                        const animation = animations[layerId];
+                        if (animation) {
+                            const delay = animation.delay ? parseFloat(animation.delay) : 0;
+                            const hold = animation.hold ? parseFloat(animation.hold) : 0;
+                            const layerTotalDuration = duration + (delay * 1000) + (hold * 1000);
+                            if (layerTotalDuration > maxTotalDuration) {
+                                maxTotalDuration = layerTotalDuration;
+                            }
+                        }
+                    });
+                    
+                    console.log('最大総時間:', maxTotalDuration, 'ms');
+                    
+                    // フレーム数を計算（最大総時間を基準）
+                    const totalFrames = Math.ceil((maxTotalDuration / 1000) * fps);
+                    const interval = 1 / fps;
+                    
+                    console.log('フレーム数:', totalFrames, 'インターバル:', interval);
+                    
+                    // 各フレームのCanvas要素を生成
+                    const images = [];
+                    for (let frame = 0; frame < totalFrames; frame++) {
+                        const progress = frame / Math.max(totalFrames - 1, 1);
+                        
+                        // アニメーションフレームのSVGを生成
+                        const svgString = await generateAnimatedFrame(progress);
+                        
+                        // SVGをCanvasに変換
+                        const canvas = await svgToCanvas(svgString, width, height);
+                        images.push(canvas.toDataURL('image/png'));
+                        
+                        // 進行状況を表示
+                        const percent = Math.round((frame / totalFrames) * 100);
+                        previewArea.innerHTML = `<div class="loading"><div class="spinner"></div><p>フレームを生成中... ${frame + 1}/${totalFrames} (${percent}%)</p></div>`;
+                        
+                        console.log(`フレーム ${frame + 1}/${totalFrames} 追加完了`);
+                    }
+                    
+                    console.log('全フレーム生成完了、GIFエンコード開始');
+                    previewArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>GIFをエンコード中...</p></div>';
+                    
+                    // gifshotでGIF生成
+                    gifshot.createGIF({
+                        images: images,
+                        gifWidth: width,
+                        gifHeight: height,
+                        interval: interval,
+                        numFrames: totalFrames
+                    }, function(obj) {
+                        if (!obj.error) {
+                            console.log('GIF生成完了');
+                            const url = obj.image;
+                            
+                            // 結果を表示
+                            document.getElementById('result-gif').src = url;
+                            document.getElementById('download-link').href = url;
+                            document.getElementById('download-link').download = `animation_${artworkData.id}_${Date.now()}.gif`;
+                            
+                            resultArea.classList.add('active');
+                            previewArea.innerHTML = '<div id="preview-svg"></div>';
+                            renderPreview();
+                            
+                            // ボタンを有効化
+                            generateBtn.disabled = false;
+                            generateBtn.textContent = 'GIF生成';
+                        } else {
+                            throw new Error(obj.error);
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('GIF生成エラー:', error);
+                    alert('GIF生成に失敗しました: ' + error.message);
+                    
+                    // エラー時の処理
+                    previewArea.innerHTML = '<div id="preview-svg"></div>';
+                    renderPreview();
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'GIF生成';
+                }
+            }
+            
+            // SVGをCanvasに変換
+            async function svgToCanvas(svgString, width, height) {
+                return new Promise((resolve, reject) => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    
+                    const img = new Image();
+                    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    img.onload = function() {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        URL.revokeObjectURL(url);
+                        resolve(canvas);
+                    };
+                    
+                    img.onerror = function() {
+                        URL.revokeObjectURL(url);
+                        reject(new Error('SVG画像の読み込みに失敗しました'));
+                    };
+                    
+                    img.src = url;
+                });
+            }
+            
+            // 結果をリセット
+            function resetResult() {
+                document.getElementById('result-area').classList.remove('active');
+            }
+            
+            // 初期化
+            renderLayers();
+            
+            // ローカルストレージから設定を復元
+            loadFromLocalStorage();
+            
+            // レイヤーレンダリング後にUIに反映（少し遅延させる）
+            setTimeout(() => {
+                applyAnimationsToUI();
+            }, 100);
+            
+            // 初期プレビューを表示
+            renderPreview();
+            
+            // URLからクエリストリングを削除（履歴は保持）
+            if (window.location.search) {
+                const url = window.location.protocol + '//' + window.location.host + window.location.pathname;
+                history.replaceState({}, document.title, url);
+            }
+        </script>
+        
+        <?php endif; ?>
+    </div>
+
+    <?php include __DIR__ . '/../includes/footer.php'; ?>
+</body>
+</html>

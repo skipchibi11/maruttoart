@@ -248,6 +248,8 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             width: 90%;
             margin-left: auto;
             margin-right: auto;
+            /* CLS対策: 最小高さを確保 */
+            min-height: 240px;
         }
 
         .artwork-card {
@@ -273,22 +275,26 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             width: 100%;
             aspect-ratio: 1 / 1;
             max-height: 200px;
+            min-height: 180px;
             border-radius: 8px;
             overflow: hidden;
             background: white;
             display: flex;
             align-items: center;
             justify-content: center;
+            /* CLS対策: 初期状態でも領域を確保 */
+            position: relative;
         }
 
         .artwork-image {
             max-width: 100%;
             max-height: 100%;
-            width: auto;
-            height: auto;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             display: block;
             border-radius: 8px;
+            /* CLS対策: 画像読み込み前も領域を確保 */
         }
 
         .artwork-info {
@@ -774,7 +780,12 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     $imageUrl = !empty($artwork['webp_path']) ? $artwork['webp_path'] : $artwork['file_path'];
                     ?>
                     <div class="artwork-image-wrapper">
-                        <img src="/<?= h($imageUrl) ?>" alt="<?= h($artwork['title']) ?>" class="artwork-image" loading="lazy">
+                        <img src="/<?= h($imageUrl) ?>" 
+                             alt="<?= h($artwork['title']) ?>" 
+                             class="artwork-image" 
+                             loading="lazy"
+                             width="200"
+                             height="200">
                     </div>
                     <div class="artwork-info">
                         <div class="artwork-title"><?= h($artwork['title']) ?></div>

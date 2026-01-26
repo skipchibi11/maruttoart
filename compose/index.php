@@ -257,6 +257,14 @@ foreach ($allMaterials as $material) {
             }
         }
 
+        @media (max-width: 768px) {
+            .workspace {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
         /* キャンバスエリア */
         .canvas-area {
             background: rgba(255, 255, 255, 0.7);
@@ -266,6 +274,19 @@ foreach ($allMaterials as $material) {
             min-width: 0; /* グリッドのオーバーフロー防止 */
         }
 
+        @media (max-width: 768px) {
+            .canvas-area {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                border-radius: 0 0 12px 12px;
+                padding: 12px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+        }
+
         .canvas-controls {
             display: flex;
             justify-content: space-between;
@@ -273,6 +294,14 @@ foreach ($allMaterials as $material) {
             margin-bottom: 16px;
             flex-wrap: wrap;
             gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .canvas-controls {
+                margin-bottom: 8px;
+                gap: 6px;
+                font-size: 0.85rem;
+            }
         }
 
         .canvas-size-selector {
@@ -334,6 +363,15 @@ foreach ($allMaterials as $material) {
             overflow: hidden;
         }
 
+        @media (max-width: 768px) {
+            .canvas-wrapper {
+                min-height: 200px;
+                max-height: 35vh;
+                padding: 10px;
+                border-radius: 8px;
+            }
+        }
+
         #canvas {
             max-width: 100%;
             max-height: 100%;
@@ -351,6 +389,14 @@ foreach ($allMaterials as $material) {
         @media (max-width: 1024px) {
             .control-panel {
                 max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                border-radius: 0;
+                padding: 16px;
+                background: rgba(255, 255, 255, 0.95);
             }
         }
 
@@ -1045,7 +1091,10 @@ foreach ($allMaterials as $material) {
                         flipY: obj.flipY || obj.scaleY < 0,
                         originX: obj.originX,
                         originY: obj.originY,
-                        materialData: obj.materialData,
+                        materialData: {
+                            ...obj.materialData,
+                            zIndex: zIndex
+                        },
                         // 色情報を保存
                         colors: (() => {
                             const colors = [];
@@ -1143,10 +1192,17 @@ foreach ($allMaterials as $material) {
                 // オブジェクトを復元（layers/objects両対応）
                 const objectsToRestore = canvasData.layers || canvasData.objects || [];
                 if (objectsToRestore && objectsToRestore.length > 0) {
-                    let loadedCount = 0;
-                    const totalCount = objectsToRestore.length;
+                    // zIndexでソートしてから復元（表示順を保証）
+                    const sortedObjects = objectsToRestore.slice().sort((a, b) => {
+                        const zIndexA = a.zIndex ?? a.materialData?.zIndex ?? 999;
+                        const zIndexB = b.zIndex ?? b.materialData?.zIndex ?? 999;
+                        return zIndexA - zIndexB;
+                    });
                     
-                    objectsToRestore.forEach(objData => {
+                    let loadedCount = 0;
+                    const totalCount = sortedObjects.length;
+                    
+                    sortedObjects.forEach(objData => {
                         // svgPathの取得（複数の形式に対応）
                         let svgPath = null;
                         if (objData.materialData && objData.materialData.svg_path) {
@@ -1162,29 +1218,9 @@ foreach ($allMaterials as $material) {
                                     fabric.loadSVGFromString(svgText, function(objects, options) {
                                         const obj = fabric.util.groupSVGElements(objects, options);
                                         
-                                        // layers形式の場合はtransformから復元
-                                        if (objData.transform) {
-                                            const transform = objData.transform;
-                                            const originalCenter = objData.originalCenter || { x: obj.width / 2, y: obj.height / 2 };
-                                            const centerOffsetX = originalCenter.x * transform.scale;
-                                            const centerOffsetY = originalCenter.y * transform.scale;
-                                            
-                                            obj.set({
-                                                left: transform.x + centerOffsetX,
-                                                top: transform.y + centerOffsetY,
-                                                scaleX: transform.flipHorizontal ? -transform.scale : transform.scale,
-                                                scaleY: transform.flipVertical ? -transform.scale : transform.scale,
-                                                angle: transform.rotation,
-                                                originX: 'center',
-                                                originY: 'center',
-                                                materialData: objData.materialData || {
-                                                    id: objData.materialId,
-                                                    title: objData.title,
-                                                    svg_path: svgPath
-                                                }
-                                            });
-                                        } else {
-                                            // 古い形式（objects）
+                                        // 保存時のデータに応じて復元方法を選択
+                                        if (objData.left !== undefined && objData.originX) {
+                                            // 新しい形式（直接的な値で復元）
                                             obj.set({
                                                 left: objData.left,
                                                 top: objData.top,
@@ -1193,9 +1229,38 @@ foreach ($allMaterials as $material) {
                                                 angle: objData.angle,
                                                 flipX: objData.flipX,
                                                 flipY: objData.flipY,
-                                                originX: objData.originX,
-                                                originY: objData.originY,
-                                                materialData: objData.materialData
+                                                originX: objData.originX || 'center',
+                                                originY: objData.originY || 'center',
+                                                materialData: {
+                                                    ...objData.materialData,
+                                                    zIndex: objData.zIndex
+                                                }
+                                            });
+                                        } else if (objData.transform) {
+                                            // layers形式（変換計算が必要な場合）
+                                            const transform = objData.transform;
+                                            const originalCenter = objData.originalCenter || { x: obj.width / 2, y: obj.height / 2 };
+                                            const scaleX = transform.scaleX || transform.scale;
+                                            const scaleY = transform.scaleY || transform.scale;
+                                            const centerOffsetX = originalCenter.x * scaleX;
+                                            const centerOffsetY = originalCenter.y * scaleY;
+                                            
+                                            obj.set({
+                                                left: transform.x + centerOffsetX,
+                                                top: transform.y + centerOffsetY,
+                                                scaleX: transform.flipHorizontal ? -scaleX : scaleX,
+                                                scaleY: transform.flipVertical ? -scaleY : scaleY,
+                                                angle: transform.rotation,
+                                                originX: 'center',
+                                                originY: 'center',
+                                                materialData: {
+                                                    ...(objData.materialData || {
+                                                        id: objData.materialId,
+                                                        title: objData.title,
+                                                        svg_path: svgPath
+                                                    }),
+                                                    zIndex: objData.zIndex
+                                                }
                                             });
                                         }
                                         
@@ -1227,18 +1292,11 @@ foreach ($allMaterials as $material) {
                                         loadedCount++;
                                         if (loadedCount === totalCount) {
                                             setTimeout(() => {
-                                                // zIndexでソートして順序を保証
-                                                const allObjects = canvas.getObjects();
-                                                const sortedObjects = allObjects.slice().sort((a, b) => {
-                                                    const zIndexA = a.materialData?.zIndex ?? 999;
-                                                    const zIndexB = b.materialData?.zIndex ?? 999;
-                                                    return zIndexA - zIndexB;
-                                                });
-                                                canvas.remove(...allObjects);
-                                                sortedObjects.forEach(obj => canvas.add(obj));
-                                                
+                                                // 既にzIndex順でaddされているため、再ソート不要
                                                 fitCanvasToContainer();
                                                 canvas.renderAll();
+                                                updateLayerList();
+                                                console.log('全ての素材を復元しました');
                                             }, 100);
                                         }
                                     });
@@ -1248,18 +1306,9 @@ foreach ($allMaterials as $material) {
                                     loadedCount++;
                                     if (loadedCount === totalCount) {
                                         setTimeout(() => {
-                                            // zIndexでソートして順序を保証
-                                            const allObjects = canvas.getObjects();
-                                            const sortedObjects = allObjects.slice().sort((a, b) => {
-                                                const zIndexA = a.materialData?.zIndex ?? 999;
-                                                const zIndexB = b.materialData?.zIndex ?? 999;
-                                                return zIndexA - zIndexB;
-                                            });
-                                            canvas.remove(...allObjects);
-                                            sortedObjects.forEach(obj => canvas.add(obj));
-                                            
                                             fitCanvasToContainer();
                                             canvas.renderAll();
+                                            updateLayerList();
                                         }, 100);
                                     }
                                 });
