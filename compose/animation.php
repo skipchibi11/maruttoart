@@ -1163,37 +1163,41 @@ if ($artworkId) {
                         const finalScaleX = scaleX * (flipH ? -1 : 1);
                         const finalScaleY = scaleY * (flipV ? -1 : 1);
                         
-                        // 外側のグループ：位置のみ
-                        svg += `<g id="${layerId}" transform="translate(${x}, ${y})">`;
+                        // 中心座標を計算
+                        const centerX = vbWidth / 2;
+                        const centerY = vbHeight / 2;
                         
-                        // 内側のグループ：スケール、回転、フリップ
+                        // 左上基準の座標を中心基準に変換
+                        const centerPosX = x + centerX * scaleX;
+                        const centerPosY = y + centerY * scaleY;
+                        
+                        // 外側のグループ：中心位置に配置
+                        svg += `<g id="${layerId}" transform="translate(${centerPosX}, ${centerPosY})">`;
+                        
+                        // 内側のグループ：回転、スケール、フリップを中心基準で適用
                         let innerTransform = '';
                         
-                        // スケールとフリップを適用
+                        // 1. 回転を適用
+                        if (rotation !== 0) {
+                            innerTransform += `rotate(${rotation})`;
+                        }
+                        
+                        // 2. スケールとフリップを適用
                         if (finalScaleX !== 1 || finalScaleY !== 1) {
                             innerTransform += ` scale(${finalScaleX}, ${finalScaleY})`;
                         }
                         
-                        // 回転を適用（SVGの中心で回転）
-                        if (rotation !== 0) {
-                            const centerX = vbWidth / 2;
-                            const centerY = vbHeight / 2;
-                            innerTransform += ` rotate(${rotation}, ${centerX}, ${centerY})`;
-                        }
+                        // 3. 中心から左上に戻す（SVG描画用）
+                        innerTransform += ` translate(${-centerX}, ${-centerY})`;
                         
-                        if (innerTransform) {
-                            svg += `<g transform="${innerTransform.trim()}">`;
-                        }
+                        svg += `<g transform="${innerTransform}">`;
                         
                         // SVG要素
                         svg += `<svg viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">`;
                         svg += svgData.content;
                         svg += `</svg>`;
                         
-                        if (innerTransform) {
-                            svg += `</g>`;
-                        }
-                        
+                        svg += `</g>`;
                         svg += `</g>`;
                     }
                 }
@@ -1312,29 +1316,39 @@ if ($artworkId) {
                         const finalScaleX = animScaleX * (flipH ? -1 : 1);
                         const finalScaleY = animScaleY * (flipV ? -1 : 1);
                         
-                        svg += `<g id="${layerId}" transform="translate(${animX}, ${animY})" style="opacity: ${opacity}">`;
+                        // 中心座標を計算
+                        const centerX = vbWidth / 2;
+                        const centerY = vbHeight / 2;
                         
+                        // 左上基準の座標を中心基準に変換
+                        const centerPosX = animX + centerX * animScaleX;
+                        const centerPosY = animY + centerY * animScaleY;
+                        
+                        svg += `<g id="${layerId}" transform="translate(${centerPosX}, ${centerPosY})" style="opacity: ${opacity}">`;
+                        
+                        // 内側のグループ：回転、スケール、フリップを中心基準で適用
                         let innerTransform = '';
+                        
+                        // 1. 回転を適用
+                        if (animRotation !== 0) {
+                            innerTransform += `rotate(${animRotation})`;
+                        }
+                        
+                        // 2. スケールとフリップを適用
                         if (finalScaleX !== 1 || finalScaleY !== 1) {
                             innerTransform += ` scale(${finalScaleX}, ${finalScaleY})`;
                         }
-                        if (animRotation !== 0) {
-                            const centerX = vbWidth / 2;
-                            const centerY = vbHeight / 2;
-                            innerTransform += ` rotate(${animRotation}, ${centerX}, ${centerY})`;
-                        }
                         
-                        if (innerTransform) {
-                            svg += `<g transform="${innerTransform.trim()}">`;
-                        }
+                        // 3. 中心から左上に戻す（SVG描画用）
+                        innerTransform += ` translate(${-centerX}, ${-centerY})`;
+                        
+                        svg += `<g transform="${innerTransform}">`;
                         
                         svg += `<svg viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">`;
                         svg += svgData.content;
                         svg += `</svg>`;
                         
-                        if (innerTransform) {
-                            svg += `</g>`;
-                        }
+                        svg += `</g>`;
                         svg += `</g>`;
                     }
                 }
