@@ -138,15 +138,19 @@ if ($artworkId) {
             border-radius: 12px;
             padding: 20px;
             min-height: 500px;
+            max-height: 600px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: white;
             position: relative;
+            overflow: hidden;
         }
         
         #preview-svg {
             max-width: 100%;
+            max-height: 100%;
+            width: auto;
             height: auto;
         }
         
@@ -346,21 +350,34 @@ if ($artworkId) {
         .result-area {
             display: none;
             margin-top: 24px;
-            padding: 24px;
-            background: rgba(232, 168, 124, 0.05);
-            border-radius: 12px;
-            border: 2px solid var(--primary-color);
         }
         
         .result-area.active {
             display: block;
         }
         
+        .result-image-container {
+            border: 1px solid rgba(232, 168, 124, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            min-height: 300px;
+            max-height: 560px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        
         .result-image {
             max-width: 100%;
-            border-radius: 12px;
-            border: 3px solid var(--primary-color);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 500px;
+            height: auto;
+            width: auto;
+            display: block;
+            margin: 0 auto;
         }
 
         /* 浮遊素材背景 */
@@ -524,22 +541,51 @@ if ($artworkId) {
         .result-area.active {
             display: block;
         }
-        
-        .result-image {
-            max-width: 100%;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
 
         .animation-grid {
             display: grid;
-            grid-template-columns: 1fr 420px;
             gap: 24px;
+            grid-template-columns: 1fr 420px;
+        }
+
+        .preview-panel {
+            min-width: 0; /* グリッドのオーバーフロー防止 */
+        }
+
+        .preview-area {
+            width: 100%;
+            overflow: hidden; /* はみ出し防止 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #preview-svg {
+            max-width: 100%;
+            max-height: 500px;
+            width: auto;
+            height: auto;
+            display: block;
+        }
+        
+        #preview-svg > svg {
+            max-width: 100%;
+            max-height: 500px;
+            width: auto !important;
+            height: auto !important;
         }
 
         @media (max-width: 1024px) {
             .animation-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
+            }
+            
+            #preview-svg {
+                max-height: 600px;
+            }
+            
+            #preview-svg > svg {
+                max-height: 600px;
             }
         }
     </style>
@@ -600,7 +646,9 @@ if ($artworkId) {
                 
                 <div class="result-area" id="result-area">
                     <h3 class="section-title">生成されたGIF</h3>
-                    <img id="result-gif" class="result-image" alt="Generated GIF">
+                    <div class="result-image-container">
+                        <img id="result-gif" class="result-image" alt="Generated GIF">
+                    </div>
                     <div class="action-buttons">
                         <a id="download-link" class="btn btn-success" download>ダウンロード</a>
                         <button class="btn btn-secondary" onclick="resetResult()">新しく作成</button>
@@ -682,6 +730,16 @@ if ($artworkId) {
             svgData = JSON.parse(artworkData.svg_data || '{}');
             layers = svgData.layers || [];
             
+            console.log('読み込まれたレイヤーデータ:', layers);
+            console.log('各レイヤーの色情報:');
+            layers.forEach((layer, idx) => {
+                console.log(`  レイヤー${idx} (materialId: ${layer.materialId}):`, {
+                    hasColors: !!layer.colors,
+                    colorsLength: layer.colors ? layer.colors.length : 0,
+                    colors: layer.colors
+                });
+            });
+            
             // 作品の元のサイズと背景色を取得
             canvasWidth = svgData.canvasWidth || svgData.width || 800;
             canvasHeight = svgData.canvasHeight || svgData.height || 800;
@@ -697,6 +755,8 @@ if ($artworkId) {
             canvasWidth = svgData.canvasWidth || svgData.width || 800;
             canvasHeight = svgData.canvasHeight || svgData.height || 800;
             backgroundColor = svgData.backgroundColor || '#ffffff';
+            
+            console.log('作品サイズ:', { width: canvasWidth, height: canvasHeight, aspectRatio: (canvasWidth / canvasHeight).toFixed(2) });
             
             // アニメーション設定（軽量版・固定）
             const ANIMATION_DURATION = 1200; // 1.5秒 → 1.2秒に短縮
@@ -717,7 +777,7 @@ if ($artworkId) {
                 container.innerHTML = '';
                 
                 layers.forEach((layer, index) => {
-                    const layerId = layer.id || `layer_${index}`;
+                    const layerId = `layer_${index}`;
                     
                     // 素材情報を取得
                     const material = materials.find(m => m.id == layer.materialId);
@@ -869,10 +929,11 @@ if ($artworkId) {
                 console.log('アニメーション設定をUIに反映完了');
             }
             
-            // 素材のSVGコンテンツを取得
-            async function fetchMaterialSvg(materialId) {
-                if (materialSvgCache[materialId]) {
-                    return materialSvgCache[materialId];
+            // 素材のSVGコンテンツを取得（色情報を適用）
+            async function fetchMaterialSvg(materialId, layerColors) {
+                const cacheKey = materialId + '_' + JSON.stringify(layerColors || {});
+                if (materialSvgCache[cacheKey]) {
+                    return materialSvgCache[cacheKey];
                 }
                 
                 const material = materials.find(m => m.id == materialId);
@@ -910,12 +971,145 @@ if ($artworkId) {
                             };
                         }
                         
+                        // SVGルート要素のstroke属性を取得（継承用）
+                        let defaultStrokeAttrs = {};
+                        const svgStyle = svgElement.getAttribute('style');
+                        if (svgStyle) {
+                            const linecapMatch = svgStyle.match(/stroke-linecap\s*:\s*([^;]+)/i);
+                            const linejoinMatch = svgStyle.match(/stroke-linejoin\s*:\s*([^;]+)/i);
+                            const miterlimitMatch = svgStyle.match(/stroke-miterlimit\s*:\s*([^;]+)/i);
+                            
+                            if (linecapMatch) defaultStrokeAttrs.strokeLinecap = linecapMatch[1].trim();
+                            if (linejoinMatch) defaultStrokeAttrs.strokeLinejoin = linejoinMatch[1].trim();
+                            if (miterlimitMatch) defaultStrokeAttrs.strokeMiterlimit = miterlimitMatch[1].trim();
+                        }
+                        
+                        console.log('SVGルート要素のstroke設定:', defaultStrokeAttrs);
+                        
+                        // 色情報を適用
+                        console.log('=== SVG読み込み開始 ===');
+                        console.log('materialId:', materialId);
+                        console.log('layerColors:', JSON.stringify(layerColors, null, 2));
+                        
+                        // SVG要素から直接描画要素を取得
+                        const allElements = svgElement.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon');
+                        
+                        console.log('取得した要素数:', allElements.length);
+                        console.log('元の要素の状態:');
+                        Array.from(allElements).forEach((el, idx) => {
+                            console.log(`  [${idx}] ${el.tagName}: fill="${el.getAttribute('fill')}" stroke="${el.getAttribute('stroke')}"`);
+                        });
+                        
+                        if (layerColors && Array.isArray(layerColors) && layerColors.length > 0) {
+                            console.log('=== 色情報適用開始 ===');
+                            if (allElements.length > 0) {
+                                layerColors.forEach(colorInfo => {
+                                    const element = allElements[colorInfo.index];
+                                    if (element) {
+                                        const beforeFill = element.getAttribute('fill');
+                                        const beforeStroke = element.getAttribute('stroke');
+                                        const beforeStyle = element.getAttribute('style');
+                                        
+                                        console.log(`要素[${colorInfo.index}] 適用前:`, {
+                                            tag: element.tagName,
+                                            fill: beforeFill,
+                                            stroke: beforeStroke,
+                                            style: beforeStyle
+                                        });
+                                        console.log(`要素[${colorInfo.index}] 適用する色:`, {
+                                            fill: colorInfo.fill,
+                                            stroke: colorInfo.stroke
+                                        });
+                                        
+                                        // style属性内のfill/stroke色のみを削除（他のstroke属性は保持）
+                                        if (beforeStyle) {
+                                            let newStyle = beforeStyle
+                                                .replace(/fill\s*:\s*[^;]+;?/gi, '')
+                                                .replace(/stroke\s*:\s*(rgb|rgba|#|[a-z]+)\([^)]*\)[^;]*;?/gi, '')
+                                                .replace(/stroke\s*:\s*#[0-9a-f]{3,8}[^;]*;?/gi, '')
+                                                .replace(/stroke\s*:\s*[a-z]+[^;]*;?/gi, '')
+                                                .trim();
+                                            // stroke-width, stroke-linejoin, stroke-linecapなどは保持
+                                            if (newStyle && newStyle !== ';') {
+                                                element.setAttribute('style', newStyle);
+                                            } else if (!newStyle || newStyle === ';') {
+                                                element.removeAttribute('style');
+                                            }
+                                            console.log(`  -> style属性からfill/stroke色を削除（他は保持）: "${newStyle}"`);
+                                        }
+                                        
+                                        // fillの処理
+                                        if (colorInfo.fill !== undefined && colorInfo.fill !== null) {
+                                            if (colorInfo.fill === '') {
+                                                // 空文字列の場合はfillを削除（透明に）
+                                                element.setAttribute('fill', 'none');
+                                                console.log(`  -> fill を none に設定`);
+                                            } else {
+                                                // 色が指定されている場合は適用
+                                                element.setAttribute('fill', colorInfo.fill);
+                                                console.log(`  -> fill を ${colorInfo.fill} に設定`);
+                                            }
+                                        }
+                                        
+                                        // strokeの処理
+                                        if (colorInfo.stroke !== undefined && colorInfo.stroke !== null) {
+                                            if (colorInfo.stroke === '') {
+                                                // 空文字列の場合はstrokeを削除
+                                                element.setAttribute('stroke', 'none');
+                                                console.log(`  -> stroke を none に設定`);
+                                            } else {
+                                                // 色が指定されている場合は適用
+                                                element.setAttribute('stroke', colorInfo.stroke);
+                                                console.log(`  -> stroke を ${colorInfo.stroke} に設定`);
+                                                
+                                                // SVGルート要素のstroke属性を継承
+                                                if (defaultStrokeAttrs.strokeLinecap) {
+                                                    element.setAttribute('stroke-linecap', defaultStrokeAttrs.strokeLinecap);
+                                                    console.log(`  -> stroke-linecap を ${defaultStrokeAttrs.strokeLinecap} に設定`);
+                                                }
+                                                if (defaultStrokeAttrs.strokeLinejoin) {
+                                                    element.setAttribute('stroke-linejoin', defaultStrokeAttrs.strokeLinejoin);
+                                                    console.log(`  -> stroke-linejoin を ${defaultStrokeAttrs.strokeLinejoin} に設定`);
+                                                }
+                                                if (defaultStrokeAttrs.strokeMiterlimit) {
+                                                    element.setAttribute('stroke-miterlimit', defaultStrokeAttrs.strokeMiterlimit);
+                                                    console.log(`  -> stroke-miterlimit を ${defaultStrokeAttrs.strokeMiterlimit} に設定`);
+                                                }
+                                            }
+                                        }
+                                        
+                                        console.log(`要素[${colorInfo.index}] 適用後:`, {
+                                            fill: element.getAttribute('fill'),
+                                            stroke: element.getAttribute('stroke'),
+                                            style: element.getAttribute('style')
+                                        });
+                                    } else {
+                                        console.warn(`  要素${colorInfo.index}が見つかりません (全体: ${allElements.length}要素)`);
+                                    }
+                                });
+                                
+                                console.log('=== 色情報適用完了 ===');
+                            } else {
+                                console.warn('描画要素が見つかりませんでした');
+                            }
+                        } else {
+                            console.log('色情報なし - 元のSVGを使用');
+                        }
+                        
+                        const content = svgElement.innerHTML;
+                        
+                        console.log('=== 最終的なSVGコンテンツ（最初の500文字）===');
+                        console.log(content.substring(0, 500));
+                        console.log('=== SVGコンテンツに#a9d693が含まれているか ===');
+                        console.log('含まれている:', content.includes('#a9d693'));
+                        console.log('#a9d693の出現回数:', (content.match(/#a9d693/g) || []).length);
+                        
                         const result = {
-                            content: svgElement.innerHTML,
+                            content: content,
                             viewBox: viewBox
                         };
                         
-                        materialSvgCache[materialId] = result;
+                        materialSvgCache[cacheKey] = result;
                         return result;
                     }
                 } catch (error) {
@@ -937,13 +1131,13 @@ if ($artworkId) {
                 // レイヤーを描画
                 for (let index = 0; index < layers.length; index++) {
                     const layer = layers[index];
-                    const layerId = layer.id || `layer_${index}`;
+                    const layerId = `layer_${index}`;
                     
                     let svgData = null;
                     
                     // 素材IDからSVGコンテンツを取得
                     if (layer.materialId) {
-                        svgData = await fetchMaterialSvg(layer.materialId);
+                        svgData = await fetchMaterialSvg(layer.materialId, layer.colors);
                     }
                     
                     if (svgData && svgData.content) {
@@ -955,28 +1149,15 @@ if ($artworkId) {
                         
                         // transform情報を取得
                         const transform = layer.transform || {};
-                        const scaleX = transform.scaleX || layer.scaleX || 1;
-                        const scaleY = transform.scaleY || layer.scaleY || 1;
-                        const rotation = transform.rotation || layer.angle || 0;
-                        const flipH = transform.flipHorizontal || layer.flipX || false;
-                        const flipV = transform.flipVertical || layer.flipY || false;
+                        const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : (layer.scaleX || 1));
+                        const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : (layer.scaleY || 1));
+                        const rotation = transform.rotation !== undefined ? transform.rotation : (layer.angle || 0);
+                        const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (layer.flipX || false);
+                        const flipV = transform.flipVertical !== undefined ? transform.flipVertical : (layer.flipY || false);
                         
-                        // 位置を取得
-                        let x, y;
-                        if (transform.x !== undefined && transform.y !== undefined) {
-                            // transform.x/yは左上基準の座標
-                            x = transform.x;
-                            y = transform.y;
-                        } else if (layer.left !== undefined && layer.top !== undefined) {
-                            // Fabric.jsのleft/topから左上基準に変換
-                            const centerX = vbWidth / 2;
-                            const centerY = vbHeight / 2;
-                            x = layer.left - (centerX * Math.abs(scaleX));
-                            y = layer.top - (centerY * Math.abs(scaleY));
-                        } else {
-                            x = 0;
-                            y = 0;
-                        }
+                        // 位置を取得（transform.x/yは左上基準）
+                        let x = transform.x !== undefined ? transform.x : (layer.x || 0);
+                        let y = transform.y !== undefined ? transform.y : (layer.y || 0);
                         
                         // スケールとフリップを適用
                         const finalScaleX = scaleX * (flipH ? -1 : 1);
@@ -1035,7 +1216,7 @@ if ($artworkId) {
                 // レイヤーを描画（アニメーション適用）
                 for (let index = 0; index < layers.length; index++) {
                     const layer = layers[index];
-                    const layerId = layer.id || `layer_${index}`;
+                    const layerId = `layer_${index}`;
                     const animation = animations[layerId];
                     
                     // delay（開始タイミング）とhold（維持時間）を考慮した進捗を計算
@@ -1059,7 +1240,7 @@ if ($artworkId) {
                     let svgData = null;
                     
                     if (layer.materialId) {
-                        svgData = await fetchMaterialSvg(layer.materialId);
+                        svgData = await fetchMaterialSvg(layer.materialId, layer.colors);
                     }
                     
                     if (svgData && svgData.content) {
@@ -1069,25 +1250,14 @@ if ($artworkId) {
                         const vbY = svgData.viewBox.y || 0;
                         
                         const transform = layer.transform || {};
-                        const scaleX = transform.scaleX || layer.scaleX || 1;
-                        const scaleY = transform.scaleY || layer.scaleY || 1;
-                        const rotation = transform.rotation || layer.angle || 0;
-                        const flipH = transform.flipHorizontal || layer.flipX || false;
-                        const flipV = transform.flipVertical || layer.flipY || false;
+                        const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : (layer.scaleX || 1));
+                        const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : (layer.scaleY || 1));
+                        const rotation = transform.rotation !== undefined ? transform.rotation : (layer.angle || 0);
+                        const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (layer.flipX || false);
+                        const flipV = transform.flipVertical !== undefined ? transform.flipVertical : (layer.flipY || false);
                         
-                        let x, y;
-                        if (transform.x !== undefined && transform.y !== undefined) {
-                            x = transform.x;
-                            y = transform.y;
-                        } else if (layer.left !== undefined && layer.top !== undefined) {
-                            const centerX = vbWidth / 2;
-                            const centerY = vbHeight / 2;
-                            x = layer.left - (centerX * Math.abs(scaleX));
-                            y = layer.top - (centerY * Math.abs(scaleY));
-                        } else {
-                            x = 0;
-                            y = 0;
-                        }
+                        let x = transform.x !== undefined ? transform.x : (layer.x || 0);
+                        let y = transform.y !== undefined ? transform.y : (layer.y || 0);
                         
                         // アニメーション適用
                         let animX = x;
@@ -1212,7 +1382,7 @@ if ($artworkId) {
                     // 最も長いレイヤーの総時間を計算（delay + animation + hold）
                     let maxTotalDuration = duration;
                     layers.forEach((layer, index) => {
-                        const layerId = layer.id || `layer_${index}`;
+                        const layerId = `layer_${index}`;
                         const animation = animations[layerId];
                         if (animation) {
                             const delay = animation.delay ? parseFloat(animation.delay) : 0;
@@ -1260,10 +1430,12 @@ if ($artworkId) {
                         gifWidth: width,
                         gifHeight: height,
                         interval: interval,
-                        numFrames: totalFrames
+                        numFrames: totalFrames,
+                        sampleInterval: 10,
+                        numWorkers: 2
                     }, function(obj) {
                         if (!obj.error) {
-                            console.log('GIF生成完了');
+                            console.log('GIF生成完了: サイズ', width, 'x', height);
                             const url = obj.image;
                             
                             // 結果を表示
@@ -1303,11 +1475,14 @@ if ($artworkId) {
                     canvas.height = height;
                     const ctx = canvas.getContext('2d', { willReadFrequently: true });
                     
+                    console.log('Canvas作成:', { width, height });
+                    
                     const img = new Image();
                     const blob = new Blob([svgString], { type: 'image/svg+xml' });
                     const url = URL.createObjectURL(blob);
                     
                     img.onload = function() {
+                        console.log('画像読み込み完了:', { imgWidth: img.width, imgHeight: img.height, canvasWidth: width, canvasHeight: height });
                         ctx.drawImage(img, 0, 0, width, height);
                         URL.revokeObjectURL(url);
                         resolve(canvas);
