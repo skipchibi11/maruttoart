@@ -137,9 +137,9 @@ if ($artworkId) {
         .preview-area {
             border: 1px solid rgba(232, 168, 124, 0.2);
             border-radius: 12px;
-            padding: 20px;
-            min-height: 500px;
-            max-height: 600px;
+            padding: 30px;
+            min-height: 400px;
+            max-height: 80vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -149,11 +149,18 @@ if ($artworkId) {
         }
         
         #preview-canvas {
+            display: block;
             max-width: 100%;
             max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
+        }
+        
+        .canvas-container {
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+        
+        .canvas-container canvas {
+            display: block !important;
         }
         
         #preview-svg {
@@ -1161,7 +1168,25 @@ if ($artworkId) {
                                             console.log(`  要素[${idx}] opacity=${opacityMatch[1]} を属性に設定`);
                                         }
                                         
-                                        // style属性は残したまま（他のプロパティがある可能性があるため）
+                                        // stroke-width, stroke-linejoin, stroke-linecapなどのstroke関連のみを保持
+                                        let keepStyle = '';
+                                        const strokeWidthMatch = style.match(/stroke-width\s*:\s*([^;]+)/);
+                                        const strokeLinecapMatch = style.match(/stroke-linecap\s*:\s*([^;]+)/);
+                                        const strokeLinejoinMatch = style.match(/stroke-linejoin\s*:\s*([^;]+)/);
+                                        const strokeMiterlimitMatch = style.match(/stroke-miterlimit\s*:\s*([^;]+)/);
+                                        
+                                        if (strokeWidthMatch) keepStyle += `stroke-width:${strokeWidthMatch[1]};`;
+                                        if (strokeLinecapMatch) keepStyle += `stroke-linecap:${strokeLinecapMatch[1]};`;
+                                        if (strokeLinejoinMatch) keepStyle += `stroke-linejoin:${strokeLinejoinMatch[1]};`;
+                                        if (strokeMiterlimitMatch) keepStyle += `stroke-miterlimit:${strokeMiterlimitMatch[1]};`;
+                                        
+                                        if (keepStyle) {
+                                            element.setAttribute('style', keepStyle);
+                                            console.log(`  要素[${idx}] style属性を更新: "${keepStyle}"`);
+                                        } else {
+                                            element.removeAttribute('style');
+                                            console.log(`  要素[${idx}] style属性を削除`);
+                                        }
                                     }
                                 });
                             }
@@ -1201,11 +1226,11 @@ if ($artworkId) {
                 
                 // プレビューエリアのサイズを取得
                 const previewArea = document.getElementById('preview-area');
-                const maxWidth = previewArea.clientWidth - 40; // padding分を引く
-                const maxHeight = previewArea.clientHeight - 40;
+                const maxWidth = previewArea.clientWidth - 60; // padding分を引く
+                const maxHeight = previewArea.clientHeight - 60;
                 
-                // アスペクト比を維持してスケール計算
-                const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+                // アスペクト比を維持してスケール計算（常に枠内に収める）
+                const scale = Math.min(maxWidth / width, maxHeight / height);
                 
                 // Fabric.jsキャンバスを初期化（初回のみ）
                 if (!fabricCanvas) {
@@ -1218,9 +1243,15 @@ if ($artworkId) {
                     });
                     
                     // CSSでスケーリング
-                    const canvasElement = document.getElementById('preview-canvas');
-                    canvasElement.style.width = (width * scale) + 'px';
-                    canvasElement.style.height = (height * scale) + 'px';
+                    fabricCanvas.setDimensions(
+                        { width: width * scale, height: height * scale },
+                        { cssOnly: true }
+                    );
+                    
+                    // canvas-containerのサイズも調整
+                    const container = fabricCanvas.wrapperEl;
+                    container.style.width = (width * scale) + 'px';
+                    container.style.height = (height * scale) + 'px';
                 } else {
                     // サイズと背景色を更新
                     fabricCanvas.setDimensions({ width: width, height: height });
@@ -1228,9 +1259,15 @@ if ($artworkId) {
                     fabricCanvas.clear();
                     
                     // CSSでスケーリング
-                    const canvasElement = document.getElementById('preview-canvas');
-                    canvasElement.style.width = (width * scale) + 'px';
-                    canvasElement.style.height = (height * scale) + 'px';
+                    fabricCanvas.setDimensions(
+                        { width: width * scale, height: height * scale },
+                        { cssOnly: true }
+                    );
+                    
+                    // canvas-containerのサイズも調整
+                    const container = fabricCanvas.wrapperEl;
+                    container.style.width = (width * scale) + 'px';
+                    container.style.height = (height * scale) + 'px';
                 }
                 
                 // レイヤーを描画
@@ -1552,11 +1589,10 @@ if ($artworkId) {
                             document.getElementById('download-link').download = `animation_${artworkData.id}_${Date.now()}.gif`;
                             
                             resultArea.classList.add('active');
-                            previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
                             
-                            // プレビューを再描画
+                            // プレビューをリセットして再描画
                             fabricCanvas = null;
-                            renderPreview();
+                            previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
                             renderPreview();
                             
                             // ボタンを有効化

@@ -1215,7 +1215,73 @@ foreach ($allMaterials as $material) {
                             fetch('/' + svgPath)
                                 .then(response => response.text())
                                 .then(svgText => {
-                                    fabric.loadSVGFromString(svgText, function(objects, options) {
+                                    // 色情報がある場合は、SVGテキストを直接編集してから読み込む
+                                    let modifiedSvgText = svgText;
+                                    if (objData.colors && objData.colors.length > 0) {
+                                        console.log('SVG読み込み前に色を置換:', objData.colors);
+                                        
+                                        // DOMParserでSVGを解析
+                                        const parser = new DOMParser();
+                                        const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+                                        const svgElement = svgDoc.querySelector('svg');
+                                        
+                                        if (svgElement) {
+                                            // 描画要素を取得
+                                            const drawingElements = svgElement.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon');
+                                            console.log('描画要素数:', drawingElements.length);
+                                            
+                                            // 色を適用
+                                            objData.colors.forEach(colorData => {
+                                                const element = drawingElements[colorData.index];
+                                                if (element) {
+                                                    console.log(`要素[${colorData.index}] 処理前:`, {
+                                                        fill: element.getAttribute('fill'),
+                                                        style: element.getAttribute('style')
+                                                    });
+                                                    
+                                                    if (colorData.fill) {
+                                                        // style属性を完全に削除してfill属性のみにする
+                                                        const style = element.getAttribute('style');
+                                                        if (style) {
+                                                            // fillとstroke以外のスタイルを保持
+                                                            let newStyleParts = [];
+                                                            style.split(';').forEach(part => {
+                                                                const trimmed = part.trim();
+                                                                if (trimmed && 
+                                                                    !trimmed.match(/^fill\s*:/i) && 
+                                                                    !trimmed.match(/^stroke\s*:/i)) {
+                                                                    newStyleParts.push(trimmed);
+                                                                }
+                                                            });
+                                                            
+                                                            if (newStyleParts.length > 0) {
+                                                                element.setAttribute('style', newStyleParts.join(';') + ';');
+                                                            } else {
+                                                                element.removeAttribute('style');
+                                                            }
+                                                        }
+                                                        
+                                                        // fill属性を設定
+                                                        element.setAttribute('fill', colorData.fill);
+                                                    }
+                                                    if (colorData.stroke !== undefined) {
+                                                        if (colorData.stroke === null || colorData.stroke === 'none') {
+                                                            element.removeAttribute('stroke');
+                                                        } else {
+                                                            element.setAttribute('stroke', colorData.stroke);
+                                                        }
+                                                    }
+                                                    console.log(`要素[${colorData.index}]に色を適用: fill=${colorData.fill}`);
+                                                }
+                                            });
+                                            
+                                            // 修正したSVGをシリアライズ
+                                            const serializer = new XMLSerializer();
+                                            modifiedSvgText = serializer.serializeToString(svgDoc);
+                                        }
+                                    }
+                                    
+                                    fabric.loadSVGFromString(modifiedSvgText, function(objects, options) {
                                         const obj = fabric.util.groupSVGElements(objects, options);
                                         
                                         // 保存時のデータに応じて復元方法を選択
@@ -1265,26 +1331,6 @@ foreach ($allMaterials as $material) {
                                         }
                                         
                                         canvas.add(obj);
-                                        
-                                        // 色情報を復元（canvas追加後に適用）
-                                        if (objData.colors && objData.colors.length > 0) {
-                                            console.log('色情報を復元:', objData.colors);
-                                            console.log('obj._objects:', obj._objects);
-                                            
-                                            if (obj._objects) {
-                                                objData.colors.forEach(colorData => {
-                                                    const child = obj._objects[colorData.index];
-                                                    if (child) {
-                                                        console.log(`Index ${colorData.index}: ${child.fill} -> ${colorData.fill}`);
-                                                        // 直接プロパティを設定
-                                                        child.fill = colorData.fill;
-                                                        child.stroke = colorData.stroke;
-                                                        child.dirty = true;
-                                                    }
-                                                });
-                                                obj.dirty = true;
-                                            }
-                                        }
                                         
                                         canvas.renderAll();
                                         
@@ -1512,7 +1558,68 @@ foreach ($allMaterials as $material) {
                                 return response.text();
                             })
                             .then(svgText => {
-                                fabric.loadSVGFromString(svgText, function(objects, options) {
+                                // 色情報がある場合は、SVGテキストを直接編集してから読み込む
+                                let modifiedSvgText = svgText;
+                                if (materialData.colors && materialData.colors.length > 0) {
+                                    console.log('DB読み込み - 色を置換:', materialData.colors);
+                                    
+                                    // DOMParserでSVGを解析
+                                    const parser = new DOMParser();
+                                    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+                                    const svgElement = svgDoc.querySelector('svg');
+                                    
+                                    if (svgElement) {
+                                        // 描画要素を取得
+                                        const drawingElements = svgElement.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon');
+                                        console.log('描画要素数:', drawingElements.length);
+                                        
+                                        // 色を適用
+                                        materialData.colors.forEach(colorData => {
+                                            const element = drawingElements[colorData.index];
+                                            if (element) {
+                                                if (colorData.fill) {
+                                                    // style属性を完全に削除してfill属性のみにする
+                                                    const style = element.getAttribute('style');
+                                                    if (style) {
+                                                        // fillとstroke以外のスタイルを保持
+                                                        let newStyleParts = [];
+                                                        style.split(';').forEach(part => {
+                                                            const trimmed = part.trim();
+                                                            if (trimmed && 
+                                                                !trimmed.match(/^fill\s*:/i) && 
+                                                                !trimmed.match(/^stroke\s*:/i)) {
+                                                                newStyleParts.push(trimmed);
+                                                            }
+                                                        });
+                                                        
+                                                        if (newStyleParts.length > 0) {
+                                                            element.setAttribute('style', newStyleParts.join(';') + ';');
+                                                        } else {
+                                                            element.removeAttribute('style');
+                                                        }
+                                                    }
+                                                    
+                                                    // fill属性を設定
+                                                    element.setAttribute('fill', colorData.fill);
+                                                }
+                                                if (colorData.stroke !== undefined) {
+                                                    if (colorData.stroke === null || colorData.stroke === 'none') {
+                                                        element.removeAttribute('stroke');
+                                                    } else {
+                                                        element.setAttribute('stroke', colorData.stroke);
+                                                    }
+                                                }
+                                                console.log(`要素[${colorData.index}]に色を適用: fill=${colorData.fill}`);
+                                            }
+                                        });
+                                        
+                                        // 修正したSVGをシリアライズ
+                                        const serializer = new XMLSerializer();
+                                        modifiedSvgText = serializer.serializeToString(svgDoc);
+                                    }
+                                }
+                                
+                                fabric.loadSVGFromString(modifiedSvgText, function(objects, options) {
                                     const obj = fabric.util.groupSVGElements(objects, options);
                                     
                                     // 素材IDを取得（materialIdまたはid）
@@ -2467,6 +2574,13 @@ foreach ($allMaterials as $material) {
                                     fill: child.fill,
                                     stroke: child.stroke
                                 });
+                            });
+                        } else if (obj.fill || obj.stroke) {
+                            // 単一オブジェクト（ellipse, path, rectなど）の色情報
+                            colors.push({
+                                index: 0,
+                                fill: obj.fill,
+                                stroke: obj.stroke
                             });
                         }
                         
