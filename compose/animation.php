@@ -63,6 +63,7 @@ if ($artworkId) {
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gifshot@0.4.5/dist/gifshot.min.js"></script>
     <style>
         :root {
@@ -145,6 +146,14 @@ if ($artworkId) {
             background: white;
             position: relative;
             overflow: hidden;
+        }
+        
+        #preview-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
         }
         
         #preview-svg {
@@ -641,7 +650,7 @@ if ($artworkId) {
             <div class="preview-panel">
                 <h2 class="section-title">プレビュー</h2>
                 <div class="preview-area" id="preview-area">
-                    <div id="preview-svg"></div>
+                    <canvas id="preview-canvas"></canvas>
                 </div>
                 
                 <div class="result-area" id="result-area">
@@ -1051,6 +1060,20 @@ if ($artworkId) {
                                             }
                                         }
                                         
+                                        // 不透明度の処理
+                                        if (colorInfo.fillOpacity !== undefined) {
+                                            element.setAttribute('fill-opacity', colorInfo.fillOpacity);
+                                            console.log(`  -> fill-opacity を ${colorInfo.fillOpacity} に設定`);
+                                        }
+                                        if (colorInfo.strokeOpacity !== undefined) {
+                                            element.setAttribute('stroke-opacity', colorInfo.strokeOpacity);
+                                            console.log(`  -> stroke-opacity を ${colorInfo.strokeOpacity} に設定`);
+                                        }
+                                        if (colorInfo.opacity !== undefined) {
+                                            element.setAttribute('opacity', colorInfo.opacity);
+                                            console.log(`  -> opacity を ${colorInfo.opacity} に設定`);
+                                        }
+                                        
                                         // strokeの処理
                                         if (colorInfo.stroke !== undefined && colorInfo.stroke !== null) {
                                             if (colorInfo.stroke === '') {
@@ -1094,6 +1117,54 @@ if ($artworkId) {
                             }
                         } else {
                             console.log('色情報なし - 元のSVGを使用');
+                            
+                            // 色情報がない場合でも、style属性をパースして属性に変換
+                            // （Fabric.jsがstyle属性を正しく読み込めないため）
+                            if (allElements.length > 0) {
+                                allElements.forEach((element, idx) => {
+                                    const style = element.getAttribute('style');
+                                    if (style) {
+                                        console.log(`  要素[${idx}] style属性を属性に変換中: "${style}"`);
+                                        
+                                        // fillを抽出
+                                        const fillMatch = style.match(/fill\s*:\s*([^;]+)/);
+                                        if (fillMatch && fillMatch[1] !== 'none') {
+                                            element.setAttribute('fill', fillMatch[1].trim());
+                                            console.log(`  要素[${idx}] fill=${fillMatch[1].trim()} を属性に設定`);
+                                        }
+                                        
+                                        // fill-opacityを抽出
+                                        const fillOpacityMatch = style.match(/fill-opacity\s*:\s*([\d.]+)/);
+                                        if (fillOpacityMatch) {
+                                            element.setAttribute('fill-opacity', fillOpacityMatch[1]);
+                                            console.log(`  要素[${idx}] fill-opacity=${fillOpacityMatch[1]} を属性に設定`);
+                                        }
+                                        
+                                        // strokeを抽出
+                                        const strokeMatch = style.match(/stroke\s*:\s*([^;]+)/);
+                                        if (strokeMatch && strokeMatch[1] !== 'none') {
+                                            element.setAttribute('stroke', strokeMatch[1].trim());
+                                            console.log(`  要素[${idx}] stroke=${strokeMatch[1].trim()} を属性に設定`);
+                                        }
+                                        
+                                        // stroke-opacityを抽出
+                                        const strokeOpacityMatch = style.match(/stroke-opacity\s*:\s*([\d.]+)/);
+                                        if (strokeOpacityMatch) {
+                                            element.setAttribute('stroke-opacity', strokeOpacityMatch[1]);
+                                            console.log(`  要素[${idx}] stroke-opacity=${strokeOpacityMatch[1]} を属性に設定`);
+                                        }
+                                        
+                                        // opacityを抽出
+                                        const opacityMatch = style.match(/(?:^|;)\s*opacity\s*:\s*([\d.]+)/);
+                                        if (opacityMatch) {
+                                            element.setAttribute('opacity', opacityMatch[1]);
+                                            console.log(`  要素[${idx}] opacity=${opacityMatch[1]} を属性に設定`);
+                                        }
+                                        
+                                        // style属性は残したまま（他のプロパティがある可能性があるため）
+                                    }
+                                });
+                            }
                         }
                         
                         const content = svgElement.innerHTML;
@@ -1119,103 +1190,133 @@ if ($artworkId) {
                 return { content: '', viewBox: { width: 100, height: 100 } };
             }
             
-            // SVGを生成してプレビューに表示
+            // Fabric.jsキャンバスインスタンス
+            let fabricCanvas = null;
+            
+            // Fabric.jsを使ってプレビューを表示
             async function renderPreview() {
                 const width = canvasWidth;
                 const height = canvasHeight;
                 const bgColor = backgroundColor;
                 
-                let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`;
-                svg += `<rect width="100%" height="100%" fill="${bgColor}"/>`;
+                // プレビューエリアのサイズを取得
+                const previewArea = document.getElementById('preview-area');
+                const maxWidth = previewArea.clientWidth - 40; // padding分を引く
+                const maxHeight = previewArea.clientHeight - 40;
+                
+                // アスペクト比を維持してスケール計算
+                const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+                
+                // Fabric.jsキャンバスを初期化（初回のみ）
+                if (!fabricCanvas) {
+                    fabricCanvas = new fabric.Canvas('preview-canvas', {
+                        width: width,
+                        height: height,
+                        backgroundColor: bgColor,
+                        selection: false,
+                        renderOnAddRemove: false
+                    });
+                    
+                    // CSSでスケーリング
+                    const canvasElement = document.getElementById('preview-canvas');
+                    canvasElement.style.width = (width * scale) + 'px';
+                    canvasElement.style.height = (height * scale) + 'px';
+                } else {
+                    // サイズと背景色を更新
+                    fabricCanvas.setDimensions({ width: width, height: height });
+                    fabricCanvas.setBackgroundColor(bgColor);
+                    fabricCanvas.clear();
+                    
+                    // CSSでスケーリング
+                    const canvasElement = document.getElementById('preview-canvas');
+                    canvasElement.style.width = (width * scale) + 'px';
+                    canvasElement.style.height = (height * scale) + 'px';
+                }
                 
                 // レイヤーを描画
                 for (let index = 0; index < layers.length; index++) {
                     const layer = layers[index];
-                    const layerId = `layer_${index}`;
-                    
-                    let svgData = null;
                     
                     // 素材IDからSVGコンテンツを取得
                     if (layer.materialId) {
-                        svgData = await fetchMaterialSvg(layer.materialId, layer.colors);
-                    }
-                    
-                    if (svgData && svgData.content) {
-                        // SVGのviewBoxサイズを取得
-                        const vbWidth = svgData.viewBox.width;
-                        const vbHeight = svgData.viewBox.height;
-                        const vbX = svgData.viewBox.x || 0;
-                        const vbY = svgData.viewBox.y || 0;
+                        const svgData = await fetchMaterialSvg(layer.materialId, layer.colors);
                         
-                        // transform情報を取得
-                        const transform = layer.transform || {};
-                        const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : (layer.scaleX || 1));
-                        const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : (layer.scaleY || 1));
-                        const rotation = transform.rotation !== undefined ? transform.rotation : (layer.angle || 0);
-                        const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (layer.flipX || false);
-                        const flipV = transform.flipVertical !== undefined ? transform.flipVertical : (layer.flipY || false);
-                        
-                        // 位置を取得（transform.x/yは左上基準）
-                        let x = transform.x !== undefined ? transform.x : (layer.x || 0);
-                        let y = transform.y !== undefined ? transform.y : (layer.y || 0);
-                        
-                        // スケールとフリップを適用
-                        const finalScaleX = scaleX * (flipH ? -1 : 1);
-                        const finalScaleY = scaleY * (flipV ? -1 : 1);
-                        
-                        // 中心座標を計算
-                        const centerX = vbWidth / 2;
-                        const centerY = vbHeight / 2;
-                        
-                        // 左上基準の座標を中心基準に変換
-                        const centerPosX = x + centerX * scaleX;
-                        const centerPosY = y + centerY * scaleY;
-                        
-                        // 外側のグループ：中心位置に配置
-                        svg += `<g id="${layerId}" transform="translate(${centerPosX}, ${centerPosY})">`;
-                        
-                        // 内側のグループ：回転、スケール、フリップを中心基準で適用
-                        let innerTransform = '';
-                        
-                        // 1. 回転を適用
-                        if (rotation !== 0) {
-                            innerTransform += `rotate(${rotation})`;
+                        if (svgData && svgData.content) {
+                            // SVG文字列を作成
+                            const svgString = `<svg viewBox="${svgData.viewBox.x || 0} ${svgData.viewBox.y || 0} ${svgData.viewBox.width} ${svgData.viewBox.height}" xmlns="http://www.w3.org/2000/svg">${svgData.content}</svg>`;
+                            
+                            // Fabric.jsでSVGをロード
+                            await new Promise((resolve) => {
+                                fabric.loadSVGFromString(svgString, (objects, options) => {
+                                    if (!objects || objects.length === 0) {
+                                        resolve();
+                                        return;
+                                    }
+                                    
+                                    // SVGグループを作成
+                                    const svgGroup = fabric.util.groupSVGElements(objects, options);
+                                    
+                                    // transform情報を取得
+                                    const transform = layer.transform || {};
+                                    const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : 1);
+                                    const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : 1);
+                                    const rotation = transform.rotation !== undefined ? transform.rotation : 0;
+                                    const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : false;
+                                    const flipV = transform.flipVertical !== undefined ? transform.flipVertical : false;
+                                    
+                                    // 位置を取得
+                                    const x = transform.x !== undefined ? transform.x : 0;
+                                    const y = transform.y !== undefined ? transform.y : 0;
+                                    
+                                    // originalCenterを取得
+                                    const originalCenter = layer.originalCenter || { 
+                                        x: svgData.viewBox.width / 2, 
+                                        y: svgData.viewBox.height / 2 
+                                    };
+                                    
+                                    // Fabric.jsの中心座標を計算
+                                    const centerX = x + originalCenter.x * scaleX;
+                                    const centerY = y + originalCenter.y * scaleY;
+                                    
+                                    // オブジェクトを設定
+                                    svgGroup.set({
+                                        left: centerX,
+                                        top: centerY,
+                                        originX: 'center',
+                                        originY: 'center',
+                                        scaleX: scaleX * (flipH ? -1 : 1),
+                                        scaleY: scaleY * (flipV ? -1 : 1),
+                                        angle: rotation,
+                                        selectable: false,
+                                        evented: false
+                                    });
+                                    
+                                    fabricCanvas.add(svgGroup);
+                                    resolve();
+                                });
+                            });
                         }
-                        
-                        // 2. スケールとフリップを適用
-                        if (finalScaleX !== 1 || finalScaleY !== 1) {
-                            innerTransform += ` scale(${finalScaleX}, ${finalScaleY})`;
-                        }
-                        
-                        // 3. 中心から左上に戻す（SVG描画用）
-                        innerTransform += ` translate(${-centerX}, ${-centerY})`;
-                        
-                        svg += `<g transform="${innerTransform}">`;
-                        
-                        // SVG要素
-                        svg += `<svg viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">`;
-                        svg += svgData.content;
-                        svg += `</svg>`;
-                        
-                        svg += `</g>`;
-                        svg += `</g>`;
                     }
                 }
                 
-                svg += '</svg>';
-                
-                document.getElementById('preview-svg').innerHTML = svg;
+                fabricCanvas.renderAll();
             }
             
-            // アニメーションフレームを生成
+            // アニメーションフレームを生成（Fabric.jsを使用）
             async function generateAnimatedFrame(progress) {
                 const width = canvasWidth;
                 const height = canvasHeight;
                 const bgColor = backgroundColor;
                 const animationDuration = ANIMATION_DURATION;
                 
-                let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`;
-                svg += `<rect width="100%" height="100%" fill="${bgColor}"/>`;
+                // 一時的なFabric.jsキャンバスを作成
+                const tempCanvas = new fabric.Canvas(document.createElement('canvas'), {
+                    width: width,
+                    height: height,
+                    backgroundColor: bgColor,
+                    selection: false,
+                    renderOnAddRemove: false
+                });
                 
                 // レイヤーを描画（アニメーション適用）
                 for (let index = 0; index < layers.length; index++) {
@@ -1231,130 +1332,126 @@ if ($artworkId) {
                     
                     let layerProgress = 0;
                     if (currentTime < delay * 1000) {
-                        // 遅延中：アニメーション開始前
                         layerProgress = 0;
                     } else if (currentTime < delay * 1000 + animationDuration) {
-                        // アニメーション実行中
                         layerProgress = (currentTime - delay * 1000) / animationDuration;
                     } else {
-                        // アニメーション完了後（維持時間中）
                         layerProgress = 1;
                     }
                     
-                    let svgData = null;
-                    
                     if (layer.materialId) {
-                        svgData = await fetchMaterialSvg(layer.materialId, layer.colors);
-                    }
-                    
-                    if (svgData && svgData.content) {
-                        const vbWidth = svgData.viewBox.width;
-                        const vbHeight = svgData.viewBox.height;
-                        const vbX = svgData.viewBox.x || 0;
-                        const vbY = svgData.viewBox.y || 0;
+                        const svgData = await fetchMaterialSvg(layer.materialId, layer.colors);
                         
-                        const transform = layer.transform || {};
-                        const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : (layer.scaleX || 1));
-                        const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : (layer.scaleY || 1));
-                        const rotation = transform.rotation !== undefined ? transform.rotation : (layer.angle || 0);
-                        const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (layer.flipX || false);
-                        const flipV = transform.flipVertical !== undefined ? transform.flipVertical : (layer.flipY || false);
-                        
-                        let x = transform.x !== undefined ? transform.x : (layer.x || 0);
-                        let y = transform.y !== undefined ? transform.y : (layer.y || 0);
-                        
-                        // アニメーション適用
-                        let animX = x;
-                        let animY = y;
-                        let animScaleX = scaleX;
-                        let animScaleY = scaleY;
-                        let animRotation = rotation;
-                        let opacity = 1;
-                        
-                        if (animation && animation.type) {
-                            const easing = animation.easing || 'linear';
-                            const easedProgress = applyEasing(layerProgress, easing);
+                        if (svgData && svgData.content) {
+                            // SVG文字列を作成
+                            const svgString = `<svg viewBox="${svgData.viewBox.x || 0} ${svgData.viewBox.y || 0} ${svgData.viewBox.width} ${svgData.viewBox.height}" xmlns="http://www.w3.org/2000/svg">${svgData.content}</svg>`;
                             
-                            switch (animation.type) {
-                                case 'fadeIn':
-                                    opacity = easedProgress;
-                                    break;
-                                case 'fadeOut':
-                                    opacity = 1 - easedProgress;
-                                    break;
-                                case 'slideFromBottom':
-                                    const startYBottom = height;
-                                    animY = startYBottom + (y - startYBottom) * easedProgress;
-                                    break;
-                                case 'slideFromTop':
-                                    const startYTop = -vbHeight;
-                                    animY = startYTop + (y - startYTop) * easedProgress;
-                                    break;
-                                case 'slideFromLeft':
-                                    const startXLeft = -vbWidth;
-                                    animX = startXLeft + (x - startXLeft) * easedProgress;
-                                    break;
-                                case 'slideFromRight':
-                                    const startXRight = width;
-                                    animX = startXRight + (x - startXRight) * easedProgress;
-                                    break;
-                                case 'scale':
-                                    const startScale = animation.startScale || 0;
-                                    const endScale = animation.endScale || 1;
-                                    const scale = startScale + (endScale - startScale) * easedProgress;
-                                    animScaleX = scaleX * scale;
-                                    animScaleY = scaleY * scale;
-                                    break;
-                                case 'rotate':
-                                    const startRotate = animation.startRotate || 0;
-                                    const endRotate = animation.endRotate || 360;
-                                    animRotation = startRotate + (endRotate - startRotate) * easedProgress;
-                                    break;
-                            }
+                            // Fabric.jsでSVGをロード
+                            await new Promise((resolve) => {
+                                fabric.loadSVGFromString(svgString, (objects, options) => {
+                                    if (!objects || objects.length === 0) {
+                                        resolve();
+                                        return;
+                                    }
+                                    
+                                    const svgGroup = fabric.util.groupSVGElements(objects, options);
+                                    
+                                    const transform = layer.transform || {};
+                                    const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : 1);
+                                    const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : 1);
+                                    const rotation = transform.rotation !== undefined ? transform.rotation : 0;
+                                    const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : false;
+                                    const flipV = transform.flipVertical !== undefined ? transform.flipVertical : false;
+                                    
+                                    let x = transform.x !== undefined ? transform.x : 0;
+                                    let y = transform.y !== undefined ? transform.y : 0;
+                                    
+                                    // アニメーション適用
+                                    let animX = x;
+                                    let animY = y;
+                                    let animScaleX = scaleX;
+                                    let animScaleY = scaleY;
+                                    let animRotation = rotation;
+                                    let opacity = 1;
+                                    
+                                    if (animation && animation.type) {
+                                        const easing = animation.easing || 'linear';
+                                        const easedProgress = applyEasing(layerProgress, easing);
+                                        
+                                        switch (animation.type) {
+                                            case 'fadeIn':
+                                                opacity = easedProgress;
+                                                break;
+                                            case 'fadeOut':
+                                                opacity = 1 - easedProgress;
+                                                break;
+                                            case 'slideFromBottom':
+                                                const startYBottom = height;
+                                                animY = startYBottom + (y - startYBottom) * easedProgress;
+                                                break;
+                                            case 'slideFromTop':
+                                                const startYTop = -svgData.viewBox.height;
+                                                animY = startYTop + (y - startYTop) * easedProgress;
+                                                break;
+                                            case 'slideFromLeft':
+                                                const startXLeft = -svgData.viewBox.width;
+                                                animX = startXLeft + (x - startXLeft) * easedProgress;
+                                                break;
+                                            case 'slideFromRight':
+                                                const startXRight = width;
+                                                animX = startXRight + (x - startXRight) * easedProgress;
+                                                break;
+                                            case 'scale':
+                                                const startScale = animation.startScale || 0;
+                                                const endScale = animation.endScale || 1;
+                                                const scale = startScale + (endScale - startScale) * easedProgress;
+                                                animScaleX = scaleX * scale;
+                                                animScaleY = scaleY * scale;
+                                                break;
+                                            case 'rotate':
+                                                const startRotate = animation.startRotate || 0;
+                                                const endRotate = animation.endRotate || 360;
+                                                animRotation = startRotate + (endRotate - startRotate) * easedProgress;
+                                                break;
+                                        }
+                                    }
+                                    
+                                    // originalCenterを取得
+                                    const originalCenter = layer.originalCenter || { 
+                                        x: svgData.viewBox.width / 2, 
+                                        y: svgData.viewBox.height / 2 
+                                    };
+                                    
+                                    // Fabric.jsの中心座標を計算
+                                    const centerX = animX + originalCenter.x * animScaleX;
+                                    const centerY = animY + originalCenter.y * animScaleY;
+                                    
+                                    // オブジェクトを設定
+                                    svgGroup.set({
+                                        left: centerX,
+                                        top: centerY,
+                                        originX: 'center',
+                                        originY: 'center',
+                                        scaleX: animScaleX * (flipH ? -1 : 1),
+                                        scaleY: animScaleY * (flipV ? -1 : 1),
+                                        angle: animRotation,
+                                        opacity: opacity,
+                                        selectable: false,
+                                        evented: false
+                                    });
+                                    
+                                    tempCanvas.add(svgGroup);
+                                    resolve();
+                                });
+                            });
                         }
-                        
-                        const finalScaleX = animScaleX * (flipH ? -1 : 1);
-                        const finalScaleY = animScaleY * (flipV ? -1 : 1);
-                        
-                        // 中心座標を計算
-                        const centerX = vbWidth / 2;
-                        const centerY = vbHeight / 2;
-                        
-                        // 左上基準の座標を中心基準に変換
-                        const centerPosX = animX + centerX * animScaleX;
-                        const centerPosY = animY + centerY * animScaleY;
-                        
-                        svg += `<g id="${layerId}" transform="translate(${centerPosX}, ${centerPosY})" style="opacity: ${opacity}">`;
-                        
-                        // 内側のグループ：回転、スケール、フリップを中心基準で適用
-                        let innerTransform = '';
-                        
-                        // 1. 回転を適用
-                        if (animRotation !== 0) {
-                            innerTransform += `rotate(${animRotation})`;
-                        }
-                        
-                        // 2. スケールとフリップを適用
-                        if (finalScaleX !== 1 || finalScaleY !== 1) {
-                            innerTransform += ` scale(${finalScaleX}, ${finalScaleY})`;
-                        }
-                        
-                        // 3. 中心から左上に戻す（SVG描画用）
-                        innerTransform += ` translate(${-centerX}, ${-centerY})`;
-                        
-                        svg += `<g transform="${innerTransform}">`;
-                        
-                        svg += `<svg viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">`;
-                        svg += svgData.content;
-                        svg += `</svg>`;
-                        
-                        svg += `</g>`;
-                        svg += `</g>`;
                     }
                 }
                 
-                svg += '</svg>';
-                return svg;
+                tempCanvas.renderAll();
+                
+                // CanvasをData URLとして返す
+                return tempCanvas.toDataURL({ format: 'png' });
             }
             
             // イージング関数
@@ -1421,12 +1518,9 @@ if ($artworkId) {
                     for (let frame = 0; frame < totalFrames; frame++) {
                         const progress = frame / Math.max(totalFrames - 1, 1);
                         
-                        // アニメーションフレームのSVGを生成
-                        const svgString = await generateAnimatedFrame(progress);
-                        
-                        // SVGをCanvasに変換
-                        const canvas = await svgToCanvas(svgString, width, height);
-                        images.push(canvas.toDataURL('image/png'));
+                        // アニメーションフレームのData URLを生成（Fabric.jsで直接生成）
+                        const dataUrl = await generateAnimatedFrame(progress);
+                        images.push(dataUrl);
                         
                         // 進行状況を表示
                         const percent = Math.round((frame / totalFrames) * 100);
@@ -1458,7 +1552,11 @@ if ($artworkId) {
                             document.getElementById('download-link').download = `animation_${artworkData.id}_${Date.now()}.gif`;
                             
                             resultArea.classList.add('active');
-                            previewArea.innerHTML = '<div id="preview-svg"></div>';
+                            previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
+                            
+                            // プレビューを再描画
+                            fabricCanvas = null;
+                            renderPreview();
                             renderPreview();
                             
                             // ボタンを有効化
@@ -1479,36 +1577,6 @@ if ($artworkId) {
                     generateBtn.disabled = false;
                     generateBtn.textContent = 'GIF生成';
                 }
-            }
-            
-            // SVGをCanvasに変換
-            async function svgToCanvas(svgString, width, height) {
-                return new Promise((resolve, reject) => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                    
-                    console.log('Canvas作成:', { width, height });
-                    
-                    const img = new Image();
-                    const blob = new Blob([svgString], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(blob);
-                    
-                    img.onload = function() {
-                        console.log('画像読み込み完了:', { imgWidth: img.width, imgHeight: img.height, canvasWidth: width, canvasHeight: height });
-                        ctx.drawImage(img, 0, 0, width, height);
-                        URL.revokeObjectURL(url);
-                        resolve(canvas);
-                    };
-                    
-                    img.onerror = function() {
-                        URL.revokeObjectURL(url);
-                        reject(new Error('SVG画像の読み込みに失敗しました'));
-                    };
-                    
-                    img.src = url;
-                });
             }
             
             // 結果をリセット
