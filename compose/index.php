@@ -1023,6 +1023,7 @@ foreach ($allMaterials as $material) {
                 <button class="primary-btn full-width" onclick="downloadImage()">PNG ダウンロード</button>
                 <button class="secondary-btn full-width" onclick="downloadSVG()" style="margin-top: 12px;">SVG ダウンロード</button>
                 <button class="primary-btn full-width" style="margin-top: 12px;" onclick="uploadArtwork()">作品を投稿</button>
+                <p style="margin-top: 8px; font-size: 0.8rem; color: #999; text-align: center; line-height: 1.4;">多くの人が投稿できるよう、作品の投稿は 1日1回まで となっています</p>
             </div>
         </div>
     </div>
@@ -1031,7 +1032,8 @@ foreach ($allMaterials as $material) {
     <div id="confirmModal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
             <h2 class="modal-title">作品を投稿しますか？</h2>
-            <p style="margin-bottom: 20px; color: #666;">すぐに公開されます</p>
+            <p style="margin-bottom: 8px; color: #666;">すぐに公開されます</p>
+            <p style="margin-bottom: 20px; font-size: 0.85rem; color: #999; line-height: 1.5;">多くの人が投稿できるよう、作品の投稿は 1日1回まで となっています</p>
             <div class="modal-buttons">
                 <button type="button" class="modal-btn secondary" onclick="hideConfirmModal()">キャンセル</button>
                 <button type="button" class="modal-btn primary" onclick="confirmUpload()">投稿する</button>
