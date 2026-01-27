@@ -697,6 +697,7 @@ if ($artworkId) {
                     <div class="action-buttons">
                         <button type="button" class="btn btn-success" onclick="generateGif()" id="generate-btn">GIF生成</button>
                     </div>
+
                 </form>
             </div>
             </div>
@@ -878,8 +879,21 @@ if ($artworkId) {
                 }
                 animations[layerId][property] = value;
                 
+                console.log('アニメーション設定更新:', layerId, property, value);
+                
                 // ローカルストレージに保存
                 saveToLocalStorage();
+                
+                // プレビューを更新（デバウンス処理）
+                if (window.previewUpdateTimer) {
+                    clearTimeout(window.previewUpdateTimer);
+                }
+                window.previewUpdateTimer = setTimeout(() => {
+                    console.log('プレビュー更新を実行');
+                    renderPreview().catch(error => {
+                        console.error('プレビュー更新エラー:', error);
+                    });
+                }, 100); // 100ms後に更新
             }
             
             // ローカルストレージに保存
@@ -1253,10 +1267,12 @@ if ($artworkId) {
                     container.style.width = (width * scale) + 'px';
                     container.style.height = (height * scale) + 'px';
                 } else {
+                    // 既存のオブジェクトをクリア
+                    fabricCanvas.clear();
+                    
                     // サイズと背景色を更新
                     fabricCanvas.setDimensions({ width: width, height: height });
-                    fabricCanvas.setBackgroundColor(bgColor);
-                    fabricCanvas.clear();
+                    fabricCanvas.setBackgroundColor(bgColor, fabricCanvas.renderAll.bind(fabricCanvas));
                     
                     // CSSでスケーリング
                     fabricCanvas.setDimensions(
@@ -1273,6 +1289,8 @@ if ($artworkId) {
                 // レイヤーを描画
                 for (let index = 0; index < layers.length; index++) {
                     const layer = layers[index];
+                    const layerId = `layer_${index}`;
+                    const animation = animations[layerId];
                     
                     // 素材IDからSVGコンテンツを取得
                     if (layer.materialId) {
@@ -1302,8 +1320,27 @@ if ($artworkId) {
                                     const flipV = transform.flipVertical !== undefined ? transform.flipVertical : false;
                                     
                                     // 位置を取得
-                                    const x = transform.x !== undefined ? transform.x : 0;
-                                    const y = transform.y !== undefined ? transform.y : 0;
+                                    let x = transform.x !== undefined ? transform.x : 0;
+                                    let y = transform.y !== undefined ? transform.y : 0;
+                                    
+                                    // アニメーション設定を適用（progress = 0の状態）
+                                    const finalX = x;
+                                    const finalY = y;
+                                    
+                                    if (animation && animation.type && animation.type !== 'none') {
+                                        const type = animation.type;
+                                        
+                                        // progress=0の状態での初期位置を計算
+                                        if (type === 'slideFromLeft') {
+                                            x -= width;
+                                        } else if (type === 'slideFromRight') {
+                                            x += width;
+                                        } else if (type === 'slideFromTop') {
+                                            y -= height;
+                                        } else if (type === 'slideFromBottom') {
+                                            y += height;
+                                        }
+                                    }
                                     
                                     // originalCenterを取得
                                     const originalCenter = layer.originalCenter || { 
@@ -1311,9 +1348,19 @@ if ($artworkId) {
                                         y: svgData.viewBox.height / 2 
                                     };
                                     
-                                    // Fabric.jsの中心座標を計算
+                                    // Fabric.jsの中心座標を計算（アニメーション初期位置）
                                     const centerX = x + originalCenter.x * scaleX;
                                     const centerY = y + originalCenter.y * scaleY;
+                                    
+                                    // 最終位置も計算
+                                    const finalCenterX = finalX + originalCenter.x * scaleX;
+                                    const finalCenterY = finalY + originalCenter.y * scaleY;
+                                    
+                                    // 初期不透明度の設定
+                                    let initialOpacity = 1;
+                                    if (animation && animation.type === 'fadeIn') {
+                                        initialOpacity = 0;
+                                    }
                                     
                                     // オブジェクトを設定
                                     svgGroup.set({
@@ -1324,9 +1371,21 @@ if ($artworkId) {
                                         scaleX: scaleX * (flipH ? -1 : 1),
                                         scaleY: scaleY * (flipV ? -1 : 1),
                                         angle: rotation,
+                                        opacity: initialOpacity,
                                         selectable: false,
                                         evented: false
                                     });
+                                    
+                                    // アニメーション情報を保存
+                                    svgGroup.animationInfo = {
+                                        layerId: layerId,
+                                        animation: animation,
+                                        finalLeft: finalCenterX,
+                                        finalTop: finalCenterY,
+                                        initialLeft: centerX,
+                                        initialTop: centerY,
+                                        initialOpacity: initialOpacity
+                                    };
                                     
                                     fabricCanvas.add(svgGroup);
                                     resolve();
@@ -1337,6 +1396,101 @@ if ($artworkId) {
                 }
                 
                 fabricCanvas.renderAll();
+                
+                // アニメーションを自動再生
+                setTimeout(() => {
+                    playPreviewAnimation();
+                }, 100);
+            }
+            
+            // プレビューキャンバスでアニメーションを再生
+            let animationLoopTimer = null;
+            
+            function playPreviewAnimation() {
+                if (!fabricCanvas) return;
+                
+                // 既存のループタイマーをクリア
+                if (animationLoopTimer) {
+                    clearTimeout(animationLoopTimer);
+                    animationLoopTimer = null;
+                }
+                
+                const objects = fabricCanvas.getObjects();
+                const animationDuration = ANIMATION_DURATION;
+                
+                // アニメーションを持つオブジェクトの数をカウント
+                let totalAnimations = 0;
+                objects.forEach(obj => {
+                    if (obj.animationInfo && obj.animationInfo.animation && 
+                        obj.animationInfo.animation.type && obj.animationInfo.animation.type !== 'none') {
+                        totalAnimations++;
+                    }
+                });
+                
+                if (totalAnimations === 0) return;
+                
+                // まず全オブジェクトを初期位置に配置
+                objects.forEach(obj => {
+                    if (obj.animationInfo) {
+                        const info = obj.animationInfo;
+                        obj.set({
+                            left: info.initialLeft,
+                            top: info.initialTop,
+                            opacity: info.initialOpacity
+                        });
+                    }
+                });
+                fabricCanvas.renderAll();
+                
+                // 最長の完了時間を計算（ループタイミング用）
+                let maxCompletionTime = 0;
+                
+                objects.forEach(obj => {
+                    if (!obj.animationInfo) return;
+                    
+                    const info = obj.animationInfo;
+                    const animation = info.animation;
+                    
+                    if (!animation || !animation.type || animation.type === 'none') return;
+                    
+                    const delay = animation.delay ? parseFloat(animation.delay) * 1000 : 0;
+                    const hold = animation.hold ? parseFloat(animation.hold) * 1000 : 0;
+                    const easing = animation.easing || 'linear';
+                    
+                    const completionTime = delay + animationDuration + hold;
+                    if (completionTime > maxCompletionTime) {
+                        maxCompletionTime = completionTime;
+                    }
+                    
+                    // Fabric.jsのイージング関数に変換
+                    let fabricEasing = fabric.util.ease['linear'];
+                    if (easing === 'easeIn') fabricEasing = fabric.util.ease['easeInQuad'];
+                    else if (easing === 'easeOut') fabricEasing = fabric.util.ease['easeOutQuad'];
+                    else if (easing === 'easeInOut') fabricEasing = fabric.util.ease['easeInOutQuad'];
+                    
+                    setTimeout(() => {
+                        const animateProps = {};
+                        
+                        if (animation.type === 'fadeIn') {
+                            animateProps.opacity = 1;
+                        } else if (animation.type === 'slideFromLeft' || animation.type === 'slideFromRight') {
+                            animateProps.left = info.finalLeft;
+                        } else if (animation.type === 'slideFromTop' || animation.type === 'slideFromBottom') {
+                            animateProps.top = info.finalTop;
+                        }
+                        
+                        obj.animate(animateProps, {
+                            duration: animationDuration,
+                            easing: fabricEasing,
+                            onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                        });
+                    }, delay);
+                });
+                
+                // 全アニメーション完了後にループ
+                animationLoopTimer = setTimeout(() => {
+                    playPreviewAnimation();
+                }, maxCompletionTime + 100); // 100ms余裕を持たせる
             }
             
             // アニメーションフレームを生成（Fabric.jsを使用）
