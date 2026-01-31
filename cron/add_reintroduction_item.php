@@ -6,14 +6,14 @@ if (file_exists(__DIR__ . '/../includes/openai.php')) {
     require_once __DIR__ . '/../includes/openai.php';
 }
 
-// 偶数時間のみ実行（0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22時）
+// 12時間ごとに実行（0時と12時のみ）
 $currentHour = (int)date('G');
-if ($currentHour % 2 !== 0) {
-    echo "現在は奇数時間（{$currentHour}時）です。偶数時間のみ実行します。\n";
+if ($currentHour !== 0 && $currentHour !== 12) {
+    echo "現在は{$currentHour}時です。0時または12時のみ実行します。\n";
     exit(0);
 }
 
-echo "偶数時間（{$currentHour}時）を確認。処理を開始します。\n";
+echo "実行時間（{$currentHour}時）を確認。処理を開始します。\n";
 
 $pdo = getDB();
 
