@@ -1204,8 +1204,9 @@ foreach ($allMaterials as $material) {
                     
                     let loadedCount = 0;
                     const totalCount = sortedObjects.length;
+                    const loadedObjects = []; // 読み込んだオブジェクトを順序通りに格納
                     
-                    sortedObjects.forEach(objData => {
+                    sortedObjects.forEach((objData, index) => {
                         // svgPathの取得（複数の形式に対応）
                         let svgPath = null;
                         if (objData.materialData && objData.materialData.svg_path) {
@@ -1333,17 +1334,21 @@ foreach ($allMaterials as $material) {
                                             });
                                         }
                                         
-                                        canvas.add(obj);
-                                        
-                                        canvas.renderAll();
-                                        
-                                        // 全てのオブジェクトが読み込まれたら再度フィット
+                                        // 読み込んだオブジェクトを配列に格納（順序を保持）
+                                        loadedObjects[index] = obj;
                                         loadedCount++;
+                                        
+                                        // 全てのオブジェクトが読み込まれたら、順序通りにキャンバスに追加
                                         if (loadedCount === totalCount) {
                                             setTimeout(() => {
-                                                // 既にzIndex順でaddされているため、再ソート不要
-                                                fitCanvasToContainer();
+                                                // 順序通りにキャンバスに追加
+                                                loadedObjects.forEach(loadedObj => {
+                                                    if (loadedObj) {
+                                                        canvas.add(loadedObj);
+                                                    }
+                                                });
                                                 canvas.renderAll();
+                                                fitCanvasToContainer();
                                                 updateLayerList();
                                                 console.log('全ての素材を復元しました');
                                             }, 100);
@@ -1352,11 +1357,18 @@ foreach ($allMaterials as $material) {
                                 })
                                 .catch(error => {
                                     console.error('素材復元エラー:', error);
+                                    loadedObjects[index] = null; // エラーの場合はnullを格納
                                     loadedCount++;
                                     if (loadedCount === totalCount) {
                                         setTimeout(() => {
-                                            fitCanvasToContainer();
+                                            // 順序通りにキャンバスに追加（null以外）
+                                            loadedObjects.forEach(loadedObj => {
+                                                if (loadedObj) {
+                                                    canvas.add(loadedObj);
+                                                }
+                                            });
                                             canvas.renderAll();
+                                            fitCanvasToContainer();
                                             updateLayerList();
                                         }, 100);
                                     }
