@@ -945,7 +945,7 @@ foreach ($allMaterials as $material) {
                      data-title="<?= h(strtolower($material['title'])) ?>"
                      data-search-keywords="<?= h(strtolower($material['search_keywords'] ?? '')) ?>"
                      style="background-color: <?= h($material['structured_bg_color'] ?? '#ffffff') ?>"
-                     onclick='addMaterial(<?= json_encode($material) ?>)'>
+                     onclick='addMaterial(<?= json_encode($material, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
                     <img src="/<?= h($material['webp_small_path']) ?>" 
                          alt="<?= h($material['title']) ?>"
                          loading="lazy">
@@ -2704,8 +2704,8 @@ foreach ($allMaterials as $material) {
                 .filter(term => term.trim() !== '');  // 空文字を除外
             
             items.forEach(item => {
-                const title = item.dataset.title;
-                const searchKeywords = item.dataset.searchKeywords || '';
+                const title = (item.dataset.title || '').toLowerCase();
+                const searchKeywords = (item.dataset.searchKeywords || '').toLowerCase();
                 
                 // 検索語が空の場合は全て表示
                 if (searchTerms.length === 0) {
