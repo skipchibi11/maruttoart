@@ -62,7 +62,7 @@ if ($customizeArtworkId) {
 
 // ベクター素材をカテゴリ別に取得
 $materialsSql = "
-    SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, c.title as category_name, c.slug as category_slug
+    SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, m.search_keywords, c.title as category_name, c.slug as category_slug
     FROM materials m
     LEFT JOIN categories c ON m.category_id = c.id
     WHERE m.svg_path IS NOT NULL AND m.svg_path != ''
@@ -943,6 +943,7 @@ foreach ($allMaterials as $material) {
                 <div class="material-item" 
                      data-category="<?= h($material['category_name'] ?? '未分類') ?>"
                      data-title="<?= h(strtolower($material['title'])) ?>"
+                     data-search-keywords="<?= h(strtolower($material['search_keywords'] ?? '')) ?>"
                      style="background-color: <?= h($material['structured_bg_color'] ?? '#ffffff') ?>"
                      onclick='addMaterial(<?= json_encode($material) ?>)'>
                     <img src="/<?= h($material['webp_small_path']) ?>" 
@@ -2693,12 +2694,31 @@ foreach ($allMaterials as $material) {
 
         // 素材検索
         document.getElementById('materialSearch').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
+            const searchInput = e.target.value.toLowerCase();
             const items = document.querySelectorAll('.material-item');
+            
+            // 全角スペースを半角スペースに統一してOR検索用のキーワード配列を作成
+            const searchTerms = searchInput
+                .replace(/　/g, ' ')  // 全角スペースを半角スペースに変換
+                .split(' ')           // スペースで分割
+                .filter(term => term.trim() !== '');  // 空文字を除外
             
             items.forEach(item => {
                 const title = item.dataset.title;
-                if (title.includes(searchTerm)) {
+                const searchKeywords = item.dataset.searchKeywords || '';
+                
+                // 検索語が空の場合は全て表示
+                if (searchTerms.length === 0) {
+                    item.style.display = 'flex';
+                    return;
+                }
+                
+                // いずれかのキーワードがタイトルまたはsearch_keywordsに含まれていればOR検索で表示
+                const matchFound = searchTerms.some(term => 
+                    title.includes(term) || searchKeywords.includes(term)
+                );
+                
+                if (matchFound) {
                     item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
