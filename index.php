@@ -37,8 +37,13 @@ $floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
 $floatingMaterialsStmt->execute();
 $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
-// 最新のカレンダーアイテム（GIF付き）を3件取得
-$calendarSql = "SELECT * FROM calendar_items WHERE is_published = 1 AND gif_path IS NOT NULL ORDER BY year DESC, month DESC, day DESC LIMIT 3";
+// 最新のカレンダーアイテム（GIF付き、当日以前）を3件取得
+$calendarSql = "SELECT * FROM calendar_items 
+                WHERE is_published = 1 
+                AND gif_path IS NOT NULL 
+                AND CONCAT(year, '-', LPAD(month, 2, '0'), '-', LPAD(day, 2, '0')) <= CURDATE()
+                ORDER BY year DESC, month DESC, day DESC 
+                LIMIT 3";
 $calendarStmt = $pdo->prepare($calendarSql);
 $calendarStmt->execute();
 $latestCalendarItems = $calendarStmt->fetchAll();
