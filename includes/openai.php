@@ -179,4 +179,285 @@ function generateMaterialInfo($title, $imagePath) {
 
     return $materialInfo;
 }
+
+/**
+ * OpenAI Vision APIを使用してカレンダーアイテムのタイトルと説明文を生成
+ * @param string $imagePath 画像のパス
+ * @param string $userHint ユーザーが入力した簡単な説明（オプション）
+ */
+function generateCalendarContent($imagePath, $userHint = '') {
+    $config = getOpenAIConfig();
+    
+    if (empty($config['api_key'])) {
+        throw new Exception('OpenAI APIキーが設定されていません');
+    }
+    
+    // 画像をBase64エンコード
+    if (!file_exists($imagePath)) {
+        throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
+    }
+    
+    $imageSize = filesize($imagePath);
+    if ($imageSize > 20 * 1024 * 1024) { // 20MB制限
+        throw new Exception('画像ファイルが大きすぎます (制限: 20MB)');
+    }
+    
+    $imageData = base64_encode(file_get_contents($imagePath));
+    $mimeType = mime_content_type($imagePath);
+
+    // ユーザーヒントがある場合はプロンプトに含める
+    $hintText = '';
+    if (!empty($userHint)) {
+        $hintText = "\n【ユーザーからの簡単な説明】\n「{$userHint}」\n\nこの説明と画像をもとに、より魅力的なタイトルと詩的な説明文を作成してください。\n";
+    }
+
+    // プロンプトの作成
+    $prompt = "あなたは優しくて詩的な文章を書くクリエイターです。
+{$hintText}
+与えられた画像から、タイトルと説明文を生成してください。
+
+【タイトルの書き方】
+- 15文字以内
+- シンプルで優しい表現
+- 例：「りんごとペンギン」「小さな達成感」「できたよの瞬間」
+
+【説明文のスタイル例】
+りんごの木のそばで、
+ペンギンは赤いりんごをひとつ抱えています。
+
+背伸びをして、
+少しだけがんばって、
+やっと手に届いた、ひとつのりんご。
+
+たくさんではないけれど、
+今日はこれで十分。
+胸の前にそっと抱えるその姿は、
+小さな達成感に満ちています。
+
+大きな成功ではなく、
+静かにうれしい出来事。
+
+日常の中にある、
+「できたよ」という瞬間を感じてもらえたら嬉しいです
+
+【説明文の書き方のガイドライン】
+- 短い行で区切り、詩的な雰囲気に
+- 優しく、温かみのある表現を使う
+- 小さな幸せや、日常の中の特別な瞬間を描く
+- 最後は読者への優しいメッセージで締める
+- 150〜250文字程度
+- 子供から大人まで楽しめる内容
+
+以下のJSON形式で出力してください：
+{
+  \"title\": \"タイトル\",
+  \"description\": \"説明文\"
+}";
+
+    $data = [
+        'model' => $config['model'],
+        'messages' => [
+            [
+                'role' => 'user',
+                'content' => [
+                    [
+                        'type' => 'text',
+                        'text' => $prompt
+                    ],
+                    [
+                        'type' => 'image_url',
+                        'image_url' => [
+                            'url' => "data:{$mimeType};base64,{$imageData}"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'max_tokens' => 600,
+        'temperature' => 0.7 // より創造的に
+    ];
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://api.openai.com/v1/chat/completions',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $config['api_key']
+        ],
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_SSL_VERIFYPEER => true
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        throw new Exception("OpenAI API通信エラー: {$error}");
+    }
+
+    if ($httpCode !== 200) {
+        $errorDetails = '';
+        if ($response) {
+            $errorResponse = json_decode($response, true);
+            if ($errorResponse && isset($errorResponse['error'])) {
+                $errorDetails = ': ' . ($errorResponse['error']['message'] ?? 'Unknown error');
+            }
+        }
+        throw new Exception("OpenAI APIエラー: HTTP {$httpCode}{$errorDetails}");
+    }
+
+    $result = json_decode($response, true);
+    
+    if (!$result || !isset($result['choices'][0]['message']['content'])) {
+        throw new Exception('OpenAI APIから無効な応答を受信しました');
+    }
+
+    $content = trim($result['choices'][0]['message']['content']);
+    
+    // JSONデータを抽出（マークダウンのコードブロックを除去）
+    $content = preg_replace('/```json\s*|\s*```/', '', $content);
+    $content = trim($content);
+    
+    $calendarContent = json_decode($content, true);
+    
+    if (!$calendarContent || !isset($calendarContent['title']) || !isset($calendarContent['description'])) {
+        throw new Exception('生成されたJSONが無効です');
+    }
+    
+    // タイトルと説明文の前後の空白を削除
+    $calendarContent['title'] = trim($calendarContent['title']);
+    $calendarContent['description'] = trim($calendarContent['description']);
+    
+    return $calendarContent;
+}
+
+/**
+ * OpenAI Vision APIを使用してカレンダーアイテムの説明文を生成（後方互換性のため残す）
+ */
+function generateCalendarDescription($title, $imagePath) {
+    $config = getOpenAIConfig();
+    
+    if (empty($config['api_key'])) {
+        throw new Exception('OpenAI APIキーが設定されていません');
+    }
+    
+    // 画像をBase64エンコード
+    if (!file_exists($imagePath)) {
+        throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
+    }
+    
+    $imageSize = filesize($imagePath);
+    if ($imageSize > 20 * 1024 * 1024) { // 20MB制限
+        throw new Exception('画像ファイルが大きすぎます (制限: 20MB)');
+    }
+    
+    $imageData = base64_encode(file_get_contents($imagePath));
+    $mimeType = mime_content_type($imagePath);
+
+    // プロンプトの作成
+    $prompt = "あなたは優しくて詩的な文章を書くクリエイターです。
+
+与えられた画像とタイトル「{$title}」から、心温まる説明文を生成してください。
+
+【スタイルの例】
+りんごの木のそばで、
+ペンギンは赤いりんごをひとつ抱えています。
+
+背伸びをして、
+少しだけがんばって、
+やっと手に届いた、ひとつのりんご。
+
+たくさんではないけれど、
+今日はこれで十分。
+胸の前にそっと抱えるその姿は、
+小さな達成感に満ちています。
+
+大きな成功ではなく、
+静かにうれしい出来事。
+
+日常の中にある、
+「できたよ」という瞬間を感じてもらえたら嬉しいです
+
+【書き方のガイドライン】
+- 短い行で区切り、詩的な雰囲気に
+- 優しく、温かみのある表現を使う
+- 小さな幸せや、日常の中の特別な瞬間を描く
+- 最後は読者への優しいメッセージで締める
+- 150〜250文字程度
+- 子供から大人まで楽しめる内容
+
+説明文のみを出力してください（JSON形式は不要）。";
+
+    $data = [
+        'model' => $config['model'],
+        'messages' => [
+            [
+                'role' => 'user',
+                'content' => [
+                    [
+                        'type' => 'text',
+                        'text' => $prompt
+                    ],
+                    [
+                        'type' => 'image_url',
+                        'image_url' => [
+                            'url' => "data:{$mimeType};base64,{$imageData}"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'max_tokens' => 500,
+        'temperature' => 0.7 // より創造的に
+    ];
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://api.openai.com/v1/chat/completions',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $config['api_key']
+        ],
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_SSL_VERIFYPEER => true
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        throw new Exception("OpenAI API通信エラー: {$error}");
+    }
+
+    if ($httpCode !== 200) {
+        $errorDetails = '';
+        if ($response) {
+            $errorResponse = json_decode($response, true);
+            if ($errorResponse && isset($errorResponse['error'])) {
+                $errorDetails = ': ' . ($errorResponse['error']['message'] ?? 'Unknown error');
+            }
+        }
+        throw new Exception("OpenAI APIエラー: HTTP {$httpCode}{$errorDetails}");
+    }
+
+    $result = json_decode($response, true);
+    
+    if (!$result || !isset($result['choices'][0]['message']['content'])) {
+        throw new Exception('OpenAI APIから無効な応答を受信しました');
+    }
+
+    $description = trim($result['choices'][0]['message']['content']);
+    
+    return $description;
+}
 ?>

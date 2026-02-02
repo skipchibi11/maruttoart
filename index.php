@@ -36,6 +36,12 @@ $floatingMaterialsSql = "SELECT m.webp_small_path as image_path, m.structured_bg
 $floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
 $floatingMaterialsStmt->execute();
 $floatingMaterials = $floatingMaterialsStmt->fetchAll();
+
+// 最新のカレンダーアイテム（GIF付き）を3件取得
+$calendarSql = "SELECT * FROM calendar_items WHERE is_published = 1 AND gif_path IS NOT NULL ORDER BY year DESC, month DESC, day DESC LIMIT 3";
+$calendarStmt = $pdo->prepare($calendarSql);
+$calendarStmt->execute();
+$latestCalendarItems = $calendarStmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -391,6 +397,86 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             gap: 100px;
             flex-wrap: wrap;
             margin: 60px 0;
+        }
+
+        /* カレンダーセクション */
+        .calendar-section {
+            max-width: 1200px;
+            margin: 80px auto 60px auto;
+            padding: 60px 40px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+        }
+
+        .calendar-section-title {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+            letter-spacing: 0.1em;
+        }
+
+        .calendar-items-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .calendar-item {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.3s;
+        }
+
+        .calendar-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .calendar-item-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 12px;
+        }
+
+        .calendar-item-date {
+            font-size: 0.85rem;
+            color: rgba(90, 74, 66, 0.6);
+            margin-bottom: 5px;
+        }
+
+        .calendar-item-title {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        .calendar-button {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            padding: 15px 40px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .calendar-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .calendar-items-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* スクロールアニメーション */
@@ -829,6 +915,27 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             </div>
         </div>
     </div>
+
+    <!-- カレンダーセクション -->
+    <?php if (!empty($latestCalendarItems)): ?>
+    <section class="calendar-section">
+        <h2 class="calendar-section-title">MARUTTO.ART CALENDAR</h2>
+        <div class="calendar-items-grid">
+            <?php foreach ($latestCalendarItems as $calendarItem): ?>
+                <a href="/calendar-detail/?year=<?= h($calendarItem['year']) ?>&month=<?= h($calendarItem['month']) ?>&day=<?= h($calendarItem['day']) ?>" class="calendar-item">
+                    <img src="/<?= h($calendarItem['gif_path']) ?>" 
+                         alt="<?= h($calendarItem['title']) ?>" 
+                         class="calendar-item-image">
+                    <div class="calendar-item-date">
+                        <?= h($calendarItem['year']) ?>.<?= sprintf('%02d', $calendarItem['month']) ?>.<?= sprintf('%02d', $calendarItem['day']) ?>
+                    </div>
+                    <div class="calendar-item-title"><?= h($calendarItem['title']) ?></div>
+                </a>
+            <?php endforeach; ?>
+        </div>
+        <a href="/calendar/" class="calendar-button">View Calendar →</a>
+    </section>
+    <?php endif; ?>
 
     <?php include 'includes/footer.php'; ?>
 

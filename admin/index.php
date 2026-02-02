@@ -128,6 +128,11 @@ function buildPagingUrl($page, $per_page, $search_query, $search_category) {
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/calendar.php">
+                                <i class="bi bi-calendar3"></i> カレンダー管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/admin/analytics.php">
                                 <i class="bi bi-graph-up"></i> アクセス分析
                             </a>

@@ -105,6 +105,152 @@ function h($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
+// サムネイル生成関数（カレンダー用 - PNGはWebPに圧縮）
+function createThumbnail($sourcePath, $destPath, $maxWidth, $maxHeight) {
+    $info = getimagesize($sourcePath);
+    if (!$info) {
+        return false;
+    }
+    
+    switch ($info['mime']) {
+        case 'image/jpeg':
+            $sourceImage = imagecreatefromjpeg($sourcePath);
+            break;
+        case 'image/png':
+            $sourceImage = imagecreatefrompng($sourcePath);
+            break;
+        case 'image/webp':
+            $sourceImage = imagecreatefromwebp($sourcePath);
+            break;
+        default:
+            return false;
+    }
+    
+    if ($sourceImage === false) {
+        return false;
+    }
+    
+    $originalWidth = imagesx($sourceImage);
+    $originalHeight = imagesy($sourceImage);
+    
+    // アスペクト比を保ちながらリサイズ
+    $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+    $newWidth = (int)($originalWidth * $ratio);
+    $newHeight = (int)($originalHeight * $ratio);
+    
+    // 新しい画像を作成
+    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+    
+    // PNG/WebPの透明度を保持
+    if ($info['mime'] === 'image/png' || $info['mime'] === 'image/webp') {
+        imagealphablending($newImage, false);
+        imagesavealpha($newImage, true);
+        $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
+        imagefill($newImage, 0, 0, $transparent);
+    }
+    
+    // 画像をリサイズしてコピー
+    imagecopyresampled(
+        $newImage, $sourceImage,
+        0, 0, 0, 0,
+        $newWidth, $newHeight, $originalWidth, $originalHeight
+    );
+    
+    // PNGの場合はWebPに圧縮、それ以外は元の形式で保存
+    $result = false;
+    if ($info['mime'] === 'image/png') {
+        // PNGをWebPに変換
+        $result = imagewebp($newImage, $destPath, 85);
+    } else {
+        // JPEG、WebPは元の形式で保存
+        $extension = strtolower(pathinfo($destPath, PATHINFO_EXTENSION));
+        switch ($extension) {
+            case 'jpg':
+            case 'jpeg':
+                $result = imagejpeg($newImage, $destPath, 85);
+                break;
+            case 'webp':
+                $result = imagewebp($newImage, $destPath, 85);
+                break;
+        }
+    }
+    
+    // メモリを解放
+    imagedestroy($sourceImage);
+    imagedestroy($newImage);
+    
+    return $result;
+}
+
+// GIFサムネイル生成関数（GIFのままサイズのみ縮小）
+function createGifThumbnail($sourcePath, $destPath, $maxWidth, $maxHeight) {
+    // ImageMagickまたはGDでGIFをリサイズ
+    // ImageMagickが利用可能な場合
+    if (class_exists('Imagick')) {
+        try {
+            $imagick = new Imagick($sourcePath);
+            $imagick = $imagick->coalesceImages();
+            
+            foreach ($imagick as $frame) {
+                $frame->thumbnailImage($maxWidth, $maxHeight, true);
+                $frame->setImagePage(0, 0, 0, 0);
+            }
+            
+            $imagick = $imagick->deconstructImages();
+            $imagick->writeImages($destPath, true);
+            $imagick->clear();
+            $imagick->destroy();
+            
+            return true;
+        } catch (Exception $e) {
+            error_log('Imagick GIF resize error: ' . $e->getMessage());
+            // Imagick失敗時はGDにフォールバック
+        }
+    }
+    
+    // GDでGIFの最初のフレームのみをリサイズ（アニメーション非対応）
+    $sourceImage = imagecreatefromgif($sourcePath);
+    if ($sourceImage === false) {
+        return false;
+    }
+    
+    $originalWidth = imagesx($sourceImage);
+    $originalHeight = imagesy($sourceImage);
+    
+    // アスペクト比を保ちながらリサイズ
+    $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+    $newWidth = (int)($originalWidth * $ratio);
+    $newHeight = (int)($originalHeight * $ratio);
+    
+    // 新しい画像を作成
+    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+    
+    // 透明度を保持
+    $transparentIndex = imagecolortransparent($sourceImage);
+    if ($transparentIndex >= 0) {
+        $transparentColor = imagecolorsforindex($sourceImage, $transparentIndex);
+        $newTransparentIndex = imagecolorallocate($newImage, $transparentColor['red'], $transparentColor['green'], $transparentColor['blue']);
+        imagefill($newImage, 0, 0, $newTransparentIndex);
+        imagecolortransparent($newImage, $newTransparentIndex);
+    }
+    
+    // 画像をリサイズしてコピー
+    imagecopyresampled(
+        $newImage, $sourceImage,
+        0, 0, 0, 0,
+        $newWidth, $newHeight, $originalWidth, $originalHeight
+    );
+    
+    // GIFとして保存
+    $result = imagegif($newImage, $destPath);
+    
+    // メモリを解放
+    imagedestroy($sourceImage);
+    imagedestroy($newImage);
+    
+    return $result;
+}
+
 // ファイルアップロード関数（セキュリティ強化版）
 function uploadImage($file, $slug, $createdAt = null) {
     // セキュリティチェック

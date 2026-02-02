@@ -1473,10 +1473,39 @@ if ($artworkId) {
                         
                         if (animation.type === 'fadeIn') {
                             animateProps.opacity = 1;
+                        } else if (animation.type === 'fadeOut') {
+                            animateProps.opacity = 0;
                         } else if (animation.type === 'slideFromLeft' || animation.type === 'slideFromRight') {
                             animateProps.left = info.finalLeft;
                         } else if (animation.type === 'slideFromTop' || animation.type === 'slideFromBottom') {
                             animateProps.top = info.finalTop;
+                        } else if (animation.type === 'scale') {
+                            const startScale = animation.startScale || 0;
+                            const endScale = animation.endScale || 1;
+                            const currentScaleX = obj.scaleX;
+                            const currentScaleY = obj.scaleY;
+                            const flipX = currentScaleX < 0 ? -1 : 1;
+                            const flipY = currentScaleY < 0 ? -1 : 1;
+                            
+                            // 初期スケールを設定（アニメーション開始前）
+                            obj.set({
+                                scaleX: Math.abs(currentScaleX) * startScale * flipX,
+                                scaleY: Math.abs(currentScaleY) * startScale * flipY
+                            });
+                            
+                            animateProps.scaleX = Math.abs(currentScaleX) * endScale * flipX;
+                            animateProps.scaleY = Math.abs(currentScaleY) * endScale * flipY;
+                        } else if (animation.type === 'rotate') {
+                            const startRotate = animation.startRotate || 0;
+                            const endRotate = animation.endRotate || 360;
+                            const currentAngle = obj.angle || 0;
+                            
+                            // 初期角度を設定（アニメーション開始前）
+                            obj.set({
+                                angle: currentAngle + startRotate
+                            });
+                            
+                            animateProps.angle = currentAngle + endRotate;
                         }
                         
                         obj.animate(animateProps, {
@@ -1602,7 +1631,8 @@ if ($artworkId) {
                                             case 'rotate':
                                                 const startRotate = animation.startRotate || 0;
                                                 const endRotate = animation.endRotate || 360;
-                                                animRotation = startRotate + (endRotate - startRotate) * easedProgress;
+                                                const rotateAmount = startRotate + (endRotate - startRotate) * easedProgress;
+                                                animRotation = rotation + rotateAmount;
                                                 break;
                                         }
                                     }
