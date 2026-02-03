@@ -142,8 +142,7 @@ $items = $stmt->fetchAll();
                                     </td>
                                     <td><?= h($item['year']) ?>年<?= h($item['month']) ?>月<?= h($item['day']) ?>日</td>
                                     <td>
-                                        <strong><?= h($item['title']) ?></strong><br>
-                                        <small class="text-muted"><?= h($item['slug']) ?></small>
+                                        <strong><?= h($item['title']) ?></strong>
                                     </td>
                                     <td>
                                         <?php if ($item['gif_path']): ?>

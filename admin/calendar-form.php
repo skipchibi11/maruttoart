@@ -28,33 +28,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyCSRFToken($_POST['csrf_token'])) {
         $error = 'CSRFトークンが無効です。';
     } else {
-        $data = [
-            'year' => (int)$_POST['year'],
-            'month' => (int)$_POST['month'],
-            'day' => (int)$_POST['day'],
-            'title' => trim($_POST['title'] ?? ''),
-            'description' => trim($_POST['description'] ?? ''),
-            'is_published' => isset($_POST['is_published']) ? 1 : 0
-        ];
+        // 日付ピッカーの値を年月日に分割
+        $calendarDate = $_POST['calendar_date'] ?? '';
+        if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $calendarDate, $matches)) {
+            $inputYear = (int)$matches[1];
+            $inputMonth = (int)$matches[2];
+            $inputDay = (int)$matches[3];
+        } else {
+            $error = '日付の形式が正しくありません。';
+        }
         
-        // 画像アップロード処理
-        $uploadedImagePath = $isEdit ? $item['image_path'] : null;
-        $uploadedThumbnailPath = $isEdit ? $item['thumbnail_path'] : null;
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        if (!isset($error)) {
+            $data = [
+                'year' => $inputYear,
+                'month' => $inputMonth,
+                'day' => $inputDay,
+                'title' => trim($_POST['title'] ?? ''),
+                'description' => trim($_POST['description'] ?? ''),
+                'is_published' => isset($_POST['is_published']) ? 1 : 0
+            ];
+            
+            // AI自動設定フラグ
+            $autoDate = isset($_POST['auto_date']);
+        
+            // 画像アップロード処理
+            $uploadedImagePath = $isEdit ? $item['image_path'] : null;
+            $uploadedThumbnailPath = $isEdit ? $item['thumbnail_path'] : null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             try {
-                // 年月フォルダ構造を作成
-                $yearMonthDir = sprintf('%04d/%02d', $data['year'], $data['month']);
-                $uploadDir = '../uploads/calendar/' . $yearMonthDir . '/';
-                if (!file_exists($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                
                 $fileInfo = pathinfo($_FILES['image']['name']);
                 $extension = strtolower($fileInfo['extension']);
                 $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
                 
                 if (!in_array($extension, $allowedExtensions)) {
                     throw new Exception('画像ファイル（JPG、PNG、WebP）のみアップロード可能です。');
+                }
+                
+                // 一時的に画像を保存してAI分析用に使用
+                $tempPath = '../uploads/calendar/temp_' . time() . '.' . $extension;
+                if (!move_uploaded_file($_FILES['image']['tmp_name'], $tempPath)) {
+                    throw new Exception('ファイルのアップロードに失敗しました。');
+                }
+                
+                // 新規作成でAI自動設定がONの場合、AIで適切な月日を提案
+                if (!$isEdit && $autoDate && function_exists('suggestCalendarDate')) {
+                    try {
+                        $dateInfo = suggestCalendarDate($tempPath);
+                        
+                        // 提案された月日から空いている日を検索
+                        if (function_exists('findAvailableDate')) {
+                            $availableDate = findAvailableDate($pdo, $dateInfo['month'], $dateInfo['day']);
+                            $data['year'] = $availableDate['year'];
+                            $data['month'] = $availableDate['month'];
+                            $data['day'] = $availableDate['day'];
+                        }
+                    } catch (Exception $e) {
+                        error_log('AI日付提案エラー: ' . $e->getMessage());
+                        // 日付提案に失敗してもフォームの値を使用
+                    }
+                }
+                
+                // 年月フォルダ構造を作成（AI提案後の日付を使用）
+                $yearMonthDir = sprintf('%04d/%02d', $data['year'], $data['month']);
+                $uploadDir = '../uploads/calendar/' . $yearMonthDir . '/';
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
                 }
                 
                 // 古い画像を削除
@@ -69,7 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fileName = $dateSlug . '_' . time() . '.' . $extension;
                 $filePath = $uploadDir . $fileName;
                 
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $filePath)) {
+                // 一時ファイルを最終的な場所に移動
+                if (rename($tempPath, $filePath)) {
                     $uploadedImagePath = 'uploads/calendar/' . $yearMonthDir . '/' . $fileName;
                     
                     // サムネイル生成（300x300px）- PNGの場合はWebPに変換
@@ -80,10 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $uploadedThumbnailPath = 'uploads/calendar/' . $yearMonthDir . '/' . $thumbnailFileName;
                     }
                     
-                    // 新規作成で画像がアップロードされた場合、AIで生成
+                    // 新規作成で画像がアップロードされた場合、AIでタイトルと説明文を生成
                     if (!$isEdit && function_exists('generateCalendarContent')) {
                         try {
-                            // タイトル欄の内容を簡単な説明として使用
                             $userHint = !empty($data['title']) ? $data['title'] : '';
                             $generatedContent = generateCalendarContent($filePath, $userHint);
                             
@@ -96,16 +134,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                 } else {
-                    throw new Exception('ファイルのアップロードに失敗しました。');
+                    // 一時ファイルを削除
+                    if (file_exists($tempPath)) {
+                        unlink($tempPath);
+                    }
+                    throw new Exception('ファイルの移動に失敗しました。');
                 }
             } catch (Exception $e) {
                 $error = $e->getMessage();
             }
         }
         
-        // GIFアップロード処理
-        $uploadedGifPath = $isEdit ? $item['gif_path'] : null;
-        if (isset($_FILES['gif']) && $_FILES['gif']['error'] === UPLOAD_ERR_OK) {
+            // GIFアップロード処理
+            $uploadedGifPath = $isEdit ? $item['gif_path'] : null;
+            if (isset($_FILES['gif']) && $_FILES['gif']['error'] === UPLOAD_ERR_OK) {
             try {
                 // 年月フォルダ構造を作成
                 $yearMonthDir = sprintf('%04d/%02d', $data['year'], $data['month']);
@@ -140,38 +182,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        $data['image_path'] = $uploadedImagePath;
-        $data['thumbnail_path'] = $uploadedThumbnailPath;
-        $data['gif_path'] = $uploadedGifPath;
+            $data['image_path'] = $uploadedImagePath;
+            $data['thumbnail_path'] = $uploadedThumbnailPath;
+            $data['gif_path'] = $uploadedGifPath;
         
-        if (!isset($error)) {
-            try {
-                if ($isEdit) {
-                    $sql = "UPDATE calendar_items SET 
-                            year = ?, month = ?, day = ?, title = ?, description = ?, 
-                            image_path = ?, thumbnail_path = ?, gif_path = ?, is_published = ?
-                            WHERE id = ?";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([
-                        $data['year'], $data['month'], $data['day'], $data['title'], $data['description'],
-                        $data['image_path'], $data['thumbnail_path'], $data['gif_path'], $data['is_published'],
-                        $item['id']
-                    ]);
-                    header('Location: calendar.php?success=updated');
-                    exit;
-                } else {
-                    $sql = "INSERT INTO calendar_items (year, month, day, title, description, image_path, thumbnail_path, gif_path, is_published) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute([
-                        $data['year'], $data['month'], $data['day'], $data['title'], $data['description'],
-                        $data['image_path'], $data['thumbnail_path'], $data['gif_path'], $data['is_published']
-                    ]);
-                    header('Location: calendar.php?success=created');
-                    exit;
+            if (!isset($error)) {
+                try {
+                    if ($isEdit) {
+                        $sql = "UPDATE calendar_items SET 
+                                year = ?, month = ?, day = ?, title = ?, description = ?, 
+                                image_path = ?, thumbnail_path = ?, gif_path = ?, is_published = ?
+                                WHERE id = ?";
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute([
+                            $data['year'], $data['month'], $data['day'], $data['title'], $data['description'],
+                            $data['image_path'], $data['thumbnail_path'], $data['gif_path'], $data['is_published'],
+                            $item['id']
+                        ]);
+                        header('Location: calendar.php?success=updated');
+                        exit;
+                    } else {
+                        $sql = "INSERT INTO calendar_items (year, month, day, title, description, image_path, thumbnail_path, gif_path, is_published) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute([
+                            $data['year'], $data['month'], $data['day'], $data['title'], $data['description'],
+                            $data['image_path'], $data['thumbnail_path'], $data['gif_path'], $data['is_published']
+                        ]);
+                        header('Location: calendar.php?success=created');
+                        exit;
+                    }
+                } catch (Exception $e) {
+                    $error = $e->getMessage();
                 }
-            } catch (Exception $e) {
-                $error = $e->getMessage();
             }
         }
     }
@@ -234,30 +277,20 @@ $currentDay = $item['day'] ?? date('j');
                         <form method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
 
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">年 <span class="text-danger">*</span></label>
-                                    <input type="number" name="year" class="form-control" 
-                                           value="<?= h($currentYear) ?>" required min="2000" max="2100">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">月 <span class="text-danger">*</span></label>
-                                    <select name="month" class="form-select" required>
-                                        <?php for ($m = 1; $m <= 12; $m++): ?>
-                                            <option value="<?= $m ?>" <?= $currentMonth == $m ? 'selected' : '' ?>><?= $m ?>月</option>
-                                        <?php endfor; ?>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">日 <span class="text-danger">*</span></label>
-                                    <select name="day" class="form-select" required>
-                                        <?php for ($d = 1; $d <= 31; $d++): ?>
-                                            <option value="<?= $d ?>" <?= $currentDay == $d ? 'selected' : '' ?>><?= $d ?>日</option>
-                                        <?php endfor; ?>
-                                    </select>
-                                </div>
-                            </div>
-
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    日付 <span class="text-danger">*</span>
+                </label>
+                <input type="date" name="calendar_date" id="calendar_date" class="form-control" 
+                       value="<?= sprintf('%04d-%02d-%02d', $currentYear, $currentMonth, $currentDay) ?>" 
+                       required min="1980-06-15" max="<?= date('Y') + 1 ?>-12-31">
+                <small class="form-text text-muted">1980年6月15日から<?= date('Y') + 1 ?>年末までの範囲で選択できます</small>
+            </div>
+            
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="auto_date" id="auto_date" class="form-check-input">
+                <label class="form-check-label" for="auto_date">
+                    AIに任せる（画像から季節を判定して適切な空いている日付を自動設定）
                             <div class="mb-3">
                                 <label class="form-label">タイトル（簡単な説明）</label>
                                 <input type="text" name="title" class="form-control" 

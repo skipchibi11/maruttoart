@@ -337,6 +337,247 @@ function generateCalendarContent($imagePath, $userHint = '') {
 }
 
 /**
+ * 画像から適切な月日を提案
+ */
+function suggestCalendarDate($imagePath) {
+    $config = getOpenAIConfig();
+    
+    if (empty($config['api_key'])) {
+        throw new Exception('OpenAI APIキーが設定されていません');
+    }
+    
+    if (!file_exists($imagePath)) {
+        throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
+    }
+    
+    $imageData = base64_encode(file_get_contents($imagePath));
+    $mimeType = mime_content_type($imagePath);
+
+    $prompt = "この画像から、カレンダーに最適な月と日を提案してください。
+
+【判断基準】
+- 画像に描かれている季節や雰囲気
+- 桜や花→3-4月
+- 雪や寒い雰囲気→12-2月
+- 紅葉→10-11月
+- 夏の海やひまわり→7-8月
+- 特定のイベント（ハロウィン、クリスマスなど）
+- 一般的な季節感
+
+以下のJSON形式で出力してください：
+{
+  \"month\": 月（1-12の数字）,
+  \"day\": 日（1-31の数字）,
+  \"reason\": \"提案理由（簡潔に）\"
+}";
+
+    $data = [
+        'model' => $config['model'],
+        'messages' => [
+            [
+                'role' => 'user',
+                'content' => [
+                    [
+                        'type' => 'text',
+                        'text' => $prompt
+                    ],
+                    [
+                        'type' => 'image_url',
+                        'image_url' => [
+                            'url' => "data:{$mimeType};base64,{$imageData}"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'max_tokens' => 200,
+        'temperature' => 0.5
+    ];
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://api.openai.com/v1/chat/completions',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $config['api_key']
+        ],
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_SSL_VERIFYPEER => true
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        throw new Exception("OpenAI API通信エラー: {$error}");
+    }
+
+    if ($httpCode !== 200) {
+        throw new Exception("OpenAI APIエラー: HTTP {$httpCode}");
+    }
+
+    $result = json_decode($response, true);
+    
+    if (!$result || !isset($result['choices'][0]['message']['content'])) {
+        throw new Exception('OpenAI APIから無効な応答を受信しました');
+    }
+
+    $content = trim($result['choices'][0]['message']['content']);
+    $content = preg_replace('/```json\s*|\s*```/', '', $content);
+    $content = trim($content);
+    
+    $dateInfo = json_decode($content, true);
+    
+    if (!$dateInfo || !isset($dateInfo['month']) || !isset($dateInfo['day'])) {
+        throw new Exception('生成されたJSONが無効です');
+    }
+    
+    return $dateInfo;
+}
+
+/**
+ * 提案された月日から利用可能な最も近い日付を検索
+ * 1980年6月15日から未来1年後の範囲で検索
+ */
+function findAvailableDate($pdo, $suggestedMonth, $suggestedDay, $currentYear = null) {
+    if ($currentYear === null) {
+        $currentYear = (int)date('Y');
+    }
+    
+    // 検索範囲の設定（1980年6月15日から未来1年後）
+    $minYear = 1980;
+    $minMonth = 6;
+    $minDay = 15;
+    $maxYear = $currentYear + 1;
+    $minDate = '1980-06-15';
+    
+    // 提案された日付が有効かチェック
+    if (!checkdate($suggestedMonth, $suggestedDay, $currentYear)) {
+        // 無効な日付の場合（例：2月30日）、その月の最終日に調整
+        $suggestedDay = (int)date('t', mktime(0, 0, 0, $suggestedMonth, 1, $currentYear));
+    }
+    
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?');
+    
+    // 1. まず提案された月日で、今年から近い年を検索（今年→来年→去年→一昨年...）
+    $yearOffsets = [0]; // 今年
+    for ($i = 1; $i <= ($currentYear - $minYear + 1); $i++) {
+        if ($currentYear + $i <= $maxYear) {
+            $yearOffsets[] = $i;  // 未来方向
+        }
+        if ($currentYear - $i >= $minYear) {
+            $yearOffsets[] = -$i; // 過去方向
+        }
+    }
+    
+    foreach ($yearOffsets as $offset) {
+        $targetYear = $currentYear + $offset;
+        
+        // 日付の妥当性チェック（うるう年対応）
+        if (!checkdate($suggestedMonth, $suggestedDay, $targetYear)) {
+            continue;
+        }
+        
+        // 1980年6月15日より前の日付は除外
+        $targetDate = sprintf('%04d-%02d-%02d', $targetYear, $suggestedMonth, $suggestedDay);
+        if ($targetDate < $minDate) {
+            continue;
+        }
+        
+        $stmt->execute([$targetYear, $suggestedMonth, $suggestedDay]);
+        if ($stmt->fetchColumn() == 0) {
+            return [
+                'year' => $targetYear,
+                'month' => $suggestedMonth,
+                'day' => $suggestedDay
+            ];
+        }
+    }
+    
+    // 2. 提案された月日で空きがない場合、前後30日間を検索
+    for ($dayOffset = 1; $dayOffset <= 30; $dayOffset++) {
+        // 後の日付をチェック
+        $afterTimestamp = mktime(0, 0, 0, $suggestedMonth, $suggestedDay + $dayOffset, $currentYear);
+        $afterMonth = (int)date('n', $afterTimestamp);
+        $afterDay = (int)date('j', $afterTimestamp);
+        
+        foreach ($yearOffsets as $offset) {
+            $targetYear = $currentYear + $offset;
+            if ($targetYear < $minYear || $targetYear > $maxYear) continue;
+            
+            // 1980年6月15日より前の日付は除外
+            $targetDate = sprintf('%04d-%02d-%02d', $targetYear, $afterMonth, $afterDay);
+            if ($targetDate < $minDate) continue;
+            
+            $stmt->execute([$targetYear, $afterMonth, $afterDay]);
+            if ($stmt->fetchColumn() == 0) {
+                return [
+                    'year' => $targetYear,
+                    'month' => $afterMonth,
+                    'day' => $afterDay
+                ];
+            }
+        }
+        
+        // 前の日付をチェック
+        $beforeTimestamp = mktime(0, 0, 0, $suggestedMonth, $suggestedDay - $dayOffset, $currentYear);
+        $beforeMonth = (int)date('n', $beforeTimestamp);
+        $beforeDay = (int)date('j', $beforeTimestamp);
+        
+        foreach ($yearOffsets as $offset) {
+            $targetYear = $currentYear + $offset;
+            if ($targetYear < $minYear || $targetYear > $maxYear) continue;
+            
+            // 1980年6月15日より前の日付は除外
+            $targetDate = sprintf('%04d-%02d-%02d', $targetYear, $beforeMonth, $beforeDay);
+            if ($targetDate < $minDate) continue;
+            
+            $stmt->execute([$targetYear, $beforeMonth, $beforeDay]);
+            if ($stmt->fetchColumn() == 0) {
+                return [
+                    'year' => $targetYear,
+                    'month' => $beforeMonth,
+                    'day' => $beforeDay
+                ];
+            }
+        }
+    }
+    
+    // 3. それでも見つからない場合、範囲内の全ての日付から空きを探す
+    for ($year = $currentYear; $year <= $maxYear; $year++) {
+        for ($month = 1; $month <= 12; $month++) {
+            $daysInMonth = (int)date('t', mktime(0, 0, 0, $month, 1, $year));
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                // 1980年6月15日より前の日付は除外
+                $checkDate = sprintf('%04d-%02d-%02d', $year, $month, $day);
+                if ($checkDate < $minDate) continue;
+                
+                $stmt->execute([$year, $month, $day]);
+                if ($stmt->fetchColumn() == 0) {
+                    return [
+                        'year' => $year,
+                        'month' => $month,
+                        'day' => $day
+                    ];
+                }
+            }
+        }
+    }
+    
+    // 最終手段：提案された日付をそのまま返す（重複エラーが発生する可能性あり）
+    return [
+        'year' => $currentYear,
+        'month' => $suggestedMonth,
+        'day' => $suggestedDay
+    ];
+}
+
+/**
  * OpenAI Vision APIを使用してカレンダーアイテムの説明文を生成（後方互換性のため残す）
  */
 function generateCalendarDescription($title, $imagePath) {

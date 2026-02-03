@@ -102,7 +102,7 @@ function verifyCSRFToken($token) {
 
 // XSS対策
 function h($str) {
-    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
 }
 
 // サムネイル生成関数（カレンダー用 - PNGはWebPに圧縮）
