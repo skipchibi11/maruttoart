@@ -142,6 +142,30 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
             letter-spacing: 0.1em;
         }
         
+        .date-reason-section {
+            margin: 50px 0 20px 0;
+            padding: 25px 0;
+            border-top: 1px solid rgba(90, 74, 66, 0.1);
+        }
+        
+        .date-reason-title {
+            font-size: 0.85rem;
+            font-weight: normal;
+            color: rgba(90, 74, 66, 0.6);
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+        
+        .date-reason-text {
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: rgba(90, 74, 66, 0.75);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
         .download-button {
             display: inline-block;
             padding: 10px 24px;
@@ -258,6 +282,14 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
                    class="download-button">
                     Download GIF
                 </a>
+            <?php endif; ?>
+            
+            <!-- 日付選定理由 -->
+            <?php if (!empty($item['date_reason'])): ?>
+                <div class="date-reason-section">
+                    <div class="date-reason-title">なぜ、このイラストはその月日なの？</div>
+                    <div class="date-reason-text"><?= nl2br(h($item['date_reason'])) ?></div>
+                </div>
             <?php endif; ?>
         </div>
         

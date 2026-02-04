@@ -45,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'day' => $inputDay,
                 'title' => trim($_POST['title'] ?? ''),
                 'description' => trim($_POST['description'] ?? ''),
-                'is_published' => isset($_POST['is_published']) ? 1 : 0
+                'is_published' => isset($_POST['is_published']) ? 1 : 0,
+                'date_reason' => null
             ];
             
             // AI自動設定フラグ
@@ -74,6 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$isEdit && $autoDate && function_exists('suggestCalendarDate')) {
                     try {
                         $dateInfo = suggestCalendarDate($tempPath);
+                        
+                        // AIが提案した理由を保存
+                        $data['date_reason'] = $dateInfo['reason'] ?? null;
                         
                         // 提案された月日から空いている日を検索
                         if (function_exists('findAvailableDate')) {
@@ -190,23 +194,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 try {
                     if ($isEdit) {
                         $sql = "UPDATE calendar_items SET 
-                                year = ?, month = ?, day = ?, title = ?, description = ?, 
+                                year = ?, month = ?, day = ?, title = ?, description = ?, date_reason = ?,
                                 image_path = ?, thumbnail_path = ?, gif_path = ?, is_published = ?
                                 WHERE id = ?";
                         $stmt = $pdo->prepare($sql);
                         $stmt->execute([
-                            $data['year'], $data['month'], $data['day'], $data['title'], $data['description'],
+                            $data['year'], $data['month'], $data['day'], $data['title'], $data['description'], $data['date_reason'],
                             $data['image_path'], $data['thumbnail_path'], $data['gif_path'], $data['is_published'],
                             $item['id']
                         ]);
                         header('Location: calendar.php?success=updated');
                         exit;
                     } else {
-                        $sql = "INSERT INTO calendar_items (year, month, day, title, description, image_path, thumbnail_path, gif_path, is_published) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        $sql = "INSERT INTO calendar_items (year, month, day, title, description, date_reason, image_path, thumbnail_path, gif_path, is_published) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         $stmt = $pdo->prepare($sql);
                         $stmt->execute([
-                            $data['year'], $data['month'], $data['day'], $data['title'], $data['description'],
+                            $data['year'], $data['month'], $data['day'], $data['title'], $data['description'], $data['date_reason'],
                             $data['image_path'], $data['thumbnail_path'], $data['gif_path'], $data['is_published']
                         ]);
                         header('Location: calendar.php?success=created');
