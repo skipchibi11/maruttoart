@@ -441,6 +441,185 @@ function suggestCalendarDate($imagePath) {
 }
 
 /**
+ * 空いている日付リストからAIに最適な日付を選ばせる
+ */
+function selectBestDateFromAvailable($suggestedMonth, $suggestedDay, $reason, $availableDates) {
+    $config = getOpenAIConfig();
+    
+    if (empty($config['api_key'])) {
+        throw new Exception('OpenAI APIキーが設定されていません');
+    }
+    
+    // 利用可能な日付リストを整形
+    $dateList = array_map(function($date) {
+        return sprintf('%d年%d月%d日', $date['year'], $date['month'], $date['day']);
+    }, $availableDates);
+    
+    $dateListStr = implode("\n", $dateList);
+
+    $prompt = "画像から判断して、{$suggestedMonth}月{$suggestedDay}日が最適と判断しました。理由：{$reason}
+
+しかし、以下の日付しか空いていません：
+{$dateListStr}
+
+この中から、{$suggestedMonth}月{$suggestedDay}日に最も近い、季節感が合う日付を1つ選んでください。
+
+以下のJSON形式で出力してください：
+{
+  \"year\": 選んだ年,
+  \"month\": 選んだ月,
+  \"day\": 選んだ日,
+  \"reason\": \"選択理由（簡潔に）\"
+}";
+
+    $data = [
+        'model' => $config['model'],
+        'messages' => [
+            [
+                'role' => 'user',
+                'content' => $prompt
+            ]
+        ],
+        'max_tokens' => 200,
+        'temperature' => 0.3
+    ];
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://api.openai.com/v1/chat/completions',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $config['api_key']
+        ],
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_SSL_VERIFYPEER => true
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        throw new Exception("OpenAI API通信エラー: {$error}");
+    }
+
+    if ($httpCode !== 200) {
+        throw new Exception("OpenAI APIエラー: HTTP {$httpCode}");
+    }
+
+    $result = json_decode($response, true);
+    
+    if (!$result || !isset($result['choices'][0]['message']['content'])) {
+        throw new Exception('OpenAI APIから無効な応答を受信しました');
+    }
+
+    $content = trim($result['choices'][0]['message']['content']);
+    $content = preg_replace('/```json\s*|\s*```/', '', $content);
+    $content = trim($content);
+    
+    $selectedDate = json_decode($content, true);
+    
+    if (!$selectedDate || !isset($selectedDate['year']) || !isset($selectedDate['month']) || !isset($selectedDate['day'])) {
+        throw new Exception('生成されたJSONが無効です');
+    }
+    
+    return $selectedDate;
+}
+
+/**
+ * 1年先までの空いている日付を取得し、AIに最適な日付を選ばせる
+ */
+function findAvailableDateWithAI($pdo, $suggestedMonth, $suggestedDay, $reason) {
+    $currentDate = date('Y-m-d');
+    $oneYearLater = date('Y-m-d', strtotime('+1 year'));
+    
+    // 1年先までの空いている日付を全て取得
+    $stmt = $pdo->prepare("
+        SELECT ? as year, ? as month, ? as day
+        WHERE NOT EXISTS (
+            SELECT 1 FROM calendar_items 
+            WHERE year = ? AND month = ? AND day = ?
+        )
+    ");
+    
+    $availableDates = [];
+    $startTimestamp = strtotime($currentDate);
+    $endTimestamp = strtotime($oneYearLater);
+    
+    // 日付を1日ずつ確認して空きを探す（最大100日分）
+    $checkStmt = $pdo->prepare('SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?');
+    $count = 0;
+    
+    for ($timestamp = $startTimestamp; $timestamp <= $endTimestamp && $count < 100; $timestamp += 86400) {
+        $year = (int)date('Y', $timestamp);
+        $month = (int)date('n', $timestamp);
+        $day = (int)date('j', $timestamp);
+        
+        $checkStmt->execute([$year, $month, $day]);
+        if ($checkStmt->fetchColumn() == 0) {
+            $availableDates[] = [
+                'year' => $year,
+                'month' => $month,
+                'day' => $day
+            ];
+            $count++;
+        }
+    }
+    
+    // 空きがない場合、前日から過去に遡って探す
+    if (empty($availableDates)) {
+        $minDate = '1980-06-15';
+        $minTimestamp = strtotime($minDate);
+        
+        for ($timestamp = $startTimestamp - 86400; $timestamp >= $minTimestamp && $count < 100; $timestamp -= 86400) {
+            $year = (int)date('Y', $timestamp);
+            $month = (int)date('n', $timestamp);
+            $day = (int)date('j', $timestamp);
+            
+            $checkStmt->execute([$year, $month, $day]);
+            if ($checkStmt->fetchColumn() == 0) {
+                $availableDates[] = [
+                    'year' => $year,
+                    'month' => $month,
+                    'day' => $day
+                ];
+                $count++;
+            }
+        }
+    }
+    
+    if (empty($availableDates)) {
+        // 完全に空きがない場合は提案された日付を返す
+        $currentYear = (int)date('Y');
+        return [
+            'year' => $currentYear,
+            'month' => $suggestedMonth,
+            'day' => $suggestedDay,
+            'reason' => $reason
+        ];
+    }
+    
+    // AIに最適な日付を選ばせる
+    try {
+        $selectedDate = selectBestDateFromAvailable($suggestedMonth, $suggestedDay, $reason, $availableDates);
+        return $selectedDate;
+    } catch (Exception $e) {
+        error_log('AI日付選択エラー: ' . $e->getMessage());
+        // AIでの選択に失敗した場合、最初の空き日付を返す
+        return [
+            'year' => $availableDates[0]['year'],
+            'month' => $availableDates[0]['month'],
+            'day' => $availableDates[0]['day'],
+            'reason' => $reason
+        ];
+    }
+}
+
+/**
  * 提案された月日から利用可能な最も近い日付を検索
  * 1980年6月15日から未来1年後の範囲で検索
  */

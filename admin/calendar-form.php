@@ -76,15 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     try {
                         $dateInfo = suggestCalendarDate($tempPath);
                         
-                        // AIが提案した理由を保存
-                        $data['date_reason'] = $dateInfo['reason'] ?? null;
-                        
-                        // 提案された月日から空いている日を検索
-                        if (function_exists('findAvailableDate')) {
-                            $availableDate = findAvailableDate($pdo, $dateInfo['month'], $dateInfo['day']);
-                            $data['year'] = $availableDate['year'];
-                            $data['month'] = $availableDate['month'];
-                            $data['day'] = $availableDate['day'];
+                        // 1年先までの空き日付を取得し、AIに最適な日付を選ばせる
+                        if (function_exists('findAvailableDateWithAI')) {
+                            $selectedDate = findAvailableDateWithAI($pdo, $dateInfo['month'], $dateInfo['day'], $dateInfo['reason']);
+                            $data['year'] = $selectedDate['year'];
+                            $data['month'] = $selectedDate['month'];
+                            $data['day'] = $selectedDate['day'];
+                            $data['date_reason'] = $selectedDate['reason'] ?? $dateInfo['reason'];
                         }
                     } catch (Exception $e) {
                         error_log('AI日付提案エラー: ' . $e->getMessage());
