@@ -24,8 +24,8 @@ if (!$item) {
 }
 
 // メタ情報
-$pageTitle = $item['title'] . ' | marutto.art';
-$pageDescription = $item['description'] ?: $item['title'];
+$pageTitle = $item['title'] . '｜' . $item['month'] . '月の無料イラスト（GIF対応）| marutto.art';
+$pageDescription = '季節を感じるやさしい無料イラスト素材です。静止画とGIFの両方をご利用いただけます。';
 $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : '';
 ?>
 <!DOCTYPE html>
@@ -38,7 +38,7 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
     <link rel="icon" href="/favicon.ico">
     
     <!-- OGP -->
-    <meta property="og:title" content="<?= h($item['title']) ?>">
+    <meta property="og:title" content="<?= h($item['title']) ?>｜<?= h($item['month']) ?>月の無料イラスト（GIF対応）">
     <meta property="og:description" content="<?= h($pageDescription) ?>">
     <?php if ($ogImage): ?>
         <meta property="og:image" content="<?= h($ogImage) ?>">
