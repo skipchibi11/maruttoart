@@ -469,7 +469,7 @@ function selectBestDateFromAvailable($suggestedMonth, $suggestedDay, $reason, $a
   \"year\": 選んだ年,
   \"month\": 選んだ月,
   \"day\": 選んだ日,
-  \"reason\": \"選択理由（簡潔に）\"
+  \"reason\": \"その日付を選んだ季節的な理由のみ（「最も近い」「近接性」などの表現は使わず、純粋にその日付が持つ季節感や特徴のみを簡潔に説明）\"
 }";
 
     $data = [

@@ -287,7 +287,7 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
             <!-- 日付選定理由 -->
             <?php if (!empty($item['date_reason'])): ?>
                 <div class="date-reason-section">
-                    <div class="date-reason-title">なぜ、このイラストはその月日なの？</div>
+                    <div class="date-reason-title">なぜ、このイラストはその<?= h($item['month']) ?>月<?= h($item['day']) ?>日なの？</div>
                     <div class="date-reason-text"><?= nl2br(h($item['date_reason'])) ?></div>
                 </div>
             <?php endif; ?>
