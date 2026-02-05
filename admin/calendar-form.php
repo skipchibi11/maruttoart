@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'title' => trim($_POST['title'] ?? ''),
                 'description' => trim($_POST['description'] ?? ''),
                 'is_published' => isset($_POST['is_published']) ? 1 : 0,
-                'date_reason' => null
+                'date_reason' => trim($_POST['date_reason'] ?? '') ?: null
             ];
             
             // AI自動設定フラグ
@@ -82,7 +82,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $data['year'] = $selectedDate['year'];
                             $data['month'] = $selectedDate['month'];
                             $data['day'] = $selectedDate['day'];
-                            $data['date_reason'] = $selectedDate['reason'] ?? $dateInfo['reason'];
+                            // フォームで入力されていない場合のみAIの理由を使用
+                            if (empty($data['date_reason'])) {
+                                $data['date_reason'] = $selectedDate['reason'] ?? $dateInfo['reason'];
+                            }
                         }
                     } catch (Exception $e) {
                         error_log('AI日付提案エラー: ' . $e->getMessage());
@@ -308,6 +311,14 @@ $currentDay = $item['day'] ?? date('j');
                                 <textarea name="description" id="description" class="form-control" rows="8"><?= h($item['description'] ?? '') ?></textarea>
                                 <small class="form-text text-muted">
                                     新規作成時：画像アップロード後、自動生成されます
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">季節の選定理由</label>
+                                <textarea name="date_reason" id="date_reason" class="form-control" rows="3"><?= h($item['date_reason'] ?? '') ?></textarea>
+                                <small class="form-text text-muted">
+                                    「なぜ、このイラストはその月日なの？」に表示される内容です。AI自動設定を使用すると自動生成されますが、手動で編集できます。
                                 </small>
                             </div>
 
