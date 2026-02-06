@@ -97,6 +97,9 @@ foreach ($allMaterials as $material) {
     <meta name="description" content="パーツを組み合わせて、オリジナルイラストを無料で作成。ブログ・資料・SNSに使えます。">
     <link rel="icon" href="/favicon.ico">
     
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://marutto.art/compose/">
+    
     <!-- hreflang tags -->
     <link rel="alternate" hreflang="ja" href="https://marutto.art/compose/" />
     <link rel="alternate" hreflang="en" href="https://marutto.art/en/compose/" />
