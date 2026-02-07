@@ -44,7 +44,7 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
         <meta property="og:image" content="<?= h($ogImage) ?>">
     <?php endif; ?>
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://marutto.art/calendar/<?= h($item['slug']) ?>">
+    <meta property="og:url" content="https://marutto.art/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>">
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
     
