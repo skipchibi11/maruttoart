@@ -39,6 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if (!isset($error)) {
+            // AI自動設定フラグ（先に取得）
+            $autoDate = isset($_POST['auto_date']);
+            
             $data = [
                 'year' => $inputYear,
                 'month' => $inputMonth,
@@ -49,25 +52,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'date_reason' => trim($_POST['date_reason'] ?? '') ?: null
             ];
             
-            // 日付の重複チェック（編集時は自分自身を除外）
-            $duplicateCheckSql = "SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?";
-            if ($isEdit) {
-                $duplicateCheckSql .= " AND id != ?";
-                $duplicateStmt = $pdo->prepare($duplicateCheckSql);
-                $duplicateStmt->execute([$data['year'], $data['month'], $data['day'], $item['id']]);
-            } else {
-                $duplicateStmt = $pdo->prepare($duplicateCheckSql);
-                $duplicateStmt->execute([$data['year'], $data['month'], $data['day']]);
-            }
-            
-            if ($duplicateStmt->fetchColumn() > 0) {
-                $error = sprintf('%d年%d月%d日は既に登録されています。別の日付を選択してください。', $data['year'], $data['month'], $data['day']);
+            // AI自動設定がOFFの場合のみ、フォーム入力日付の重複チェック
+            // （AI自動設定がONの場合は、AIが選んだ日付で後でチェック）
+            if (!$autoDate || $isEdit) {
+                $duplicateCheckSql = "SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?";
+                if ($isEdit) {
+                    $duplicateCheckSql .= " AND id != ?";
+                    $duplicateStmt = $pdo->prepare($duplicateCheckSql);
+                    $duplicateStmt->execute([$data['year'], $data['month'], $data['day'], $item['id']]);
+                } else {
+                    $duplicateStmt = $pdo->prepare($duplicateCheckSql);
+                    $duplicateStmt->execute([$data['year'], $data['month'], $data['day']]);
+                }
+                
+                if ($duplicateStmt->fetchColumn() > 0) {
+                    $error = sprintf('%d年%d月%d日は既に登録されています。別の日付を選択してください。', $data['year'], $data['month'], $data['day']);
+                }
             }
             
             // 重複エラーがある場合は画像アップロード処理をスキップ
             if (!isset($error)) {
-                // AI自動設定フラグ
-                $autoDate = isset($_POST['auto_date']);
             
                 // 画像アップロード処理
                 $uploadedImagePath = $isEdit ? $item['image_path'] : null;
