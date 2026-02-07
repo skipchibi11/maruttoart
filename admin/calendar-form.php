@@ -49,13 +49,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'date_reason' => trim($_POST['date_reason'] ?? '') ?: null
             ];
             
-            // AI自動設定フラグ
-            $autoDate = isset($_POST['auto_date']);
-        
-            // 画像アップロード処理
-            $uploadedImagePath = $isEdit ? $item['image_path'] : null;
-            $uploadedThumbnailPath = $isEdit ? $item['thumbnail_path'] : null;
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            // 日付の重複チェック（編集時は自分自身を除外）
+            $duplicateCheckSql = "SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?";
+            if ($isEdit) {
+                $duplicateCheckSql .= " AND id != ?";
+                $duplicateStmt = $pdo->prepare($duplicateCheckSql);
+                $duplicateStmt->execute([$data['year'], $data['month'], $data['day'], $item['id']]);
+            } else {
+                $duplicateStmt = $pdo->prepare($duplicateCheckSql);
+                $duplicateStmt->execute([$data['year'], $data['month'], $data['day']]);
+            }
+            
+            if ($duplicateStmt->fetchColumn() > 0) {
+                $error = sprintf('%d年%d月%d日は既に登録されています。別の日付を選択してください。', $data['year'], $data['month'], $data['day']);
+            }
+            
+            // 重複エラーがある場合は画像アップロード処理をスキップ
+            if (!isset($error)) {
+                // AI自動設定フラグ
+                $autoDate = isset($_POST['auto_date']);
+            
+                // 画像アップロード処理
+                $uploadedImagePath = $isEdit ? $item['image_path'] : null;
+                $uploadedThumbnailPath = $isEdit ? $item['thumbnail_path'] : null;
+                if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             try {
                 $fileInfo = pathinfo($_FILES['image']['name']);
                 $extension = strtolower($fileInfo['extension']);
@@ -86,10 +103,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (empty($data['date_reason'])) {
                                 $data['date_reason'] = $selectedDate['reason'] ?? $dateInfo['reason'];
                             }
+                            
+                            // AI選択後の日付を再度重複チェック
+                            $duplicateStmt = $pdo->prepare("SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?");
+                            $duplicateStmt->execute([$data['year'], $data['month'], $data['day']]);
+                            if ($duplicateStmt->fetchColumn() > 0) {
+                                // 一時ファイルを削除
+                                if (file_exists($tempPath)) {
+                                    unlink($tempPath);
+                                }
+                                throw new Exception(sprintf('%d年%d月%d日は既に登録されています。空きがないため自動設定に失敗しました。', $data['year'], $data['month'], $data['day']));
+                            }
                         }
                     } catch (Exception $e) {
                         error_log('AI日付提案エラー: ' . $e->getMessage());
-                        // 日付提案に失敗してもフォームの値を使用
+                        $error = $e->getMessage();
+                        // 一時ファイルを削除
+                        if (isset($tempPath) && file_exists($tempPath)) {
+                            unlink($tempPath);
+                        }
                     }
                 }
                 
@@ -186,6 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = $e->getMessage();
             }
         }
+            }  // 重複エラーチェックの閉じ括弧
         
             $data['image_path'] = $uploadedImagePath;
             $data['thumbnail_path'] = $uploadedThumbnailPath;

@@ -545,87 +545,85 @@ function selectBestDateFromAvailable($suggestedMonth, $suggestedDay, $reason, $a
 function findAvailableDateWithAI($pdo, $suggestedMonth, $suggestedDay, $reason) {
     $currentDate = date('Y-m-d');
     $oneYearLater = date('Y-m-d', strtotime('+1 year'));
+    $minDate = '1980-06-15';
     
-    // 1年先までの空いている日付を全て取得
-    $stmt = $pdo->prepare("
-        SELECT ? as year, ? as month, ? as day
-        WHERE NOT EXISTS (
-            SELECT 1 FROM calendar_items 
-            WHERE year = ? AND month = ? AND day = ?
-        )
-    ");
+    $checkStmt = $pdo->prepare('SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?');
     
-    $availableDates = [];
+    // まず本日から1年先までの空いている日付を全て取得
+    $futureDates = [];
     $startTimestamp = strtotime($currentDate);
     $endTimestamp = strtotime($oneYearLater);
     
-    // 日付を1日ずつ確認して空きを探す（最大100日分）
-    $checkStmt = $pdo->prepare('SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?');
-    $count = 0;
-    
-    for ($timestamp = $startTimestamp; $timestamp <= $endTimestamp && $count < 100; $timestamp += 86400) {
+    for ($timestamp = $startTimestamp; $timestamp <= $endTimestamp; $timestamp += 86400) {
         $year = (int)date('Y', $timestamp);
         $month = (int)date('n', $timestamp);
         $day = (int)date('j', $timestamp);
         
         $checkStmt->execute([$year, $month, $day]);
         if ($checkStmt->fetchColumn() == 0) {
-            $availableDates[] = [
+            $futureDates[] = [
                 'year' => $year,
                 'month' => $month,
                 'day' => $day
             ];
-            $count++;
         }
     }
     
-    // 空きがない場合、前日から過去に遡って探す
-    if (empty($availableDates)) {
-        $minDate = '1980-06-15';
-        $minTimestamp = strtotime($minDate);
+    // 未来に空きがある場合、AIに最適な日付を選ばせる
+    if (!empty($futureDates)) {
+        try {
+            $selectedDate = selectBestDateFromAvailable($suggestedMonth, $suggestedDay, $reason, $futureDates);
+            return $selectedDate;
+        } catch (Exception $e) {
+            error_log('AI日付選択エラー: ' . $e->getMessage());
+            // AIでの選択に失敗した場合、最初の空き日付を返す
+            return [
+                'year' => $futureDates[0]['year'],
+                'month' => $futureDates[0]['month'],
+                'day' => $futureDates[0]['day'],
+                'reason' => $reason
+            ];
+        }
+    }
+    
+    // 未来に空きがない場合、過去の空き日付を探す
+    $pastDates = [];
+    $minTimestamp = strtotime($minDate);
+    
+    for ($timestamp = $startTimestamp - 86400; $timestamp >= $minTimestamp; $timestamp -= 86400) {
+        $year = (int)date('Y', $timestamp);
+        $month = (int)date('n', $timestamp);
+        $day = (int)date('j', $timestamp);
         
-        for ($timestamp = $startTimestamp - 86400; $timestamp >= $minTimestamp && $count < 100; $timestamp -= 86400) {
-            $year = (int)date('Y', $timestamp);
-            $month = (int)date('n', $timestamp);
-            $day = (int)date('j', $timestamp);
-            
-            $checkStmt->execute([$year, $month, $day]);
-            if ($checkStmt->fetchColumn() == 0) {
-                $availableDates[] = [
-                    'year' => $year,
-                    'month' => $month,
-                    'day' => $day
-                ];
-                $count++;
-            }
+        $checkStmt->execute([$year, $month, $day]);
+        if ($checkStmt->fetchColumn() == 0) {
+            $pastDates[] = [
+                'year' => $year,
+                'month' => $month,
+                'day' => $day
+            ];
         }
     }
     
-    if (empty($availableDates)) {
-        // 完全に空きがない場合は提案された日付を返す
-        $currentYear = (int)date('Y');
-        return [
-            'year' => $currentYear,
-            'month' => $suggestedMonth,
-            'day' => $suggestedDay,
-            'reason' => $reason
-        ];
+    // 過去に空きがある場合、AIに最適な日付を選ばせる
+    if (!empty($pastDates)) {
+        try {
+            $selectedDate = selectBestDateFromAvailable($suggestedMonth, $suggestedDay, $reason, $pastDates);
+            return $selectedDate;
+        } catch (Exception $e) {
+            error_log('AI日付選択エラー: ' . $e->getMessage());
+            // AIでの選択に失敗した場合、最初の空き日付を返す
+            return [
+                'year' => $pastDates[0]['year'],
+                'month' => $pastDates[0]['month'],
+                'day' => $pastDates[0]['day'],
+                'reason' => $reason
+            ];
+        }
     }
     
-    // AIに最適な日付を選ばせる
-    try {
-        $selectedDate = selectBestDateFromAvailable($suggestedMonth, $suggestedDay, $reason, $availableDates);
-        return $selectedDate;
-    } catch (Exception $e) {
-        error_log('AI日付選択エラー: ' . $e->getMessage());
-        // AIでの選択に失敗した場合、最初の空き日付を返す
-        return [
-            'year' => $availableDates[0]['year'],
-            'month' => $availableDates[0]['month'],
-            'day' => $availableDates[0]['day'],
-            'reason' => $reason
-        ];
-    }
+    // 完全に空きがない場合はエラーを返す
+    throw new Exception('登録可能な日付が見つかりませんでした。全ての日付が使用されています。');
 }
 
 /**
