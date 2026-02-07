@@ -70,6 +70,17 @@ $pageDescription = 'marutto.artの' . $year . '年' . $month . '月のカレン�
     <meta name="description" content="<?= h($pageDescription) ?>">
     <link rel="icon" href="/favicon.ico">
     
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://marutto.art/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>">
+    
+    <!-- hreflang tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
     
     <style>

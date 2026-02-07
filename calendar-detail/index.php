@@ -37,6 +37,17 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
     <meta name="description" content="<?= h($pageDescription) ?>">
     <link rel="icon" href="/favicon.ico">
     
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://marutto.art/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>">
+    
+    <!-- hreflang tags -->
+    <link rel="alternate" hreflang="ja" href="https://marutto.art/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    <link rel="alternate" hreflang="en" href="https://marutto.art/en/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    <link rel="alternate" hreflang="es" href="https://marutto.art/es/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    <link rel="alternate" hreflang="x-default" href="https://marutto.art/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    
     <!-- OGP -->
     <meta property="og:title" content="<?= h($item['title']) ?>｜<?= h($item['month']) ?>月の無料イラスト（GIF対応）">
     <meta property="og:description" content="<?= h($pageDescription) ?>">
