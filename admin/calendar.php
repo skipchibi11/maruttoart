@@ -40,8 +40,28 @@ if ($_POST['action'] ?? '' === 'delete') {
     }
 }
 
-// カレンダーアイテム一覧取得
-$stmt = $pdo->query("SELECT * FROM calendar_items ORDER BY year DESC, month DESC, day DESC");
+// ソート順の取得
+$sort = isset($_GET['sort']) && in_array($_GET['sort'], ['created', 'date']) ? $_GET['sort'] : 'created';
+
+// ページング設定
+$perPage = 20;
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($page - 1) * $perPage;
+
+// 総件数を取得
+$countStmt = $pdo->query("SELECT COUNT(*) FROM calendar_items");
+$totalItems = $countStmt->fetchColumn();
+$totalPages = ceil($totalItems / $perPage);
+
+// カレンダーアイテム一覧取得（ページング付き）
+if ($sort === 'date') {
+    $stmt = $pdo->prepare("SELECT * FROM calendar_items ORDER BY year DESC, month DESC, day DESC LIMIT ? OFFSET ?");
+} else {
+    $stmt = $pdo->prepare("SELECT * FROM calendar_items ORDER BY created_at DESC LIMIT ? OFFSET ?");
+}
+$stmt->bindValue(1, $perPage, PDO::PARAM_INT);
+$stmt->bindValue(2, $offset, PDO::PARAM_INT);
+$stmt->execute();
 $items = $stmt->fetchAll();
 ?>
 
@@ -87,9 +107,19 @@ $items = $stmt->fetchAll();
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><i class="bi bi-calendar3"></i> カレンダー管理</h1>
-            <a href="calendar-form.php" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> 新規追加
-            </a>
+            <div class="d-flex gap-2">
+                <div class="btn-group" role="group">
+                    <a href="?sort=created" class="btn btn-sm btn-outline-secondary <?= $sort === 'created' ? 'active' : '' ?>">
+                        <i class="bi bi-clock-history"></i> 登録日順
+                    </a>
+                    <a href="?sort=date" class="btn btn-sm btn-outline-secondary <?= $sort === 'date' ? 'active' : '' ?>">
+                        <i class="bi bi-calendar-date"></i> カレンダー順
+                    </a>
+                </div>
+                <a href="calendar-form.php" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> 新規追加
+                </a>
+            </div>
         </div>
 
         <?php if (isset($_GET['success'])): ?>
@@ -153,7 +183,11 @@ $items = $stmt->fetchAll();
                                     </td>
                                     <td>
                                         <?php if ($item['is_published']): ?>
-                                            <span class="badge bg-success">公開</span>
+                                            <a href="/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" 
+                                               target="_blank" 
+                                               class="badge bg-success text-decoration-none">
+                                                公開 <i class="bi bi-box-arrow-up-right"></i>
+                                            </a>
                                         <?php else: ?>
                                             <span class="badge bg-secondary">非公開</span>
                                         <?php endif; ?>
@@ -182,6 +216,61 @@ $items = $stmt->fetchAll();
                         </tbody>
                     </table>
                 </div>
+                
+                <?php if ($totalPages > 1): ?>
+                    <div class="card-footer">
+                        <nav aria-label="ページネーション">
+                            <ul class="pagination justify-content-center mb-0">
+                                <?php if ($page > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?sort=<?= h($sort) ?>&page=<?= $page - 1 ?>">
+                                            <i class="bi bi-chevron-left"></i> 前へ
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                                
+                                <?php
+                                $startPage = max(1, $page - 2);
+                                $endPage = min($totalPages, $page + 2);
+                                
+                                if ($startPage > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?sort=<?= h($sort) ?>&page=1">1</a>
+                                    </li>
+                                    <?php if ($startPage > 2): ?>
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                                    <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+                                        <a class="page-link" href="?sort=<?= h($sort) ?>&page=<?= $i ?>"><?= $i ?></a>
+                                    </li>
+                                <?php endfor; ?>
+                                
+                                <?php if ($endPage < $totalPages): ?>
+                                    <?php if ($endPage < $totalPages - 1): ?>
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <?php endif; ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?sort=<?= h($sort) ?>&page=<?= $totalPages ?>"><?= $totalPages ?></a>
+                                    </li>
+                                <?php endif; ?>
+                                
+                                <?php if ($page < $totalPages): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?sort=<?= h($sort) ?>&page=<?= $page + 1 ?>">
+                                            次へ <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </nav>
+                        <div class="text-center mt-2 text-muted small">
+                            全<?= $totalItems ?>件中 <?= $offset + 1 ?>-<?= min($offset + $perPage, $totalItems) ?>件を表示
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
