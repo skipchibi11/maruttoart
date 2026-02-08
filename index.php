@@ -40,29 +40,14 @@ $floatingMaterialsStmt->execute();
 $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
 // カレンダー表示用データ取得（当月全日）
-$today = new DateTime();
-$currentYear = (int)$today->format('Y');
-$currentMonth = (int)$today->format('n');
-$currentDay = (int)$today->format('j');
-$daysInMonth = (int)$today->format('t');
+$currentYear = (int)date('Y');
+$currentMonth = (int)date('n');
+$currentDay = (int)date('j');
 
-// 月初の曜日（0:日曜 〜 6:土曜）
-$firstDayOfMonth = new DateTime("$currentYear-$currentMonth-1");
-$firstDayOfWeek = (int)$firstDayOfMonth->format('w');
-
-$calendarDays = [];
-for ($day = 1; $day <= $daysInMonth; $day++) {
-    $date = new DateTime("$currentYear-$currentMonth-$day");
-    $dayOfWeek = (int)$date->format('w');
-    
-    $calendarDays[] = [
-        'year' => $currentYear,
-        'month' => $currentMonth,
-        'day' => $day,
-        'is_today' => ($day === $currentDay),
-        'day_of_week' => $dayOfWeek
-    ];
-}
+// カレンダーの日付情報を生成
+$firstDay = mktime(0, 0, 0, $currentMonth, 1, $currentYear);
+$daysInMonth = date('t', $firstDay);
+$firstDayOfWeek = date('w', $firstDay);
 
 // カレンダーアイテムを一括取得（当月分）
 $calendarItemsMap = [];
@@ -74,15 +59,9 @@ $calendarStmt = $pdo->prepare($calendarSql);
 $calendarStmt->execute([$currentYear, $currentMonth]);
 $calendarItems = $calendarStmt->fetchAll();
 
+// 日付ごとにグループ化
 foreach ($calendarItems as $item) {
-    $key = $item['year'] . '-' . $item['month'] . '-' . $item['day'];
-    $calendarItemsMap[$key] = $item;
-}
-
-// 各日付にアイテムを紐付け
-foreach ($calendarDays as &$dayInfo) {
-    $key = $dayInfo['year'] . '-' . $dayInfo['month'] . '-' . $dayInfo['day'];
-    $dayInfo['item'] = $calendarItemsMap[$key] ?? null;
+    $calendarItemsMap[$item['day']] = $item;
 }
 ?>
 <!DOCTYPE html>
@@ -593,6 +572,8 @@ foreach ($calendarDays as &$dayInfo) {
                 margin-bottom: 30px;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
+                background: transparent;
+                backdrop-filter: none;
             }
             
             .calendar-grid-container::-webkit-scrollbar {
@@ -605,6 +586,17 @@ foreach ($calendarDays as &$dayInfo) {
                 min-width: calc(33.333% - 10px);
                 border: 1px solid rgba(90, 74, 66, 0.1);
                 border-radius: 8px;
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+            }
+
+            /* スマホ表示では土曜日の右ボーダーも表示 */
+            .calendar-day:nth-child(7n+14) {
+                border-right: 1px solid rgba(90, 74, 66, 0.1);
+            }
+
+            .calendar-day.today {
+                background: rgba(255, 229, 217, 0.8);
             }
 
             .calendar-day.empty {
@@ -1019,23 +1011,28 @@ foreach ($calendarDays as &$dayInfo) {
             <?php 
             $weekdayNames = ['日', '月', '火', '水', '木', '金', '土'];
             $weekdayNamesEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            foreach ($calendarDays as $dayInfo): 
-                $item = $dayInfo['item'];
-                $todayClass = $dayInfo['is_today'] ? 'today' : '';
-                $dayOfWeek = $dayInfo['day_of_week'];
+            
+            for ($day = 1; $day <= $daysInMonth; $day++):
+                $hasItem = isset($calendarItemsMap[$day]);
+                $item = $hasItem ? $calendarItemsMap[$day] : null;
+                $currentDate = mktime(0, 0, 0, $currentMonth, $day, $currentYear);
+                $dayOfWeek = date('w', $currentDate);
                 $weekdayName = $weekdayNames[$dayOfWeek];
                 $weekdayNameEn = $weekdayNamesEn[$dayOfWeek];
+                
+                $todayClass = ($day === $currentDay) ? 'today' : '';
                 $weekdayClass = '';
-                if ($dayOfWeek === 0) {
+                if ($dayOfWeek == 0) {
                     $weekdayClass = 'sunday';
-                } elseif ($dayOfWeek === 6) {
+                } elseif ($dayOfWeek == 6) {
                     $weekdayClass = 'saturday';
                 }
             ?>
-                <?php if ($item): ?>
+                <?php if ($hasItem): ?>
                     <a href="/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" 
-                       class="calendar-day has-item <?= $todayClass ?> <?= $weekdayClass ?>">
-                        <div class="calendar-day-date"><?= h($dayInfo['day']) ?><span class="calendar-day-weekday">(<?= h($weekdayNameEn) ?>)</span></div>
+                       class="calendar-day has-item <?= $todayClass ?> <?= $weekdayClass ?>"
+                       data-day="<?= h($day) ?>">
+                        <div class="calendar-day-date"><?= h($day) ?><span class="calendar-day-weekday">(<?= h($weekdayNameEn) ?>)</span></div>
                         <?php 
                         // サムネイルまたは画像を表示
                         $imagePath = $item['thumbnail_path'] ?? $item['image_path'];
@@ -1051,12 +1048,13 @@ foreach ($calendarDays as &$dayInfo) {
                         <div class="calendar-day-title"><?= h($item['title']) ?></div>
                     </a>
                 <?php else: ?>
-                    <div class="calendar-day <?= $todayClass ?> <?= $weekdayClass ?>">
-                        <div class="calendar-day-date"><?= h($dayInfo['day']) ?><span class="calendar-day-weekday">(<?= h($weekdayNameEn) ?>)</span></div>
+                    <div class="calendar-day <?= $todayClass ?> <?= $weekdayClass ?>"
+                         data-day="<?= h($day) ?>">
+                        <div class="calendar-day-date"><?= h($day) ?><span class="calendar-day-weekday">(<?= h($weekdayNameEn) ?>)</span></div>
                         <div class="calendar-day-empty">準備中</div>
                     </div>
                 <?php endif; ?>
-            <?php endforeach; ?>
+            <?php endfor; ?>
         </div>
         <a href="/calendar/" class="calendar-button">View Calendar →</a>
         </div>
