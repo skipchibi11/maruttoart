@@ -115,9 +115,13 @@ foreach ($calendarItems as $item) {
 
         /* ヒーローセクション */
         .hero {
-            padding: 60px 20px 80px;
+            padding: 60px 20px 40px;
             overflow: hidden;
             position: relative;
+        }
+
+        .hero .container {
+            padding: 0 20px;
         }
 
         .hero-content {
@@ -624,7 +628,7 @@ foreach ($calendarItems as $item) {
             overflow: hidden;
             position: relative;
             height: 140px;
-            margin: 40px 0;
+            margin: 0 0;
             display: flex;
             align-items: center;
         }
