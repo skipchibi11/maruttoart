@@ -270,7 +270,7 @@ foreach ($allMaterials as $material) {
             .workspace {
                 display: flex;
                 flex-direction: column;
-                gap: 0;
+                gap: 16px;
             }
         }
 
@@ -283,12 +283,22 @@ foreach ($allMaterials as $material) {
             min-width: 0; /* グリッドのオーバーフロー防止 */
         }
 
+        @media (min-width: 1025px) {
+            .canvas-area {
+                position: sticky;
+                top: 20px;
+                align-self: flex-start;
+                max-height: calc(100vh - 40px);
+                overflow: auto;
+            }
+        }
+
         @media (max-width: 768px) {
             .canvas-area {
                 position: sticky;
                 top: 0;
                 z-index: 100;
-                border-radius: 0 0 12px 12px;
+                border-radius: 12px;
                 padding: 12px;
                 background: rgba(255, 255, 255, 0.95);
                 backdrop-filter: blur(20px);
@@ -388,7 +398,7 @@ foreach ($allMaterials as $material) {
 
         @media (max-width: 768px) {
             .control-panel {
-                border-radius: 0;
+                border-radius: 12px;
                 padding: 16px;
                 background: rgba(255, 255, 255, 0.95);
             }
