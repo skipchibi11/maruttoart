@@ -365,7 +365,7 @@ foreach ($calendarItems as $item) {
             width: fit-content;
             margin: 0 auto;
             padding: 14px 48px;
-            background: var(--primary-color);
+            background: #C38E70;
             color: white;
             text-decoration: none;
             border-radius: 50px;
@@ -376,7 +376,7 @@ foreach ($calendarItems as $item) {
         }
 
         .more-button:hover {
-            background: var(--secondary-color);
+            background: #A0675C;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
@@ -537,7 +537,7 @@ foreach ($calendarItems as $item) {
             width: fit-content;
             margin: 0 auto;
             padding: 15px 40px;
-            background: var(--primary-color);
+            background: #C38E70;
             color: white;
             text-decoration: none;
             border-radius: 30px;
@@ -546,7 +546,7 @@ foreach ($calendarItems as $item) {
         }
 
         .calendar-button:hover {
-            background: var(--secondary-color);
+            background: #A0675C;
             transform: translateY(-2px);
         }
 
@@ -926,6 +926,7 @@ foreach ($calendarItems as $item) {
     include 'includes/header.php'; 
     ?>
 
+    <main role="main">
     <!-- ヒーローセクション -->
     <section class="hero">
         <div class="container">
@@ -1120,6 +1121,7 @@ foreach ($calendarItems as $item) {
             </div>
         </div>
     </div>
+    </main>
 
     <?php include 'includes/footer.php'; ?>
 

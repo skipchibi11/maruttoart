@@ -31,7 +31,7 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
 }
 
 .footer-menu-section a {
-    color: #8B7355;
+    color: #5A4A42;
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
@@ -59,7 +59,7 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
 }
 
 .footer-language a {
-    color: #8B7355;
+    color: #5A4A42;
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.2s ease;

@@ -323,7 +323,7 @@
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #8B7355;
+    color: #5A4A42;
     padding: 8px 20px;
     transition: color 0.2s;
 }
