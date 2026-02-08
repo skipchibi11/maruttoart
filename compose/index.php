@@ -360,7 +360,7 @@ foreach ($allMaterials as $material) {
         @media (max-width: 768px) {
             .canvas-wrapper {
                 min-height: 200px;
-                max-height: 35vh;
+                max-height: 300px;
                 padding: 10px;
                 border-radius: 8px;
             }
