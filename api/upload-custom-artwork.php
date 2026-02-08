@@ -120,7 +120,7 @@ try {
     // 権限設定
     chmod($destinationPath, 0644);
 
-    // WebP変換処理
+    // WebPサムネイル生成処理（300px最大サイズ）
     $webpPath = null;
     try {
         // 元画像を読み込み
@@ -132,24 +132,56 @@ try {
         }
 
         if ($sourceImage) {
-            // WebPファイル名生成
-            $webpFilename = $uniqueId . '.webp';
+            // 元画像のサイズを取得
+            $originalWidth = imagesx($sourceImage);
+            $originalHeight = imagesy($sourceImage);
+            error_log("Original size: {$originalWidth}x{$originalHeight}");
+
+            // サムネイルのサイズ計算（最大300px）
+            $maxSize = 300;
+            $scale = min($maxSize / $originalWidth, $maxSize / $originalHeight, 1);
+            $newWidth = (int)round($originalWidth * $scale);
+            $newHeight = (int)round($originalHeight * $scale);
+            error_log("Thumbnail size: {$newWidth}x{$newHeight}");
+
+            // サムネイル画像作成
+            $thumbnailImage = imagecreatetruecolor($newWidth, $newHeight);
+            
+            // 透過対応
+            imagealphablending($thumbnailImage, false);
+            imagesavealpha($thumbnailImage, true);
+            $transparent = imagecolorallocatealpha($thumbnailImage, 0, 0, 0, 127);
+            imagefill($thumbnailImage, 0, 0, $transparent);
+            imagealphablending($thumbnailImage, true);
+            
+            // リサイズ
+            imagecopyresampled(
+                $thumbnailImage, $sourceImage,
+                0, 0, 0, 0,
+                $newWidth, $newHeight,
+                $originalWidth, $originalHeight
+            );
+
+            // WebPファイル名生成（_thumb.webp サフィックス）
+            $webpFilename = $uniqueId . '_thumb.webp';
             $webpDestination = $uploadBaseDir . '/' . $webpFilename;
             $webpRelativePath = 'uploads/everyone-works/' . $yearMonth . '/' . $webpFilename;
 
             // WebP形式で保存（品質80）
-            if (imagewebp($sourceImage, $webpDestination, 80)) {
+            if (imagewebp($thumbnailImage, $webpDestination, 80)) {
                 chmod($webpDestination, 0644);
                 $webpPath = $webpRelativePath;
-                error_log("WebP created: " . $webpRelativePath);
+                $webpSize = filesize($webpDestination);
+                error_log("WebP thumbnail created: {$webpRelativePath} ({$newWidth}x{$newHeight}, {$webpSize} bytes)");
             } else {
-                error_log("Failed to create WebP: " . $webpDestination);
+                error_log("Failed to create WebP thumbnail: " . $webpDestination);
             }
 
+            imagedestroy($thumbnailImage);
             imagedestroy($sourceImage);
         }
     } catch (Exception $e) {
-        error_log("WebP conversion error: " . $e->getMessage());
+        error_log("WebP thumbnail conversion error: " . $e->getMessage());
         // WebP変換失敗しても処理は継続
     }
 
