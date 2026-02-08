@@ -284,69 +284,61 @@
 
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
-    .navbar {
-        padding: 1rem 0rem;
-    }
-    
-    .navbar-brand {
-        font-size: 1.5rem;
+    /* スマホではヘッダー全体を非表示 */
+    .navbar,
+    .navbar-home {
+        display: none;
     }
     
     .container {
         padding-left: 15px;
         padding-right: 15px;
-    }
-    
-    .main-navigation {
-        gap: 1rem;
-    }
-    
-    .nav-link {
-        font-size: 0.9rem;
-        padding: 0.4rem 0;
-    }
-    
-    .navbar-home {
-        padding: 1rem 0rem;
-    }
-    
-    .navbar-home .navbar-brand {
-        font-size: 1.5rem;
-    }
-    
-    .navbar-home .main-navigation {
-        gap: 1rem;
-    }
-    
-    .navbar-home .nav-link {
-        font-size: 0.9rem;
-        padding: 0.4rem 0;
+        padding-bottom: 80px; /* 固定フッターメニューの高さ分 */
     }
 }
 
-@media (max-width: 480px) {
-    .navbar-brand {
-        font-size: 1.3rem;
+/* スマホ用固定フッターメニュー */
+.mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid rgba(139, 115, 85, 0.2);
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+        justify-content: space-around;
+        align-items: center;
     }
     
-    .main-navigation {
-        gap: 0.8rem;
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #8B7355;
+        flex: 1;
+        padding: 12px 0;
+        transition: color 0.2s;
     }
     
-    .nav-link {
+    .mobile-nav-item:hover,
+    .mobile-nav-item.active {
+        color: #A0675C;
+        text-decoration: none;
+    }
+    
+    .mobile-nav-label {
         font-size: 0.85rem;
-    }
-    
-    .navbar-home .navbar-brand {
-        font-size: 1.3rem;
-    }
-    
-    .navbar-home .main-navigation {
-        gap: 0.8rem;
-    }
-    
-    .navbar-home .nav-link {
-        font-size: 0.85rem;
+        font-weight: 500;
     }
 }
 </style>
@@ -357,9 +349,10 @@
         <a class="navbar-brand" href="/">marutto.art</a>
         
         <div class="main-navigation">
-            <a href="/list.php" class="nav-link">Materials</a>
+            <a href="/compose/" class="nav-link">Mix</a>
+            <a href="/calendar/" class="nav-link">Calendar</a>
             <a href="/everyone-works.php" class="nav-link">Works</a>
-            <a href="/compose/" class="nav-link">Atelier</a>
+            <a href="/list.php" class="nav-link">Items</a>
         </div>
     </div>
 </nav>
@@ -369,10 +362,30 @@
         <a class="navbar-brand" href="/">marutto.art</a>
         
         <div class="main-navigation">
-            <a href="/list.php" class="nav-link<?= isset($currentPage) && $currentPage === 'list' ? ' active' : '' ?>">Materials</a>
+            <a href="/compose/" class="nav-link<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">Mix</a>
+            <a href="/calendar/" class="nav-link<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">Calendar</a>
             <a href="/everyone-works.php" class="nav-link<?= isset($currentPage) && $currentPage === 'everyone-works' ? ' active' : '' ?>">Works</a>
-            <a href="/compose/" class="nav-link<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">Atelier</a>
+            <a href="/list.php" class="nav-link<?= isset($currentPage) && $currentPage === 'list' ? ' active' : '' ?>">Items</a>
         </div>
     </div>
 </nav>
 <?php endif; ?>
+
+<!-- スマホ用固定フッターメニュー -->
+<nav class="mobile-bottom-nav">
+    <a href="/" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'home' ? ' active' : '' ?>">
+        <div class="mobile-nav-label">Marutto</div>
+    </a>
+    <a href="/compose/" class="mobile-nav-item<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">
+        <div class="mobile-nav-label">Mix</div>
+    </a>
+    <a href="/calendar/" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">
+        <div class="mobile-nav-label">Calendar</div>
+    </a>
+    <a href="/everyone-works.php" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'everyone-works' ? ' active' : '' ?>">
+        <div class="mobile-nav-label">Works</div>
+    </a>
+    <a href="/list.php" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'list' ? ' active' : '' ?>">
+        <div class="mobile-nav-label">Items</div>
+    </a>
+</nav>

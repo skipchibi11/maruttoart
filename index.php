@@ -37,16 +37,51 @@ $floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
 $floatingMaterialsStmt->execute();
 $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
-// 最新のカレンダーアイテム（GIF付き、当日以前）を3件取得
+// カレンダー表示用データ取得（当月全日）
+$today = new DateTime();
+$currentYear = (int)$today->format('Y');
+$currentMonth = (int)$today->format('n');
+$currentDay = (int)$today->format('j');
+$daysInMonth = (int)$today->format('t');
+
+// 月初の曜日（0:日曜 〜 6:土曜）
+$firstDayOfMonth = new DateTime("$currentYear-$currentMonth-1");
+$firstDayOfWeek = (int)$firstDayOfMonth->format('w');
+
+$calendarDays = [];
+for ($day = 1; $day <= $daysInMonth; $day++) {
+    $date = new DateTime("$currentYear-$currentMonth-$day");
+    $dayOfWeek = (int)$date->format('w');
+    
+    $calendarDays[] = [
+        'year' => $currentYear,
+        'month' => $currentMonth,
+        'day' => $day,
+        'is_today' => ($day === $currentDay),
+        'day_of_week' => $dayOfWeek
+    ];
+}
+
+// カレンダーアイテムを一括取得（当月分）
+$calendarItemsMap = [];
 $calendarSql = "SELECT * FROM calendar_items 
                 WHERE is_published = 1 
-                AND gif_path IS NOT NULL 
-                AND CONCAT(year, '-', LPAD(month, 2, '0'), '-', LPAD(day, 2, '0')) <= CURDATE()
-                ORDER BY year DESC, month DESC, day DESC 
-                LIMIT 3";
+                AND year = ? 
+                AND month = ?";
 $calendarStmt = $pdo->prepare($calendarSql);
-$calendarStmt->execute();
-$latestCalendarItems = $calendarStmt->fetchAll();
+$calendarStmt->execute([$currentYear, $currentMonth]);
+$calendarItems = $calendarStmt->fetchAll();
+
+foreach ($calendarItems as $item) {
+    $key = $item['year'] . '-' . $item['month'] . '-' . $item['day'];
+    $calendarItemsMap[$key] = $item;
+}
+
+// 各日付にアイテムを紐付け
+foreach ($calendarDays as &$dayInfo) {
+    $key = $dayInfo['year'] . '-' . $dayInfo['month'] . '-' . $dayInfo['day'];
+    $dayInfo['item'] = $calendarItemsMap[$key] ?? null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -422,42 +457,116 @@ $latestCalendarItems = $calendarStmt->fetchAll();
             letter-spacing: 0.1em;
         }
 
-        .calendar-items-grid {
+        .calendar-grid-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            overflow: hidden;
             margin-bottom: 40px;
         }
 
-        .calendar-item {
+        .calendar-day-header {
+            text-align: center;
+            font-weight: normal;
+            padding: 15px 5px;
+            color: var(--text-dark);
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(90, 74, 66, 0.2);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .calendar-day-header.sunday {
+            color: #FF6B6B;
+        }
+
+        .calendar-day-header.saturday {
+            color: #4ECDC4;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            padding: 10px;
+            border-right: 1px solid rgba(90, 74, 66, 0.1);
+            border-bottom: 1px solid rgba(90, 74, 66, 0.1);
+            position: relative;
+            background: transparent;
+            transition: background 0.3s;
+            display: flex;
+            flex-direction: column;
             text-decoration: none;
             color: inherit;
-            display: block;
-            transition: transform 0.3s;
         }
 
-        .calendar-item:hover {
-            transform: translateY(-5px);
+        /* 土曜日（7列目）の右ボーダーを消す */
+        .calendar-day:nth-child(7n+14) {
+            border-right: none;
         }
 
-        .calendar-item-image {
-            width: 100%;
-            aspect-ratio: 1;
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            margin-bottom: 12px;
+        .calendar-day.empty {
+            background: transparent;
         }
 
-        .calendar-item-date {
+        .calendar-day.has-item:hover {
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+        }
+
+        .calendar-day.today {
+            background: rgba(255, 229, 217, 0.5);
+        }
+
+        .calendar-day.today:hover {
+            background: rgba(255, 229, 217, 0.7);
+        }
+
+        .calendar-day-date {
             font-size: 0.85rem;
-            color: rgba(90, 74, 66, 0.6);
             margin-bottom: 5px;
+            color: var(--text-dark);
+            text-align: left;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
-        .calendar-item-title {
-            font-size: 0.95rem;
-            color: var(--text-dark);
+        .calendar-day-weekday {
+            display: none; /* PC版では非表示 */
+        }
+
+        .calendar-day.sunday .calendar-day-date {
+            color: #FF6B6B;
+        }
+
+        .calendar-day.saturday .calendar-day-date {
+            color: #4ECDC4;
+        }
+
+        .calendar-day.today .calendar-day-date {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .calendar-day-image {
+            width: 100%;
+            height: auto;
+            max-height: 80%;
+            object-fit: contain;
+            display: block;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .calendar-day-title {
+            display: none;
+        }
+
+        .calendar-day-empty {
+            font-size: 0.7rem;
+            color: rgba(90, 74, 66, 0.3);
+            text-align: center;
+            margin-top: auto;
         }
 
         .calendar-button {
@@ -479,8 +588,54 @@ $latestCalendarItems = $calendarStmt->fetchAll();
         }
 
         @media (max-width: 768px) {
-            .calendar-items-grid {
-                grid-template-columns: 1fr;
+            .calendar-section {
+                padding: 40px 0;
+            }
+
+            .calendar-day-header {
+                display: none;
+            }
+            
+            .calendar-grid-container {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                gap: 10px;
+                padding: 0 20px;
+                margin-bottom: 30px;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            
+            .calendar-grid-container::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .calendar-day {
+                flex: 0 0 calc(33.333% - 10px);
+                scroll-snap-align: center;
+                min-width: calc(33.333% - 10px);
+                border: 1px solid rgba(90, 74, 66, 0.1);
+                border-radius: 8px;
+            }
+
+            .calendar-day.empty {
+                display: flex;
+            }
+            
+            .calendar-day-date {
+                font-size: 0.8rem;
+            }
+            
+            .calendar-day-weekday {
+                display: inline; /* スマホ版では表示 */
+                font-size: 0.65rem;
+                margin-left: 3px;
+                opacity: 0.7;
+            }
+            
+            .calendar-day-title {
+                font-size: 0.7rem;
             }
         }
 
@@ -859,6 +1014,67 @@ $latestCalendarItems = $calendarStmt->fetchAll();
         </div>
     </div>
 
+    <!-- カレンダーセクション -->
+    <section class="calendar-section">
+        <h2 class="calendar-section-title">MARUTTO.ART CALENDAR</h2>
+        <div class="calendar-grid-container" id="calendarGrid">
+            <!-- 曜日ヘッダー -->
+            <div class="calendar-day-header sunday">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header saturday">Sat</div>
+            
+            <!-- 月初前の空白 -->
+            <?php for ($i = 0; $i < $firstDayOfWeek; $i++): ?>
+                <div class="calendar-day empty"></div>
+            <?php endfor; ?>
+            
+            <!-- カレンダーの日付 -->
+            <?php 
+            $weekdayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            $weekdayNamesEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            foreach ($calendarDays as $dayInfo): 
+                $item = $dayInfo['item'];
+                $todayClass = $dayInfo['is_today'] ? 'today' : '';
+                $dayOfWeek = $dayInfo['day_of_week'];
+                $weekdayName = $weekdayNames[$dayOfWeek];
+                $weekdayNameEn = $weekdayNamesEn[$dayOfWeek];
+                $weekdayClass = '';
+                if ($dayOfWeek === 0) {
+                    $weekdayClass = 'sunday';
+                } elseif ($dayOfWeek === 6) {
+                    $weekdayClass = 'saturday';
+                }
+            ?>
+                <?php if ($item): ?>
+                    <a href="/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" 
+                       class="calendar-day has-item <?= $todayClass ?> <?= $weekdayClass ?>">
+                        <div class="calendar-day-date"><?= h($dayInfo['day']) ?><span class="calendar-day-weekday">(<?= h($weekdayNameEn) ?>)</span></div>
+                        <?php 
+                        // サムネイルまたは画像を表示
+                        $imagePath = $item['thumbnail_path'] ?? $item['image_path'];
+                        if ($imagePath):
+                        ?>
+                            <img src="/<?= h($imagePath) ?>" 
+                                 alt="<?= h($item['title']) ?>" 
+                                 class="calendar-day-image">
+                        <?php endif; ?>
+                        <div class="calendar-day-title"><?= h($item['title']) ?></div>
+                    </a>
+                <?php else: ?>
+                    <div class="calendar-day <?= $todayClass ?> <?= $weekdayClass ?>">
+                        <div class="calendar-day-date"><?= h($dayInfo['day']) ?><span class="calendar-day-weekday">(<?= h($weekdayNameEn) ?>)</span></div>
+                        <div class="calendar-day-empty">準備中</div>
+                    </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+        <a href="/calendar/" class="calendar-button">View Calendar →</a>
+    </section>
+
     <!-- みんなの作品セクション -->
     <section class="section">
         <div class="container">
@@ -921,27 +1137,6 @@ $latestCalendarItems = $calendarStmt->fetchAll();
         </div>
     </div>
 
-    <!-- カレンダーセクション -->
-    <?php if (!empty($latestCalendarItems)): ?>
-    <section class="calendar-section">
-        <h2 class="calendar-section-title">MARUTTO.ART CALENDAR</h2>
-        <div class="calendar-items-grid">
-            <?php foreach ($latestCalendarItems as $calendarItem): ?>
-                <a href="/calendar-detail/?year=<?= h($calendarItem['year']) ?>&month=<?= h($calendarItem['month']) ?>&day=<?= h($calendarItem['day']) ?>" class="calendar-item">
-                    <img src="/<?= h($calendarItem['gif_path']) ?>" 
-                         alt="<?= h($calendarItem['title']) ?>" 
-                         class="calendar-item-image">
-                    <div class="calendar-item-date">
-                        <?= h($calendarItem['year']) ?>.<?= sprintf('%02d', $calendarItem['month']) ?>.<?= sprintf('%02d', $calendarItem['day']) ?>
-                    </div>
-                    <div class="calendar-item-title"><?= h($calendarItem['title']) ?></div>
-                </a>
-            <?php endforeach; ?>
-        </div>
-        <a href="/calendar/" class="calendar-button">View Calendar →</a>
-    </section>
-    <?php endif; ?>
-
     <?php include 'includes/footer.php'; ?>
 
     <script>
@@ -989,6 +1184,30 @@ $latestCalendarItems = $calendarStmt->fetchAll();
         // PC版とモバイル版で独立してアニメーション
         scheduleNextPeek('peek-animal-pc');
         scheduleNextPeek('peek-animal-mobile');
+        
+        // カレンダーのスワイプ機能（スマホのみ）
+        const calendarGrid = document.getElementById('calendarGrid');
+        if (calendarGrid && window.innerWidth <= 768) {
+            // 当日の要素を取得
+            const todayElement = calendarGrid.querySelector('.calendar-day.today');
+            
+            if (todayElement) {
+                // 当日を中央に配置（少し遅延させて確実にレンダリング後に実行）
+                setTimeout(() => {
+                    const containerWidth = calendarGrid.offsetWidth;
+                    const elementWidth = todayElement.offsetWidth;
+                    const elementLeft = todayElement.offsetLeft;
+                    
+                    // 要素を中央に配置するスクロール位置を計算
+                    const scrollPosition = elementLeft - (containerWidth / 2) + (elementWidth / 2);
+                    
+                    calendarGrid.scrollTo({
+                        left: scrollPosition,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+        }
     });
     </script>
 </body>
