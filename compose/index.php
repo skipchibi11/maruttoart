@@ -212,7 +212,7 @@ foreach ($allMaterials as $material) {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 12px;
-            max-height: 300px;
+            max-height: 150px;
             overflow-y: auto;
             padding: 8px;
         }

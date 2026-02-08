@@ -283,62 +283,76 @@
 }
 
 /* レスポンシブ対応 */
+/* PC・スマホ共通でヘッダーを非表示 */
+.navbar,
+.navbar-home {
+    display: none;
+}
+
+.container {
+    padding-bottom: 80px; /* 固定フッターメニューの高さ分 */
+}
+
 @media (max-width: 768px) {
-    /* スマホではヘッダー全体を非表示 */
-    .navbar,
-    .navbar-home {
-        display: none;
-    }
-    
     .container {
         padding-left: 15px;
         padding-right: 15px;
-        padding-bottom: 80px; /* 固定フッターメニューの高さ分 */
     }
 }
 
-/* スマホ用固定フッターメニュー */
+/* PC・スマホ共通の固定フッターメニュー */
 .mobile-bottom-nav {
-    display: none;
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid rgba(139, 115, 85, 0.2);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #8B7355;
+    padding: 8px 20px;
+    transition: color 0.2s;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.active {
+    color: #A0675C;
+    text-decoration: none;
+}
+
+.mobile-nav-label {
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
 @media (max-width: 768px) {
     .mobile-bottom-nav {
-        display: flex;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        border-top: 1px solid rgba(139, 115, 85, 0.2);
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-        padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+        gap: 0;
         justify-content: space-around;
-        align-items: center;
+        padding: 8px 0 max(8px, env(safe-area-inset-bottom));
     }
     
     .mobile-nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        color: #8B7355;
         flex: 1;
         padding: 12px 0;
-        transition: color 0.2s;
-    }
-    
-    .mobile-nav-item:hover,
-    .mobile-nav-item.active {
-        color: #A0675C;
-        text-decoration: none;
     }
     
     .mobile-nav-label {
         font-size: 0.85rem;
-        font-weight: 500;
     }
 }
 </style>
