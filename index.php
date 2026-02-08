@@ -979,6 +979,37 @@ foreach ($calendarDays as &$dayInfo) {
         </div>
     </section>
 
+    <!-- スクロールアニメーション -->
+    <div class="scroll-divider">
+        <div class="scroll-track">
+            <?php 
+            // 2回繰り返して途切れないようにする
+            for ($i = 0; $i < 2; $i++):
+                foreach ($scrollItems as $item): 
+                    $imageUrl = $item['image_path'] ?? '';
+                    if (empty($imageUrl)) continue;
+                    
+                    $scrollBgColor = '';
+                    if ($item['type'] === 'material' && !empty($item['category_slug']) && !empty($item['slug'])) {
+                        $link = '/' . h($item['category_slug']) . '/' . h($item['slug']) . '/';
+                        $scrollBgColor = !empty($item['structured_bg_color']) ? $item['structured_bg_color'] : '#ffffff';
+                    } elseif ($item['type'] === 'artwork') {
+                        $link = '/everyone-work.php?id=' . h($item['id']);
+                        $scrollBgColor = '#ffffff';
+                    } else {
+                        continue;
+                    }
+            ?>
+                <a href="<?= $link ?>" class="scroll-item" style="background-color: <?= h($scrollBgColor) ?>; backdrop-filter: none;">
+                    <img src="/<?= h($imageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy" width="100" height="100">
+                </a>
+            <?php 
+                endforeach;
+            endfor;
+            ?>
+        </div>
+    </div>
+
     <!-- カレンダーセクション -->
     <section class="calendar-section">
         <h2 class="calendar-section-title">MARUTTO.ART CALENDAR</h2>
@@ -1042,37 +1073,6 @@ foreach ($calendarDays as &$dayInfo) {
         </div>
         <a href="/calendar/" class="calendar-button">View Calendar →</a>
     </section>
-
-    <!-- スクロールアニメーション -->
-    <div class="scroll-divider">
-        <div class="scroll-track">
-            <?php 
-            // 2回繰り返して途切れないようにする
-            for ($i = 0; $i < 2; $i++):
-                foreach ($scrollItems as $item): 
-                    $imageUrl = $item['image_path'] ?? '';
-                    if (empty($imageUrl)) continue;
-                    
-                    $scrollBgColor = '';
-                    if ($item['type'] === 'material' && !empty($item['category_slug']) && !empty($item['slug'])) {
-                        $link = '/' . h($item['category_slug']) . '/' . h($item['slug']) . '/';
-                        $scrollBgColor = !empty($item['structured_bg_color']) ? $item['structured_bg_color'] : '#ffffff';
-                    } elseif ($item['type'] === 'artwork') {
-                        $link = '/everyone-work.php?id=' . h($item['id']);
-                        $scrollBgColor = '#ffffff';
-                    } else {
-                        continue;
-                    }
-            ?>
-                <a href="<?= $link ?>" class="scroll-item" style="background-color: <?= h($scrollBgColor) ?>; backdrop-filter: none;">
-                    <img src="/<?= h($imageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy" width="100" height="100">
-                </a>
-            <?php 
-                endforeach;
-            endfor;
-            ?>
-        </div>
-    </div>
 
     <!-- みんなの作品セクション -->
     <section class="section">
