@@ -190,6 +190,12 @@ foreach ($allMaterials as $material) {
             flex-wrap: wrap;
         }
 
+        @media (max-width: 768px) {
+            .category-tabs {
+                display: none;
+            }
+        }
+
         .category-tab {
             padding: 8px 20px;
             border-radius: 50px;
@@ -290,22 +296,7 @@ foreach ($allMaterials as $material) {
             }
         }
 
-        .canvas-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
 
-        @media (max-width: 768px) {
-            .canvas-controls {
-                margin-bottom: 8px;
-                gap: 6px;
-                font-size: 0.85rem;
-            }
-        }
 
         .canvas-size-selector {
             display: flex;
@@ -961,25 +952,6 @@ foreach ($allMaterials as $material) {
         <div class="workspace">
             <!-- キャンバスエリア -->
             <div class="canvas-area">
-                <div class="canvas-controls">
-                    <div class="canvas-size-selector">
-                        <label>サイズ:</label>
-                        <select id="canvasSize" onchange="handleCanvasSizeChange()">
-                            <option value="800x800">正方形 (800×800)</option>
-                            <option value="1200x630">横長 (1200×630)</option>
-                            <option value="630x1200">縦長 (630×1200)</option>
-                            <option value="1920x1080">HD (1920×1080)</option>
-                            <option value="custom">カスタム</option>
-                        </select>
-                        <div class="custom-size-inputs" id="customSizeInputs">
-                            <input type="number" id="customWidth" placeholder="幅" min="100" max="5000" value="800">
-                            <span>×</span>
-                            <input type="number" id="customHeight" placeholder="高さ" min="100" max="5000" value="800">
-                            <button class="control-btn" onclick="applyCustomSize()" style="padding: 8px 12px; font-size: 0.85rem;">適用</button>
-                        </div>
-                    </div>
-                    <button class="control-btn" onclick="clearAll()">全削除</button>
-                </div>
                 <div class="canvas-wrapper">
                     <canvas id="canvas"></canvas>
                 </div>
@@ -994,6 +966,14 @@ foreach ($allMaterials as $material) {
                     <p style="color: #999; font-size: 0.85rem; text-align: center; padding: 20px 0;">素材を選択してください</p>
                 </div>
                 <button id="randomColorBtn" class="secondary-btn full-width" onclick="applyRandomColors()" style="margin-top: 12px; display: none;">Change Random Color</button>
+            </div>
+
+            <!-- レイヤー -->
+            <div class="control-section">
+                <h3 class="control-title">レイヤー</h3>
+                <div class="layer-list" id="layerList">
+                    <!-- レイヤーがここに表示されます -->
+                </div>
             </div>
 
             <!-- 背景設定 -->
@@ -1014,12 +994,26 @@ foreach ($allMaterials as $material) {
                 </div>
             </div>
 
-            <!-- レイヤー -->
+            <!-- キャンバス設定 -->
             <div class="control-section">
-                <h3 class="control-title">レイヤー</h3>
-                <div class="layer-list" id="layerList">
-                    <!-- レイヤーがここに表示されます -->
+                <h3 class="control-title">キャンバス</h3>
+                <div class="canvas-size-selector" style="margin-bottom: 12px;">
+                    <label>サイズ:</label>
+                    <select id="canvasSize" onchange="handleCanvasSizeChange()">
+                        <option value="800x800">正方形 (800×800)</option>
+                        <option value="1200x630">横長 (1200×630)</option>
+                        <option value="630x1200">縦長 (630×1200)</option>
+                        <option value="1920x1080">HD (1920×1080)</option>
+                        <option value="custom">カスタム</option>
+                    </select>
                 </div>
+                <div class="custom-size-inputs" id="customSizeInputs" style="margin-bottom: 12px;">
+                    <input type="number" id="customWidth" placeholder="幅" min="100" max="5000" value="800">
+                    <span>×</span>
+                    <input type="number" id="customHeight" placeholder="高さ" min="100" max="5000" value="800">
+                    <button class="control-btn" onclick="applyCustomSize()" style="padding: 8px 12px; font-size: 0.85rem;">適用</button>
+                </div>
+                <button class="secondary-btn full-width" onclick="clearAll()">全削除</button>
             </div>
 
             <!-- アクション -->
