@@ -643,7 +643,7 @@ foreach ($calendarDays as &$dayInfo) {
         .scroll-divider {
             overflow: hidden;
             position: relative;
-            height: 280px;
+            height: 140px;
             margin: 40px 0;
             display: flex;
             align-items: center;
@@ -651,19 +651,21 @@ foreach ($calendarDays as &$dayInfo) {
 
         .scroll-track {
             display: flex;
-            gap: 20px;
+            gap: 10px;
             animation: scrollLeft 60s linear infinite;
             will-change: transform;
         }
 
         .scroll-item {
-            height: 240px;
+            width: 120px;
+            height: 120px;
             flex-shrink: 0;
-            padding: 20px;
+            padding: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             background: white;
             position: relative;
-            border-radius: 16px;
+            border-radius: 12px;
+            aspect-ratio: 1;
         }
 
         .scroll-item img {
@@ -980,6 +982,23 @@ foreach ($calendarDays as &$dayInfo) {
                     $imageUrl = $item['image_path'] ?? '';
                     if (empty($imageUrl)) continue;
                     
+                    // 正方形の素材のみに絞る（CLS対策）
+                    $fullPath = __DIR__ . '/' . $imageUrl;
+                    if (file_exists($fullPath)) {
+                        $imageSize = @getimagesize($fullPath);
+                        if ($imageSize && $imageSize[0] > 0 && $imageSize[1] > 0) {
+                            $aspectRatio = $imageSize[0] / $imageSize[1];
+                            // アスペクト比が0.9〜1.1の範囲（ほぼ正方形）のみ表示
+                            if ($aspectRatio < 0.9 || $aspectRatio > 1.1) {
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+                    
                     $scrollBgColor = '';
                     if ($item['type'] === 'material' && !empty($item['category_slug']) && !empty($item['slug'])) {
                         $link = '/' . h($item['category_slug']) . '/' . h($item['slug']) . '/';
@@ -990,22 +1009,9 @@ foreach ($calendarDays as &$dayInfo) {
                     } else {
                         continue;
                     }
-                    
-                    // 画像のアスペクト比を取得して幅を計算
-                    $itemWidth = 240; // デフォルト（正方形）
-                    $fullPath = __DIR__ . '/' . $imageUrl;
-                    if (file_exists($fullPath)) {
-                        $imageSize = @getimagesize($fullPath);
-                        if ($imageSize && $imageSize[0] > 0 && $imageSize[1] > 0) {
-                            $aspectRatio = $imageSize[0] / $imageSize[1];
-                            $itemWidth = round(240 * $aspectRatio);
-                            // 最小120px、最大480pxに制限
-                            $itemWidth = max(120, min(480, $itemWidth));
-                        }
-                    }
             ?>
-                <a href="<?= $link ?>" class="scroll-item" style="width: <?= $itemWidth ?>px; background-color: <?= h($scrollBgColor) ?>; backdrop-filter: none;">
-                    <img src="/<?= h($imageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy">
+                <a href="<?= $link ?>" class="scroll-item" style="background-color: <?= h($scrollBgColor) ?>; backdrop-filter: none;">
+                    <img src="/<?= h($imageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy" width="100" height="100">
                 </a>
             <?php 
                 endforeach;
