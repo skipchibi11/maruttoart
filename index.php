@@ -1020,7 +1020,10 @@ foreach ($calendarDays as &$dayInfo) {
                         ?>
                             <img src="/<?= h($imagePath) ?>" 
                                  alt="<?= h($item['title']) ?>" 
-                                 class="calendar-day-image">
+                                 class="calendar-day-image"
+                                 width="200"
+                                 height="200"
+                                 loading="lazy">
                         <?php endif; ?>
                         <div class="calendar-day-title"><?= h($item['title']) ?></div>
                     </a>
