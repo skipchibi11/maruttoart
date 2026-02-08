@@ -1443,8 +1443,11 @@ foreach ($allMaterials as $material) {
             // 表示エリアに収まるように調整
             fitCanvasToContainer();
             
-            // ウィンドウリサイズ時にも調整
-            window.addEventListener('resize', fitCanvasToContainer);
+            // ウィンドウリサイズ時にも調整（デバウンス）
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(fitCanvasToContainer, 150);
+            });
         }
 
         // カテゴリの開閉
@@ -1872,10 +1875,24 @@ foreach ($allMaterials as $material) {
         }
         
         // キャンバスを表示エリアに収める
+        let resizeTimeout;
+        let lastWrapperHeight = null;
+
         function fitCanvasToContainer() {
             const wrapper = document.querySelector('.canvas-wrapper');
             const maxWidth = wrapper.clientWidth - 40; // padding考慮
-            const maxHeight = wrapper.clientHeight - 40;
+            
+            // スマホの場合、高さの微小な変更（アドレスバー）を無視
+            const currentHeight = wrapper.clientHeight;
+            if (window.innerWidth <= 768) {
+                if (lastWrapperHeight !== null && Math.abs(currentHeight - lastWrapperHeight) < 50) {
+                    // 高さの変化が50px未満の場合は再計算しない
+                    return;
+                }
+            }
+            lastWrapperHeight = currentHeight;
+            
+            const maxHeight = currentHeight - 40;
             
             // 元の（データ）サイズを使用
             const canvasWidth = originalCanvasWidth;
