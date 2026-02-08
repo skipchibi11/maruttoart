@@ -6,8 +6,8 @@ setPublicCache(3600, 7200); // 1時間 / CDN 2時間
 
 $pdo = getDB();
 
-// みんなの作品を6件取得
-$artworksSql = "SELECT * FROM community_artworks WHERE status = 'approved' ORDER BY created_at DESC LIMIT 6";
+// みんなの作品を10件取得
+$artworksSql = "SELECT * FROM community_artworks WHERE status = 'approved' ORDER BY created_at DESC LIMIT 10";
 $artworksStmt = $pdo->prepare($artworksSql);
 $artworksStmt->execute();
 $artworks = $artworksStmt->fetchAll();
@@ -287,78 +287,53 @@ foreach ($calendarDays as &$dayInfo) {
             color: #A0675C;
         }
 
-        /* みんなの作品セクション */
+        /* みんなの作品セクション - マンソリーレイアウト */
         .artworks-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 20px;
+            column-count: 5;
+            column-gap: 20px;
             margin-bottom: 40px;
             width: 90%;
             margin-left: auto;
             margin-right: auto;
-            /* CLS対策: 最小高さを確保 */
-            min-height: 240px;
         }
 
         .artwork-card {
             text-decoration: none;
             color: inherit;
-            display: flex;
-            flex-direction: column;
-            border-radius: 12px;
-            overflow: visible;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s, box-shadow 0.3s;
-            padding: 16px;
+            display: block;
+            margin-bottom: 20px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+            transition: transform 0.3s;
         }
 
         .artwork-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: scale(1.02);
         }
 
         .artwork-image-wrapper {
             width: 100%;
-            aspect-ratio: 1 / 1;
-            max-height: 200px;
-            min-height: 180px;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            /* CLS対策: 初期状態でも領域を確保 */
-            position: relative;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .artwork-card:hover .artwork-image-wrapper {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
         }
 
         .artwork-image {
-            max-width: 100%;
-            max-height: 100%;
             width: 100%;
-            height: 100%;
-            object-fit: contain;
+            height: auto;
             display: block;
-            border-radius: 8px;
-            /* CLS対策: 画像読み込み前も領域を確保 */
         }
 
-        .artwork-info {
-            padding: 16px 0 0 0;
-            text-align: left;
-            background: white;
-        }
-
-        .artwork-title {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: #666;
-            line-height: 1.4;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        @media (max-width: 768px) {
+            .artworks-grid {
+                column-count: 3;
+                column-gap: 15px;
+            }
         }
 
         /* 好きな素材をみつけようセクション */
@@ -443,12 +418,15 @@ foreach ($calendarDays as &$dayInfo) {
 
         /* カレンダーセクション */
         .calendar-section {
-            max-width: 1200px;
-            margin: 80px auto 60px auto;
-            padding: 60px 40px;
-            background: rgba(255, 255, 255, 0.7);
+            padding: 60px 20px;
+            position: relative;
+        }
+
+        .calendar-section .container {
+            background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
-            border-radius: 16px;
+            border-radius: 20px;
+            padding: 40px;
         }
 
         .calendar-section-title {
@@ -592,6 +570,14 @@ foreach ($calendarDays as &$dayInfo) {
         @media (max-width: 768px) {
             .calendar-section {
                 padding: 40px 0;
+            }
+
+            .calendar-section .container {
+                padding: 20px 0;
+            }
+
+            .calendar-section-title {
+                padding: 0 20px;
             }
 
             .calendar-day-header {
@@ -1012,8 +998,9 @@ foreach ($calendarDays as &$dayInfo) {
 
     <!-- カレンダーセクション -->
     <section class="calendar-section">
-        <h2 class="calendar-section-title">MARUTTO.ART CALENDAR</h2>
-        <div class="calendar-grid-container" id="calendarGrid">
+        <div class="container">
+            <h2 class="calendar-section-title">Calendar</h2>
+            <div class="calendar-grid-container" id="calendarGrid">
             <!-- 曜日ヘッダー -->
             <div class="calendar-day-header sunday">Sun</div>
             <div class="calendar-day-header">Mon</div>
@@ -1072,12 +1059,13 @@ foreach ($calendarDays as &$dayInfo) {
             <?php endforeach; ?>
         </div>
         <a href="/calendar/" class="calendar-button">View Calendar →</a>
+        </div>
     </section>
 
     <!-- みんなの作品セクション -->
     <section class="section">
         <div class="container">
-            <h2 class="section-title">みんなの作品</h2>
+            <h2 class="section-title">Works</h2>
             
             <div class="artworks-grid">
                 <?php foreach ($artworks as $artwork): ?>
@@ -1089,24 +1077,19 @@ foreach ($calendarDays as &$dayInfo) {
                         <img src="/<?= h($imageUrl) ?>" 
                              alt="<?= h($artwork['title']) ?>" 
                              class="artwork-image" 
-                             loading="lazy"
-                             width="200"
-                             height="200">
-                    </div>
-                    <div class="artwork-info">
-                        <div class="artwork-title"><?= h($artwork['title']) ?></div>
+                             loading="lazy">
                     </div>
                 </a>
             <?php endforeach; ?>
             </div>
 
-            <a href="/everyone-works.php" class="more-button">もっと見る →</a>
+            <a href="/everyone-works.php" class="more-button">View Works →</a>
         </div>
     </section>
     <!-- 好きな素材をみつけよう��クション -->
     <section class="section">
         <div class="container">
-            <h2 class="section-title">好きな素材をみつけよう</h2>
+            <h2 class="section-title">Items</h2>
             
             <div class="materials-grid">
                 <?php foreach ($randomMaterials as $material): ?>
@@ -1122,7 +1105,7 @@ foreach ($calendarDays as &$dayInfo) {
                 <?php endforeach; ?>
             </div>
 
-            <a href="/list.php" class="more-button">他の素材を探す →</a>
+            <a href="/list.php" class="more-button">View Items →</a>
         </div>
     </section>
 
