@@ -321,8 +321,8 @@ function generateWebPThumbnail($sourcePath, $destinationPath) {
         $sourceWidth = imagesx($sourceImage);
         $sourceHeight = imagesy($sourceImage);
 
-        // サムネイルサイズ（最大400px）
-        $maxSize = 400;
+        // サムネイルサイズ（最大200px - スマホ最適化）
+        $maxSize = 300;
         if ($sourceWidth > $sourceHeight) {
             $newWidth = $maxSize;
             $newHeight = intval($sourceHeight * ($maxSize / $sourceWidth));
