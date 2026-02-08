@@ -961,7 +961,12 @@ foreach ($calendarDays as &$dayInfo) {
                 
                 <div class="hero-image-container">
                     <!-- ヒーロー画像を後で配置 -->
-                    <img src="/assets/images/hero-illustration.png" alt="3つのイラストを組み合わせて物語を作る" class="hero-image">
+                    <img src="/assets/images/hero-illustration.png" 
+                         alt="3つのイラストを組み合わせて物語を作る" 
+                         class="hero-image"
+                         width="600"
+                         height="600"
+                         loading="eager">
                 </div>
                 
                 <div class="hero-cta-mobile">
