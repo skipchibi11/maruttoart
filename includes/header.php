@@ -317,7 +317,7 @@
     gap: 40px;
 }
 
-/* 固定フッターの上に配置する英語バージョンバッジ */
+/* 固定フッターの上に配置する言語選択バッジ */
 .footer-language-badge-fixed {
     position: fixed;
     bottom: 70px;
@@ -325,7 +325,7 @@
     z-index: 999;
 }
 
-.footer-language-badge-fixed a {
+.footer-language-badge-fixed .language-toggle {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -340,9 +340,11 @@
     font-weight: 500;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    user-select: none;
 }
 
-.footer-language-badge-fixed a:hover {
+.footer-language-badge-fixed .language-toggle:hover {
     background: rgba(255, 255, 255, 1);
     border-color: #A0675C;
     color: #A0675C;
@@ -353,6 +355,63 @@
 .footer-language-badge-fixed svg {
     width: 14px;
     height: 14px;
+    transition: transform 0.3s ease;
+}
+
+.footer-language-badge-fixed.open svg {
+    transform: rotate(180deg);
+}
+
+/* 言語ドロップダウンメニュー */
+.language-dropdown {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(160, 103, 92, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    min-width: 150px;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.footer-language-badge-fixed.open .language-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.language-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    color: #5A4A42;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(160, 103, 92, 0.1);
+}
+
+.language-dropdown a:last-child {
+    border-bottom: none;
+}
+
+.language-dropdown a:hover {
+    background: rgba(160, 103, 92, 0.08);
+    color: #A0675C;
+}
+
+.language-dropdown a.active {
+    background: rgba(160, 103, 92, 0.12);
+    color: #A0675C;
+    font-weight: 600;
 }
 
 .mobile-nav-item {
@@ -398,7 +457,7 @@
         right: 10px;
     }
     
-    .footer-language-badge-fixed a {
+    .footer-language-badge-fixed .language-toggle {
         padding: 6px 12px;
         font-size: 0.75rem;
         gap: 4px;
@@ -407,6 +466,15 @@
     .footer-language-badge-fixed svg {
         width: 12px;
         height: 12px;
+    }
+    
+    .language-dropdown {
+        min-width: 130px;
+    }
+    
+    .language-dropdown a {
+        padding: 8px 12px;
+        font-size: 0.8rem;
     }
 }
 </style>
@@ -439,17 +507,42 @@
 </nav>
 <?php endif; ?>
 
-<!-- 英語バージョンバッジ（固定フッターの上に配置） -->
-<div class="footer-language-badge-fixed">
-    <a href="/en/" title="English Version">
+<!-- 言語選択バッジ（固定フッターの上に配置） -->
+<div class="footer-language-badge-fixed" id="languageSelector">
+    <div class="language-toggle" onclick="toggleLanguageMenu()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="2" y1="12" x2="22" y2="12"></line>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
         </svg>
-        English
-    </a>
+        Language
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    </div>
+    <div class="language-dropdown">
+        <a href="/" class="active">🇯🇵 日本語</a>
+        <a href="/en/">🇬🇧 English</a>
+        <a href="/es/">🇪🇸 Español</a>
+        <a href="/fr/">🇫🇷 Français</a>
+        <a href="/nl/">🇳🇱 Nederlands</a>
+    </div>
 </div>
+
+<script>
+function toggleLanguageMenu() {
+    const selector = document.getElementById('languageSelector');
+    selector.classList.toggle('open');
+}
+
+// クリック外でメニューを閉じる
+document.addEventListener('click', function(event) {
+    const selector = document.getElementById('languageSelector');
+    if (selector && !selector.contains(event.target)) {
+        selector.classList.remove('open');
+    }
+});
+</script>
 
 <!-- スマホ用固定フッターメニュー -->
 <nav class="mobile-bottom-nav">
