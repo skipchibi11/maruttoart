@@ -317,6 +317,44 @@
     gap: 40px;
 }
 
+/* 固定フッターの上に配置する英語バージョンバッジ */
+.footer-language-badge-fixed {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    z-index: 999;
+}
+
+.footer-language-badge-fixed a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(160, 103, 92, 0.2);
+    border-radius: 20px;
+    color: #5A4A42;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.footer-language-badge-fixed a:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: #A0675C;
+    color: #A0675C;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.footer-language-badge-fixed svg {
+    width: 14px;
+    height: 14px;
+}
+
 .mobile-nav-item {
     display: flex;
     flex-direction: column;
@@ -354,6 +392,22 @@
     .mobile-nav-label {
         font-size: 0.85rem;
     }
+    
+    .footer-language-badge-fixed {
+        bottom: 65px;
+        right: 10px;
+    }
+    
+    .footer-language-badge-fixed a {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        gap: 4px;
+    }
+    
+    .footer-language-badge-fixed svg {
+        width: 12px;
+        height: 12px;
+    }
 }
 </style>
 
@@ -384,6 +438,18 @@
     </div>
 </nav>
 <?php endif; ?>
+
+<!-- 英語バージョンバッジ（固定フッターの上に配置） -->
+<div class="footer-language-badge-fixed">
+    <a href="/en/" title="English Version">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        English
+    </a>
+</div>
 
 <!-- スマホ用固定フッターメニュー -->
 <nav class="mobile-bottom-nav">
