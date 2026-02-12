@@ -33,12 +33,12 @@ function getArtworkImageUrl($artwork) {
     $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'https';
     $host = $_SERVER['HTTP_HOST'];
     
-    // WebP優先、次にimage_path
+    // PNG優先、次にwebp_path
     $imagePath = '';
-    if (!empty($artwork['webp_path'])) {
-        $imagePath = ltrim($artwork['webp_path'], '/');
-    } elseif (!empty($artwork['image_path'])) {
+    if (!empty($artwork['image_path'])) {
         $imagePath = ltrim($artwork['image_path'], '/');
+    } elseif (!empty($artwork['webp_path'])) {
+        $imagePath = ltrim($artwork['webp_path'], '/');
     }
     
     if ($imagePath) {
@@ -60,7 +60,7 @@ function getDownloadImagePath($artwork) {
         }
     }
     
-    // image_pathも確認
+    // image_pathも確認（PNG優先）
     if (!empty($artwork['image_path'])) {
         // 年/月のディレクトリ構造も確認
         $year = date('Y', strtotime($artwork['created_at']));

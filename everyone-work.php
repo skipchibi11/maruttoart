@@ -142,8 +142,8 @@ $floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
 $floatingMaterialsStmt->execute();
 $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
-// 作品画像のURL
-$artworkImageUrl = !empty($artwork['webp_path']) ? '/' . $artwork['webp_path'] : '/' . $artwork['file_path'];
+// 作品画像のURL（PNG優先）
+$artworkImageUrl = !empty($artwork['file_path']) ? '/' . $artwork['file_path'] : '/' . $artwork['webp_path'];
 $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'https';
 $host = $_SERVER['HTTP_HOST'];
 $fullImageUrl = $scheme . '://' . $host . $artworkImageUrl;
