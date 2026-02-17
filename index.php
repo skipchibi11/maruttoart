@@ -83,6 +83,7 @@ foreach ($calendarItems as $item) {
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>
+    <?php include __DIR__ . '/includes/adsense-head.php'; ?>
     
     <style>
         :root {
@@ -381,23 +382,7 @@ foreach ($calendarItems as $item) {
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
-        /* 広告表示制御 */
-        .ad-desktop-only {
-            display: none;
-        }
-        @media (min-width: 768px) {
-            .ad-desktop-only {
-                display: block;
-            }
-        }
-
-        .ad-container {
-            display: flex;
-            justify-content: center;
-            gap: 100px;
-            flex-wrap: wrap;
-            margin: 60px 0;
-        }
+        
 
         /* カレンダーセクション */
         .calendar-section {
@@ -1112,15 +1097,6 @@ foreach ($calendarItems as $item) {
         </div>
     </section>
 
-    <!-- 広告ユニット -->
-    <div class="container">
-        <div class="ad-container">
-            <?php include __DIR__ . '/includes/ad-display.php'; ?>
-            <div class="ad-desktop-only">
-                <?php include __DIR__ . '/includes/ad-display.php'; ?>
-            </div>
-        </div>
-    </div>
     </main>
 
     <?php include 'includes/footer.php'; ?>

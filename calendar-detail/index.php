@@ -90,6 +90,7 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
         .article-header {
             text-align: center;
             margin-bottom: 40px;
+            margin-top: 20px;
         }
         
         .date-badge {
