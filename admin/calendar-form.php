@@ -133,7 +133,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $yearMonthDir = sprintf('%04d/%02d', $data['year'], $data['month']);
                 $uploadDir = '../uploads/calendar/' . $yearMonthDir . '/';
                 if (!file_exists($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
+                    if (!mkdir($uploadDir, 0755, true)) {
+                        $lastError = error_get_last();
+                        error_log('mkdir failed: ' . $uploadDir . ' error=' . ($lastError['message'] ?? 'unknown'));
+                        throw new Exception('アップロード用ディレクトリの作成に失敗しました。');
+                    }
                 }
                 
                 // 古い画像を削除
@@ -147,6 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $dateSlug = sprintf('%04d-%02d-%02d', $data['year'], $data['month'], $data['day']);
                 $fileName = $dateSlug . '_' . time() . '.' . $extension;
                 $filePath = $uploadDir . $fileName;
+                error_log('calendar upload paths: temp=' . $tempPath . ' dest=' . $filePath);
                 
                 // 一時ファイルを最終的な場所に移動
                 if (rename($tempPath, $filePath)) {
@@ -175,6 +180,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                 } else {
+                    $lastError = error_get_last();
+                    error_log('rename failed: temp=' . $tempPath . ' dest=' . $filePath . ' error=' . ($lastError['message'] ?? 'unknown'));
                     // 一時ファイルを削除
                     if (file_exists($tempPath)) {
                         unlink($tempPath);
