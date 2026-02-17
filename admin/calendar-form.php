@@ -3,6 +3,9 @@ require_once '../config.php';
 requireLogin();
 setNoCache();
 
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../logs/calendar_upload_errors.log');
+
 // OpenAI設定ファイルを読み込み
 if (file_exists(__DIR__ . '/../includes/openai.php')) {
     require_once __DIR__ . '/../includes/openai.php';
