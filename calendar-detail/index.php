@@ -58,6 +58,7 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
     <meta property="og:url" content="https://marutto.art/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>">
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
+    <?php include __DIR__ . '/../includes/adsense-head.php'; ?>
     
     <style>
         :root {
@@ -216,23 +217,6 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
             color: var(--text-dark);
         }
         
-        /* 広告表示制御 */
-        .ad-desktop-only {
-            display: none;
-        }
-        @media (min-width: 768px) {
-            .ad-desktop-only {
-                display: block;
-            }
-        }
-
-        .ad-container {
-            display: flex;
-            justify-content: center;
-            gap: 100px;
-            flex-wrap: wrap;
-            margin: 60px 0;
-        }
         
         @media (max-width: 768px) {
             .container {
@@ -308,17 +292,7 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
             ← Back to Calendar
         </a>
     </div>
-    
-    <!-- 広告ユニット -->
-    <div class="container">
-        <div class="ad-container">
-            <?php include __DIR__ . '/../includes/ad-display.php'; ?>
-            <div class="ad-desktop-only">
-                <?php include __DIR__ . '/../includes/ad-display.php'; ?>
-            </div>
-        </div>
-    </div>
-    
+
     <?php include __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>
