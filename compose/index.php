@@ -109,6 +109,7 @@ foreach ($allMaterials as $material) {
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/compose/" />
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
+    <?php include __DIR__ . '/../includes/adsense-head.php'; ?>
     
     <style>
         :root {
