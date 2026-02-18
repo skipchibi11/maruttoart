@@ -82,6 +82,7 @@ $pageDescription = 'marutto.artの' . $year . '年' . $month . '月のカレン�
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
+    <?php include __DIR__ . '/../includes/adsense-head.php'; ?>
     
     <style>
         :root {
@@ -118,6 +119,7 @@ $pageDescription = 'marutto.artの' . $year . '年' . $month . '月のカレン�
         .calendar-header {
             text-align: center;
             margin-bottom: 40px;
+            margin-top: 20px;
         }
         
         .calendar-title {
