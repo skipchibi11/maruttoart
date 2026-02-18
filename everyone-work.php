@@ -28,6 +28,20 @@ if (!$artwork) {
     exit;
 }
 
+$backUrl = '/everyone-works.php';
+$referer = $_SERVER['HTTP_REFERER'] ?? '';
+if (!empty($referer)) {
+    $refererHost = parse_url($referer, PHP_URL_HOST);
+    $currentHost = $_SERVER['HTTP_HOST'] ?? '';
+    if (empty($refererHost) || $refererHost === $currentHost) {
+        $refererPath = parse_url($referer, PHP_URL_PATH);
+        $refererQuery = parse_url($referer, PHP_URL_QUERY);
+        if (!empty($refererPath)) {
+            $backUrl = $refererPath . (!empty($refererQuery) ? '?' . $refererQuery : '');
+        }
+    }
+}
+
 // 閲覧数を増加
 $updateViewStmt = $pdo->prepare("UPDATE community_artworks SET view_count = view_count + 1 WHERE id = ?");
 $updateViewStmt->execute([$id]);
@@ -234,6 +248,7 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
     </script>
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>
+    <?php include __DIR__ . '/includes/adsense-head.php'; ?>
     
     <style>
         :root {
@@ -320,7 +335,7 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
         .main-content {
             position: relative;
             z-index: 1;
-            padding: 40px 0 80px;
+            padding: 40px 0 30px;
         }
 
         /* 作品詳細セクション */
@@ -426,6 +441,11 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
         .btn-animation:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(232, 168, 124, 0.4);
+        }
+
+        .back-link-container {
+            margin-top: 20px;
+            text-align: center;
         }
 
         /* セクションタイトル */
@@ -610,24 +630,7 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
             object-fit: contain;
         }
 
-        /* 広告 */
-        .ad-container {
-            display: flex;
-            justify-content: center;
-            gap: 100px;
-            flex-wrap: wrap;
-            margin: 60px 0;
-        }
-
-        .ad-desktop-only {
-            display: none;
-        }
-
-        @media (min-width: 768px) {
-            .ad-desktop-only {
-                display: block;
-            }
-        }
+        
     </style>
 </head>
 <body>
@@ -685,6 +688,12 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
                     <?php if (!empty($artwork['description'])): ?>
                     <div class="artwork-description"><?= h($artwork['description']) ?></div>
                     <?php endif; ?>
+
+                    <div class="back-link-container">
+                        <a href="<?= h($backUrl) ?>" class="btn btn-secondary">
+                            前に戻る
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -740,13 +749,6 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
             </div>
             <?php endif; ?>
 
-            <!-- 広告 -->
-            <div class="ad-container">
-                <?php include __DIR__ . '/includes/ad-display.php'; ?>
-                <div class="ad-desktop-only">
-                    <?php include __DIR__ . '/includes/ad-display.php'; ?>
-                </div>
-            </div>
         </div>
     </div>
 
