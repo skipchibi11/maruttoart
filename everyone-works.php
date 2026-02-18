@@ -53,6 +53,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/everyone-works.php" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>
+    <?php include __DIR__ . '/includes/adsense-head.php'; ?>
     
     <style>
         :root {
@@ -202,7 +203,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
         .main-content {
             position: relative;
             z-index: 1;
-            padding: 40px 0 80px;
+            padding: 40px 0 30px;
         }
 
         .page-title {
@@ -357,23 +358,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             padding: 0 20px;
         }
 
-        /* 広告表示制御 */
-        .ad-desktop-only {
-            display: none;
-        }
-        @media (min-width: 768px) {
-            .ad-desktop-only {
-                display: block;
-            }
-        }
-
-        .ad-container {
-            display: flex;
-            justify-content: center;
-            gap: 100px;
-            flex-wrap: wrap;
-            margin: 60px 0;
-        }
+        
     </style>
 </head>
 <body>
@@ -438,13 +423,6 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             </div>
             <?php endif; ?>
 
-            <!-- 広告ユニット -->
-            <div class="ad-container">
-                <?php include __DIR__ . '/includes/ad-display.php'; ?>
-                <div class="ad-desktop-only">
-                    <?php include __DIR__ . '/includes/ad-display.php'; ?>
-                </div>
-            </div>
         </div>
     </div>
 
