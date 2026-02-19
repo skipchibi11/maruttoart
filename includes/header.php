@@ -521,11 +521,11 @@
         </svg>
     </div>
     <div class="language-dropdown">
-        <a href="/" class="active" class="notranslate nturl">🇯🇵 日本語</a>
-        <a href="/en/" class="notranslate nturl">🇬🇧 English</a>
-        <a href="/es/" class="notranslate nturl">🇪🇸 Español</a>
-        <a href="/fr/" class="notranslate nturl">🇫🇷 Français</a>
-        <a href="/nl/" class="notranslate nturl">🇳🇱 Nederlands</a>
+        <a href="/" class="active nturl notranslate">🇯🇵 日本語</a>
+        <a href="/en/" class="nturl notranslate">🇬🇧 English</a>
+        <a href="/es/" class="nturl notranslate">🇪🇸 Español</a>
+        <a href="/fr/" class="nturl notranslate">🇫🇷 Français</a>
+        <a href="/nl/" class="nturl notranslate">🇳🇱 Nederlands</a>
     </div>
 </div>
 
