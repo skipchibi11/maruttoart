@@ -509,7 +509,7 @@
 
 <!-- 言語選択バッジ（固定フッターの上に配置） -->
 <div class="footer-language-badge-fixed" id="languageSelector">
-    <div class="language-toggle" onclick="toggleLanguageMenu()">
+    <div class="language-toggle notranslate" onclick="toggleLanguageMenu()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="2" y1="12" x2="22" y2="12"></line>
@@ -521,11 +521,11 @@
         </svg>
     </div>
     <div class="language-dropdown">
-        <a href="/" class="active">🇯🇵 日本語</a>
-        <a href="/en/">🇬🇧 English</a>
-        <a href="/es/">🇪🇸 Español</a>
-        <a href="/fr/">🇫🇷 Français</a>
-        <a href="/nl/">🇳🇱 Nederlands</a>
+        <a href="/" class="active" class="notranslate nturl">🇯🇵 日本語</a>
+        <a href="/en/" class="notranslate nturl">🇬🇧 English</a>
+        <a href="/es/" class="notranslate nturl">🇪🇸 Español</a>
+        <a href="/fr/" class="notranslate nturl">🇫🇷 Français</a>
+        <a href="/nl/" class="notranslate nturl">🇳🇱 Nederlands</a>
     </div>
 </div>
 
