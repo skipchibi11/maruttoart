@@ -14,6 +14,89 @@ if (file_exists(__DIR__ . '/../includes/openai.php')) {
 $pdo = getDB();
 $isEdit = isset($_GET['id']);
 $item = null;
+$notice = null;
+
+function findNearestAvailableDate(PDO $pdo, int $year, int $month, int $day, ?int $excludeId = null, int $rangeDays = 365): ?array {
+    $baseDate = DateTime::createFromFormat('Y-n-j', sprintf('%d-%d-%d', $year, $month, $day));
+    if (!$baseDate) {
+        return null;
+    }
+
+    $checkSql = "SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?";
+    if ($excludeId !== null) {
+        $checkSql .= " AND id != ?";
+    }
+    $checkStmt = $pdo->prepare($checkSql);
+
+    for ($offset = 1; $offset <= $rangeDays; $offset++) {
+        foreach ([+$offset, -$offset] as $diff) {
+            $candidate = clone $baseDate;
+            $candidate->modify(($diff > 0 ? '+' : '') . $diff . ' day');
+            $cYear = (int)$candidate->format('Y');
+            $cMonth = (int)$candidate->format('n');
+            $cDay = (int)$candidate->format('j');
+
+            $params = [$cYear, $cMonth, $cDay];
+            if ($excludeId !== null) {
+                $params[] = $excludeId;
+            }
+            $checkStmt->execute($params);
+            if ($checkStmt->fetchColumn() == 0) {
+                return ['year' => $cYear, 'month' => $cMonth, 'day' => $cDay];
+            }
+        }
+    }
+
+    return null;
+}
+
+function findNearestAvailableDateInYear(PDO $pdo, int $year, int $month, int $day, int $rangeDays = 10, ?int $excludeId = null, string $minDate = '1980-06-15'): ?array {
+    if (!checkdate($month, $day, $year)) {
+        $day = (int)date('t', mktime(0, 0, 0, $month, 1, $year));
+    }
+
+    $baseDate = DateTime::createFromFormat('Y-n-j', sprintf('%d-%d-%d', $year, $month, $day));
+    if (!$baseDate) {
+        return null;
+    }
+
+    $checkSql = "SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?";
+    if ($excludeId !== null) {
+        $checkSql .= " AND id != ?";
+    }
+    $checkStmt = $pdo->prepare($checkSql);
+
+    for ($offset = 0; $offset <= $rangeDays; $offset++) {
+        foreach ($offset === 0 ? [0] : [+$offset, -$offset] as $diff) {
+            $candidate = clone $baseDate;
+            $candidate->modify(($diff > 0 ? '+' : '') . $diff . ' day');
+
+            if ((int)$candidate->format('Y') !== $year) {
+                continue;
+            }
+
+            $targetDate = $candidate->format('Y-m-d');
+            if ($targetDate < $minDate) {
+                continue;
+            }
+
+            $cYear = (int)$candidate->format('Y');
+            $cMonth = (int)$candidate->format('n');
+            $cDay = (int)$candidate->format('j');
+
+            $params = [$cYear, $cMonth, $cDay];
+            if ($excludeId !== null) {
+                $params[] = $excludeId;
+            }
+            $checkStmt->execute($params);
+            if ($checkStmt->fetchColumn() == 0) {
+                return ['year' => $cYear, 'month' => $cMonth, 'day' => $cDay];
+            }
+        }
+    }
+
+    return null;
+}
 
 if ($isEdit) {
     $stmt = $pdo->prepare("SELECT * FROM calendar_items WHERE id = ?");
@@ -69,7 +152,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 
                 if ($duplicateStmt->fetchColumn() > 0) {
-                    $error = sprintf('%d年%d月%d日は既に登録されています。別の日付を選択してください。', $data['year'], $data['month'], $data['day']);
+                    $nearest = findNearestAvailableDate($pdo, $data['year'], $data['month'], $data['day'], $isEdit ? (int)$item['id'] : null);
+                    if ($nearest) {
+                        $data['year'] = $nearest['year'];
+                        $data['month'] = $nearest['month'];
+                        $data['day'] = $nearest['day'];
+                        $notice = sprintf('指定日が埋まっていたため、最寄りの空き日付（%d年%d月%d日）に自動調整しました。', $data['year'], $data['month'], $data['day']);
+                    } else {
+                        $error = sprintf('%d年%d月%d日は既に登録されています。空き日付が見つからないため登録できません。', $data['year'], $data['month'], $data['day']);
+                    }
                 }
             }
             
@@ -99,28 +190,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$isEdit && $autoDate && function_exists('suggestCalendarDate')) {
                     try {
                         $dateInfo = suggestCalendarDate($tempPath);
-                        
-                        // 1年先までの空き日付を取得し、AIに最適な日付を選ばせる
-                        if (function_exists('findAvailableDateWithAI')) {
-                            $selectedDate = findAvailableDateWithAI($pdo, $dateInfo['month'], $dateInfo['day'], $dateInfo['reason']);
-                            $data['year'] = $selectedDate['year'];
-                            $data['month'] = $selectedDate['month'];
-                            $data['day'] = $selectedDate['day'];
-                            // フォームで入力されていない場合のみAIの理由を使用
-                            if (empty($data['date_reason'])) {
-                                $data['date_reason'] = $selectedDate['reason'] ?? $dateInfo['reason'];
-                            }
-                            
-                            // AI選択後の日付を再度重複チェック
-                            $duplicateStmt = $pdo->prepare("SELECT COUNT(*) FROM calendar_items WHERE year = ? AND month = ? AND day = ?");
-                            $duplicateStmt->execute([$data['year'], $data['month'], $data['day']]);
-                            if ($duplicateStmt->fetchColumn() > 0) {
-                                // 一時ファイルを削除
-                                if (file_exists($tempPath)) {
-                                    unlink($tempPath);
+
+                        $currentYear = (int)date('Y');
+                        $suggestedMonth = (int)$dateInfo['month'];
+                        $suggestedDay = (int)$dateInfo['day'];
+
+                        // 当年の前後10日以内で最も近い空き日付を探す
+                        $selectedDate = findNearestAvailableDateInYear($pdo, $currentYear, $suggestedMonth, $suggestedDay, 10);
+
+                        // 当年に空きがない場合、過去に遡って前後10日以内を探す
+                        if (!$selectedDate) {
+                            for ($year = $currentYear - 1; $year >= 1980; $year--) {
+                                $selectedDate = findNearestAvailableDateInYear($pdo, $year, $suggestedMonth, $suggestedDay, 10);
+                                if ($selectedDate) {
+                                    break;
                                 }
-                                throw new Exception(sprintf('%d年%d月%d日は既に登録されています。空きがないため自動設定に失敗しました。', $data['year'], $data['month'], $data['day']));
                             }
+                        }
+
+                        if (!$selectedDate) {
+                            // 一時ファイルを削除
+                            if (file_exists($tempPath)) {
+                                unlink($tempPath);
+                            }
+                            throw new Exception('空き日付が見つからないため自動設定に失敗しました。');
+                        }
+
+                        $data['year'] = $selectedDate['year'];
+                        $data['month'] = $selectedDate['month'];
+                        $data['day'] = $selectedDate['day'];
+                        // フォームで入力されていない場合のみAIの理由を使用
+                        if (empty($data['date_reason'])) {
+                            $data['date_reason'] = $dateInfo['reason'] ?? null;
+                        }
+
+                        if ($data['year'] !== $currentYear || $data['month'] !== $suggestedMonth || $data['day'] !== $suggestedDay) {
+                            $notice = sprintf('AI提案日が埋まっていたため、最寄りの空き日付（%d年%d月%d日）に自動調整しました。', $data['year'], $data['month'], $data['day']);
                         }
                     } catch (Exception $e) {
                         error_log('AI日付提案エラー: ' . $e->getMessage());
@@ -322,6 +427,9 @@ $currentDay = $item['day'] ?? date('j');
 
                 <?php if (isset($error)): ?>
                     <div class="alert alert-danger"><?= h($error) ?></div>
+                <?php endif; ?>
+                <?php if (!empty($notice)): ?>
+                    <div class="alert alert-info"><?= h($notice) ?></div>
                 <?php endif; ?>
 
                 <div class="card">
