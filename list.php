@@ -74,6 +74,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/list.php" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>
+    <?php include __DIR__ . '/includes/adsense-head.php'; ?>
     
     <style>
         :root {
