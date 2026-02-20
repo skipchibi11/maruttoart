@@ -1,10 +1,12 @@
 <?php
-// フッター用：表示数の上位10点の作品を取得
+// フッター用：最新の正方形30点の作品を取得
 $pdo = getDB();
-$footerArtworksSql = "SELECT id, title, webp_path, view_count FROM community_artworks 
+$footerArtworksSql = "SELECT id, title, webp_path, image_width, image_height FROM community_artworks 
     WHERE status = 'approved' 
-    ORDER BY view_count DESC 
-    LIMIT 10";
+    AND image_width = image_height
+    AND image_width > 0
+    ORDER BY created_at DESC 
+    LIMIT 30";
 $footerArtworksStmt = $pdo->prepare($footerArtworksSql);
 $footerArtworksStmt->execute();
 $footerArtworks = $footerArtworksStmt->fetchAll();

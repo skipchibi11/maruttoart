@@ -21,14 +21,14 @@ $materialsStmt = $pdo->prepare($materialsSql);
 $materialsStmt->execute();
 $randomMaterials = $materialsStmt->fetchAll();
 
-// スクロールアニメーション用の作品を取得（正方形のみ、15件）
+// スクロールアニメーション用の作品を取得（正方形のみ、最新30件）
 $scrollArtworksSql = "SELECT 'artwork' as type, id, '' as slug, '' as category_slug, webp_path as image_path, title, image_width, image_height
     FROM community_artworks
     WHERE status = 'approved'
     AND image_width = image_height
     AND image_width > 0
-    ORDER BY RAND()
-    LIMIT 15";
+    ORDER BY created_at DESC
+    LIMIT 30";
 $scrollArtworksStmt = $pdo->prepare($scrollArtworksSql);
 $scrollArtworksStmt->execute();
 $scrollItems = $scrollArtworksStmt->fetchAll();
