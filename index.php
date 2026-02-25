@@ -602,6 +602,20 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             transition: all 0.3s;
         }
 
+        .calendar-message {
+            max-width: 760px;
+            margin: 8px auto 20px auto;
+            padding: 14px 18px;
+            text-align: center;
+            font-size: 0.92rem;
+            color: rgba(90, 74, 66, 0.85);
+            line-height: 1.7;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(195, 142, 112, 0.35);
+            border-radius: 14px;
+            box-shadow: 0 6px 16px rgba(90, 74, 66, 0.08);
+        }
+
         .calendar-button:hover {
             background: #A0675C;
             transform: translateY(-2px);
@@ -1059,6 +1073,7 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                 <button class="calendar-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-everyone" data-tab="everyone">Everyone</button>
             </div>
             <div id="tab-everyone" class="calendar-tab-panel" role="tabpanel" hidden>
+                <p class="calendar-message">投稿された作品は、選んだ国とイラストの内容をもとにAIが分析し、ふさわしい日付へ自動で配置されます。</p>
                 <div class="calendar-grid-container" id="calendarGridEveryone">
                     <div class="calendar-day-header sunday">Sun</div>
                     <div class="calendar-day-header">Mon</div>
@@ -1105,7 +1120,7 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                                     <span class="calendar-day-count">+<?= h($count - 1) ?></span>
                                 <?php endif; ?>
                                 <?php if (!$imagePath): ?>
-                                    <div class="calendar-day-empty">準備中</div>
+                                    <div class="calendar-day-empty">作品募集中</div>
                                 <?php endif; ?>
                         <?php if ($link): ?>
                             </a>
