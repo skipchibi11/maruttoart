@@ -181,17 +181,132 @@ function generateMaterialInfo($title, $imagePath) {
 }
 
 /**
+ * 国ごとの季節や行事を踏まえて月日を提案
+ * @param string $imagePath 画像パス
+ * @param string $countryName 国名（日本語）
+ * @param string $materialsText 素材内容（任意）
+ */
+function suggestCountryCalendarDate($imagePath, $countryName, $materialsText = '') {
+    $config = getOpenAIConfig();
+
+    if (empty($config['api_key'])) {
+        throw new Exception('OpenAI APIキーが設定されていません');
+    }
+
+    if (!file_exists($imagePath)) {
+        throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
+    }
+
+    $imageData = base64_encode(file_get_contents($imagePath));
+    $mimeType = mime_content_type($imagePath);
+    $materialsInfo = !empty($materialsText) ? $materialsText : 'なし';
+
+    $prompt = <<<PROMPT
+この画像と素材情報を見て、国『{$countryName}』の季節感・文化・祝日を踏まえた月日を提案してください。
+
+【判断の方針】
+- その国の季節（四季の時期は南半球/北半球を考慮）
+- 代表的な祝日・行事・記念日
+- 画像の主要なモチーフや雰囲気
+- 背景色は判断材料にしない
+
+【素材情報】
+{$materialsInfo}
+
+以下のJSON形式で出力してください：
+{
+  "month": 月（1-12の数字）, 
+  "day": 日（1-31の数字）, 
+  "reason": "提案理由（簡潔に）"
+}
+PROMPT;
+
+    $data = array(
+        'model' => $config['model'],
+        'messages' => array(
+            array(
+                'role' => 'user',
+                'content' => array(
+                    array(
+                        'type' => 'text',
+                        'text' => $prompt
+                    ),
+                    array(
+                        'type' => 'image_url',
+                        'image_url' => array(
+                            'url' => "data:{$mimeType};base64,{$imageData}"
+                        )
+                    )
+                )
+            )
+        ),
+        'max_tokens' => 400,
+        'temperature' => 0.4
+    );
+
+    $ch = curl_init();
+    curl_setopt_array($ch, array(
+        CURLOPT_URL => 'https://api.openai.com/v1/chat/completions',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $config['api_key']
+        ),
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_SSL_VERIFYPEER => true
+    ));
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        throw new Exception("OpenAI API通信エラー: {$error}");
+    }
+
+    if ($httpCode !== 200) {
+        $errorDetails = '';
+        if ($response) {
+            $errorResponse = json_decode($response, true);
+            if ($errorResponse && isset($errorResponse['error'])) {
+                $errorDetails = ': ' . ($errorResponse['error']['message'] ?? 'Unknown error');
+            }
+        }
+        throw new Exception("OpenAI APIエラー: HTTP {$httpCode}{$errorDetails}");
+    }
+
+    $result = json_decode($response, true);
+    if (!$result || !isset($result['choices'][0]['message']['content'])) {
+        throw new Exception('OpenAI APIから無効な応答を受信しました');
+    }
+
+    $content = trim($result['choices'][0]['message']['content']);
+    $content = preg_replace('/```json\s*|\s*```/', '', $content);
+    $content = trim($content);
+
+    $dateInfo = json_decode($content, true);
+    if (!$dateInfo || !isset($dateInfo['month']) || !isset($dateInfo['day'])) {
+        throw new Exception('生成されたJSONが無効です');
+    }
+
+    return $dateInfo;
+}
+ 
+/**
  * OpenAI Vision APIを使用してカレンダーアイテムのタイトルと説明文を生成
  * @param string $imagePath 画像のパス
  * @param string $userHint ユーザーが入力した簡単な説明（オプション）
  */
 function generateCalendarContent($imagePath, $userHint = '') {
     $config = getOpenAIConfig();
-    
+
     if (empty($config['api_key'])) {
         throw new Exception('OpenAI APIキーが設定されていません');
     }
-    
+
     // 画像をBase64エンコード
     if (!file_exists($imagePath)) {
         throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
