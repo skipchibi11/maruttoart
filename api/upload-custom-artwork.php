@@ -76,17 +76,17 @@ try {
         }
     }
 
-    // 国IDの取得（必須）
+    // 地域IDの取得（必須）
     $countryId = isset($_POST['country_id']) ? (int)$_POST['country_id'] : 0;
     if ($countryId <= 0) {
-        sendError('国を選択してください');
+        sendError('地域を選択してください');
     }
 
     $countryStmt = $pdo->prepare("SELECT id, name_ja FROM countries WHERE id = ?");
     $countryStmt->execute([$countryId]);
     $country = $countryStmt->fetch(PDO::FETCH_ASSOC);
     if (!$country) {
-        sendError('選択された国が見つかりません');
+        sendError('選択された地域が見つかりません');
     }
 
     // ファイルアップロードチェック

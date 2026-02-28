@@ -1073,7 +1073,7 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                 <button class="calendar-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-everyone" data-tab="everyone">Everyone</button>
             </div>
             <div id="tab-everyone" class="calendar-tab-panel" role="tabpanel" hidden>
-                <p class="calendar-message">投稿された作品は、選んだ国とイラストの内容をもとにAIが分析し、ふさわしい日付へ自動で配置されます。</p>
+                <p class="calendar-message">投稿された作品は、選んだ地域とイラストの内容をもとにAIが分析し、ふさわしい日付へ自動で配置されます。</p>
                 <div class="calendar-grid-container" id="calendarGridEveryone">
                     <div class="calendar-day-header sunday">Sun</div>
                     <div class="calendar-day-header">Mon</div>

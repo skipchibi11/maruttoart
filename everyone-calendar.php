@@ -198,7 +198,7 @@ $pageDescription = 'みんなの作品が集まる日付ページです。';
                     <a class="work-card" href="/everyone-work.php?id=<?= h($item['artwork_id']) ?>">
                         <img src="/<?= h($imagePath) ?>" alt="作品" class="work-thumb" loading="lazy">
                         <div class="work-meta">
-                            <span><?= h($item['country_name'] ?: '国未設定') ?></span>
+                            <span><?= h($item['country_name'] ?: '地域未設定') ?></span>
                             <span>→</span>
                         </div>
                         <?php if (!empty($item['date_reason'])): ?>

@@ -88,7 +88,7 @@ foreach ($allMaterials as $material) {
     $materialsByCategory[$categoryName][] = $material;
 }
 
-// 国マスター取得
+// 地域マスター取得
 $countries = [];
 $countriesByContinent = [];
 try {
@@ -1065,9 +1065,9 @@ try {
                 <button class="primary-btn full-width" onclick="downloadImage()">PNG ダウンロード</button>
                 <button class="secondary-btn full-width" onclick="downloadSVG()" style="margin-top: 12px;">SVG ダウンロード</button>
                 <hr class="control-divider">
-                <h3 class="control-title">このイラストにいちばん近い国を1つ選んでください。</h3>
+                <h3 class="control-title">このイラストにいちばん近い地域を1つ選んでください。</h3>
                 <select id="countrySelect" class="country-select">
-                    <option value="">国を選択してください</option>
+                    <option value="">地域を選択してください</option>
                     <?php foreach ($countriesByContinent as $continentName => $continentCountries): ?>
                         <optgroup label="<?= h($continentName) ?>">
                             <?php foreach ($continentCountries as $country): ?>
@@ -2639,7 +2639,7 @@ try {
 
             const countrySelect = document.getElementById('countrySelect');
             if (countrySelect && !countrySelect.value) {
-                showMessage('国を選択してください。');
+                showMessage('地域を選択してください。');
                 return;
             }
 
@@ -2759,7 +2759,7 @@ try {
                         formData.append('used_material_ids', usedMaterialIds);
                     }
 
-                    // 国IDを送信
+                    // 地域IDを送信
                     if (countrySelect && countrySelect.value) {
                         formData.append('country_id', countrySelect.value);
                     }

@@ -181,9 +181,9 @@ function generateMaterialInfo($title, $imagePath) {
 }
 
 /**
- * 国ごとの季節や行事を踏まえて月日を提案
+ * 地域ごとの季節や行事を踏まえて月日を提案
  * @param string $imagePath 画像パス
- * @param string $countryName 国名（日本語）
+ * @param string $countryName 地域名（日本語）
  * @param string $materialsText 素材内容（任意）
  */
 function suggestCountryCalendarDate($imagePath, $countryName, $materialsText = '') {
@@ -201,11 +201,35 @@ function suggestCountryCalendarDate($imagePath, $countryName, $materialsText = '
     $mimeType = mime_content_type($imagePath);
     $materialsInfo = !empty($materialsText) ? $materialsText : 'なし';
 
-    $prompt = <<<PROMPT
-この画像と素材情報を見て、国『{$countryName}』の季節感・文化・祝日を踏まえた月日を提案してください。
+    $normalizedRegion = mb_strtolower(trim((string)$countryName));
+    $isGlobalRegion = in_array($normalizedRegion, ['global', 'グローバル'], true);
+
+    if ($isGlobalRegion) {
+        $prompt = <<<PROMPT
+この画像と素材情報を見て、特定の地域性は考慮せず、一般的な季節感や年間行事を踏まえた月日を提案してください。
 
 【判断の方針】
-- その国の季節（四季の時期は南半球/北半球を考慮）
+- 地域（国・都市）に依存する祝日や文化は使わない
+- 世界的に広く共有される季節感・行事感を優先する
+- 画像の主要なモチーフや雰囲気を最重視する
+- 背景色は判断材料にしない
+
+【素材情報】
+{$materialsInfo}
+
+以下のJSON形式で出力してください：
+{
+  "month": 月（1-12の数字）, 
+  "day": 日（1-31の数字）, 
+  "reason": "提案理由（簡潔に）"
+}
+PROMPT;
+    } else {
+        $prompt = <<<PROMPT
+この画像と素材情報を見て、地域『{$countryName}』の季節感・文化・祝日を踏まえた月日を提案してください。
+
+【判断の方針】
+- その地域の季節（四季の時期は南半球/北半球を考慮）
 - 代表的な祝日・行事・記念日
 - 画像の主要なモチーフや雰囲気
 - 背景色は判断材料にしない
@@ -220,6 +244,7 @@ function suggestCountryCalendarDate($imagePath, $countryName, $materialsText = '
   "reason": "提案理由（簡潔に）"
 }
 PROMPT;
+        }
 
     $data = array(
         'model' => $config['model'],
