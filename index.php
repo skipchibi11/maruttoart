@@ -729,6 +729,70 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             object-fit: contain;
         }
 
+        .one-point-section {
+            margin-top: 60px;
+            margin-bottom: 60px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .one-point-section-inner {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 36px 28px;
+            background: rgba(255, 240, 245, 0.6);
+            border: 1px solid rgba(195, 142, 112, 0.22);
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 24px rgba(90, 74, 66, 0.08);
+        }
+
+        .one-point-list {
+            max-width: 600px;
+            margin: 0 auto;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .one-point-item {
+            text-align: center;
+            padding: 0;
+        }
+
+        .one-point-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #8B7355;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 9px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(195, 142, 112, 0.35);
+            box-shadow: 0 4px 10px rgba(90, 74, 66, 0.1);
+            margin-bottom: 16px;
+        }
+
+        .one-point-title {
+            font-size: 1.15rem;
+            color: #A0675C;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .one-point-description {
+            font-size: 0.95rem;
+            color: rgba(90, 74, 66, 0.9);
+            line-height: 1.7;
+        }
+
         @keyframes scrollLeft {
             0% {
                 transform: translateX(0);
@@ -909,6 +973,31 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                 width: 100%;
             }
 
+            .one-point-section {
+                margin-top: 60px;
+                margin-bottom: 60px;
+                padding: 0 16px;
+            }
+
+            .one-point-section-inner {
+                max-width: 640px;
+                padding: 28px 18px;
+                border-radius: 16px;
+            }
+
+            .one-point-list {
+                max-width: 600px;
+                gap: 40px;
+            }
+
+            .one-point-title {
+                font-size: 1.05rem;
+            }
+
+            .one-point-description {
+                font-size: 0.92rem;
+            }
+
             .cta-button {
                 padding: 12px 36px;
                 font-size: 0.95rem;
@@ -1063,6 +1152,28 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             ?>
         </div>
     </div>
+
+    <section class="one-point-section" aria-label="サイトの特徴">
+        <div class="one-point-section-inner">
+            <ul class="one-point-list">
+                <li class="one-point-item">
+                    <span class="one-point-label">POINT 01</span>
+                    <p class="one-point-title">すべて無料のイラスト素材</p>
+                    <p class="one-point-description">ダウンロードして自由に使えます</p>
+                </li>
+                <li class="one-point-item">
+                    <span class="one-point-label">POINT 02</span>
+                    <p class="one-point-title">組み合わせてオリジナル作品</p>
+                    <p class="one-point-description">イラストを組み合わせて作品を作れます</p>
+                </li>
+                <li class="one-point-item">
+                    <span class="one-point-label">POINT 03</span>
+                    <p class="one-point-title">みんなの作品を投稿・アレンジ</p>
+                    <p class="one-point-description">作品を投稿したり、みんなの作品をアレンジできます</p>
+                </li>
+            </ul>
+        </div>
+    </section>
 
     <!-- カレンダーセクション -->
     <section class="calendar-section">
