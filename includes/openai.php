@@ -5,7 +5,17 @@
 
 // OpenAI APIキーを定数として定義
 if (!defined('OPENAI_API_KEY')) {
-    define('OPENAI_API_KEY', $_ENV['OPENAI_API_KEY'] ?? '');
+    $resolvedOpenAiKey = '';
+
+    if (!empty($_ENV['OPENAI_API_KEY'])) {
+        $resolvedOpenAiKey = $_ENV['OPENAI_API_KEY'];
+    } elseif (function_exists('getenv') && getenv('OPENAI_API_KEY')) {
+        $resolvedOpenAiKey = getenv('OPENAI_API_KEY');
+    } elseif (!empty($_SERVER['OPENAI_API_KEY'])) {
+        $resolvedOpenAiKey = $_SERVER['OPENAI_API_KEY'];
+    }
+
+    define('OPENAI_API_KEY', $resolvedOpenAiKey);
 }
 
 /**
@@ -178,148 +188,6 @@ function generateMaterialInfo($title, $imagePath) {
     }
 
     return $materialInfo;
-}
-
-/**
- * 地域ごとの季節や行事を踏まえて月日を提案
- * @param string $imagePath 画像パス
- * @param string $countryName 地域名（日本語）
- * @param string $materialsText 素材内容（任意）
- */
-function suggestCountryCalendarDate($imagePath, $countryName, $materialsText = '') {
-    $config = getOpenAIConfig();
-
-    if (empty($config['api_key'])) {
-        throw new Exception('OpenAI APIキーが設定されていません');
-    }
-
-    if (!file_exists($imagePath)) {
-        throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
-    }
-
-    $imageData = base64_encode(file_get_contents($imagePath));
-    $mimeType = mime_content_type($imagePath);
-    $materialsInfo = !empty($materialsText) ? $materialsText : 'なし';
-
-    $normalizedRegion = mb_strtolower(trim((string)$countryName));
-    $isGlobalRegion = in_array($normalizedRegion, ['global', 'グローバル'], true);
-
-    if ($isGlobalRegion) {
-        $prompt = <<<PROMPT
-この画像と素材情報を見て、特定の地域性は考慮せず、一般的な季節感や年間行事を踏まえた月日を提案してください。
-
-【重要ルール】
-- 祝日・記念日の固定日を優先しない
-- 祝日を選ぶのは、画像に祝祭モチーフ（例: サンタ、ハロウィン装飾）が明確な場合のみ
-- カレンダー全体に分散配置しやすい「一般日」を基本的に選ぶ
-- 地域（国・都市）に依存する祝日や文化は使わない
-- 背景色は判断材料にしない
-
-【素材情報】
-{$materialsInfo}
-
-以下のJSON形式で出力してください：
-{
-  "month": 月（1-12の数字）, 
-  "day": 日（1-31の数字）, 
-    "reason": "季節・モチーフ中心の理由（祝日名の多用は避ける）"
-}
-PROMPT;
-    } else {
-        $prompt = <<<PROMPT
-この画像と素材情報を見て、地域『{$countryName}』の季節感・文化を踏まえた月日を提案してください。
-
-【重要ルール】
-- 祝日・記念日の固定日を優先しない（通常は一般日を選ぶ）
-- 祝日を選ぶのは、画像に祝祭モチーフが明確な場合のみ
-- カレンダーの空欄を埋めるため、年間で偏りにくい月日を選ぶ
-- その地域の季節（四季の時期は南半球/北半球を考慮）
-- 背景色は判断材料にしない
-
-【素材情報】
-{$materialsInfo}
-
-以下のJSON形式で出力してください：
-{
-  "month": 月（1-12の数字）, 
-  "day": 日（1-31の数字）, 
-    "reason": "季節・モチーフ中心の理由（祝日名の多用は避ける）"
-}
-PROMPT;
-        }
-
-    $data = array(
-        'model' => $config['model'],
-        'messages' => array(
-            array(
-                'role' => 'user',
-                'content' => array(
-                    array(
-                        'type' => 'text',
-                        'text' => $prompt
-                    ),
-                    array(
-                        'type' => 'image_url',
-                        'image_url' => array(
-                            'url' => "data:{$mimeType};base64,{$imageData}"
-                        )
-                    )
-                )
-            )
-        ),
-        'max_tokens' => 400,
-        'temperature' => 0.4
-    );
-
-    $ch = curl_init();
-    curl_setopt_array($ch, array(
-        CURLOPT_URL => 'https://api.openai.com/v1/chat/completions',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode($data),
-        CURLOPT_HTTPHEADER => array(
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $config['api_key']
-        ),
-        CURLOPT_TIMEOUT => 60,
-        CURLOPT_SSL_VERIFYPEER => true
-    ));
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
-
-    if ($error) {
-        throw new Exception("OpenAI API通信エラー: {$error}");
-    }
-
-    if ($httpCode !== 200) {
-        $errorDetails = '';
-        if ($response) {
-            $errorResponse = json_decode($response, true);
-            if ($errorResponse && isset($errorResponse['error'])) {
-                $errorDetails = ': ' . ($errorResponse['error']['message'] ?? 'Unknown error');
-            }
-        }
-        throw new Exception("OpenAI APIエラー: HTTP {$httpCode}{$errorDetails}");
-    }
-
-    $result = json_decode($response, true);
-    if (!$result || !isset($result['choices'][0]['message']['content'])) {
-        throw new Exception('OpenAI APIから無効な応答を受信しました');
-    }
-
-    $content = trim($result['choices'][0]['message']['content']);
-    $content = preg_replace('/```json\s*|\s*```/', '', $content);
-    $content = trim($content);
-
-    $dateInfo = json_decode($content, true);
-    if (!$dateInfo || !isset($dateInfo['month']) || !isset($dateInfo['day'])) {
-        throw new Exception('生成されたJSONが無効です');
-    }
-
-    return $dateInfo;
 }
  
 /**

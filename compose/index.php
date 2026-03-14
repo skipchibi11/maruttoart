@@ -88,23 +88,6 @@ foreach ($allMaterials as $material) {
     $materialsByCategory[$categoryName][] = $material;
 }
 
-// 地域マスター取得
-$countries = [];
-$countriesByContinent = [];
-try {
-    $countryStmt = $pdo->query("SELECT id, name_ja, continent FROM countries ORDER BY continent IS NULL, continent, name_ja");
-    $countries = $countryStmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($countries as $country) {
-        $continent = $country['continent'] ?: '未分類';
-        if (!isset($countriesByContinent[$continent])) {
-            $countriesByContinent[$continent] = [];
-        }
-        $countriesByContinent[$continent][] = $country;
-    }
-} catch (Exception $e) {
-    $countries = [];
-    $countriesByContinent = [];
-}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -352,15 +335,6 @@ try {
             background: white;
             font-size: 0.9rem;
             cursor: pointer;
-        }
-
-        .country-select {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 2px solid var(--primary-color);
-            background: white;
-            font-size: 0.9rem;
         }
 
         .custom-size-inputs {
@@ -1065,20 +1039,6 @@ try {
                 <button class="primary-btn full-width" onclick="downloadImage()">PNG ダウンロード</button>
                 <button class="secondary-btn full-width" onclick="downloadSVG()" style="margin-top: 12px;">SVG ダウンロード</button>
                 <hr class="control-divider">
-                <h3 class="control-title">このイラストにいちばん近い地域を1つ選んでください。</h3>
-                <select id="countrySelect" class="country-select">
-                    <option value="">地域を選択してください</option>
-                    <?php foreach ($countriesByContinent as $continentName => $continentCountries): ?>
-                        <optgroup label="<?= h($continentName) ?>">
-                            <?php foreach ($continentCountries as $country): ?>
-                                <option value="<?= h($country['id']) ?>"><?= h($country['name_ja']) ?></option>
-                            <?php endforeach; ?>
-                        </optgroup>
-                    <?php endforeach; ?>
-                </select>
-                <p style="margin-top: 8px; font-size: 0.8rem; color: #999; line-height: 1.4;">
-                    Everyone Calendarに反映する際の参考にします。
-                </p>
                 <button class="primary-btn full-width" style="margin-top: 12px;" onclick="uploadArtwork()">作品を投稿</button>
                 <p style="margin-top: 8px; font-size: 0.8rem; color: #999; text-align: center; line-height: 1.4;">多くの人が投稿できるよう、作品の投稿は 1日1回まで となっています</p>
             </div>
@@ -1104,45 +1064,9 @@ try {
         let canvas;
         let selectedObject = null;
         const STORAGE_KEY = 'maruttoart_canvas_state';
-        const COUNTRY_COOKIE_KEY = 'marutto_country_id';
         let originalCanvasWidth = 800;  // 原寸の幅
         let originalCanvasHeight = 800; // 原寸の高さ
         let isTransparentBg = true;     // 背景が透明かどうか
-
-        function setCookie(name, value, days) {
-            const date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            document.cookie = `${name}=${encodeURIComponent(value)}; expires=${date.toUTCString()}; path=/`; 
-        }
-
-        function getCookie(name) {
-            const cookieName = name + '=';
-            const decodedCookie = decodeURIComponent(document.cookie);
-            const cookieArray = decodedCookie.split(';');
-            for (let i = 0; i < cookieArray.length; i++) {
-                let cookie = cookieArray[i].trim();
-                if (cookie.indexOf(cookieName) === 0) {
-                    return cookie.substring(cookieName.length, cookie.length);
-                }
-            }
-            return '';
-        }
-
-        function initCountrySelector() {
-            const select = document.getElementById('countrySelect');
-            if (!select) return;
-
-            const savedCountry = getCookie(COUNTRY_COOKIE_KEY);
-            if (savedCountry) {
-                select.value = savedCountry;
-            }
-
-            select.addEventListener('change', () => {
-                if (select.value) {
-                    setCookie(COUNTRY_COOKIE_KEY, select.value, 365);
-                }
-            });
-        }
 
         // LocalStorageに保存（compose/index.php互換形式）
         function saveToLocalStorage() {
@@ -2637,12 +2561,6 @@ try {
         function confirmUpload() {
             hideConfirmModal();
 
-            const countrySelect = document.getElementById('countrySelect');
-            if (countrySelect && !countrySelect.value) {
-                showMessage('地域を選択してください。');
-                return;
-            }
-
             // ローディング表示
             const loadingDiv = document.createElement('div');
             loadingDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; text-align: center; min-width: 200px;';
@@ -2759,11 +2677,6 @@ try {
                         formData.append('used_material_ids', usedMaterialIds);
                     }
 
-                    // 地域IDを送信
-                    if (countrySelect && countrySelect.value) {
-                        formData.append('country_id', countrySelect.value);
-                    }
-
                     // サーバーにアップロード
                     fetch('/api/upload-custom-artwork.php', {
                         method: 'POST',
@@ -2862,7 +2775,6 @@ try {
         // ページ読み込み時に初期化
         window.addEventListener('load', function() {
             initCanvas();
-            initCountrySelector();
         });
     </script>
 

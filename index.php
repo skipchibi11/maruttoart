@@ -63,33 +63,6 @@ $calendarItems = $calendarStmt->fetchAll();
 foreach ($calendarItems as $item) {
     $calendarItemsMap[$item['day']] = $item;
 }
-
-// みんなのカレンダー表示用データ取得（当月分）
-$everyoneCounts = [];
-$everyoneLatestByDay = [];
-
-$everyoneCountStmt = $pdo->prepare("SELECT day, COUNT(*) as total FROM everyone_calendar_items WHERE month = ? GROUP BY day");
-$everyoneCountStmt->execute([$currentMonth]);
-foreach ($everyoneCountStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    $everyoneCounts[(int)$row['day']] = (int)$row['total'];
-}
-
-$everyoneLatestStmt = $pdo->prepare("
-    SELECT e.day, e.artwork_id, e.id, ca.file_path, ca.webp_path
-    FROM everyone_calendar_items e
-    JOIN (
-        SELECT day, MAX(id) AS latest_id
-        FROM everyone_calendar_items
-        WHERE month = ?
-        GROUP BY day
-    ) latest ON latest.day = e.day AND latest.latest_id = e.id
-    JOIN community_artworks ca ON ca.id = e.artwork_id AND ca.status = 'approved'
-    WHERE e.month = ?
-");
-$everyoneLatestStmt->execute([$currentMonth, $currentMonth]);
-foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    $everyoneLatestByDay[(int)$row['day']] = $row;
-}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -432,40 +405,6 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             letter-spacing: 0.1em;
         }
 
-        .calendar-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-
-        .calendar-tab {
-            padding: 8px 20px;
-            border-radius: 999px;
-            border: 2px solid var(--primary-color);
-            background: white;
-            color: var(--primary-color);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .calendar-tab.active,
-        .calendar-tab:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .calendar-tab-panel {
-            width: 100%;
-        }
-
-        .calendar-tab-panel[hidden] {
-            display: none !important;
-        }
-
         .calendar-grid-container {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -600,20 +539,6 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             border-radius: 30px;
             font-size: 1rem;
             transition: all 0.3s;
-        }
-
-        .calendar-message {
-            max-width: 760px;
-            margin: 8px auto 20px auto;
-            padding: 14px 18px;
-            text-align: center;
-            font-size: 0.92rem;
-            color: rgba(90, 74, 66, 0.85);
-            line-height: 1.7;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(195, 142, 112, 0.35);
-            border-radius: 14px;
-            box-shadow: 0 6px 16px rgba(90, 74, 66, 0.08);
         }
 
         .calendar-button:hover {
@@ -1179,71 +1104,7 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
     <section class="calendar-section">
         <div class="container">
             <h2 class="calendar-section-title">Calendars</h2>
-            <div class="calendar-tabs" role="tablist" aria-label="Calendars">
-                <button class="calendar-tab active" type="button" role="tab" aria-selected="true" aria-controls="tab-marutto" data-tab="marutto">Marutto</button>
-                <button class="calendar-tab" type="button" role="tab" aria-selected="false" aria-controls="tab-everyone" data-tab="everyone">Everyone</button>
-            </div>
-            <div id="tab-everyone" class="calendar-tab-panel" role="tabpanel" hidden>
-                <p class="calendar-message">投稿された作品は、選んだ地域とイラストの内容をもとにAIが分析し、ふさわしい日付へ自動で配置されます。</p>
-                <div class="calendar-grid-container" id="calendarGridEveryone">
-                    <div class="calendar-day-header sunday">Sun</div>
-                    <div class="calendar-day-header">Mon</div>
-                    <div class="calendar-day-header">Tue</div>
-                    <div class="calendar-day-header">Wed</div>
-                    <div class="calendar-day-header">Thu</div>
-                    <div class="calendar-day-header">Fri</div>
-                    <div class="calendar-day-header saturday">Sat</div>
-
-                    <?php for ($i = 0; $i < $firstDayOfWeek; $i++): ?>
-                        <div class="calendar-day empty"></div>
-                    <?php endfor; ?>
-
-                    <?php
-                    $weekdayNamesEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    for ($day = 1; $day <= $daysInMonth; $day++):
-                        $count = $everyoneCounts[$day] ?? 0;
-                        $latest = $everyoneLatestByDay[$day] ?? null;
-                        $currentDate = mktime(0, 0, 0, $currentMonth, $day, $currentYear);
-                        $dayOfWeek = date('w', $currentDate);
-                        $weekdayNameEn = $weekdayNamesEn[$dayOfWeek];
-
-                        $todayClass = ($day === $currentDay) ? 'today' : '';
-                        $weekdayClass = '';
-                        if ($dayOfWeek == 0) {
-                            $weekdayClass = 'sunday';
-                        } elseif ($dayOfWeek == 6) {
-                            $weekdayClass = 'saturday';
-                        }
-
-                        $link = $count > 0 ? "/everyone-calendar.php?month={$currentMonth}&day={$day}" : null;
-                        $imagePath = $latest ? ($latest['webp_path'] ?: $latest['file_path']) : null;
-                    ?>
-                        <?php if ($link): ?>
-                            <a href="<?= h($link) ?>" class="calendar-day has-item <?= $todayClass ?> <?= $weekdayClass ?>">
-                        <?php else: ?>
-                            <div class="calendar-day <?= $todayClass ?> <?= $weekdayClass ?>">
-                        <?php endif; ?>
-                                <div class="calendar-day-date"><?= h($day) ?><span class="calendar-day-weekday">(<?= h($weekdayNameEn) ?>)</span></div>
-                                <?php if ($imagePath): ?>
-                                    <img src="/<?= h($imagePath) ?>" alt="<?= h($day) ?>日" class="calendar-day-image" loading="lazy">
-                                <?php endif; ?>
-                                <?php if ($count > 1): ?>
-                                    <span class="calendar-day-count">+<?= h($count - 1) ?></span>
-                                <?php endif; ?>
-                                <?php if (!$imagePath): ?>
-                                    <div class="calendar-day-empty">作品募集中</div>
-                                <?php endif; ?>
-                        <?php if ($link): ?>
-                            </a>
-                        <?php else: ?>
-                            </div>
-                        <?php endif; ?>
-                    <?php endfor; ?>
-                </div>
-                <a href="/everyone-calendars.php?month=<?= h($currentMonth) ?>" class="calendar-button">View Calendar →</a>
-            </div>
-            <div id="tab-marutto" class="calendar-tab-panel" role="tabpanel">
-                <div class="calendar-grid-container" id="calendarGrid">
+            <div class="calendar-grid-container" id="calendarGrid">
             <!-- 曜日ヘッダー -->
             <div class="calendar-day-header sunday">Sun</div>
             <div class="calendar-day-header">Mon</div>
@@ -1307,8 +1168,8 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
                 <?php endif; ?>
             <?php endfor; ?>
         </div>
-                <a href="/calendar/" class="calendar-button">View Calendar →</a>
             </div>
+            <a href="/calendar/" class="calendar-button">View Calendar →</a>
         </div>
     </section>
 
@@ -1403,75 +1264,13 @@ foreach ($everyoneLatestStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
         }, randomDelay);
     }
 
-    // ページ読み込み後に開始
-    function initCalendarTabs() {
-        const tabs = document.querySelectorAll('.calendar-tab');
-        const panels = document.querySelectorAll('.calendar-tab-panel');
-
-        if (tabs.length === 0 || panels.length === 0) return;
-
-        const setActiveTab = (tab) => {
-            const target = tab.dataset.tab;
-
-            tabs.forEach(btn => {
-                btn.classList.toggle('active', btn === tab);
-                btn.setAttribute('aria-selected', btn === tab ? 'true' : 'false');
-            });
-
-            panels.forEach(panel => {
-                const isTarget = panel.id === `tab-${target}`;
-                if (isTarget) {
-                    panel.removeAttribute('hidden');
-                } else {
-                    panel.setAttribute('hidden', 'hidden');
-                }
-            });
-
-            if (window.innerWidth <= 768) {
-                const activeGrid = document.querySelector('#tab-' + target + ' .calendar-grid-container');
-                if (activeGrid) {
-                    const todayElement = activeGrid.querySelector('.calendar-day.today');
-                    if (todayElement) {
-                        setTimeout(() => {
-                            const containerWidth = activeGrid.offsetWidth;
-                            const elementWidth = todayElement.offsetWidth;
-                            const elementLeft = todayElement.offsetLeft;
-                            const scrollPosition = elementLeft - (containerWidth / 2) + (elementWidth / 2);
-                            activeGrid.scrollTo({
-                                left: scrollPosition,
-                                behavior: 'smooth'
-                            });
-                        }, 100);
-                    }
-                }
-            }
-        };
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                setActiveTab(tab);
-            });
-        });
-
-        const initialTab = document.querySelector('.calendar-tab.active') || tabs[0];
-        if (initialTab) {
-            setActiveTab(initialTab);
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
         // PC版とモバイル版で独立してアニメーション
         scheduleNextPeek('peek-animal-pc');
         scheduleNextPeek('peek-animal-mobile');
-
-        initCalendarTabs();
         
         // カレンダーのスワイプ機能（スマホのみ）
-        const activeTab = document.querySelector('.calendar-tab.active');
-        const activeTarget = activeTab ? activeTab.dataset.tab : null;
-        const calendarGrid = activeTarget
-            ? document.querySelector('#tab-' + activeTarget + ' .calendar-grid-container')
-            : null;
+        const calendarGrid = document.querySelector('#calendarGrid');
         if (calendarGrid && window.innerWidth <= 768) {
             // 当日の要素を取得
             const todayElement = calendarGrid.querySelector('.calendar-day.today');

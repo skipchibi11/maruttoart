@@ -10,11 +10,6 @@ ini_set('error_log', '../logs/upload_errors.log');
 
 require_once '../config.php';
 
-// OpenAI設定ファイルを読み込み（存在する場合のみ）
-if (file_exists(__DIR__ . '/../includes/openai.php')) {
-    require_once __DIR__ . '/../includes/openai.php';
-}
-
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
@@ -74,19 +69,6 @@ try {
         if (mb_strlen($usedMaterialIds) > 1000) {
             sendError('使用素材IDが長すぎます');
         }
-    }
-
-    // 地域IDの取得（必須）
-    $countryId = isset($_POST['country_id']) ? (int)$_POST['country_id'] : 0;
-    if ($countryId <= 0) {
-        sendError('地域を選択してください');
-    }
-
-    $countryStmt = $pdo->prepare("SELECT id, name_ja FROM countries WHERE id = ?");
-    $countryStmt->execute([$countryId]);
-    $country = $countryStmt->fetch(PDO::FETCH_ASSOC);
-    if (!$country) {
-        sendError('選択された地域が見つかりません');
     }
 
     // ファイルアップロードチェック
@@ -270,49 +252,6 @@ try {
     }
 
     $artworkId = $pdo->lastInsertId();
-
-    // みんなのカレンダー用に月日をAIで設定
-    $calendarMonth = (int)date('n');
-    $calendarDay = (int)date('j');
-    $calendarReason = null;
-
-    try {
-        $materialsText = '';
-        if (!empty($usedMaterialIds)) {
-            $materialIdList = array_filter(array_map('intval', explode(',', $usedMaterialIds)));
-            if (!empty($materialIdList)) {
-                $placeholders = str_repeat('?,', count($materialIdList) - 1) . '?';
-                $materialsStmt = $pdo->prepare("SELECT title FROM materials WHERE id IN ($placeholders)");
-                $materialsStmt->execute($materialIdList);
-                $materialTitles = $materialsStmt->fetchAll(PDO::FETCH_COLUMN);
-                if (!empty($materialTitles)) {
-                    $materialsText = implode(', ', $materialTitles);
-                }
-            }
-        }
-
-        if (function_exists('suggestCountryCalendarDate')) {
-            $dateInfo = suggestCountryCalendarDate($destinationPath, $country['name_ja'], $materialsText);
-            $suggestedMonth = isset($dateInfo['month']) ? (int)$dateInfo['month'] : 0;
-            $suggestedDay = isset($dateInfo['day']) ? (int)$dateInfo['day'] : 0;
-
-            if ($suggestedMonth >= 1 && $suggestedMonth <= 12 && $suggestedDay >= 1 && $suggestedDay <= 31 && checkdate($suggestedMonth, $suggestedDay, 2000)) {
-                $calendarMonth = $suggestedMonth;
-                $calendarDay = $suggestedDay;
-                $calendarReason = $dateInfo['reason'] ?? null;
-            }
-        }
-    } catch (Exception $e) {
-        error_log('Everyone calendar AI error: ' . $e->getMessage());
-    }
-
-    // みんなのカレンダーに登録
-    try {
-        $calendarStmt = $pdo->prepare("INSERT INTO everyone_calendar_items (month, day, country_id, artwork_id, date_reason) VALUES (?, ?, ?, ?, ?)");
-        $calendarStmt->execute([$calendarMonth, $calendarDay, $countryId, $artworkId, $calendarReason]);
-    } catch (Exception $e) {
-        error_log('Everyone calendar insert error: ' . $e->getMessage());
-    }
 
     // 投稿制限を記録
     $updateStmt = $pdo->prepare("
