@@ -1103,7 +1103,7 @@ foreach ($calendarItems as $item) {
     <!-- カレンダーセクション -->
     <section class="calendar-section">
         <div class="container">
-            <h2 class="calendar-section-title">Calendars</h2>
+            <h2 class="calendar-section-title">Calendar</h2>
             <div class="calendar-grid-container" id="calendarGrid">
             <!-- 曜日ヘッダー -->
             <div class="calendar-day-header sunday">Sun</div>
@@ -1168,7 +1168,6 @@ foreach ($calendarItems as $item) {
                 <?php endif; ?>
             <?php endfor; ?>
         </div>
-            </div>
             <a href="/calendar/" class="calendar-button">View Calendar →</a>
         </div>
     </section>
