@@ -217,3 +217,154 @@ function deleteFile($filePath, $baseDir = '../') {
         }
     }
 }
+
+/**
+ * AWS Signature Version 4 でPUTリクエストに署名
+ */
+function signR2PutRequest($bucket, $key, $contentType, $fileContent, $accessKey, $secretKey, $region = 'auto', $endpoint = null) {
+    if (!$endpoint) {
+        $endpoint = R2_ENDPOINT;
+    }
+    
+    // タイムスタンプ
+    $timestamp = time();
+    $dateStamp = gmdate('Ymd', $timestamp);
+    $amzDate = gmdate('Ymd\THis\Z', $timestamp);
+    
+    // URLエンコード（RFC 3986）
+    $encodedKey = str_replace('%2F', '/', rawurlencode($key));
+    
+    // ホスト名を抽出
+    $parsedEndpoint = parse_url($endpoint);
+    $host = $parsedEndpoint['host'];
+    
+    // ペイロードハッシュ
+    $payloadHash = hash('sha256', $fileContent);
+    
+    // Canonical Request
+    $canonicalUri = "/{$bucket}/{$encodedKey}";
+    $canonicalQueryString = '';
+    $canonicalHeaders = "host:{$host}\nx-amz-content-sha256:{$payloadHash}\nx-amz-date:{$amzDate}\n";
+    $signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+    
+    $canonicalRequest = implode("\n", [
+        'PUT',
+        $canonicalUri,
+        $canonicalQueryString,
+        $canonicalHeaders,
+        $signedHeaders,
+        $payloadHash
+    ]);
+    
+    // String to Sign
+    $algorithm = 'AWS4-HMAC-SHA256';
+    $credentialScope = "{$dateStamp}/{$region}/s3/aws4_request";
+    $canonicalRequestHash = hash('sha256', $canonicalRequest);
+    
+    $stringToSign = implode("\n", [
+        $algorithm,
+        $amzDate,
+        $credentialScope,
+        $canonicalRequestHash
+    ]);
+    
+    // Signing Key を計算
+    $kDate = hash_hmac('sha256', $dateStamp, "AWS4{$secretKey}", true);
+    $kRegion = hash_hmac('sha256', $region, $kDate, true);
+    $kService = hash_hmac('sha256', 's3', $kRegion, true);
+    $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
+    
+    // 署名を計算
+    $signature = hash_hmac('sha256', $stringToSign, $kSigning);
+    
+    // Authorization ヘッダー
+    $authorization = "{$algorithm} " .
+        "Credential={$accessKey}/{$credentialScope}, " .
+        "SignedHeaders={$signedHeaders}, " .
+        "Signature={$signature}";
+    
+    // リクエストURL
+    $url = "{$endpoint}/{$bucket}/{$encodedKey}";
+    
+    return [
+        'url' => $url,
+        'headers' => [
+            'Host: ' . $host,
+            'Content-Type: ' . $contentType,
+            'X-Amz-Content-Sha256: ' . $payloadHash,
+            'X-Amz-Date: ' . $amzDate,
+            'Authorization: ' . $authorization
+        ],
+        'amzDate' => $amzDate,
+        'payloadHash' => $payloadHash
+    ];
+}
+
+/**
+ * ローカルファイルをR2にアップロード
+ * 
+ * @param string $localFilePath ローカルファイルのパス
+ * @param string $r2Key R2でのキー（例: calendar/2024/01/image.png）
+ * @param string $contentType Content-Type（例: image/png）
+ * @return array|false 成功時は['url' => R2 URL, 'key' => R2 key]、失敗時はfalse
+ */
+function uploadFileToR2($localFilePath, $r2Key, $contentType = 'application/octet-stream') {
+    if (!file_exists($localFilePath)) {
+        error_log("R2 upload: File not found: {$localFilePath}");
+        return false;
+    }
+    
+    $fileContent = file_get_contents($localFilePath);
+    if ($fileContent === false) {
+        error_log("R2 upload: Could not read file: {$localFilePath}");
+        return false;
+    }
+    
+    try {
+        $signedRequest = signR2PutRequest(
+            R2_BUCKET,
+            $r2Key,
+            $contentType,
+            $fileContent,
+            R2_ACCESS_KEY_ID,
+            R2_SECRET_ACCESS_KEY
+        );
+        
+        // cURL でPUTリクエスト送信
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $signedRequest['url']);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $signedRequest['headers']);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fileContent);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($error) {
+            error_log("R2 upload CURL error for {$r2Key}: {$error}");
+            return false;
+        }
+        
+        // 200 OK = アップロード成功
+        if ($httpCode === 200) {
+            $publicUrl = rtrim(R2_PUBLIC_URL, '/') . '/' . $r2Key;
+            error_log("R2 upload success: {$publicUrl}");
+            return [
+                'url' => $publicUrl,
+                'key' => $r2Key
+            ];
+        }
+        
+        error_log("R2 upload failed for {$r2Key}: HTTP {$httpCode}, Response: {$response}");
+        return false;
+        
+    } catch (Exception $e) {
+        error_log("R2 upload exception for {$r2Key}: " . $e->getMessage());
+        return false;
+    }
+}

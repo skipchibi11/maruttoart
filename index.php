@@ -1151,8 +1151,11 @@ foreach ($calendarItems as $item) {
                         // サムネイルまたは画像を表示
                         $imagePath = $item['thumbnail_path'] ?? $item['image_path'];
                         if ($imagePath):
+                            // R2 URL対応
+                            $isRemoteCalImageUrl = (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0);
+                            $finalCalImageUrl = $isRemoteCalImageUrl ? $imagePath : '/' . $imagePath;
                         ?>
-                            <img src="/<?= h($imagePath) ?>" 
+                            <img src="<?= h($finalCalImageUrl) ?>" 
                                  alt="<?= h($item['title']) ?>" 
                                  class="calendar-day-image"
                                  width="200"

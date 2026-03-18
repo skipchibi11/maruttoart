@@ -512,9 +512,13 @@ $pageDescription = 'marutto.artの' . $year . '年' . $month . '月のカレン�
     <div class="floating-container">
         <?php foreach ($floatingMaterials as $index => $material): 
             $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+            // R2 URL対応
+            $materialImagePath = $material['image_path'];
+            $isRemoteMaterialUrl = (strpos($materialImagePath, 'http://') === 0 || strpos($materialImagePath, 'https://') === 0);
+            $finalMaterialUrl = $isRemoteMaterialUrl ? $materialImagePath : '/' . $materialImagePath;
         ?>
         <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="/<?= h($material['image_path']) ?>" alt="" loading="lazy">
+            <img src="<?= h($finalMaterialUrl) ?>" alt="" loading="lazy">
         </div>
         <?php endforeach; ?>
     </div>
@@ -586,8 +590,11 @@ $pageDescription = 'marutto.artの' . $year . '年' . $month . '月のカレン�
                             }
                             
                             if ($displayPath): 
+                                // R2 URL対応
+                                $isRemoteCalUrl = (strpos($displayPath, 'http://') === 0 || strpos($displayPath, 'https://') === 0);
+                                $finalCalUrl = $isRemoteCalUrl ? $displayPath : '/' . $displayPath;
                             ?>
-                                <img src="/<?= h($displayPath) ?>" 
+                                <img src="<?= h($finalCalUrl) ?>" 
                                      alt="<?= h($item['title']) ?>" 
                                      class="day-thumbnail">
                             <?php endif; ?>

@@ -26,7 +26,15 @@ if (!$item) {
 // メタ情報
 $pageTitle = $item['title'] . '｜' . $item['month'] . '月の無料イラスト（GIF対応）| marutto.art';
 $pageDescription = '季節を感じるやさしい無料イラスト素材です。静止画とGIFの両方をご利用いただけます。';
-$ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : '';
+
+// R2 URL対応
+$imagePath = $item['image_path'];
+$isRemoteImageUrl = (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0);
+if ($isRemoteImageUrl) {
+    $ogImage = $imagePath;
+} else {
+    $ogImage = $imagePath ? 'https://marutto.art/' . $imagePath : '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -252,11 +260,15 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
         
         <div class="article-content">
             <!-- 画像 -->
-            <?php if ($item['image_path']): ?>
-                <img src="/<?= h($item['image_path']) ?>" 
+            <?php if ($item['image_path']): 
+                $imagePath = $item['image_path'];
+                $isRemoteImageUrl = (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0);
+                $finalImageUrl = $isRemoteImageUrl ? $imagePath : '/' . $imagePath;
+            ?>
+                <img src="<?= h($finalImageUrl) ?>" 
                      alt="<?= h($item['title']) ?>" 
                      class="main-image">
-                <a href="/<?= h($item['image_path']) ?>" 
+                <a href="<?= h($finalImageUrl) ?>" 
                    download 
                    class="download-button">
                     Download Image
@@ -269,11 +281,15 @@ $ogImage = $item['image_path'] ? 'https://marutto.art/' . $item['image_path'] : 
             <?php endif; ?>
             
             <!-- GIF -->
-            <?php if ($item['gif_path']): ?>
-                <img src="/<?= h($item['gif_path']) ?>" 
+            <?php if ($item['gif_path']): 
+                $gifPath = $item['gif_path'];
+                $isRemoteGifUrl = (strpos($gifPath, 'http://') === 0 || strpos($gifPath, 'https://') === 0);
+                $finalGifUrl = $isRemoteGifUrl ? $gifPath : '/' . $gifPath;
+            ?>
+                <img src="<?= h($finalGifUrl) ?>" 
                      alt="<?= h($item['title']) ?> アニメーション" 
                      class="main-image">
-                <a href="/<?= h($item['gif_path']) ?>" 
+                <a href="<?= h($finalGifUrl) ?>" 
                    download 
                    class="download-button">
                     Download GIF

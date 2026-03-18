@@ -1,5 +1,6 @@
 <?php
 require_once '../config.php';
+require_once '../includes/r2-utils.php'; // R2削除用
 requireLogin();
 setNoCache();
 
@@ -15,17 +16,20 @@ if ($_POST['action'] ?? '' === 'delete') {
     $itemId = $_POST['item_id'];
     
     try {
-        // ファイルも削除
-        $stmt = $pdo->prepare("SELECT image_path, gif_path FROM calendar_items WHERE id = ?");
+        // ファイルも削除（R2対応）
+        $stmt = $pdo->prepare("SELECT image_path, thumbnail_path, gif_path FROM calendar_items WHERE id = ?");
         $stmt->execute([$itemId]);
         $item = $stmt->fetch();
         
         if ($item) {
-            if ($item['image_path'] && file_exists('../' . $item['image_path'])) {
-                unlink('../' . $item['image_path']);
+            if (!empty($item['image_path'])) {
+                deleteFile($item['image_path'], '../');
             }
-            if ($item['gif_path'] && file_exists('../' . $item['gif_path'])) {
-                unlink('../' . $item['gif_path']);
+            if (!empty($item['thumbnail_path'])) {
+                deleteFile($item['thumbnail_path'], '../');
+            }
+            if (!empty($item['gif_path'])) {
+                deleteFile($item['gif_path'], '../');
             }
         }
         
@@ -157,11 +161,16 @@ $items = $stmt->fetchAll();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($items as $item): ?>
+                            <?php foreach ($items as $item): 
+                                // R2 URL対応
+                                $adminImagePath = $item['image_path'];
+                                $isRemoteAdminUrl = (strpos($adminImagePath, 'http://') === 0 || strpos($adminImagePath, 'https://') === 0);
+                                $finalAdminImageUrl = $isRemoteAdminUrl ? $adminImagePath : '/' . $adminImagePath;
+                            ?>
                                 <tr>
                                     <td>
                                         <?php if ($item['image_path']): ?>
-                                            <img src="/<?= h($item['image_path']) ?>" 
+                                            <img src="<?= h($finalAdminImageUrl) ?>" 
                                                  alt="<?= h($item['title']) ?>" 
                                                  class="item-thumbnail">
                                         <?php else: ?>

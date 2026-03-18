@@ -1,5 +1,6 @@
 <?php
 require_once '../config.php';
+require_once '../includes/r2-utils.php'; // R2アップロード用
 requireLogin();
 setNoCache();
 
@@ -186,6 +187,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new Exception('ファイルのアップロードに失敗しました。');
                 }
                 
+                // 編集時は古い画像を削除（R2対応）
+                if ($isEdit && !empty($item['image_path'])) {
+                    deleteFile($item['image_path'], '../');
+                    if (!empty($item['thumbnail_path'])) {
+                        deleteFile($item['thumbnail_path'], '../');
+                    }
+                }
+                
                 // 新規作成でAI自動設定がONの場合、AIで適切な月日を提案
                 if (!$isEdit && $autoDate && function_exists('suggestCalendarDate')) {
                     try {
@@ -237,65 +246,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
                 
-                // 年月フォルダ構造を作成（AI提案後の日付を使用）
-                $yearMonthDir = sprintf('%04d/%02d', $data['year'], $data['month']);
-                $uploadDir = '../uploads/calendar/' . $yearMonthDir . '/';
-                if (!file_exists($uploadDir)) {
-                    if (!mkdir($uploadDir, 0755, true)) {
-                        $lastError = error_get_last();
-                        error_log('mkdir failed: ' . $uploadDir . ' error=' . ($lastError['message'] ?? 'unknown'));
-                        throw new Exception('アップロード用ディレクトリの作成に失敗しました。');
-                    }
-                }
-                
-                // 古い画像を削除
-                if ($isEdit && $item['image_path'] && file_exists('../' . $item['image_path'])) {
-                    unlink('../' . $item['image_path']);
-                    if ($item['thumbnail_path'] && file_exists('../' . $item['thumbnail_path'])) {
-                        unlink('../' . $item['thumbnail_path']);
-                    }
-                }
-                
+                // R2にアップロード（年月ディレクトリなし）
                 $dateSlug = sprintf('%04d-%02d-%02d', $data['year'], $data['month'], $data['day']);
-                $fileName = $dateSlug . '_' . time() . '.' . $extension;
-                $filePath = $uploadDir . $fileName;
-                error_log('calendar upload paths: temp=' . $tempPath . ' dest=' . $filePath);
                 
-                // 一時ファイルを最終的な場所に移動
-                if (rename($tempPath, $filePath)) {
-                    $uploadedImagePath = 'uploads/calendar/' . $yearMonthDir . '/' . $fileName;
-                    
-                    // サムネイル生成（300x300px）- PNGの場合はWebPに変換
-                    $thumbnailExtension = ($extension === 'png') ? 'webp' : $extension;
-                    $thumbnailFileName = $dateSlug . '_thumb_' . time() . '.' . $thumbnailExtension;
-                    $thumbnailPath = $uploadDir . $thumbnailFileName;
-                    if (createThumbnail($filePath, $thumbnailPath, 300, 300)) {
-                        $uploadedThumbnailPath = 'uploads/calendar/' . $yearMonthDir . '/' . $thumbnailFileName;
-                    }
-                    
-                    // 新規作成で画像がアップロードされた場合、AIでタイトルと説明文を生成
-                    if (!$isEdit && function_exists('generateCalendarContent')) {
-                        try {
-                            $userHint = !empty($data['title']) ? $data['title'] : '';
-                            $generatedContent = generateCalendarContent($filePath, $userHint);
-                            
-                            // AIが生成したタイトルと説明文で上書き
-                            $data['title'] = $generatedContent['title'];
-                            $data['description'] = $generatedContent['description'];
-                        } catch (Exception $e) {
-                            error_log('AIコンテンツ生成エラー: ' . $e->getMessage());
-                            // エラーが発生してもユーザーが入力した内容は保持
-                        }
-                    }
-                } else {
-                    $lastError = error_get_last();
-                    error_log('rename failed: temp=' . $tempPath . ' dest=' . $filePath . ' error=' . ($lastError['message'] ?? 'unknown'));
-                    // 一時ファイルを削除
-                    if (file_exists($tempPath)) {
-                        unlink($tempPath);
-                    }
-                    throw new Exception('ファイルの移動に失敗しました。');
+                $extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+                $fileName = $dateSlug . '_' . time() . '.' . $extension;
+                $r2Key = 'calendar/' . $fileName;
+                
+                // MIMEタイプを決定
+                $mimeTypes = [
+                    'jpg' => 'image/jpeg',
+                    'jpeg' => 'image/jpeg',
+                    'png' => 'image/png',
+                    'webp' => 'image/webp'
+                ];
+                $contentType = $mimeTypes[$extension] ?? 'image/jpeg';
+                
+                // R2にアップロード
+                $uploadResult = uploadFileToR2($tempPath, $r2Key, $contentType);
+                
+                if (!$uploadResult) {
+                    throw new Exception('R2へのアップロードに失敗しました。');
                 }
+                
+                $uploadedImagePath = $uploadResult['url'];
+                error_log('calendar upload to R2: ' . $uploadedImagePath);
+                
+                // サムネイル生成（300x300px）- PNGの場合はWebPに変換
+                $thumbnailExtension = ($extension === 'png') ? 'webp' : $extension;
+                $thumbnailFileName = $dateSlug . '_thumb_' . time() . '.' . $thumbnailExtension;
+                $thumbnailTempPath = sys_get_temp_dir() . '/thumb_' . time() . '.' . $thumbnailExtension;
+                
+                if (createThumbnail($tempPath, $thumbnailTempPath, 300, 300)) {
+                    $thumbnailR2Key = 'calendar/' . $thumbnailFileName;
+                    $thumbnailContentType = ($thumbnailExtension === 'webp') ? 'image/webp' : $contentType;
+                    
+                    $thumbnailUploadResult = uploadFileToR2($thumbnailTempPath, $thumbnailR2Key, $thumbnailContentType);
+                    
+                    if ($thumbnailUploadResult) {
+                        $uploadedThumbnailPath = $thumbnailUploadResult['url'];
+                    }
+                    
+                    // サムネイルの一時ファイルを削除
+                    if (file_exists($thumbnailTempPath)) {
+                        unlink($thumbnailTempPath);
+                    }
+                }
+                
+                // 新規作成で画像がアップロードされた場合、AIでタイトルと説明文を生成
+                if (!$isEdit && function_exists('generateCalendarContent')) {
+                    try {
+                        $userHint = !empty($data['title']) ? $data['title'] : '';
+                        $generatedContent = generateCalendarContent($tempPath, $userHint);
+                        
+                        // AIが生成したタイトルと説明文で上書き
+                        $data['title'] = $generatedContent['title'];
+                        $data['description'] = $generatedContent['description'];
+                    } catch (Exception $e) {
+                        error_log('AIコンテンツ生成エラー: ' . $e->getMessage());
+                        // エラーが発生してもユーザーが入力した内容は保持
+                    }
+                }
+                
+                // 一時ファイルを削除
+                if (file_exists($tempPath)) {
+                    unlink($tempPath);
+                }
+                
             } catch (Exception $e) {
                 $error = $e->getMessage();
             }
@@ -305,13 +322,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $uploadedGifPath = $isEdit ? $item['gif_path'] : null;
             if (isset($_FILES['gif']) && $_FILES['gif']['error'] === UPLOAD_ERR_OK) {
             try {
-                // 年月フォルダ構造を作成
-                $yearMonthDir = sprintf('%04d/%02d', $data['year'], $data['month']);
-                $uploadDir = '../uploads/calendar/' . $yearMonthDir . '/';
-                if (!file_exists($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                
                 $fileInfo = pathinfo($_FILES['gif']['name']);
                 $extension = strtolower($fileInfo['extension']);
                 
@@ -319,20 +329,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new Exception('GIFファイルのみアップロード可能です。');
                 }
                 
-                // 古いGIFを削除
-                if ($isEdit && $item['gif_path'] && file_exists('../' . $item['gif_path'])) {
-                    unlink('../' . $item['gif_path']);
+                // 一時ファイルに保存
+                $tempGifPath = '../uploads/calendar/temp_gif_' . time() . '.gif';
+                if (!move_uploaded_file($_FILES['gif']['tmp_name'], $tempGifPath)) {
+                    throw new Exception('GIFファイルのアップロードに失敗しました。');
                 }
                 
+                // 編集時は古いGIFを削除（R2対応）
+                if ($isEdit && !empty($item['gif_path'])) {
+                    deleteFile($item['gif_path'], '../');
+                }
+                
+                // R2にアップロード（年月ディレクトリなし）
                 $dateSlug = sprintf('%04d-%02d-%02d', $data['year'], $data['month'], $data['day']);
                 $fileName = $dateSlug . '_anim_' . time() . '.gif';
-                $filePath = $uploadDir . $fileName;
+                $r2Key = 'calendar/' . $fileName;
                 
-                if (move_uploaded_file($_FILES['gif']['tmp_name'], $filePath)) {
-                    $uploadedGifPath = 'uploads/calendar/' . $yearMonthDir . '/' . $fileName;
-                } else {
-                    throw new Exception('GIFのアップロードに失敗しました。');
+                $gifUploadResult = uploadFileToR2($tempGifPath, $r2Key, 'image/gif');
+                
+                if (!$gifUploadResult) {
+                    throw new Exception('GIFのR2へのアップロードに失敗しました。');
                 }
+                
+                $uploadedGifPath = $gifUploadResult['url'];
+                
+                // 一時ファイルを削除
+                if (file_exists($tempGifPath)) {
+                    unlink($tempGifPath);
+                }
+                
             } catch (Exception $e) {
                 $error = $e->getMessage();
             }
