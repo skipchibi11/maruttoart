@@ -157,10 +157,12 @@ $floatingMaterialsStmt->execute();
 $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
 // 作品画像のURL（PNG優先）
-$artworkImageUrl = !empty($artwork['file_path']) ? '/' . $artwork['file_path'] : '/' . $artwork['webp_path'];
+$imagePath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork['webp_path'];
+// フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+$artworkImageUrl = (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0) ? $imagePath : '/' . $imagePath;
 $scheme = $_SERVER['REQUEST_SCHEME'] ?? 'https';
 $host = $_SERVER['HTTP_HOST'];
-$fullImageUrl = $scheme . '://' . $host . $artworkImageUrl;
+$fullImageUrl = (strpos($artworkImageUrl, 'http://') === 0 || strpos($artworkImageUrl, 'https://') === 0) ? $artworkImageUrl : $scheme . '://' . $host . $artworkImageUrl;
 
 // ダウンロード用のパス
 $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork['webp_path'];
@@ -732,7 +734,11 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
                                     }
                                     ?>
                                     <?php if (!empty($thumbnail)): ?>
-                                    <img src="/<?= h($thumbnail) ?>" 
+                                    <?php 
+                                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                                    $thumbnailUrl = (strpos($thumbnail, 'http://') === 0 || strpos($thumbnail, 'https://') === 0) ? $thumbnail : '/' . $thumbnail;
+                                    ?>
+                                    <img src="<?= h($thumbnailUrl) ?>" 
                                          alt="<?= h($item['title']) ?>" 
                                          class="related-item-image"
                                          loading="lazy">

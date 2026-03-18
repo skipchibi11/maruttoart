@@ -181,9 +181,11 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
                 for ($i = 0; $i < 2; $i++):
                     foreach ($footerArtworks as $artwork): 
                         if (!empty($artwork['webp_path'])):
+                            // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                            $footerArtworkUrl = (strpos($artwork['webp_path'], 'http://') === 0 || strpos($artwork['webp_path'], 'https://') === 0) ? $artwork['webp_path'] : '/' . $artwork['webp_path'];
                 ?>
                     <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>" class="footer-artwork-item">
-                        <img src="/<?= h($artwork['webp_path']) ?>" alt="<?= h($artwork['title']) ?>" loading="lazy">
+                        <img src="<?= h($footerArtworkUrl) ?>" alt="<?= h($artwork['title']) ?>" loading="lazy">
                     </a>
                 <?php 
                         endif;

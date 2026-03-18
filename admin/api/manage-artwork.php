@@ -4,6 +4,7 @@
  */
 
 require_once '../../config.php';
+require_once '../../includes/r2-utils.php'; // R2ファイル削除用
 startAdminSession(); // 管理画面専用セッション開始
 requireLogin(); // 管理者認証
 
@@ -146,13 +147,33 @@ try {
                 $stmt = $pdo->prepare("DELETE FROM community_artworks WHERE id = ?");
                 $stmt->execute([$artworkId]);
                 
-                // ファイルを削除
+                // ファイルを削除（R2またはローカル）
+                $deletedFiles = [];
+                $failedFiles = [];
+                
                 $filesToDelete = [$artwork['file_path'], $artwork['webp_path']];
                 
+                // ログに削除対象を記録
+                logR2Delete("=== Deleting artwork ID {$artworkId} ===");
+                logR2Delete("PNG: " . ($artwork['file_path'] ?: 'N/A'));
+                logR2Delete("WebP: " . ($artwork['webp_path'] ?: 'N/A'));
+                
                 foreach ($filesToDelete as $filePath) {
-                    if ($filePath && file_exists('../' . $filePath)) {
-                        unlink('../' . $filePath);
+                    if (!empty($filePath)) {
+                        if (deleteFile($filePath, '../../')) {
+                            $deletedFiles[] = $filePath;
+                        } else {
+                            $failedFiles[] = $filePath;
+                        }
                     }
+                }
+                
+                // ログに記録
+                if (!empty($deletedFiles)) {
+                    logR2Delete("Successfully deleted: " . implode(', ', $deletedFiles));
+                }
+                if (!empty($failedFiles)) {
+                    logR2Delete("Failed to delete: " . implode(', ', $failedFiles));
                 }
                 
                 $pdo->commit();
@@ -225,11 +246,11 @@ try {
                                 $stmt->execute([$id]);
                                 
                                 if ($stmt->rowCount() > 0) {
-                                    // ファイル削除
+                                    // ファイル削除（R2またはローカル）
                                     $filesToDelete = [$artwork['file_path'], $artwork['webp_path']];
                                     foreach ($filesToDelete as $filePath) {
-                                        if ($filePath && file_exists('../' . $filePath)) {
-                                            unlink('../' . $filePath);
+                                        if (!empty($filePath)) {
+                                            deleteFile($filePath, '../../');
                                         }
                                     }
                                     $processedCount++;

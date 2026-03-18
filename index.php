@@ -1067,9 +1067,11 @@ foreach ($calendarItems as $item) {
                     } else {
                         continue;
                     }
+                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                    $finalImageUrl = (strpos($imageUrl, 'http://') === 0 || strpos($imageUrl, 'https://') === 0) ? $imageUrl : '/' . $imageUrl;
             ?>
                 <a href="<?= $link ?>" class="scroll-item" style="background-color: <?= h($scrollBgColor) ?>; backdrop-filter: none;">
-                    <img src="/<?= h($imageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy" width="100" height="100">
+                    <img src="<?= h($finalImageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy" width="100" height="100">
                 </a>
             <?php 
                 endforeach;
@@ -1182,9 +1184,11 @@ foreach ($calendarItems as $item) {
                 <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>" class="artwork-card">
                     <?php
                     $imageUrl = !empty($artwork['webp_path']) ? $artwork['webp_path'] : $artwork['file_path'];
+                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                    $finalImageUrl = (strpos($imageUrl, 'http://') === 0 || strpos($imageUrl, 'https://') === 0) ? $imageUrl : '/' . $imageUrl;
                     ?>
                     <div class="artwork-image-wrapper">
-                        <img src="/<?= h($imageUrl) ?>" 
+                        <img src="<?= h($finalImageUrl) ?>" 
                              alt="<?= h($artwork['title']) ?>" 
                              class="artwork-image" 
                              loading="lazy">

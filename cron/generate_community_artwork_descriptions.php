@@ -61,23 +61,29 @@ try {
         $artworkId = $artwork['id'];
         
         // WebP優先、なければ元画像
-        $imageRelativePath = $artwork['webp_path'] ?: $artwork['file_path'];
-        $imagePath = __DIR__ . '/../' . ltrim($imageRelativePath, '/');
+        $imagePathOrUrl = $artwork['webp_path'] ?: $artwork['file_path'];
+        
+        // R2などのフルURLかローカルパスかを判定
+        $isRemoteUrl = (strpos($imagePathOrUrl, 'http://') === 0 || strpos($imagePathOrUrl, 'https://') === 0);
         
         echo "\nProcessing artwork ID: {$artworkId}\n";
         echo "  Current title: {$artwork['title']}\n";
         echo "  Pen name: {$artwork['pen_name']}\n";
+        echo "  Image: {$imagePathOrUrl}\n";
         
-        // 画像ファイルの存在確認
-        if (!file_exists($imagePath)) {
-            error_log("Image file not found for artwork ID {$artworkId}: {$imagePath}");
-            echo "  ERROR: Image file not found\n";
-            $errorCount++;
-            continue;
+        // ローカルファイルの場合のみ存在確認
+        if (!$isRemoteUrl) {
+            $imagePath = __DIR__ . '/../' . ltrim($imagePathOrUrl, '/');
+            if (!file_exists($imagePath)) {
+                error_log("Image file not found for artwork ID {$artworkId}: {$imagePath}");
+                echo "  ERROR: Image file not found\n";
+                $errorCount++;
+                continue;
+            }
         }
         
         // AI生成を実行
-        $aiContent = generateAIContent($imagePath, $artwork['title'], $artwork['pen_name'], $artwork['used_material_ids'], $pdo);
+        $aiContent = generateAIContent($imagePathOrUrl, $artwork['title'], $artwork['pen_name'], $artwork['used_material_ids'], $pdo);
         
         if ($aiContent === null) {
             error_log("AI generation failed for artwork ID {$artworkId}");
@@ -129,7 +135,7 @@ try {
 /**
  * AIでタイトルと説明を生成する関数
  */
-function generateAIContent($imagePath, $currentTitle, $penName, $usedMaterialIds = null, $pdo = null) {
+function generateAIContent($imagePathOrUrl, $currentTitle, $penName, $usedMaterialIds = null, $pdo = null) {
     try {
         // 使用素材のタイトルを取得
         $materialTitles = [];
@@ -145,10 +151,21 @@ function generateAIContent($imagePath, $currentTitle, $penName, $usedMaterialIds
             }
         }
         
-        // 画像を読み込んでbase64エンコード
-        $imageData = file_get_contents($imagePath);
-        $base64Image = base64_encode($imageData);
-        $mimeType = mime_content_type($imagePath);
+        // リモートURL（R2など）かローカルファイルかを判定
+        $isRemoteUrl = (strpos($imagePathOrUrl, 'http://') === 0 || strpos($imagePathOrUrl, 'https://') === 0);
+        
+        // 画像URL部分を構築
+        if ($isRemoteUrl) {
+            // リモートURLの場合は直接URLを使用
+            $imageUrl = $imagePathOrUrl;
+        } else {
+            // ローカルファイルの場合はbase64エンコード
+            $imagePath = __DIR__ . '/../' . ltrim($imagePathOrUrl, '/');
+            $imageData = file_get_contents($imagePath);
+            $base64Image = base64_encode($imageData);
+            $mimeType = mime_content_type($imagePath);
+            $imageUrl = "data:{$mimeType};base64,{$base64Image}";
+        }
         
         // プロンプトの作成（素材タイトルがあれば追加）
         $materialsInfo = '';
@@ -188,7 +205,7 @@ function generateAIContent($imagePath, $currentTitle, $penName, $usedMaterialIds
                         [
                             'type' => 'image_url',
                             'image_url' => [
-                                'url' => "data:{$mimeType};base64,{$base64Image}"
+                                'url' => $imageUrl
                             ]
                         ]
                     ]

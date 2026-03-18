@@ -394,7 +394,12 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                        role="button" 
                        tabindex="0" 
                        aria-label="<?= h($artwork['title']) ?>の詳細を見る">
-                        <img src="/<?= h($artwork['webp_path'] ?: $artwork['file_path']) ?>" 
+                        <?php 
+                        $imgPath = $artwork['webp_path'] ?: $artwork['file_path'];
+                        // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                        $imgUrl = (strpos($imgPath, 'http://') === 0 || strpos($imgPath, 'https://') === 0) ? $imgPath : '/' . $imgPath;
+                        ?>
+                        <img src="<?= h($imgUrl) ?>" 
                              class="material-image" 
                              alt="<?= h($artwork['title']) ?>">
                         

@@ -39,7 +39,7 @@ function logMessage($message, $level = 'INFO') {
  * @param string $title 作品タイトル
  * @return array ['embedding' => array, 'model' => string]
  */
-function getImageEmbedding($imagePath, $title = '') {
+function getImageEmbedding($imagePathOrUrl, $title = '') {
     $apiKey = getenv('OPENAI_API_KEY');
     if (!$apiKey) {
         throw new Exception('OPENAI_API_KEY environment variable not set');
@@ -47,13 +47,30 @@ function getImageEmbedding($imagePath, $title = '') {
 
     $url = 'https://api.openai.com/v1/embeddings';
     
-    // 画像の絶対パスを確認
-    $absolutePath = dirname(__DIR__) . '/' . $imagePath;
-    if (!file_exists($absolutePath)) {
-        throw new Exception("Image file not found: {$absolutePath}");
-    }
+    // R2 URL か相対パスかを判定
+    $isRemoteUrl = (strpos($imagePathOrUrl, 'http://') === 0 || strpos($imagePathOrUrl, 'https://') === 0);
     
-    logMessage("Processing image: {$absolutePath}");
+    if ($isRemoteUrl) {
+        // R2 などのリモート URL の場合、そのまま使用
+        $imageUrl = $imagePathOrUrl;
+        logMessage("Processing remote image: {$imageUrl}");
+    } else {
+        // ローカルファイルの場合、base64 エンコード
+        $absolutePath = dirname(__DIR__) . '/' . ltrim($imagePathOrUrl, '/');
+        if (!file_exists($absolutePath)) {
+            throw new Exception("Image file not found: {$absolutePath}");
+        }
+        logMessage("Processing local image: {$absolutePath}");
+        
+        // 画像の MIME タイプを判定
+        $imageInfo = getimagesize($absolutePath);
+        $mimeType = $imageInfo['mime'] ?? 'image/png';
+        
+        // base64 エンコード
+        $imageData = file_get_contents($absolutePath);
+        $base64Image = base64_encode($imageData);
+        $imageUrl = "data:{$mimeType};base64,{$base64Image}";
+    }
     
     // プロンプトテキスト（タイトルがあれば含める）
     $promptText = 'この画像の内容を簡潔に英語で説明してください。色、形、オブジェクト、スタイルを含めてください。';
@@ -77,7 +94,7 @@ function getImageEmbedding($imagePath, $title = '') {
                     [
                         'type' => 'image_url',
                         'image_url' => [
-                            'url' => 'data:image/png;base64,' . base64_encode(file_get_contents($absolutePath))
+                            'url' => $imageUrl
                         ]
                     ]
                 ]

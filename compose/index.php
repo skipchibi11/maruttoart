@@ -2601,10 +2601,6 @@ foreach ($allMaterials as $material) {
                             showMessage('画像の生成に失敗しました');
                             return;
                         }
-
-                        // FormData作成
-                        const formData = new FormData();
-                        formData.append('artwork', blob, `custom-artwork-${Date.now()}.png`);
                     
                     // SVGデータを保存（compose/index.php互換形式）
                     const layers = canvas.getObjects().map(obj => {
@@ -2664,7 +2660,6 @@ foreach ($allMaterials as $material) {
                         canvasHeight: originalCanvasHeight,
                         backgroundColor: canvas.backgroundColor
                     };
-                    formData.append('svg_data', JSON.stringify(svgData));
                     
                     // 使用素材IDを抽出して送信
                     const usedMaterialIds = canvas.getObjects()
@@ -2673,35 +2668,114 @@ foreach ($allMaterials as $material) {
                         .filter((id, index, self) => self.indexOf(id) === index) // 重複削除
                         .join(',');
                     
-                    if (usedMaterialIds) {
-                        formData.append('used_material_ids', usedMaterialIds);
-                    }
-
-                    // サーバーにアップロード
-                    fetch('/api/upload-custom-artwork.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    // WebP版も生成（サムネイル用・軽量化 - 最大幅300px）
+                    const maxWidth = 300;
+                    const scale = Math.min(1, maxWidth / canvas.width);
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = canvas.width * scale;
+                    tempCanvas.height = canvas.height * scale;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.drawImage(canvas.lowerCanvasEl, 0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    tempCanvas.toBlob(function(webpBlob) {
+                        if (!webpBlob) {
+                            document.body.removeChild(loadingDiv);
+                            showMessage('WebP画像の生成に失敗しました');
+                            return;
                         }
-                        return response.json();
-                    })
-                    .then(data => {
-                        document.body.removeChild(loadingDiv);
                         
-                        if (data.success) {
-                            showMessage('作品を投稿しました！\nありがとうございます✨');
-                        } else {
-                            showMessage('投稿に失敗しました: ' + (data.error || '不明なエラー'));
-                        }
-                    })
-                    .catch(error => {
-                        document.body.removeChild(loadingDiv);
-                        console.error('Upload error:', error);
-                        showMessage('投稿中にエラーが発生しました: ' + error.message);
-                    });
+                        // R2 presigned URL 方式でアップロード（PNG + WebP）
+                        const pngFileName = `custom-artwork-${Date.now()}.png`;
+                        const webpFileName = `custom-artwork-${Date.now()}_thumb.webp`;
+
+                        // Step 1: 2つのpresigned URLを取得
+                        Promise.all([
+                            fetch('/api/get-r2-presigned-url.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fileName: pngFileName,
+                                    fileType: blob.type,
+                                    fileSize: blob.size
+                                })
+                            }),
+                            fetch('/api/get-r2-presigned-url.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fileName: webpFileName,
+                                    fileType: 'image/webp',
+                                    fileSize: webpBlob.size
+                                })
+                            })
+                        ])
+                        .then(responses => Promise.all(responses.map(r => {
+                            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                            return r.json();
+                        })))
+                        .then(([pngPresigned, webpPresigned]) => {
+                            if (!pngPresigned.success || !webpPresigned.success) {
+                                throw new Error('Presigned URL の取得に失敗しました');
+                            }
+
+                            // Step 2: 両方のファイルをR2にアップロード
+                            return Promise.all([
+                                fetch(pngPresigned.data.presignedUrl, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': blob.type },
+                                    body: blob
+                                }),
+                                fetch(webpPresigned.data.presignedUrl, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'image/webp' },
+                                    body: webpBlob
+                                })
+                            ]).then(([pngRes, webpRes]) => {
+                                if (!pngRes.ok || !webpRes.ok) {
+                                    throw new Error('R2 アップロードに失敗しました');
+                                }
+                                return {
+                                    pngKey: pngPresigned.data.key,
+                                    webpKey: webpPresigned.data.key,
+                                    uniqueId: pngPresigned.data.uniqueId
+                                };
+                            });
+                        })
+                        .then(uploadData => {
+                            // Step 3: アップロード完了をサーバーに通知してDB登録
+                            return fetch('/api/confirm-r2-upload.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    pngKey: uploadData.pngKey,
+                                    webpKey: uploadData.webpKey,
+                                    uniqueId: uploadData.uniqueId,
+                                    svgData: svgData,
+                                    usedMaterialIds: usedMaterialIds
+                                })
+                            });
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            document.body.removeChild(loadingDiv);
+                            
+                            if (data.success) {
+                                showMessage('作品を投稿しました！\nありがとうございます✨');
+                            } else {
+                                showMessage('投稿に失敗しました: ' + (data.error || '不明なエラー'));
+                            }
+                        })
+                        .catch(error => {
+                            document.body.removeChild(loadingDiv);
+                            console.error('Upload error:', error);
+                            showMessage('投稿中にエラーが発生しました: ' + error.message);
+                        });
+                    }, 'image/webp', 0.85); // WebP品質85%
                 })
                 .catch(error => {
                     document.body.removeChild(loadingDiv);

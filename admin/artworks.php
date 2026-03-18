@@ -205,7 +205,12 @@ $stats = $statsStmt->fetchAll(PDO::FETCH_KEY_PAIR);
                         <?php foreach ($artworks as $artwork): ?>
                             <tr id="artwork-<?= $artwork['id'] ?>">
                                 <td>
-                                    <img src="/<?= h($artwork['webp_path'] ?: $artwork['file_path']) ?>" 
+                                    <?php 
+                                    $artworkImgPath = $artwork['webp_path'] ?: $artwork['file_path'];
+                                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                                    $artworkImgUrl = (strpos($artworkImgPath, 'http://') === 0 || strpos($artworkImgPath, 'https://') === 0) ? $artworkImgPath : '/' . $artworkImgPath;
+                                    ?>
+                                    <img src="<?= h($artworkImgUrl) ?>" 
                                          alt="<?= h($artwork['title']) ?>" 
                                          class="artwork-thumbnail">
                                 </td>

@@ -46,6 +46,14 @@ define('DB_PASS', $_ENV['DB_PASSWORD'] ?? 'password');
 define('SITE_URL', $_ENV['SITE_URL'] ?? 'http://localhost');
 define('UPLOADS_PATH', 'uploads');
 
+// Cloudflare R2 設定
+define('R2_ACCOUNT_ID', $_ENV['R2_ACCOUNT_ID'] ?? '');
+define('R2_BUCKET', $_ENV['R2_BUCKET'] ?? '');
+define('R2_ACCESS_KEY_ID', $_ENV['R2_ACCESS_KEY_ID'] ?? '');
+define('R2_SECRET_ACCESS_KEY', $_ENV['R2_SECRET_ACCESS_KEY'] ?? '');
+define('R2_ENDPOINT', 'https://' . R2_ACCOUNT_ID . '.r2.cloudflarestorage.com');
+define('R2_PUBLIC_URL', $_ENV['R2_PUBLIC_URL'] ?? ''); // カスタムドメインまたはパブリックURL
+
 // 管理画面専用セッション開始（CDNキャッシュ対策）
 function startAdminSession() {
     if (session_status() === PHP_SESSION_NONE) {

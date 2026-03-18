@@ -782,8 +782,10 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                                     $artworkImagePath = !empty($item['artwork_webp_path']) 
                                         ? $item['artwork_webp_path'] 
                                         : $item['artwork_image_path'];
+                                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                                    $artworkImageUrl = (strpos($artworkImagePath, 'http://') === 0 || strpos($artworkImagePath, 'https://') === 0) ? $artworkImagePath : '/' . $artworkImagePath;
                                     ?>
-                                    <img src="/<?= h($artworkImagePath) ?>" 
+                                    <img src="<?= h($artworkImageUrl) ?>" 
                                          alt="<?= h($item['artwork_title']) ?>" 
                                          class="related-item-image"
                                          loading="lazy">
