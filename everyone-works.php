@@ -369,9 +369,11 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
         <?php foreach ($floatingMaterials as $index => $material): 
             if (!empty($material['image_path'])): 
                 $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
+                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
             ?>
         <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
+            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
         </div>
         <?php endif; endforeach; ?>
     </div>

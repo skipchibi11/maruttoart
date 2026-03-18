@@ -643,9 +643,11 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
         <?php foreach ($floatingMaterials as $material): 
             if (!empty($material['image_path'])): 
                 $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
+                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
             ?>
         <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
+            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
         </div>
         <?php endif; endforeach; ?>
     </div>
@@ -712,7 +714,12 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
                             <a href="/<?= h($item['category_slug']) ?>/<?= h($item['slug']) ?>/" 
                                class="related-item-link">
                                 <div class="related-item-thumbnail" style="background-color: <?= h($item['structured_bg_color'] ?? '#ffffff') ?>;">
-                                    <img src="/<?= h($item['webp_small_path'] ?? $item['image_path']) ?>" 
+                                    <?php
+                                    $relatedItemPath = $item['webp_small_path'] ?? $item['image_path'];
+                                    $isRemoteRelated = strpos($relatedItemPath, 'http://') === 0 || strpos($relatedItemPath, 'https://') === 0;
+                                    $relatedItemUrl = $isRemoteRelated ? $relatedItemPath : '/' . $relatedItemPath;
+                                    ?>
+                                    <img src="<?= h($relatedItemUrl) ?>" 
                                          alt="<?= h($item['title']) ?>" 
                                          class="related-item-image"
                                          loading="lazy">

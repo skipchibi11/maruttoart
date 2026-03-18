@@ -918,9 +918,11 @@ foreach ($allMaterials as $material) {
         <?php foreach ($floatingMaterials as $index => $material): 
             if (!empty($material['image_path'])): 
                 $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
+                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
             ?>
         <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
+            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
         </div>
         <?php endif; endforeach; ?>
     </div>
@@ -952,13 +954,18 @@ foreach ($allMaterials as $material) {
             
             <div class="material-grid" id="materialGrid">
                 <?php foreach ($allMaterials as $material): ?>
+                <?php
+                    $thumbPath = $material['webp_small_path'];
+                    $isRemoteThumb = strpos($thumbPath, 'http://') === 0 || strpos($thumbPath, 'https://') === 0;
+                    $finalThumbUrl = $isRemoteThumb ? $thumbPath : '/' . $thumbPath;
+                ?>
                 <div class="material-item" 
                      data-category="<?= h($material['category_name'] ?? '未分類') ?>"
                      data-title="<?= h(strtolower($material['title'])) ?>"
                      data-search-keywords="<?= h(strtolower($material['search_keywords'] ?? '')) ?>"
                      style="background-color: <?= h($material['structured_bg_color'] ?? '#ffffff') ?>"
                      onclick='addMaterial(<?= json_encode($material, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
-                    <img src="/<?= h($material['webp_small_path']) ?>" 
+                    <img src="<?= h($finalThumbUrl) ?>" 
                          alt="<?= h($material['title']) ?>"
                          loading="lazy">
                 </div>
@@ -1233,7 +1240,13 @@ foreach ($allMaterials as $material) {
                         }
                         
                         if (svgPath) {
-                            fetch('/' + svgPath)
+                            // SVGパスをR2 URL対応
+                            let svgUrl = svgPath;
+                            if (svgUrl && !svgUrl.startsWith('http://') && !svgUrl.startsWith('https://')) {
+                                svgUrl = '/' + svgUrl;
+                            }
+                            
+                            fetch(svgUrl)
                                 .then(response => response.text())
                                 .then(svgText => {
                                     // 色情報がある場合は、SVGテキストを直接編集してから読み込む
@@ -1584,8 +1597,14 @@ foreach ($allMaterials as $material) {
                             return;
                         }
                         
+                        // SVGパスをR2 URL対応
+                        let svgUrl = svgPath;
+                        if (svgUrl && !svgUrl.startsWith('http://') && !svgUrl.startsWith('https://')) {
+                            svgUrl = '/' + svgUrl;
+                        }
+                        
                         // SVGファイルを読み込み
-                        fetch('/' + svgPath)
+                        fetch(svgUrl)
                             .then(response => {
                                 if (!response.ok) {
                                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -1792,8 +1811,14 @@ foreach ($allMaterials as $material) {
 
         // 素材を追加
         function addMaterial(material) {
+            // SVGパスをR2 URL対応
+            let svgUrl = material.svg_path;
+            if (svgUrl && !svgUrl.startsWith('http://') && !svgUrl.startsWith('https://')) {
+                svgUrl = '/' + svgUrl;
+            }
+            
             // SVGファイルを直接読み込み
-            fetch('/' + material.svg_path)
+            fetch(svgUrl)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2221,12 +2246,19 @@ foreach ($allMaterials as $material) {
                 const materialData = obj.materialData || {};
                 const bgColor = materialData.structured_bg_color || '#f0f0f0';
                 
-                // サムネイル画像のパスを取得（複数の形式に対応）
+                // サムネイル画像のパスを取得（R2 URL対応）
                 let thumbnailPath = materialData.webp_small_path || materialData.image_path || '';
+                let thumbnailUrl = '';
                 
-                // パスの先頭の/を削除（HTMLで/を追加するため）
-                if (thumbnailPath && thumbnailPath.startsWith('/')) {
-                    thumbnailPath = thumbnailPath.substring(1);
+                // R2 URLかローカルパスか判定
+                if (thumbnailPath) {
+                    if (thumbnailPath.startsWith('http://') || thumbnailPath.startsWith('https://')) {
+                        // R2 URLの場合はそのまま使用
+                        thumbnailUrl = thumbnailPath;
+                    } else {
+                        // ローカルパスの場合
+                        thumbnailUrl = thumbnailPath.startsWith('/') ? thumbnailPath : '/' + thumbnailPath;
+                    }
                 }
                 
                 const isMovingSource = movingLayerIndex === actualIndex;
@@ -2248,7 +2280,7 @@ foreach ($allMaterials as $material) {
                     </div>
                     <div class="layer-info">
                         <div class="layer-preview" style="background-color: ${bgColor}">
-                            ${thumbnailPath ? `<img src="/${thumbnailPath}" alt="${materialData.title || ''}" onerror="console.error('Image load failed:', this.src)">` : `<div style="color: #999; font-size: 10px;">No Image</div>`}
+                            ${thumbnailUrl ? `<img src="${thumbnailUrl}" alt="${materialData.title || ''}" onerror="console.error('Image load failed:', this.src)">` : `<div style="color: #999; font-size: 10px;">No Image</div>`}
                         </div>
                     </div>
                     <div class="layer-actions">

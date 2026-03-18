@@ -259,8 +259,70 @@ function createGifThumbnail($sourcePath, $destPath, $maxWidth, $maxHeight) {
     return $result;
 }
 
+/**
+ * WebP画像を生成する（単一サイズ）
+ */
+function createWebP($source, $destination, $maxWidth, $maxHeight, $quality = 85) {
+    $info = @getimagesize($source);
+    if (!$info) {
+        return false;
+    }
+    
+    switch ($info['mime']) {
+        case 'image/jpeg':
+            $sourceImage = imagecreatefromjpeg($source);
+            break;
+        case 'image/png':
+            $sourceImage = imagecreatefrompng($source);
+            break;
+        case 'image/gif':
+            $sourceImage = imagecreatefromgif($source);
+            break;
+        default:
+            return false;
+    }
+    
+    if ($sourceImage !== false) {
+        $originalWidth = imagesx($sourceImage);
+        $originalHeight = imagesy($sourceImage);
+        
+        // アスペクト比を保って縮小
+        $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+        $newWidth = intval($originalWidth * $ratio);
+        $newHeight = intval($originalHeight * $ratio);
+        
+        $newImage = imagecreatetruecolor($newWidth, $newHeight);
+        
+        // PNG の透明度を保持
+        if ($info['mime'] === 'image/png') {
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
+            $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
+            imagefill($newImage, 0, 0, $transparent);
+        }
+        
+        imagecopyresampled(
+            $newImage, $sourceImage,
+            0, 0, 0, 0,
+            $newWidth, $newHeight, $originalWidth, $originalHeight
+        );
+        
+        $result = imagewebp($newImage, $destination, $quality);
+        
+        imagedestroy($sourceImage);
+        imagedestroy($newImage);
+        
+        return $result;
+    }
+    
+    return false;
+}
+
 // ファイルアップロード関数（セキュリティ強化版）
 function uploadImage($file, $slug, $createdAt = null) {
+    // R2アップロードに切り替え
+    require_once __DIR__ . '/includes/r2-utils.php';
+    
     // セキュリティチェック
     $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
@@ -291,55 +353,74 @@ function uploadImage($file, $slug, $createdAt = null) {
         throw new Exception('スラッグに不正な文字が含まれています');
     }
     
-    // 作成日が指定されている場合はその年月を使用、そうでなければ現在の年月を使用
-    if ($createdAt) {
-        $date = new DateTime($createdAt);
-        $uploadDir = __DIR__ . '/uploads/' . $date->format('Y/m/');
-    } else {
-        $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
+    // 一時ファイルを作成
+    $tempOriginal = sys_get_temp_dir() . '/' . $slug . '_original_' . time() . '.' . $extension;
+    if (!move_uploaded_file($file['tmp_name'], $tempOriginal)) {
+        throw new Exception('一時ファイルの作成に失敗しました');
     }
     
-    if (!file_exists($uploadDir)) {
-        if (!mkdir($uploadDir, 0755, true)) {
-            throw new Exception('アップロードディレクトリの作成に失敗しました');
+    try {
+        // R2にオリジナルをアップロード（乱数ベースのファイル名）
+        $uniqueId = uniqid();
+        $timestamp = time();
+        $filename = 'item_' . $uniqueId . '_' . $timestamp . '.' . $extension;
+        $r2Key = 'items/' . $filename;
+        
+        $uploadResult = uploadFileToR2($tempOriginal, $r2Key, $mimeType);
+        if (!$uploadResult) {
+            throw new Exception('R2へのアップロードに失敗しました');
         }
-    }
-    
-    // ファイル名を安全に生成
-    $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.' . $extension;
-    $filepath = $uploadDir . $filename;
-    
-    // ファイルの重複チェック
-    $counter = 1;
-    while (file_exists($filepath)) {
-        $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '_' . $counter . '.' . $extension;
-        $filepath = $uploadDir . $filename;
-        $counter++;
-    }
-    
-    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+        
+        $originalUrl = $uploadResult['url'];
+        
         // WebP変換（2つのサイズを生成）
-        $webpBasePath = $uploadDir . preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug);
-        $webpResults = convertToWebP($filepath, $webpBasePath);
+        $webpSmallUrl = null;
+        $webpMediumUrl = null;
         
-        // 年月フォルダのパスを動的に決定
-        $folderPath = $createdAt ? (new DateTime($createdAt))->format('Y/m/') : date('Y/m/');
-        
-        if ($webpResults) {
-            return [
-                'original' => 'uploads/' . $folderPath . $filename,
-                'webp_small' => str_replace(__DIR__ . '/', '', $webpResults['_small']),
-                'webp_medium' => str_replace(__DIR__ . '/', '', $webpResults['_medium'])
-            ];
-        } else {
-            return [
-                'original' => 'uploads/' . $folderPath . $filename,
-                'webp_small' => null,
-                'webp_medium' => null
-            ];
+        // 小サイズWebP生成
+        $tempWebpSmall = sys_get_temp_dir() . '/item_' . $uniqueId . '_small_' . $timestamp . '.webp';
+        if (createWebP($tempOriginal, $tempWebpSmall, 300, 300)) {
+            $webpSmallKey = 'items/item_' . $uniqueId . '_' . $timestamp . '_small.webp';
+            $webpSmallResult = uploadFileToR2($tempWebpSmall, $webpSmallKey, 'image/webp');
+            if ($webpSmallResult) {
+                $webpSmallUrl = $webpSmallResult['url'];
+            }
+            if (file_exists($tempWebpSmall)) {
+                unlink($tempWebpSmall);
+            }
         }
+        
+        // 中サイズWebP生成
+        $tempWebpMedium = sys_get_temp_dir() . '/item_' . $uniqueId . '_medium_' . $timestamp . '.webp';
+        if (createWebP($tempOriginal, $tempWebpMedium, 800, 800)) {
+            $webpMediumKey = 'items/item_' . $uniqueId . '_' . $timestamp . '_medium.webp';
+            $webpMediumResult = uploadFileToR2($tempWebpMedium, $webpMediumKey, 'image/webp');
+            if ($webpMediumResult) {
+                $webpMediumUrl = $webpMediumResult['url'];
+            }
+            if (file_exists($tempWebpMedium)) {
+                unlink($tempWebpMedium);
+            }
+        }
+        
+        // 一時ファイルを削除
+        if (file_exists($tempOriginal)) {
+            unlink($tempOriginal);
+        }
+        
+        return [
+            'original' => $originalUrl,
+            'webp_small' => $webpSmallUrl,
+            'webp_medium' => $webpMediumUrl
+        ];
+        
+    } catch (Exception $e) {
+        // エラー時は一時ファイルをクリーンアップ
+        if (file_exists($tempOriginal)) {
+            unlink($tempOriginal);
+        }
+        throw $e;
     }
-    throw new Exception('ファイルのアップロードに失敗しました');
 }
 
 // AI製品画像専用のアップロード関数（WebP変換なし）
@@ -484,6 +565,9 @@ function convertToWebP($source, $basePath) {
 
 // SVGファイルアップロード関数
 function uploadSvgFile($file, $slug, $strictSecurity = false, $oldSvgPath = null, $createdAt = null) {
+    // R2アップロードに切り替え
+    require_once __DIR__ . '/includes/r2-utils.php';
+    
     // セキュリティチェック
     $allowedMimeTypes = ['image/svg+xml'];
     $allowedExtensions = ['svg'];
@@ -553,37 +637,44 @@ function uploadSvgFile($file, $slug, $strictSecurity = false, $oldSvgPath = null
         throw new Exception('スラッグに不正な文字が含まれています');
     }
     
-    // 作成日が指定されている場合はその年月を使用、そうでなければ現在の年月を使用
-    if ($createdAt) {
-        $date = new DateTime($createdAt);
-        $uploadDir = __DIR__ . '/uploads/' . $date->format('Y/m/');
-        $folderPath = $date->format('Y/m/');
-    } else {
-        $uploadDir = __DIR__ . '/uploads/' . date('Y/m/');
-        $folderPath = date('Y/m/');
+    // 古いSVGファイルを削除（R2対応）
+    if ($oldSvgPath) {
+        deleteFile($oldSvgPath, __DIR__ . '/');
     }
     
-    if (!file_exists($uploadDir)) {
-        if (!mkdir($uploadDir, 0755, true)) {
-            throw new Exception('アップロードディレクトリの作成に失敗しました');
+    // 一時ファイルに保存
+    $tempSvgPath = sys_get_temp_dir() . '/' . $slug . '_' . time() . '.svg';
+    if (!file_put_contents($tempSvgPath, $content)) {
+        throw new Exception('一時ファイルの作成に失敗しました');
+    }
+    
+    try {
+        // R2にアップロード（乱数ベースのファイル名）
+        $uniqueId = uniqid();
+        $timestamp = time();
+        $filename = 'item_' . $uniqueId . '_' . $timestamp . '.svg';
+        $r2Key = 'items/' . $filename;
+        
+        $uploadResult = uploadFileToR2($tempSvgPath, $r2Key, 'image/svg+xml');
+        
+        // 一時ファイルを削除
+        if (file_exists($tempSvgPath)) {
+            unlink($tempSvgPath);
         }
+        
+        if (!$uploadResult) {
+            throw new Exception('R2へのアップロードに失敗しました');
+        }
+        
+        return $uploadResult['url'];
+        
+    } catch (Exception $e) {
+        // エラー時は一時ファイルをクリーンアップ
+        if (file_exists($tempSvgPath)) {
+            unlink($tempSvgPath);
+        }
+        throw $e;
     }
-    
-    // 古いSVGファイルを削除
-    if ($oldSvgPath && file_exists(__DIR__ . '/' . $oldSvgPath)) {
-        unlink(__DIR__ . '/' . $oldSvgPath);
-    }
-    
-    // ファイル名を安全に生成（重複チェックなし、既存ファイルを上書き）
-    $filename = preg_replace('/[^a-zA-Z0-9\-_]/', '', $slug) . '.svg';
-    $filepath = $uploadDir . $filename;
-    
-    // サニタイズされたコンテンツをファイルに保存
-    if (file_put_contents($filepath, $content)) {
-        return 'uploads/' . $folderPath . $filename;
-    }
-    
-    throw new Exception('SVGファイルのアップロードに失敗しました');
 }
 
 // SVGコンテンツをサニタイズする関数

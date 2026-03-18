@@ -462,9 +462,11 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
         <?php foreach ($floatingMaterials as $index => $material): 
             if (!empty($material['image_path'])): 
                 $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
+                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
             ?>
         <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
+            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
         </div>
         <?php endif; endforeach; ?>
     </div>
@@ -490,6 +492,8 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                 <?php foreach ($materials as $material): 
                     // 画像パス（webp_small_pathを優先）
                     $imagePath = !empty($material['webp_small_path']) ? $material['webp_small_path'] : $material['image_path'];
+                    $isRemoteUrl = strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0;
+                    $finalImageUrl = $isRemoteUrl ? $imagePath : '/' . $imagePath;
                     
                     // 背景色
                     $bgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#f0f0f0';
@@ -501,7 +505,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     <a href="<?= h($detailUrl) ?>" class="material-card">
                         <div class="material-image-wrapper" style="background-color: <?= h($bgColor) ?>;">
                             <img 
-                                src="/<?= h($imagePath) ?>" 
+                                src="<?= h($finalImageUrl) ?>" 
                                 alt="<?= h($material['title']) ?>"
                                 class="material-image"
                                 loading="lazy"

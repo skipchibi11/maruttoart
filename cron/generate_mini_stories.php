@@ -19,9 +19,15 @@ function logMessage($message, $logFile) {
 }
 
 /**
- * 画像をBase64エンコード
+ * 画像をBase64エンコード（R2 URL対応）
  */
 function encodeImageToBase64($imagePath) {
+    // R2 URLの場合は直接URLを返す
+    if (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0) {
+        return $imagePath;
+    }
+    
+    // ローカルファイルの場合
     $fullPath = dirname(__DIR__) . '/' . $imagePath;
     
     if (!file_exists($fullPath)) {

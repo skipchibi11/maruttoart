@@ -319,7 +319,12 @@ function buildPagingUrl($page, $per_page, $search_query, $search_category) {
                                     <?php foreach ($materials as $material): ?>
                                     <tr>
                                         <td>
-                                            <img src="/<?= h($material['webp_small_path'] ?? $material['image_path']) ?>" alt="<?= h($material['title']) ?>" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                            <?php
+                                            $thumbPath = $material['webp_small_path'] ?? $material['image_path'];
+                                            $isRemoteUrl = strpos($thumbPath, 'http://') === 0 || strpos($thumbPath, 'https://') === 0;
+                                            $finalThumbUrl = $isRemoteUrl ? $thumbPath : '/' . $thumbPath;
+                                            ?>
+                                            <img src="<?= h($finalThumbUrl) ?>" alt="<?= h($material['title']) ?>" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
                                         </td>
                                         <td>
                                             <?= h($material['title']) ?>

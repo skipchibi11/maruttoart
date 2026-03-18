@@ -24,13 +24,23 @@ function getBackgroundColorFromAI($imagePath) {
         throw new Exception('OpenAI APIキーが設定されていません');
     }
     
-    // 画像をBase64エンコード
-    if (!file_exists($imagePath)) {
-        throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
-    }
+    // R2 URLの場合は直接URLを使用、ローカルの場合はBase64エンコード
+    $isRemoteUrl = (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0);
     
-    $imageData = base64_encode(file_get_contents($imagePath));
-    $mimeType = mime_content_type($imagePath);
+    if ($isRemoteUrl) {
+        // R2 URLの場合
+        $imageUrl = $imagePath;
+        $imageUrlData = ['url' => $imageUrl];
+    } else {
+        // ローカルファイルの場合
+        if (!file_exists($imagePath)) {
+            throw new Exception('画像ファイルが見つかりません: ' . $imagePath);
+        }
+        
+        $imageData = base64_encode(file_get_contents($imagePath));
+        $mimeType = mime_content_type($imagePath);
+        $imageUrlData = ['url' => "data:{$mimeType};base64,{$imageData}"];
+    }
 
     $prompt = "この画像を分析して、構造化データ用の背景として最適なペールトーン（薄い色調）の背景色を1つ提案してください。
 
@@ -65,9 +75,7 @@ function getBackgroundColorFromAI($imagePath) {
                     ],
                     [
                         'type' => 'image_url',
-                        'image_url' => [
-                            'url' => "data:{$mimeType};base64,{$imageData}"
-                        ]
+                        'image_url' => $imageUrlData
                     ]
                 ]
             ]
@@ -396,17 +404,37 @@ function main($materialId = null) {
             echo "処理中: ID {$material['id']} - {$material['title']}\n";
             
             try {
-                $inputPath = dirname(__DIR__) . '/' . $material['image_path'];
+                // R2 URLかローカルパスかを判定
+                $isRemoteUrl = (strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0);
                 
-                if (!file_exists($inputPath)) {
-                    echo "  エラー: 元画像が見つかりません - {$inputPath}\n";
-                    $errors++;
-                    continue;
+                if ($isRemoteUrl) {
+                    // R2 URLの場合は一時ファイルにダウンロード
+                    echo "  R2から画像をダウンロード中...\n";
+                    $tempFile = sys_get_temp_dir() . '/material_' . $material['id'] . '_' . time() . '.png';
+                    $imageContent = file_get_contents($material['image_path']);
+                    
+                    if ($imageContent === false) {
+                        throw new Exception("R2から画像をダウンロードできません: {$material['image_path']}");
+                    }
+                    
+                    file_put_contents($tempFile, $imageContent);
+                    $inputPath = $tempFile;
+                    $needsCleanup = true;
+                } else {
+                    // ローカルパスの場合
+                    $inputPath = dirname(__DIR__) . '/' . $material['image_path'];
+                    $needsCleanup = false;
+                    
+                    if (!file_exists($inputPath)) {
+                        echo "  エラー: 元画像が見つかりません - {$inputPath}\n";
+                        $errors++;
+                        continue;
+                    }
                 }
 
-                // コントラストチェック付きで背景色を決定
+                // コントラストチェック付きで背景色を決定（R2 URLを直接渡す場合もあるため、元のパスを使用）
                 echo "  背景色を分析中（コントラストチェック付き）...\n";
-                $colorData = getOptimizedBackgroundColor($inputPath);
+                $colorData = getOptimizedBackgroundColor($isRemoteUrl ? $material['image_path'] : $inputPath);
                 echo "  背景色: {$colorData['background_color']} ({$colorData['color_name']})\n";
                 echo "  理由: {$colorData['reasoning']}\n";
 
@@ -430,6 +458,11 @@ function main($materialId = null) {
 
                 echo "  1200x1200画像を生成中...\n";
                 generateStructuredDataImage($inputPath, $outputPath, $colorData['background_color']);
+                
+                // 一時ファイルのクリーンアップ
+                if ($needsCleanup && file_exists($tempFile)) {
+                    unlink($tempFile);
+                }
 
                 // データベースを更新
                 $updateStmt = $pdo->prepare("UPDATE materials SET structured_image_path = ?, structured_bg_color = ? WHERE id = ?");
@@ -439,6 +472,11 @@ function main($materialId = null) {
                 $processed++;
 
             } catch (Exception $e) {
+                // エラー時も一時ファイルをクリーンアップ
+                if (isset($needsCleanup) && $needsCleanup && isset($tempFile) && file_exists($tempFile)) {
+                    unlink($tempFile);
+                }
+                
                 echo "  エラー: " . $e->getMessage() . "\n";
                 $errors++;
                 

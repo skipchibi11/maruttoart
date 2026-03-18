@@ -1,5 +1,6 @@
 <?php
 require_once '../config.php';
+require_once '../includes/r2-utils.php'; // R2削除用
 startAdminSession(); // 管理画面専用セッション開始
 requireLogin();
 
@@ -42,13 +43,10 @@ try {
     
     foreach ($imageFields as $field) {
         if (!empty($material[$field])) {
-            $filePath = __DIR__ . '/../' . $material[$field];
-            if (file_exists($filePath)) {
-                if (unlink($filePath)) {
-                    $deletedFiles[] = $material[$field];
-                } else {
-                    $failedFiles[] = $material[$field];
-                }
+            if (deleteFile($material[$field], '../')) {
+                $deletedFiles[] = $material[$field];
+            } else {
+                $failedFiles[] = $material[$field];
             }
         }
     }

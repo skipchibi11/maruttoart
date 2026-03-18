@@ -29,16 +29,25 @@ function getImageEmbedding($imagePath, $title = '') {
         throw new Exception('OPENAI_API_KEY environment variable is not set');
     }
 
-    // 画像ファイルの存在確認
-    $fullImagePath = __DIR__ . '/../' . $imagePath;
-    if (!file_exists($fullImagePath)) {
-        throw new Exception("Image file not found: {$fullImagePath}");
-    }
+    // R2 URLかローカルパスかを判定
+    $isRemoteUrl = (strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0);
+    
+    if ($isRemoteUrl) {
+        // R2 URLの場合は直接URLを使用
+        $imageUrlData = ['url' => $imagePath];
+    } else {
+        // ローカルファイルの場合
+        $fullImagePath = __DIR__ . '/../' . $imagePath;
+        if (!file_exists($fullImagePath)) {
+            throw new Exception("Image file not found: {$fullImagePath}");
+        }
 
-    // 画像をbase64エンコード
-    $imageData = file_get_contents($fullImagePath);
-    $base64Image = base64_encode($imageData);
-    $mimeType = mime_content_type($fullImagePath);
+        // 画像をbase64エンコード
+        $imageData = file_get_contents($fullImagePath);
+        $base64Image = base64_encode($imageData);
+        $mimeType = mime_content_type($fullImagePath);
+        $imageUrlData = ['url' => "data:{$mimeType};base64,{$base64Image}"];
+    }
 
     // OpenAI APIリクエストの準備
     $url = 'https://api.openai.com/v1/embeddings';
@@ -68,9 +77,7 @@ function getImageEmbedding($imagePath, $title = '') {
                     ],
                     [
                         'type' => 'image_url',
-                        'image_url' => [
-                            'url' => "data:{$mimeType};base64,{$base64Image}"
-                        ]
+                        'image_url' => $imageUrlData
                     ]
                 ]
             ]

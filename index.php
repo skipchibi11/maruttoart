@@ -999,9 +999,11 @@ foreach ($calendarItems as $item) {
         <?php foreach ($floatingMaterials as $index => $material): 
             if (!empty($material['image_path'])): 
                 $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
+                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
             ?>
         <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="/<?= h($material['image_path']) ?>" alt="素材" loading="lazy">
+            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
         </div>
         <?php endif; endforeach; ?>
     </div>
@@ -1213,11 +1215,13 @@ foreach ($calendarItems as $item) {
                     <?php
                     $materialImageUrl = !empty($material['webp_small_path']) ? $material['webp_small_path'] : $material['image_path'];
                     $bgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
+                    $isRemoteUrl = strpos($materialImageUrl, 'http://') === 0 || strpos($materialImageUrl, 'https://') === 0;
+                    $finalMaterialUrl = $isRemoteUrl ? $materialImageUrl : '/' . $materialImageUrl;
                     ?>
                     <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" 
                        class="material-item" 
                        style="background-color: <?= h($bgColor) ?>; backdrop-filter: none;">
-                        <img src="/<?= h($materialImageUrl) ?>" alt="<?= h($material['title']) ?>" loading="lazy">
+                        <img src="<?= h($finalMaterialUrl) ?>" alt="<?= h($material['title']) ?>" loading="lazy">
                     </a>
                 <?php endforeach; ?>
             </div>

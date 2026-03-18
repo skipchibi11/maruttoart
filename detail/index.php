@@ -699,9 +699,11 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     $imagePath = !empty($material['structured_image_path']) 
                         ? $material['structured_image_path'] 
                         : (!empty($material['webp_small_path']) ? $material['webp_small_path'] : $material['image_path']);
+                    $isRemoteUrl = strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0;
+                    $finalImageUrl = $isRemoteUrl ? $imagePath : '/' . $imagePath;
                     ?>
                     <img 
-                        src="/<?= h($imagePath) ?>" 
+                        src="<?= h($finalImageUrl) ?>" 
                         alt="<?= h($material['title']) ?>"
                         class="detail-image"
                     >
@@ -709,11 +711,21 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
                 <div class="detail-info">
                     <div class="detail-actions">
-                        <a href="/<?= h($material['image_path']) ?>" download class="action-button action-button-primary">
+                        <?php
+                        $downloadImagePath = $material['image_path'];
+                        $isRemoteDownloadUrl = strpos($downloadImagePath, 'http://') === 0 || strpos($downloadImagePath, 'https://') === 0;
+                        $finalDownloadUrl = $isRemoteDownloadUrl ? $downloadImagePath : '/' . $downloadImagePath;
+                        ?>
+                        <a href="<?= h($finalDownloadUrl) ?>" download class="action-button action-button-primary">
                             PNGダウンロード
                         </a>
                         <?php if (!empty($material['svg_path'])): ?>
-                        <a href="/<?= h($material['svg_path']) ?>" download class="action-button action-button-primary">
+                        <?php
+                        $svgPath = $material['svg_path'];
+                        $isRemoteSvgUrl = strpos($svgPath, 'http://') === 0 || strpos($svgPath, 'https://') === 0;
+                        $finalSvgUrl = $isRemoteSvgUrl ? $svgPath : '/' . $svgPath;
+                        ?>
+                        <a href="<?= h($finalSvgUrl) ?>" download class="action-button action-button-primary">
                             SVGダウンロード
                         </a>
                         <?php endif; ?>
@@ -766,7 +778,12 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                             <a href="/<?= h($item['category_slug']) ?>/<?= h($item['slug']) ?>/" 
                                class="related-item-link">
                                 <div class="related-item-thumbnail" style="background-color: <?= h($item['structured_bg_color'] ?? '#f0f0f0') ?>;">
-                                    <img src="/<?= h($item['webp_small_path'] ?? $item['image_path']) ?>" 
+                                    <?php
+                                    $relatedItemPath = $item['webp_small_path'] ?? $item['image_path'];
+                                    $isRemoteRelated = strpos($relatedItemPath, 'http://') === 0 || strpos($relatedItemPath, 'https://') === 0;
+                                    $relatedItemUrl = $isRemoteRelated ? $relatedItemPath : '/' . $relatedItemPath;
+                                    ?>
+                                    <img src="<?= h($relatedItemUrl) ?>" 
                                          alt="<?= h($item['title']) ?>" 
                                          class="related-item-image"
                                          loading="lazy">
