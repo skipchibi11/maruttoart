@@ -248,10 +248,11 @@ foreach ($calendarItems as $item) {
             color: #A0675C;
         }
 
-        /* みんなの作品セクション - マンソリーレイアウト */
+        /* みんなの作品セクション - グリッドレイアウト */
         .artworks-grid {
-            column-count: 5;
-            column-gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
             margin-bottom: 40px;
             width: 90%;
             margin-left: auto;
@@ -262,9 +263,6 @@ foreach ($calendarItems as $item) {
             text-decoration: none;
             color: inherit;
             display: block;
-            margin-bottom: 20px;
-            break-inside: avoid;
-            page-break-inside: avoid;
             transition: transform 0.3s;
         }
 
@@ -274,6 +272,7 @@ foreach ($calendarItems as $item) {
 
         .artwork-image-wrapper {
             width: 100%;
+            aspect-ratio: 1 / 1;
             border-radius: 12px;
             overflow: hidden;
             display: block;
@@ -286,14 +285,15 @@ foreach ($calendarItems as $item) {
 
         .artwork-image {
             width: 100%;
-            height: auto;
+            height: 100%;
             display: block;
+            object-fit: contain;
         }
 
         @media (max-width: 768px) {
             .artworks-grid {
-                column-count: 3;
-                column-gap: 15px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
             }
         }
 
@@ -828,7 +828,7 @@ foreach ($calendarItems as $item) {
             }
 
             .artworks-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 16px;
             }
 

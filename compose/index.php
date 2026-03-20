@@ -93,12 +93,6 @@ $stmt = $pdo->prepare($materialsSql);
 $stmt->execute();
 $allMaterials = $stmt->fetchAll();
 
-// 浮遊素材用にランダムに8件取得
-$floatingMaterialsSql = "SELECT m.webp_small_path as image_path, m.structured_bg_color FROM materials m ORDER BY RAND() LIMIT 8";
-$floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
-$floatingMaterialsStmt->execute();
-$floatingMaterials = $floatingMaterialsStmt->fetchAll();
-
 // カテゴリごとにグループ化
 $materialsByCategory = [];
 foreach ($allMaterials as $material) {
@@ -871,144 +865,12 @@ foreach ($allMaterials as $material) {
         .modal-btn:hover {
             transform: translateY(-2px);
         }
-
-        /* 浮遊素材背景 */
-        .floating-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .floating-material {
-            position: absolute;
-            opacity: 0;
-            animation: floatUp linear infinite;
-            backdrop-filter: blur(8px);
-            border-radius: 50%;
-            padding: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .floating-material img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        @keyframes floatUp {
-            0% {
-                transform: translateY(100vh) translateX(0) scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.7;
-            }
-            90% {
-                opacity: 0.7;
-            }
-            100% {
-                transform: translateY(-100px) translateX(var(--drift)) scale(1) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        .floating-material:nth-child(1) {
-            left: 10%;
-            width: 100px;
-            height: 100px;
-            animation-duration: 15s;
-            animation-delay: 0s;
-            --drift: 30px;
-        }
-
-        .floating-material:nth-child(2) {
-            left: 25%;
-            width: 85px;
-            height: 85px;
-            animation-duration: 18s;
-            animation-delay: 2s;
-            --drift: -20px;
-        }
-
-        .floating-material:nth-child(3) {
-            left: 50%;
-            width: 120px;
-            height: 120px;
-            animation-duration: 20s;
-            animation-delay: 4s;
-            --drift: 40px;
-        }
-
-        .floating-material:nth-child(4) {
-            left: 70%;
-            width: 95px;
-            height: 95px;
-            animation-duration: 16s;
-            animation-delay: 1s;
-            --drift: -30px;
-        }
-
-        .floating-material:nth-child(5) {
-            left: 85%;
-            width: 110px;
-            height: 110px;
-            animation-duration: 22s;
-            animation-delay: 3s;
-            --drift: 25px;
-        }
-
-        .floating-material:nth-child(6) {
-            left: 15%;
-            width: 80px;
-            height: 80px;
-            animation-duration: 19s;
-            animation-delay: 5s;
-            --drift: -35px;
-        }
-
-        .floating-material:nth-child(7) {
-            left: 60%;
-            width: 90px;
-            height: 90px;
-            animation-duration: 17s;
-            animation-delay: 2.5s;
-            --drift: 20px;
-        }
-
-        .floating-material:nth-child(8) {
-            left: 40%;
-            width: 105px;
-            height: 105px;
-            animation-duration: 21s;
-            animation-delay: 4.5s;
-            --drift: -25px;
-        }
     </style>
 </head>
 <body>
     <?php 
     include __DIR__ . '/../includes/gtm-body.php';
     ?>
-
-    <!-- 浮遊素材背景 -->
-    <div class="floating-container">
-        <?php foreach ($floatingMaterials as $index => $material): 
-            if (!empty($material['image_path'])): 
-                $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
-                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
-                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
-            ?>
-        <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
-        </div>
-        <?php endif; endforeach; ?>
-    </div>
 
     <?php 
     $currentPage = 'compose';
