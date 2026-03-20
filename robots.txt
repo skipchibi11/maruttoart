@@ -9,6 +9,16 @@ Disallow: /api/
 Disallow: /config.php
 Disallow: /logs/
 Disallow: /*.log$
+Disallow: /*.md$
+Disallow: /*.json$
+Disallow: /*.lock$
+Disallow: /*.env$
+Disallow: /*.yml$
+Disallow: /*.yaml$
+Disallow: /.git/
+Disallow: /database/
+Disallow: /docs/
+Disallow: /cron/
 
 # テストファイルはクロール禁止
 Disallow: /test.html

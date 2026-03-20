@@ -1,0 +1,7 @@
+# Deny all web access to this directory
+Deny from all
+
+# Alternative configuration for Apache 2.4+
+<RequireAll>
+    Require all denied
+</RequireAll>

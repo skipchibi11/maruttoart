@@ -35,10 +35,10 @@ ErrorDocument 403 /404.php
 <FilesMatch "(?i)^docker-compose\.ya?ml$">
   Require all denied
 </FilesMatch>
-<FilesMatch "\.(env|ya?ml|ini|log|sql|bak|tar|gz|zip)$">
+<FilesMatch "\.(env|ya?ml|ini|log|sql|bak|tar|gz|zip|md|json|lock)$">
   Require all denied
 </FilesMatch>
-<FilesMatch "^(?:\.gitignore|\.env|\.htpasswd)$">
+<FilesMatch "^(?:\.gitignore|\.env.*|\.htpasswd|composer\.json|composer\.lock|package\.json|package-lock\.json)$">
   Require all denied
 </FilesMatch>
 <FilesMatch "^test-env\.php$">
@@ -54,6 +54,11 @@ ErrorDocument 403 /404.php
   Require all denied
 </FilesMatch>
 RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
+
+# ドキュメントディレクトリやデータベースディレクトリへのアクセスを禁止
+RedirectMatch 404 ^/docs/
+RedirectMatch 404 ^/database/
+RedirectMatch 404 ^/cron/(?!.*\.php$)
 # === security hardening end ===
 
 
