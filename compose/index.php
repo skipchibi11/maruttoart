@@ -60,9 +60,30 @@ if ($customizeArtworkId) {
     }
 }
 
-// ベクター素材をカテゴリ別に取得
+// おすすめ素材のID（手動で管理）
+$recommendedMaterialIds = [828,661,1002,994,968,778,1018,1016,1015,1011];
+
+// おすすめ素材を取得
+$recommendedMaterials = [];
+if (!empty($recommendedMaterialIds)) {
+    $placeholders = str_repeat('?,', count($recommendedMaterialIds) - 1) . '?';
+    $recommendedSql = "
+        SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, m.search_keywords, 
+               c.title as category_name, c.slug as category_slug
+        FROM materials m
+        LEFT JOIN categories c ON m.category_id = c.id
+        WHERE m.id IN ($placeholders) AND m.svg_path IS NOT NULL AND m.svg_path != ''
+        ORDER BY FIELD(m.id, $placeholders)
+    ";
+    $stmt = $pdo->prepare($recommendedSql);
+    $stmt->execute(array_merge($recommendedMaterialIds, $recommendedMaterialIds));
+    $recommendedMaterials = $stmt->fetchAll();
+}
+
+// ベクター素材をカテゴリ別に取得（全件）
 $materialsSql = "
-    SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, m.search_keywords, c.title as category_name, c.slug as category_slug
+    SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, m.search_keywords, 
+           c.title as category_name, c.slug as category_slug
     FROM materials m
     LEFT JOIN categories c ON m.category_id = c.id
     WHERE m.svg_path IS NOT NULL AND m.svg_path != ''
@@ -223,6 +244,41 @@ foreach ($allMaterials as $material) {
             max-height: 150px;
             overflow-y: auto;
             padding: 8px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 8px;
+        }
+
+        .pagination-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 0.85rem;
+            color: var(--text-dark);
         }
 
         .control-divider {
@@ -944,7 +1000,8 @@ foreach ($allMaterials as $material) {
             </div>
             
             <div class="category-tabs" id="categoryTabs">
-                <button class="category-tab active" onclick="filterByCategory('all')">すべて</button>
+                <button class="category-tab active" onclick="filterByCategory('おすすめ')">おすすめ</button>
+                <button class="category-tab" onclick="filterByCategory('all')">すべて</button>
                 <?php foreach ($materialsByCategory as $categoryName => $materials): ?>
                 <button class="category-tab" onclick="filterByCategory('<?= h($categoryName) ?>')">
                     <?= h($categoryName) ?>
@@ -953,24 +1010,25 @@ foreach ($allMaterials as $material) {
             </div>
             
             <div class="material-grid" id="materialGrid">
-                <?php foreach ($allMaterials as $material): ?>
-                <?php
-                    $thumbPath = $material['webp_small_path'];
-                    $isRemoteThumb = strpos($thumbPath, 'http://') === 0 || strpos($thumbPath, 'https://') === 0;
-                    $finalThumbUrl = $isRemoteThumb ? $thumbPath : '/' . $thumbPath;
-                ?>
-                <div class="material-item" 
-                     data-category="<?= h($material['category_name'] ?? '未分類') ?>"
-                     data-title="<?= h(strtolower($material['title'])) ?>"
-                     data-search-keywords="<?= h(strtolower($material['search_keywords'] ?? '')) ?>"
-                     style="background-color: <?= h($material['structured_bg_color'] ?? '#ffffff') ?>"
-                     onclick='addMaterial(<?= json_encode($material, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'>
-                    <img src="<?= h($finalThumbUrl) ?>" 
-                         alt="<?= h($material['title']) ?>"
-                         loading="lazy">
-                </div>
-                <?php endforeach; ?>
+                <!-- 素材がJavaScriptで動的に表示されます -->
             </div>
+            
+            <div class="pagination" id="pagination">
+                <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">前へ</button>
+                <span class="pagination-info" id="pageInfo">1 / 1</span>
+                <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">次へ</button>
+            </div>
+            
+            <!-- 非表示のデータ保持用 -->
+            <script id="recommendedMaterialsData" type="application/json">
+                <?= json_encode($recommendedMaterials, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+            </script>
+            <script id="allMaterialsData" type="application/json">
+                <?= json_encode($allMaterials, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+            </script>
+            <script id="materialsByCategoryData" type="application/json">
+                <?= json_encode($materialsByCategory, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+            </script>
         </div>
 
         <!-- 作業エリア -->
@@ -2828,58 +2886,156 @@ foreach ($allMaterials as $material) {
             document.body.appendChild(messageDiv);
         }
 
+        // ページング関連の変数
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let currentCategory = 'おすすめ';
+        let currentSearchTerm = '';
+        let allMaterialsArray = [];
+        let recommendedMaterialsArray = [];
+        let materialsByCategoryObj = {};
+        let filteredMaterials = [];
+
+        // データの読み込み
+        function loadMaterialsData() {
+            recommendedMaterialsArray = JSON.parse(document.getElementById('recommendedMaterialsData').textContent);
+            allMaterialsArray = JSON.parse(document.getElementById('allMaterialsData').textContent);
+            materialsByCategoryObj = JSON.parse(document.getElementById('materialsByCategoryData').textContent);
+        }
+
+        // 素材を表示
+        function renderMaterials() {
+            // フィルタリングされた素材を取得
+            if (currentSearchTerm) {
+                // 検索が有効な場合
+                filteredMaterials = filterMaterialsBySearch(currentSearchTerm);
+            } else if (currentCategory === 'おすすめ') {
+                filteredMaterials = recommendedMaterialsArray;
+            } else if (currentCategory === 'all') {
+                filteredMaterials = allMaterialsArray;
+            } else {
+                filteredMaterials = materialsByCategoryObj[currentCategory] || [];
+            }
+
+            const totalPages = Math.ceil(filteredMaterials.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const materialsToShow = filteredMaterials.slice(startIndex, endIndex);
+
+            // グリッドに表示（DocumentFragment使用で高速化）
+            const grid = document.getElementById('materialGrid');
+            const fragment = document.createDocumentFragment();
+
+            materialsToShow.forEach(material => {
+                const thumbPath = material.webp_small_path;
+                const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
+                const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
+
+                const div = document.createElement('div');
+                div.className = 'material-item';
+                div.style.backgroundColor = material.structured_bg_color || '#ffffff';
+                div.onclick = () => addMaterial(material);
+
+                const img = document.createElement('img');
+                img.src = finalThumbUrl;
+                img.alt = material.title;
+                img.loading = 'lazy';
+
+                div.appendChild(img);
+                fragment.appendChild(div);
+            });
+
+            // 一度に追加してリフローを最小化
+            grid.innerHTML = '';
+            grid.appendChild(fragment);
+
+            // ページネーション情報を更新
+            updatePagination(totalPages);
+        }
+
+        // ページネーション更新
+        function updatePagination(totalPages) {
+            document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages || totalPages === 0;
+        }
+
+        // ページ変更
+        function changePage(delta) {
+            const totalPages = Math.ceil(filteredMaterials.length / itemsPerPage);
+            const newPage = currentPage + delta;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderMaterials();
+            }
+        }
+
+        // 検索フィルター
+        function filterMaterialsBySearch(searchInput) {
+            const searchTerms = searchInput
+                .toLowerCase()
+                .replace(/　/g, ' ')
+                .split(' ')
+                .filter(term => term.trim() !== '');
+
+            if (searchTerms.length === 0) {
+                return currentCategory === 'おすすめ' ? recommendedMaterialsArray :
+                       currentCategory === 'all' ? allMaterialsArray :
+                       materialsByCategoryObj[currentCategory] || [];
+            }
+
+            const baseMaterials = currentCategory === 'おすすめ' ? recommendedMaterialsArray :
+                                  currentCategory === 'all' ? allMaterialsArray :
+                                  materialsByCategoryObj[currentCategory] || [];
+
+            return baseMaterials.filter(material => {
+                const title = (material.title || '').toLowerCase();
+                const searchKeywords = (material.search_keywords || '').toLowerCase();
+                return searchTerms.some(term => title.includes(term) || searchKeywords.includes(term));
+            });
+        }
+
         // カテゴリフィルター
         function filterByCategory(categoryName) {
+            currentCategory = categoryName;
+            currentPage = 1;
+            
             const tabs = document.querySelectorAll('.category-tab');
             tabs.forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
             
-            const items = document.querySelectorAll('.material-item');
-            items.forEach(item => {
-                if (categoryName === 'all' || item.dataset.category === categoryName) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+            renderMaterials();
         }
 
-        // 素材検索
+        // デバウンス関数
+        let searchTimeout;
+        function debounce(func, wait) {
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(searchTimeout);
+                    func(...args);
+                };
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(later, wait);
+            };
+        }
+
+        // 素材検索（デバウンス付き）
+        const performSearch = debounce(function(value) {
+            currentSearchTerm = value;
+            currentPage = 1;
+            renderMaterials();
+        }, 300);
+
         document.getElementById('materialSearch').addEventListener('input', function(e) {
-            const searchInput = e.target.value.toLowerCase();
-            const items = document.querySelectorAll('.material-item');
-            
-            // 全角スペースを半角スペースに統一してOR検索用のキーワード配列を作成
-            const searchTerms = searchInput
-                .replace(/　/g, ' ')  // 全角スペースを半角スペースに変換
-                .split(' ')           // スペースで分割
-                .filter(term => term.trim() !== '');  // 空文字を除外
-            
-            items.forEach(item => {
-                const title = (item.dataset.title || '').toLowerCase();
-                const searchKeywords = (item.dataset.searchKeywords || '').toLowerCase();
-                
-                // 検索語が空の場合は全て表示
-                if (searchTerms.length === 0) {
-                    item.style.display = 'flex';
-                    return;
-                }
-                
-                // いずれかのキーワードがタイトルまたはsearch_keywordsに含まれていればOR検索で表示
-                const matchFound = searchTerms.some(term => 
-                    title.includes(term) || searchKeywords.includes(term)
-                );
-                
-                if (matchFound) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+            performSearch(e.target.value);
         });
 
         // ページ読み込み時に初期化
         window.addEventListener('load', function() {
+            loadMaterialsData();
+            renderMaterials();
             initCanvas();
         });
     </script>
