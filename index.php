@@ -90,12 +90,12 @@ foreach ($calendarItems as $item) {
     
     <style>
         :root {
-            --primary-color: #E8A87C;
-            --secondary-color: #C38E70;
+            --primary-color: #FFD4A3;
+            --secondary-color: #FFABC5;
             --bg-cream: #FFF8F0;
             --bg-pink: #FFF0F5;
             --text-dark: #5A4A42;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow: 0 6px 20px rgba(255, 171, 197, 0.5);
         }
 
         * {
@@ -193,17 +193,14 @@ foreach ($calendarItems as $item) {
 
         .peek-animal {
             position: absolute;
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             pointer-events: none;
             z-index: 1;
-            opacity: 0;
-        }
-
-        .peek-right {
-            left: 50%;
-            bottom: 80%;
-            transform: translateX(-50%);
+            opacity: 1;
+            right: -40px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .peek-animal img {
@@ -212,32 +209,10 @@ foreach ($calendarItems as $item) {
             object-fit: contain;
         }
 
-        @keyframes peekFromBottom {
-            0% {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            15% {
-                transform: translateY(15px);
-                opacity: 1;
-            }
-            85% {
-                transform: translateY(15px);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-        }
-
-        .peek-animal.active {
-            animation: peekFromBottom 3s ease-in-out forwards;
-        }
-
         .cta-button:hover {
+            background: linear-gradient(135deg, #FFE0B8 0%, #FFC0D8 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 25px rgba(255, 171, 197, 0.6);
         }
 
         .hero-image-container {
@@ -931,15 +906,14 @@ foreach ($calendarItems as $item) {
                 font-size: 0.95rem;
             }
 
-            .peek-right {
-                left: 50%;
-                bottom: 100%;
-                transform: translateX(-50%);
+            .hero-cta-mobile {
+                position: relative;
             }
 
             .peek-animal {
-                width: 60px;
-                height: 60px;
+                width: 45px;
+                height: 45px;
+                right: -30px;
             }
 
             .section {
@@ -1024,10 +998,10 @@ foreach ($calendarItems as $item) {
                 <div class="hero-text">
                     <h1>3つ選ぶだけで、<br>物語が生まれる。</h1>
                     <p class="hero-subtitle">今日はどんな一枚をつくる？</p>
-                    <div class="hero-cta-pc">
+                    <div class="hero-cta-pc" style="position: relative;">
                         <a href="/compose/" class="cta-button">今すぐつくる</a>
-                        <div class="peek-animal peek-right" id="peek-animal-pc">
-                            <img src="" alt="">
+                        <div class="peek-animal" id="peek-animal-pc">
+                            <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン" loading="lazy">
                         </div>
                     </div>
                 </div>
@@ -1042,10 +1016,10 @@ foreach ($calendarItems as $item) {
                          loading="eager">
                 </div>
                 
-                <div class="hero-cta-mobile">
+                <div class="hero-cta-mobile" style="position: relative;">
                     <a href="/compose/" class="cta-button">今すぐつくる</a>
-                    <div class="peek-animal peek-right" id="peek-animal-mobile">
-                        <img src="" alt="">
+                    <div class="peek-animal" id="peek-animal-mobile">
+                        <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -1238,49 +1212,7 @@ foreach ($calendarItems as $item) {
     <?php include 'includes/footer.php'; ?>
 
     <script>
-    // 動物がランダムに顔を出すアニメーション
-    const animals = [
-        '/assets/images/penguin.png',
-        '/assets/images/shimaenaga.png'
-    ];
-
-    function showPeekAnimal(elementId) {
-        const peekElement = document.getElementById(elementId);
-        if (!peekElement) return;
-
-        // ランダムな動物を選択
-        const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
-        const img = peekElement.querySelector('img');
-        img.src = randomAnimal;
-        img.alt = 'かわいい動物';
-
-        // ランダムな位置（left: 20% 〜 80%）
-        const randomLeft = Math.floor(Math.random() * 61) + 20; // 20〜80の範囲
-        peekElement.style.left = `${randomLeft}%`;
-
-        // アニメーション開始
-        peekElement.classList.add('active');
-
-        // アニメーション終了後にクラスを削除
-        setTimeout(() => {
-            peekElement.classList.remove('active');
-        }, 3000);
-    }
-
-    function scheduleNextPeek(elementId) {
-        // ランダムな間隔（3秒〜8秒）
-        const randomDelay = Math.floor(Math.random() * 5000) + 3000;
-        
-        setTimeout(() => {
-            showPeekAnimal(elementId);
-            scheduleNextPeek(elementId); // 次の表示をスケジュール
-        }, randomDelay);
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-        // PC版とモバイル版で独立してアニメーション
-        scheduleNextPeek('peek-animal-pc');
-        scheduleNextPeek('peek-animal-mobile');
         
         // カレンダーのスワイプ機能（スマホのみ）
         const calendarGrid = document.querySelector('#calendarGrid');
