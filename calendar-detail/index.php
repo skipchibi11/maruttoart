@@ -84,7 +84,14 @@ if ($isRemoteImageUrl) {
         body {
             font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--text-dark);
-            background: linear-gradient(180deg, #FFF0E5 0%, #FFF5F8 100%);
+            background: linear-gradient(
+                to bottom,
+                #FFFEF5 0%,
+                #FFF9E8 25%,
+                #FFF4DC 50%,
+                #FFEFD0 75%,
+                #FFE8C5 100%
+            );
             min-height: 100vh;
             line-height: 1.8;
         }
