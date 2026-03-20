@@ -215,7 +215,25 @@ foreach ($allMaterials as $material) {
 
         @media (max-width: 768px) {
             .category-tabs {
-                display: none;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+                scrollbar-color: var(--primary-color) transparent;
+                padding-bottom: 8px;
+            }
+
+            .category-tabs::-webkit-scrollbar {
+                height: 4px;
+            }
+
+            .category-tabs::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .category-tabs::-webkit-scrollbar-thumb {
+                background: var(--primary-color);
+                border-radius: 4px;
             }
         }
 
@@ -229,6 +247,15 @@ foreach ($allMaterials as $material) {
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .category-tab {
+                flex-shrink: 0;
+                font-size: 0.85rem;
+                padding: 6px 16px;
+            }
         }
 
         .category-tab:hover,
