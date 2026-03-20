@@ -1,4 +1,15 @@
 <style>
+/* グローバル設定 - 横スクロール防止 */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 /* コンテナシステム - 統一スタイル */
 .container {
     width: 100%;
@@ -8,6 +19,7 @@
     padding-bottom: 0px;
     padding-left: 15px;
     padding-right: 15px;
+    box-sizing: border-box;
 }
 
 /* 1400px以上: コンテナの最大幅を拡張 */

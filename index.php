@@ -197,7 +197,7 @@ foreach ($calendarItems as $item) {
             pointer-events: none;
             z-index: 1;
             opacity: 1;
-            right: -40px;
+            right: -10px;
             top: 50%;
             transform: translateY(-50%);
         }
@@ -805,9 +805,7 @@ foreach ($calendarItems as $item) {
             }
 
             .peek-animal {
-                width: 45px;
-                height: 45px;
-                right: -30px;
+                display: none;
             }
 
             .section {

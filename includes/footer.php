@@ -70,14 +70,16 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
 }
 
 .footer-artworks-scroll {
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     position: relative;
     height: 100px;
     margin: 40px 0;
     display: flex;
     align-items: center;
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
 }
 
 .footer-artworks-track {
