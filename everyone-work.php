@@ -420,17 +420,15 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
         }
 
         .related-items-grid {
-            column-count: 4;
-            column-gap: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
             max-width: 900px;
             margin: 0 auto;
             padding: 0 1rem;
         }
 
         .related-item {
-            break-inside: avoid;
-            margin-bottom: 1.5rem;
-            display: inline-block;
             width: 100%;
         }
 
@@ -438,10 +436,10 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
             display: block;
             text-decoration: none;
             color: inherit;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(10px);
+            background: #FFFFFF;
             border-radius: 12px;
             padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -460,6 +458,7 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
 
         .related-item-thumbnail {
             width: 100%;
+            aspect-ratio: 1 / 1;
             background-color: transparent;
             display: flex;
             align-items: center;
@@ -470,7 +469,8 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
 
         .related-item-image {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: contain;
             display: block;
             border-radius: 8px;
             transition: transform 0.2s ease;
@@ -502,13 +502,9 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
 
         @media (max-width: 768px) {
             .related-items-grid {
-                column-count: 2;
-                column-gap: 1rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
                 padding: 0 0.5rem;
-            }
-
-            .related-item {
-                margin-bottom: 1rem;
             }
         }
 
