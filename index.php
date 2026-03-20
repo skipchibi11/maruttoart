@@ -74,6 +74,9 @@ foreach ($calendarItems as $item) {
     
     <link rel="icon" href="/favicon.ico">
     
+    <!-- Preload hero image for better LCP -->
+    <link rel="preload" as="image" href="https://assets.marutto.art/hero/main.webp" fetchpriority="high">
+    
     <!-- hreflang tags -->
     <link rel="alternate" hreflang="ja" href="https://marutto.art/" />
     <link rel="alternate" hreflang="en" href="https://marutto.art/en/" />
@@ -1031,7 +1034,7 @@ foreach ($calendarItems as $item) {
                 
                 <div class="hero-image-container">
                     <!-- ヒーロー画像を後で配置 -->
-                    <img src="/assets/images/hero-illustration.png" 
+                    <img src="https://assets.marutto.art/hero/main.webp" 
                          alt="3つのイラストを組み合わせて物語を作る" 
                          class="hero-image"
                          width="600"
