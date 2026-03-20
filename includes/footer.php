@@ -1,12 +1,10 @@
 <?php
-// フッター用：最新の正方形30点の作品を取得
+// フッター用：最新15件の作品を取得
 $pdo = getDB();
 $footerArtworksSql = "SELECT id, title, webp_path, image_width, image_height FROM community_artworks 
-    WHERE status = 'approved' 
-    AND image_width = image_height
-    AND image_width > 0
+    WHERE status = 'approved'
     ORDER BY created_at DESC 
-    LIMIT 30";
+    LIMIT 15";
 $footerArtworksStmt = $pdo->prepare($footerArtworksSql);
 $footerArtworksStmt->execute();
 $footerArtworks = $footerArtworksStmt->fetchAll();
@@ -76,12 +74,16 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
     position: relative;
     height: 100px;
     margin: 40px 0;
+    display: flex;
+    align-items: center;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 
 .footer-artworks-track {
     display: flex;
     gap: 16px;
-    animation: footerScroll 40s linear infinite;
+    animation: footerScroll 180s linear infinite;
     will-change: transform;
 }
 
@@ -90,12 +92,15 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
     height: 80px;
     flex-shrink: 0;
     border-radius: 8px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
+    overflow: visible;
+    background: white;
     padding: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
 }
 
 .footer-artwork-item:hover {
@@ -103,8 +108,8 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
 }
 
 .footer-artwork-item img {
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
 }
 
@@ -150,6 +155,10 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
         width: 60px;
         height: 60px;
     }
+    
+    .footer-artworks-track {
+        gap: 12px;
+    }
 }
 </style>
 
@@ -177,8 +186,8 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
         <div class="footer-artworks-scroll">
             <div class="footer-artworks-track">
                 <?php 
-                // 2回繰り返して途切れないようにする
-                for ($i = 0; $i < 2; $i++):
+                // 4回繰り返して途切れないようにする
+                for ($i = 0; $i < 4; $i++):
                     foreach ($footerArtworks as $artwork): 
                         if (!empty($artwork['webp_path'])):
                             // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
