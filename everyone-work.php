@@ -150,12 +150,6 @@ shuffle($allRelatedItems);
 
 $showRelatedItemsSection = !empty($allRelatedItems);
 
-// 背景浮遊用の素材を取得（8件）
-$floatingMaterialsSql = "SELECT m.webp_small_path as image_path, m.structured_bg_color FROM materials m ORDER BY RAND() LIMIT 8";
-$floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
-$floatingMaterialsStmt->execute();
-$floatingMaterials = $floatingMaterialsStmt->fetchAll();
-
 // 作品画像のURL（PNG優先）
 $imagePath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork['webp_path'];
 // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
@@ -268,7 +262,14 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
         body {
             font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--text-dark);
-            background: linear-gradient(180deg, #FFF0E5 0%, #FFF5F8 100%);
+            background: linear-gradient(
+                to bottom,
+                #F8FCFE 0%,
+                #F0F8FC 25%,
+                #E8F4FA 50%,
+                #E0F0F7 75%,
+                #D8ECF4 100%
+            );
             min-height: 100vh;
         }
 
@@ -277,61 +278,6 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
             margin: 0 auto;
             padding: 0 20px;
         }
-
-        /* 浮遊素材背景 */
-        .floating-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .floating-material {
-            position: absolute;
-            opacity: 0;
-            animation: floatUp linear infinite;
-            backdrop-filter: blur(8px);
-            border-radius: 50%;
-            padding: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .floating-material img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        @keyframes floatUp {
-            0% {
-                transform: translateY(100vh) translateX(0) scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.6;
-            }
-            90% {
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(-100px) translateX(var(--drift)) scale(1) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        .floating-material:nth-child(1) { left: 10%; width: 100px; height: 100px; animation-duration: 15s; animation-delay: 0s; --drift: 30px; }
-        .floating-material:nth-child(2) { left: 25%; width: 85px; height: 85px; animation-duration: 18s; animation-delay: 2s; --drift: -20px; }
-        .floating-material:nth-child(3) { left: 50%; width: 120px; height: 120px; animation-duration: 20s; animation-delay: 4s; --drift: 40px; }
-        .floating-material:nth-child(4) { left: 70%; width: 95px; height: 95px; animation-duration: 16s; animation-delay: 1s; --drift: -30px; }
-        .floating-material:nth-child(5) { left: 85%; width: 110px; height: 110px; animation-duration: 22s; animation-delay: 3s; --drift: 25px; }
-        .floating-material:nth-child(6) { left: 15%; width: 80px; height: 80px; animation-duration: 19s; animation-delay: 5s; --drift: -35px; }
-        .floating-material:nth-child(7) { left: 60%; width: 90px; height: 90px; animation-duration: 17s; animation-delay: 2.5s; --drift: 20px; }
-        .floating-material:nth-child(8) { left: 40%; width: 105px; height: 105px; animation-duration: 21s; animation-delay: 4.5s; --drift: -25px; }
 
         /* メインコンテンツ */
         .main-content {
@@ -566,31 +512,29 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
             }
         }
 
-        /* マソンリーレイアウト（削除予定） */
+        /* グリッドレイアウト */
         .masonry-grid {
-            column-count: 4;
-            column-gap: 30px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
             padding: 0;
         }
 
         @media (max-width: 992px) {
             .masonry-grid {
-                column-count: 3;
-                column-gap: 24px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
             }
         }
 
         @media (max-width: 768px) {
             .masonry-grid {
-                column-count: 2;
-                column-gap: 20px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
             }
         }
 
         .masonry-item {
-            break-inside: avoid;
-            margin-bottom: 30px;
-            display: inline-block;
             width: 100%;
         }
 
@@ -598,8 +542,7 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
             display: block;
             text-decoration: none;
             color: inherit;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(10px);
+            background: #FFFFFF;
             border-radius: 12px;
             padding: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -625,10 +568,8 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
         }
 
         .material-image {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
         }
 
@@ -637,20 +578,6 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
 </head>
 <body>
     <?php include __DIR__ . '/includes/gtm-body.php'; ?>
-    
-    <!-- 浮遊素材背景 -->
-    <div class="floating-container">
-        <?php foreach ($floatingMaterials as $material): 
-            if (!empty($material['image_path'])): 
-                $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
-                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
-                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
-            ?>
-        <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
-        </div>
-        <?php endif; endforeach; ?>
-    </div>
     
     <?php 
     $currentPage = 'everyone-works';
