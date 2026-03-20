@@ -49,12 +49,6 @@ $params[] = $offset;
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $materials = $stmt->fetchAll();
-
-// 背景浮遊用の素材を取得（8件）
-$floatingMaterialsSql = "SELECT m.webp_small_path as image_path, m.structured_bg_color FROM materials m ORDER BY RAND() LIMIT 8";
-$floatingMaterialsStmt = $pdo->prepare($floatingMaterialsSql);
-$floatingMaterialsStmt->execute();
-$floatingMaterials = $floatingMaterialsStmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -92,7 +86,14 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
         body {
             font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--text-dark);
-            background: linear-gradient(180deg, #FFF0E5 0%, #FFF5F8 100%);
+            background: linear-gradient(
+                to bottom,
+                #FFF9F5 0%,
+                #FFF3EB 25%,
+                #FFEDE1 50%,
+                #FFE7D7 75%,
+                #FFE1CD 100%
+            );
             min-height: 100vh;
         }
 
@@ -100,124 +101,6 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
-        }
-
-        /* 浮遊素材背景 */
-        .floating-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .floating-material {
-            position: absolute;
-            opacity: 0;
-            animation: floatUp linear infinite;
-            backdrop-filter: blur(8px);
-            border-radius: 50%;
-            padding: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .floating-material img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        @keyframes floatUp {
-            0% {
-                transform: translateY(100vh) translateX(0) scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.6;
-            }
-            90% {
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(-100px) translateX(var(--drift)) scale(1) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        .floating-material:nth-child(1) {
-            left: 10%;
-            width: 100px;
-            height: 100px;
-            animation-duration: 15s;
-            animation-delay: 0s;
-            --drift: 30px;
-        }
-
-        .floating-material:nth-child(2) {
-            left: 25%;
-            width: 85px;
-            height: 85px;
-            animation-duration: 18s;
-            animation-delay: 2s;
-            --drift: -20px;
-        }
-
-        .floating-material:nth-child(3) {
-            left: 50%;
-            width: 120px;
-            height: 120px;
-            animation-duration: 20s;
-            animation-delay: 4s;
-            --drift: 40px;
-        }
-
-        .floating-material:nth-child(4) {
-            left: 70%;
-            width: 90px;
-            height: 90px;
-            animation-duration: 16s;
-            animation-delay: 1s;
-            --drift: -35px;
-        }
-
-        .floating-material:nth-child(5) {
-            left: 85%;
-            width: 110px;
-            height: 110px;
-            animation-duration: 19s;
-            animation-delay: 3s;
-            --drift: 25px;
-        }
-
-        .floating-material:nth-child(6) {
-            left: 5%;
-            width: 95px;
-            height: 95px;
-            animation-duration: 17s;
-            animation-delay: 5s;
-            --drift: -30px;
-        }
-
-        .floating-material:nth-child(7) {
-            left: 40%;
-            width: 105px;
-            height: 105px;
-            animation-duration: 21s;
-            animation-delay: 6s;
-            --drift: 35px;
-        }
-
-        .floating-material:nth-child(8) {
-            left: 60%;
-            width: 80px;
-            height: 80px;
-            animation-duration: 14s;
-            animation-delay: 7s;
-            --drift: -25px;
         }
 
         /* メインコンテンツ */
@@ -312,61 +195,47 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             font-weight: 600;
         }
 
-        /* マソンリーレイアウト */
+        /* グリッドレイアウト */
         .masonry-grid {
-            column-count: 5;
-            column-gap: 30px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 30px;
             padding: 0;
         }
 
         @media (max-width: 992px) {
             .masonry-grid {
-                column-count: 3;
-                column-gap: 30px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 30px;
             }
         }
 
         @media (max-width: 768px) {
             .masonry-grid {
-                column-count: 2;
-                column-gap: 20px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
             }
         }
 
         @media (max-width: 576px) {
             .masonry-grid {
-                column-count: 2;
-                column-gap: 16px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
             }
         }
 
         .masonry-item {
-            break-inside: avoid;
-            margin-bottom: 40px;
-            display: inline-block;
             width: 100%;
-        }
-
-        @media (max-width: 992px) {
-            .masonry-item {
-                margin-bottom: 30px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .masonry-item {
-                margin-bottom: 24px;
-            }
         }
 
         .material-card {
             display: block;
             text-decoration: none;
             color: inherit;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
+            background: #FFFFFF;
             border-radius: 12px;
             padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -385,14 +254,19 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 
         .material-image-wrapper {
             width: 100%;
+            aspect-ratio: 1 / 1;
             position: relative;
             border-radius: 8px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .material-image {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: contain;
             display: block;
             transition: transform 0.2s ease;
         }
@@ -507,20 +381,6 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
 <body>
     <?php include __DIR__ . '/includes/gtm-body.php'; ?>
     
-    <!-- 浮遊素材背景 -->
-    <div class="floating-container">
-        <?php foreach ($floatingMaterials as $index => $material): 
-            if (!empty($material['image_path'])): 
-                $floatingBgColor = !empty($material['structured_bg_color']) ? $material['structured_bg_color'] : '#ffffff';
-                $isRemoteUrl = strpos($material['image_path'], 'http://') === 0 || strpos($material['image_path'], 'https://') === 0;
-                $materialImageUrl = $isRemoteUrl ? $material['image_path'] : '/' . $material['image_path'];
-            ?>
-        <div class="floating-material" style="background-color: <?= h($floatingBgColor) ?>;">
-            <img src="<?= h($materialImageUrl) ?>" alt="素材" loading="lazy">
-        </div>
-        <?php endif; endforeach; ?>
-    </div>
-    
     <?php 
     $currentPage = 'list';
     include 'includes/header.php'; 
@@ -560,7 +420,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
             <!-- 素材一覧 -->
             <?php if (!empty($materials)): ?>
             <div class="masonry-grid">
-                <?php foreach ($materials as $material): 
+                <?php foreach ($materials as $index => $material): 
                     // 画像パス（webp_small_pathを優先）
                     $imagePath = !empty($material['webp_small_path']) ? $material['webp_small_path'] : $material['image_path'];
                     $isRemoteUrl = strpos($imagePath, 'http://') === 0 || strpos($imagePath, 'https://') === 0;
@@ -571,6 +431,9 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                     
                     // リンク先
                     $detailUrl = "/{$material['category_slug']}/{$material['slug']}/";
+                    
+                    // 10件目まではeager、11件目以降はlazy
+                    $loadingStrategy = ($index < 10) ? 'eager' : 'lazy';
                 ?>
                 <div class="masonry-item">
                     <a href="<?= h($detailUrl) ?>" class="material-card">
@@ -579,7 +442,7 @@ $floatingMaterials = $floatingMaterialsStmt->fetchAll();
                                 src="<?= h($finalImageUrl) ?>" 
                                 alt="<?= h($material['title']) ?>"
                                 class="material-image"
-                                loading="lazy"
+                                loading="<?= $loadingStrategy ?>"
                             >
                         </div>
                         <h2 class="material-title"><?= h($material['title']) ?></h2>
