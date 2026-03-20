@@ -21,14 +21,12 @@ $materialsStmt = $pdo->prepare($materialsSql);
 $materialsStmt->execute();
 $randomMaterials = $materialsStmt->fetchAll();
 
-// スクロールアニメーション用の作品を取得（正方形のみ、最新30件）
+// スクロールアニメーション用の作品を取得（最新15件）
 $scrollArtworksSql = "SELECT 'artwork' as type, id, '' as slug, '' as category_slug, webp_path as image_path, title, image_width, image_height
     FROM community_artworks
     WHERE status = 'approved'
-    AND image_width = image_height
-    AND image_width > 0
     ORDER BY created_at DESC
-    LIMIT 30";
+    LIMIT 15";
 $scrollArtworksStmt = $pdo->prepare($scrollArtworksSql);
 $scrollArtworksStmt->execute();
 $scrollItems = $scrollArtworksStmt->fetchAll();
@@ -615,7 +613,8 @@ foreach ($calendarItems as $item) {
         }
 
         .scroll-item {
-            width: 120px;
+            min-width: 120px;
+            max-width: 150px;
             height: 120px;
             flex-shrink: 0;
             padding: 10px;
@@ -623,13 +622,32 @@ foreach ($calendarItems as $item) {
             background: white;
             position: relative;
             border-radius: 12px;
-            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .scroll-item img {
-            width: 100%;
-            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
+        }
+
+        @media (max-width: 768px) {
+            .scroll-divider {
+                height: 100px;
+            }
+
+            .scroll-item {
+                min-width: 90px;
+                max-width: 120px;
+                height: 90px;
+                padding: 8px;
+            }
+
+            .scroll-track {
+                gap: 8px;
+            }
         }
 
         .one-point-section {
@@ -1050,7 +1068,7 @@ foreach ($calendarItems as $item) {
                     $finalImageUrl = (strpos($imageUrl, 'http://') === 0 || strpos($imageUrl, 'https://') === 0) ? $imageUrl : '/' . $imageUrl;
             ?>
                 <a href="<?= $link ?>" class="scroll-item" style="background-color: <?= h($scrollBgColor) ?>; backdrop-filter: none;">
-                    <img src="<?= h($finalImageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy" width="100" height="100">
+                    <img src="<?= h($finalImageUrl) ?>" alt="<?= h($item['title']) ?>" loading="lazy">
                 </a>
             <?php 
                 endforeach;
