@@ -290,13 +290,6 @@ foreach ($calendarItems as $item) {
             object-fit: contain;
         }
 
-        @media (max-width: 768px) {
-            .artworks-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 15px;
-            }
-        }
-
         /* 好きな素材をみつけようセクション */
         .materials-grid {
             display: grid;
@@ -856,6 +849,11 @@ foreach ($calendarItems as $item) {
             .material-item {
                 padding: 8px;
             }
+
+            .artworks-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
         }
 
         @media (min-width: 769px) and (max-width: 1024px) {
@@ -864,7 +862,7 @@ foreach ($calendarItems as $item) {
             }
 
             .artworks-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
