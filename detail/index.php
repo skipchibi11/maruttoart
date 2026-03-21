@@ -220,6 +220,7 @@ $showRelatedItemsSection = !empty($allRelatedItems);
                 #FFE1CD 100%
             );
             min-height: 100vh;
+            overflow-x: clip;
         }
 
         .container {

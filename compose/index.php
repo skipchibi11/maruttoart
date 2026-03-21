@@ -145,6 +145,7 @@ foreach ($allMaterials as $material) {
             color: var(--text-dark);
             background: linear-gradient(180deg, #FFF0E5 0%, #FFF5F8 100%);
             min-height: 100vh;
+            overflow-x: clip;
         }
 
         /* メインコンテンツ */
@@ -154,6 +155,7 @@ foreach ($allMaterials as $material) {
             padding: 20px;
             position: relative;
             z-index: 1;
+            min-height: 150vh;
         }
 
         /* 素材選択セクション */
@@ -374,7 +376,16 @@ foreach ($allMaterials as $material) {
                 top: 20px;
                 align-self: flex-start;
                 max-height: calc(100vh - 40px);
-                overflow: auto;
+                z-index: 10;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .canvas-area {
+                position: sticky;
+                top: 20px;
+                z-index: 10;
+                max-height: calc(100vh - 40px);
             }
         }
 

@@ -108,6 +108,7 @@ foreach ($calendarItems as $item) {
                 #F5E8E0 100%
             );
             min-height: 100vh;
+            overflow-x: clip;
         }
 
         .container {

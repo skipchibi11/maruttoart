@@ -128,6 +128,7 @@ $pageDescription = 'marutto.artの' . $year . '年' . $month . '月のカレン�
             min-height: 100vh;
             line-height: 1.6;
             position: relative;
+            overflow-x: clip;
         }
         
         .container {

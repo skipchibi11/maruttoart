@@ -1,9 +1,9 @@
 <style>
-/* グローバル設定 - 横スクロール防止 */
+/* グローバル設定 */
 html, body {
-    overflow-x: hidden;
     width: 100%;
     box-sizing: border-box;
+    max-width: 100vw;
 }
 
 *, *::before, *::after {
