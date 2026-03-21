@@ -197,15 +197,26 @@ foreach ($calendarItems as $item) {
             pointer-events: none;
             z-index: 1;
             opacity: 1;
-            right: -10px;
-            top: 50%;
-            transform: translateY(-50%);
+            left: 50%;
+            top: -50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
         }
 
         .peek-animal img {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            animation: penguinFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes penguinFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
         .cta-button:hover {
@@ -805,7 +816,9 @@ foreach ($calendarItems as $item) {
             }
 
             .peek-animal {
-                display: none;
+                width: 50px;
+                height: 50px;
+                top: -50%;
             }
 
             .section {
@@ -849,7 +862,7 @@ foreach ($calendarItems as $item) {
             }
 
             .artworks-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
                 gap: 12px;
             }
         }

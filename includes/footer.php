@@ -79,7 +79,11 @@ $footerArtworks = $footerArtworksStmt->fetchAll();
     align-items: center;
     width: 100%;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+}
+
+.footer-artworks-scroll::-webkit-scrollbar {
+    display: none;
 }
 
 .footer-artworks-track {
