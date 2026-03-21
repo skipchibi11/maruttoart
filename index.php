@@ -220,6 +220,125 @@ foreach ($calendarItems as $item) {
             }
         }
 
+        /* ペンギンポイント */
+        .penguin-tip {
+            position: relative;
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .penguin-tip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .penguin-tip-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .penguin-tip-character {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .penguin-tip-character img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .penguin-tip-bubble {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+
+        .penguin-tip-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 30px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent white transparent transparent;
+        }
+
+        .penguin-tip-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #E8A87C 0%, #C38E70 100%);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .penguin-tip-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #5A4A42;
+            margin-bottom: 8px;
+        }
+
+        .penguin-tip-description {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .penguin-tip {
+                margin: 40px auto;
+            }
+
+            .penguin-tip-content {
+                gap: 12px;
+            }
+
+            .penguin-tip-character {
+                width: 60px;
+                height: 60px;
+            }
+
+            .penguin-tip-bubble {
+                padding: 16px 18px;
+                border-radius: 16px;
+            }
+
+            .penguin-tip-bubble::before {
+                left: -8px;
+                top: 20px;
+                border-width: 8px 8px 8px 0;
+            }
+
+            .penguin-tip-number {
+                font-size: 0.75rem;
+                padding: 3px 10px;
+            }
+
+            .penguin-tip-title {
+                font-size: 1rem;
+            }
+
+            .penguin-tip-description {
+                font-size: 0.85rem;
+            }
+        }
+
         .cta-button:hover {
             background: linear-gradient(135deg, #FFE0B8 0%, #FFC0D8 100%);
             transform: translateY(-2px);
@@ -656,70 +775,6 @@ foreach ($calendarItems as $item) {
             }
         }
 
-        .one-point-section {
-            margin-top: 60px;
-            margin-bottom: 60px;
-            padding: 0 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .one-point-section-inner {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 36px 28px;
-            background: rgba(255, 240, 245, 0.6);
-            border: 1px solid rgba(195, 142, 112, 0.22);
-            border-radius: 20px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 8px 24px rgba(90, 74, 66, 0.08);
-        }
-
-        .one-point-list {
-            max-width: 600px;
-            margin: 0 auto;
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .one-point-item {
-            text-align: center;
-            padding: 0;
-        }
-
-        .one-point-label {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 700;
-            color: #8B7355;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            padding: 9px 18px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(195, 142, 112, 0.35);
-            box-shadow: 0 4px 10px rgba(90, 74, 66, 0.1);
-            margin-bottom: 16px;
-        }
-
-        .one-point-title {
-            font-size: 1.15rem;
-            color: #A0675C;
-            font-weight: 700;
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        .one-point-description {
-            font-size: 0.95rem;
-            color: rgba(90, 74, 66, 0.9);
-            line-height: 1.7;
-        }
-
         @keyframes scrollLeft {
             0% {
                 transform: translateX(0);
@@ -780,31 +835,6 @@ foreach ($calendarItems as $item) {
                 order: 3;
                 margin-top: 50px;
                 width: 100%;
-            }
-
-            .one-point-section {
-                margin-top: 60px;
-                margin-bottom: 60px;
-                padding: 0 16px;
-            }
-
-            .one-point-section-inner {
-                max-width: 640px;
-                padding: 28px 18px;
-                border-radius: 16px;
-            }
-
-            .one-point-list {
-                max-width: 600px;
-                gap: 40px;
-            }
-
-            .one-point-title {
-                font-size: 1.05rem;
-            }
-
-            .one-point-description {
-                font-size: 0.92rem;
             }
 
             .cta-button {
@@ -956,27 +986,19 @@ foreach ($calendarItems as $item) {
         </div>
     </div>
 
-    <section class="one-point-section" aria-label="サイトの特徴">
-        <div class="one-point-section-inner">
-            <ul class="one-point-list">
-                <li class="one-point-item">
-                    <span class="one-point-label">POINT 01</span>
-                    <p class="one-point-title">すべて無料のイラスト素材</p>
-                    <p class="one-point-description">ダウンロードして自由に使えます</p>
-                </li>
-                <li class="one-point-item">
-                    <span class="one-point-label">POINT 02</span>
-                    <p class="one-point-title">組み合わせてオリジナル作品</p>
-                    <p class="one-point-description">イラストを組み合わせて作品を作れます</p>
-                </li>
-                <li class="one-point-item">
-                    <span class="one-point-label">POINT 03</span>
-                    <p class="one-point-title">みんなの作品を投稿・アレンジ</p>
-                    <p class="one-point-description">作品を投稿したり、みんなの作品をアレンジできます</p>
-                </li>
-            </ul>
+    <!-- ペンギンポイント1 -->
+    <div class="penguin-tip" data-penguin-tip="1">
+        <div class="penguin-tip-content">
+            <div class="penguin-tip-character">
+                <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
+            </div>
+            <div class="penguin-tip-bubble">
+                <span class="penguin-tip-number">POINT 1</span>
+                <h3 class="penguin-tip-title">たくさんの素材が無料で使えるよ！</h3>
+                <p class="penguin-tip-description">すべての素材が無料でダウンロードできて、商用利用もOK。自由に使って楽しんでね✨</p>
+            </div>
         </div>
-    </section>
+    </div>
 
     <!-- カレンダーセクション -->
     <section class="calendar-section">
@@ -1053,6 +1075,20 @@ foreach ($calendarItems as $item) {
         </div>
     </section>
 
+    <!-- ペンギンポイント2 -->
+    <div class="penguin-tip" data-penguin-tip="2">
+        <div class="penguin-tip-content">
+            <div class="penguin-tip-character">
+                <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
+            </div>
+            <div class="penguin-tip-bubble">
+                <span class="penguin-tip-number">POINT 2</span>
+                <h3 class="penguin-tip-title">素材を組み合わせてオリジナル作品に！</h3>
+                <p class="penguin-tip-description">お気に入りの素材を自由に組み合わせて、世界に一つだけの作品を作れるよ。好きな色に塗ったり、配置を変えたり🎨</p>
+            </div>
+        </div>
+    </div>
+
     <!-- みんなの作品セクション -->
     <section class="section">
         <div class="container">
@@ -1079,6 +1115,21 @@ foreach ($calendarItems as $item) {
             <a href="/everyone-works.php" class="more-button">View Works →</a>
         </div>
     </section>
+
+    <!-- ペンギンポイント3 -->
+    <div class="penguin-tip" data-penguin-tip="3">
+        <div class="penguin-tip-content">
+            <div class="penguin-tip-character">
+                <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
+            </div>
+            <div class="penguin-tip-bubble">
+                <span class="penguin-tip-number">POINT 3</span>
+                <h3 class="penguin-tip-title">みんなの作品を見て、アレンジもできる！</h3>
+                <p class="penguin-tip-description">他のユーザーの作品をリミックスして、さらに素敵な作品に。お気に入りの作品を見つけたらアレンジしてみよう🌟</p>
+            </div>
+        </div>
+    </div>
+
     <!-- 好きな素材をみつけよう��クション -->
     <section class="section">
         <div class="container">
@@ -1133,6 +1184,27 @@ foreach ($calendarItems as $item) {
                 }, 100);
             }
         }
+
+        // ペンギンポイントのスクロールアニメーション
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -10% 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // 一度表示したら監視を解除
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // すべてのペンギンポイントを監視
+        document.querySelectorAll('.penguin-tip').forEach(tip => {
+            observer.observe(tip);
+        });
     });
     </script>
 </body>
