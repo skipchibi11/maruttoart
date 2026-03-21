@@ -159,7 +159,9 @@ $host = $_SERVER['HTTP_HOST'];
 $fullImageUrl = (strpos($artworkImageUrl, 'http://') === 0 || strpos($artworkImageUrl, 'https://') === 0) ? $artworkImageUrl : $scheme . '://' . $host . $artworkImageUrl;
 
 // ダウンロード用のパス
-$downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork['webp_path'];
+$rawDownloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork['webp_path'];
+// フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+$downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloadPath, 'https://') === 0) ? $rawDownloadPath : '/' . $rawDownloadPath;
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -366,6 +368,12 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-secondary {
@@ -591,11 +599,13 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
 
                 <!-- ボタン -->
                 <div class="button-group">
-                    <a href="/<?= h($downloadPath) ?>" 
-                       download 
-                       class="btn btn-primary">
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-artwork-id="<?= $artwork['id'] ?>"
+                            data-download-filename="works<?= $artwork['id'] ?>.png"
+                            onclick="downloadArtwork(this)">
                         Download
-                    </a>
+                    </button>
                     <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
                        class="btn btn-secondary">
                         Compose
@@ -689,5 +699,46 @@ $downloadPath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork
     </div>
 
     <?php include 'includes/footer.php'; ?>
+
+    <script>
+    async function downloadArtwork(button) {
+        const artworkId = button.dataset.artworkId;
+        const filename = button.dataset.downloadFilename;
+        const originalText = button.textContent;
+        
+        try {
+            button.textContent = 'Downloading...';
+            button.disabled = true;
+            
+            const url = `/download-artwork.php?id=${artworkId}&type=community`;
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Download failed');
+            }
+            
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            
+            window.URL.revokeObjectURL(blobUrl);
+            document.body.removeChild(a);
+            
+            button.textContent = originalText;
+            button.disabled = false;
+        } catch (error) {
+            console.error('Download error:', error);
+            alert('ダウンロードに失敗しました。');
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    }
+    </script>
 </body>
 </html>

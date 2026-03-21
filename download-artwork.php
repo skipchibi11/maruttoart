@@ -65,6 +65,45 @@ try {
     // カラムが存在しない場合は無視
 }
 
+// R2などのリモートファイルかどうかをチェック
+$pathColumn = ($type === 'kids') ? 'image_path' : 'file_path';
+$rawPath = $artwork[$pathColumn] ?? '';
+
+// R2のフルURLの場合はリモートファイルを取得して出力
+if (!empty($rawPath) && (strpos($rawPath, 'http://') === 0 || strpos($rawPath, 'https://') === 0)) {
+    // ファイル名を安全にする（日本語対応・常にPNG拡張子）
+    $cleanTitle = $artwork['title'] ? 
+        preg_replace('/[^\p{L}\p{N}\s\-_\.]/u', '', $artwork['title']) : 
+        'artwork';
+    $safeFilename = $cleanTitle . '.png';
+    
+    // リモートファイルを取得
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 30,
+            'ignore_errors' => true
+        ]
+    ]);
+    
+    $fileContent = @file_get_contents($rawPath, false, $context);
+    
+    if ($fileContent === false) {
+        http_response_code(404);
+        echo 'Failed to fetch remote file';
+        exit;
+    }
+    
+    // HTTPヘッダーを設定
+    header('Content-Type: image/png');
+    header('Content-Disposition: attachment; filename="' . $safeFilename . '"');
+    header('Content-Length: ' . strlen($fileContent));
+    header('Cache-Control: no-cache, must-revalidate');
+    header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+    
+    echo $fileContent;
+    exit;
+}
+
 // ファイルパスを特定（PNG優先）
 function findArtworkFile($artwork, $type = 'community') {
     $basePath = __DIR__ . '/';
