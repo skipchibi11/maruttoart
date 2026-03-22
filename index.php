@@ -940,7 +940,9 @@ foreach ($calendarItems as $item) {
                          class="hero-image"
                          width="600"
                          height="600"
-                         loading="eager">
+                         fetchpriority="high"
+                         loading="eager"
+                         decoding="async">
                 </div>
                 
                 <div class="hero-cta-mobile" style="position: relative;">
