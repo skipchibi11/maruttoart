@@ -358,6 +358,58 @@ foreach ($calendarItems as $item) {
             display: block;
         }
 
+        /* SNSセクション */
+        .hero-social {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .hero-social-text {
+            font-size: 0.85rem;
+            color: #8B7355;
+            margin-bottom: 12px;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .hero-social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .hero-social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+        }
+
+        .hero-social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .hero-social-link svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .hero-social-link.x-link svg {
+            fill: #000000;
+        }
+
+        .hero-social-link.pinterest-link svg {
+            fill: #E60023;
+        }
+
         /* セクション共通 */
         .section {
             padding: 60px 20px;
@@ -807,6 +859,11 @@ foreach ($calendarItems as $item) {
                 display: none;
             }
 
+            /* PC版のSNSアイコンを非表示 */
+            .hero-text > .hero-social {
+                display: none;
+            }
+
             .hero h1 {
                 font-size: 1.6rem;
             }
@@ -831,10 +888,13 @@ foreach ($calendarItems as $item) {
 
             .hero-cta-mobile {
                 display: flex;
+                flex-direction: column;
+                align-items: center;
                 justify-content: center;
                 order: 3;
                 margin-top: 50px;
                 width: 100%;
+                position: relative;
             }
 
             .cta-button {
@@ -842,14 +902,10 @@ foreach ($calendarItems as $item) {
                 font-size: 0.95rem;
             }
 
-            .hero-cta-mobile {
-                position: relative;
-            }
-
-            .peek-animal {
+            .hero-cta-mobile .peek-animal {
                 width: 50px;
                 height: 50px;
-                top: -50%;
+                top: -25px;
             }
 
             .section {
@@ -931,6 +987,23 @@ foreach ($calendarItems as $item) {
                             <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン" loading="lazy">
                         </div>
                     </div>
+                    
+                    <!-- SNSアイコン（PC版） -->
+                    <div class="hero-social">
+                        <p class="hero-social-text">XやPinterestでも、新しいイラストをのんびり紹介しています</p>
+                        <div class="hero-social-icons">
+                            <a href="https://twitter.com/marutto_art" target="_blank" rel="noopener noreferrer" class="hero-social-link x-link" aria-label="X (Twitter)">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </a>
+                            <a href="https://www.pinterest.jp/maruttoart/" target="_blank" rel="noopener noreferrer" class="hero-social-link pinterest-link" aria-label="Pinterest">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="hero-image-container">
@@ -949,6 +1022,23 @@ foreach ($calendarItems as $item) {
                     <a href="/compose/" class="cta-button">今すぐつくる</a>
                     <div class="peek-animal" id="peek-animal-mobile">
                         <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン" loading="lazy">
+                    </div>
+                    
+                    <!-- SNSアイコン（モバイル版） -->
+                    <div class="hero-social">
+                        <p class="hero-social-text">XやPinterestでも、新しいイラストをのんびり紹介しています</p>
+                        <div class="hero-social-icons">
+                            <a href="https://twitter.com/marutto_art" target="_blank" rel="noopener noreferrer" class="hero-social-link x-link" aria-label="X (Twitter)">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </a>
+                            <a href="https://www.pinterest.com/maruttoart/" target="_blank" rel="noopener noreferrer" class="hero-social-link pinterest-link" aria-label="Pinterest">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
