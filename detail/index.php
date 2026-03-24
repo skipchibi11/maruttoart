@@ -279,7 +279,7 @@ $showRelatedItemsSection = !empty($allRelatedItems);
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 30px;
+            margin: 30px 0;
             justify-content: center;
         }
 
@@ -349,7 +349,7 @@ $showRelatedItemsSection = !empty($allRelatedItems);
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 20px;
+            margin: 30px 0;
             justify-content: center;
         }
 
