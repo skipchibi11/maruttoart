@@ -370,6 +370,85 @@ $showRelatedItemsSection = !empty($allRelatedItems);
             transform: translateY(-2px);
         }
 
+        /* ペンギンの吹き出し */
+        .remix-tip {
+            max-width: 600px;
+            margin: 30px auto 0;
+            padding: 0 20px;
+        }
+
+        .remix-tip-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .remix-tip-character {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .remix-tip-character img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .remix-tip-bubble {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+
+        .remix-tip-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent white transparent transparent;
+        }
+
+        .remix-tip-text {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .remix-tip-content {
+                gap: 12px;
+            }
+
+            .remix-tip-character {
+                width: 50px;
+                height: 50px;
+            }
+
+            .remix-tip-bubble {
+                padding: 14px 16px;
+                border-radius: 14px;
+            }
+
+            .remix-tip-bubble::before {
+                left: -8px;
+                top: 16px;
+                border-width: 8px 8px 8px 0;
+            }
+
+            .remix-tip-text {
+                font-size: 0.85rem;
+            }
+        }
+
         /* セクションタイトル */
         .section-title {
             font-size: clamp(1.5rem, 3vw, 2rem);
@@ -578,30 +657,6 @@ $showRelatedItemsSection = !empty($allRelatedItems);
                 </div>
 
                 <div class="detail-info">
-                    <div class="detail-actions">
-                        <?php
-                        $downloadImagePath = $material['image_path'];
-                        $isRemoteDownloadUrl = strpos($downloadImagePath, 'http://') === 0 || strpos($downloadImagePath, 'https://') === 0;
-                        $finalDownloadUrl = $isRemoteDownloadUrl ? $downloadImagePath : '/' . $downloadImagePath;
-                        ?>
-                        <a href="<?= h($finalDownloadUrl) ?>" download class="action-button action-button-primary">
-                            PNGダウンロード
-                        </a>
-                        <?php if (!empty($material['svg_path'])): ?>
-                        <?php
-                        $svgPath = $material['svg_path'];
-                        $isRemoteSvgUrl = strpos($svgPath, 'http://') === 0 || strpos($svgPath, 'https://') === 0;
-                        $finalSvgUrl = $isRemoteSvgUrl ? $svgPath : '/' . $svgPath;
-                        ?>
-                        <a href="<?= h($finalSvgUrl) ?>" download class="action-button action-button-primary">
-                            SVGダウンロード
-                        </a>
-                        <?php endif; ?>
-                        <a href="/compose/?material_id=<?= h($material['id']) ?>" class="action-button action-button-secondary">
-                            カスタマイズ
-                        </a>
-                    </div>
-
                     <h1><?= h($material['title']) ?></h1>
                     
                     <?php if (!empty($material['description'])): ?>
@@ -630,6 +685,41 @@ $showRelatedItemsSection = !empty($allRelatedItems);
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
+
+                    <div class="detail-actions">
+                        <?php
+                        $downloadImagePath = $material['image_path'];
+                        $isRemoteDownloadUrl = strpos($downloadImagePath, 'http://') === 0 || strpos($downloadImagePath, 'https://') === 0;
+                        $finalDownloadUrl = $isRemoteDownloadUrl ? $downloadImagePath : '/' . $downloadImagePath;
+                        ?>
+                        <a href="<?= h($finalDownloadUrl) ?>" download class="action-button action-button-primary">
+                            PNGダウンロード
+                        </a>
+                        <?php if (!empty($material['svg_path'])): ?>
+                        <?php
+                        $svgPath = $material['svg_path'];
+                        $isRemoteSvgUrl = strpos($svgPath, 'http://') === 0 || strpos($svgPath, 'https://') === 0;
+                        $finalSvgUrl = $isRemoteSvgUrl ? $svgPath : '/' . $svgPath;
+                        ?>
+                        <a href="<?= h($finalSvgUrl) ?>" download class="action-button action-button-primary">
+                            SVGダウンロード
+                        </a>
+                        <?php endif; ?>
+                        <a href="/compose/?material_id=<?= h($material['id']) ?>" class="action-button action-button-secondary">
+                            reMix
+                        </a>
+                    </div>
+
+                    <div class="remix-tip">
+                        <div class="remix-tip-content">
+                            <div class="remix-tip-character">
+                                <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
+                            </div>
+                            <div class="remix-tip-bubble">
+                                <p class="remix-tip-text">reMixで色変更や組み合わせができるよ</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
