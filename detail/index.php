@@ -704,22 +704,24 @@ $showRelatedItemsSection = !empty($allRelatedItems);
                         <a href="<?= h($finalSvgUrl) ?>" download class="action-button action-button-primary">
                             SVGダウンロード
                         </a>
-                        <?php endif; ?>
                         <a href="/compose/?material_id=<?= h($material['id']) ?>" class="action-button action-button-secondary">
                             reMix
                         </a>
+                        <?php endif; ?>
                     </div>
 
+                    <?php if (!empty($material['svg_path'])): ?>
                     <div class="remix-tip">
                         <div class="remix-tip-content">
                             <div class="remix-tip-character">
                                 <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
                             </div>
                             <div class="remix-tip-bubble">
-                                <p class="remix-tip-text">reMixで色変更や組み合わせができるよ</p>
+                                <p class="remix-tip-text">reMixで、色を変えたり、他の素材と組み合わせて遊べるよ。</p>
                             </div>
                         </div>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
