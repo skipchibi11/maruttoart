@@ -101,8 +101,88 @@ $artworks = $stmt->fetchAll();
             text-align: center;
             font-size: clamp(0.9rem, 2vw, 1.1rem);
             color: #8B7355;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             font-weight: 500;
+        }
+
+        /* ペンギンの吹き出し */
+        .intro-tip {
+            max-width: 600px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+        }
+
+        .intro-tip-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .intro-tip-character {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .intro-tip-character img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .intro-tip-bubble {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+
+        .intro-tip-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent white transparent transparent;
+        }
+
+        .intro-tip-text {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .intro-tip-content {
+                gap: 12px;
+            }
+
+            .intro-tip-character {
+                width: 50px;
+                height: 50px;
+            }
+
+            .intro-tip-bubble {
+                padding: 14px 16px;
+                border-radius: 14px;
+            }
+
+            .intro-tip-bubble::before {
+                left: -8px;
+                top: 16px;
+                border-width: 8px 8px 8px 0;
+            }
+
+            .intro-tip-text {
+                font-size: 0.85rem;
+            }
         }
 
         /* グリッドレイアウト */
@@ -129,6 +209,7 @@ $artworks = $stmt->fetchAll();
 
         .masonry-item {
             width: 100%;
+            position: relative;
         }
 
         .material-card {
@@ -184,6 +265,39 @@ $artworks = $stmt->fetchAll();
 
         .material-card:hover .artwork-title {
             color: #A0675C;
+        }
+
+        /* reMixボタン */
+        .remix-button {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.75);
+            color: #8B7355;
+            text-decoration: none;
+            border-radius: 24px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+
+        .remix-button:hover {
+            background: rgba(232, 168, 124, 0.9);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        @media (max-width: 576px) {
+            .remix-button {
+                top: 12px;
+                right: 12px;
+                padding: 5px 12px;
+                font-size: 0.7rem;
+            }
         }
 
         /* ページネーション */
@@ -244,6 +358,17 @@ $artworks = $stmt->fetchAll();
             <h1 class="page-title">Everyone Works</h1>
             <p class="page-subtitle">無料・商用利用可能</p>
             
+            <div class="intro-tip">
+                <div class="intro-tip-content">
+                    <div class="intro-tip-character">
+                        <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
+                    </div>
+                    <div class="intro-tip-bubble">
+                        <p class="intro-tip-text">みんなの品だよ<br>気になる作品からリミックスしてみてね</p>
+                    </div>
+                </div>
+            </div>
+            
             <div class="masonry-grid">
                 <?php foreach ($artworks as $index => $artwork): ?>
                 <div class="masonry-item">
@@ -266,6 +391,13 @@ $artworks = $stmt->fetchAll();
                         
                         <h3 class="artwork-title"><?= h($artwork['title']) ?></h3>
                     </a>
+                    <?php if (!empty($artwork['svg_data'])): ?>
+                    <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
+                       class="remix-button" 
+                       onclick="event.stopPropagation();">
+                        reMix
+                    </a>
+                    <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
             </div>

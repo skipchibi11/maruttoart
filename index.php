@@ -1023,6 +1023,47 @@ for ($i = 0; $i < 7; $i++) {
         </div>
     </div>
 
+    <!-- みんなの作品セクション -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Works</h2>
+            
+            <div class="artworks-grid">
+                <?php foreach ($artworks as $artwork): ?>
+                <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>" class="artwork-card">
+                    <?php
+                    $imageUrl = !empty($artwork['webp_path']) ? $artwork['webp_path'] : $artwork['file_path'];
+                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                    $finalImageUrl = (strpos($imageUrl, 'http://') === 0 || strpos($imageUrl, 'https://') === 0) ? $imageUrl : '/' . $imageUrl;
+                    ?>
+                    <div class="artwork-image-wrapper">
+                        <img src="<?= h($finalImageUrl) ?>" 
+                             alt="<?= h($artwork['title']) ?>" 
+                             class="artwork-image" 
+                             loading="lazy">
+                    </div>
+                </a>
+            <?php endforeach; ?>
+            </div>
+
+            <a href="/everyone-works.php" class="more-button">View Works →</a>
+        </div>
+    </section>
+
+    <!-- ペンギンポイント2 -->
+    <div class="penguin-tip" data-penguin-tip="2">
+        <div class="penguin-tip-content">
+            <div class="penguin-tip-character">
+                <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
+            </div>
+            <div class="penguin-tip-bubble">
+                <span class="penguin-tip-number">POINT 2</span>
+                <h3 class="penguin-tip-title">素材を組み合わせてオリジナル作品に！</h3>
+                <p class="penguin-tip-description">お気に入りの素材を自由に組み合わせて、世界に一つだけの作品を作れるよ。好きな色に塗ったり、配置を変えたり🎨</p>
+            </div>
+        </div>
+    </div>
+
     <!-- カレンダーセクション -->
     <section class="calendar-section">
         <div class="container">
@@ -1074,47 +1115,6 @@ for ($i = 0; $i < 7; $i++) {
             <?php endforeach; ?>
         </div>
             <a href="/calendar/" class="calendar-button">View Calendar →</a>
-        </div>
-    </section>
-
-    <!-- ペンギンポイント2 -->
-    <div class="penguin-tip" data-penguin-tip="2">
-        <div class="penguin-tip-content">
-            <div class="penguin-tip-character">
-                <img src="https://assets.marutto.art/characters/penguin.webp" alt="ペンギン">
-            </div>
-            <div class="penguin-tip-bubble">
-                <span class="penguin-tip-number">POINT 2</span>
-                <h3 class="penguin-tip-title">素材を組み合わせてオリジナル作品に！</h3>
-                <p class="penguin-tip-description">お気に入りの素材を自由に組み合わせて、世界に一つだけの作品を作れるよ。好きな色に塗ったり、配置を変えたり🎨</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- みんなの作品セクション -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">Works</h2>
-            
-            <div class="artworks-grid">
-                <?php foreach ($artworks as $artwork): ?>
-                <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>" class="artwork-card">
-                    <?php
-                    $imageUrl = !empty($artwork['webp_path']) ? $artwork['webp_path'] : $artwork['file_path'];
-                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
-                    $finalImageUrl = (strpos($imageUrl, 'http://') === 0 || strpos($imageUrl, 'https://') === 0) ? $imageUrl : '/' . $imageUrl;
-                    ?>
-                    <div class="artwork-image-wrapper">
-                        <img src="<?= h($finalImageUrl) ?>" 
-                             alt="<?= h($artwork['title']) ?>" 
-                             class="artwork-image" 
-                             loading="lazy">
-                    </div>
-                </a>
-            <?php endforeach; ?>
-            </div>
-
-            <a href="/everyone-works.php" class="more-button">View Works →</a>
         </div>
     </section>
 
