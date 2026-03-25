@@ -434,8 +434,16 @@ for ($i = 0; $i < 7; $i++) {
             text-align: center;
             font-size: clamp(1.6rem, 3vw, 2.2rem);
             font-weight: 600;
-            margin-bottom: 50px;
+            margin-bottom: 10px;
             color: #A0675C;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: #8B7355;
+            margin-bottom: 40px;
+            font-weight: 400;
         }
 
         /* みんなの作品セクション - グリッドレイアウト */
@@ -560,9 +568,17 @@ for ($i = 0; $i < 7; $i++) {
         .calendar-section-title {
             text-align: center;
             font-size: 1.5rem;
-            margin-bottom: 40px;
+            margin-bottom: 10px;
             color: var(--text-dark);
             letter-spacing: 0.1em;
+        }
+
+        .calendar-section-subtitle {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #8B7355;
+            margin-bottom: 30px;
+            font-weight: 400;
         }
 
         .calendar-grid-container {
@@ -1027,6 +1043,7 @@ for ($i = 0; $i < 7; $i++) {
     <section class="section">
         <div class="container">
             <h2 class="section-title">Works</h2>
+            <p class="section-subtitle">みんなのMix作品</p>
             
             <div class="artworks-grid">
                 <?php foreach ($artworks as $artwork): ?>
@@ -1068,6 +1085,7 @@ for ($i = 0; $i < 7; $i++) {
     <section class="calendar-section">
         <div class="container">
             <h2 class="calendar-section-title">Calendar</h2>
+            <p class="calendar-section-subtitle">maruttoのカレンダー作品</p>
             <div class="calendar-grid-container">
             <?php 
             $weekdayNamesEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
