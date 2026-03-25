@@ -1006,6 +1006,8 @@ foreach ($allMaterials as $material) {
                 <hr class="control-divider">
                 <button class="primary-btn full-width" style="margin-top: 12px;" onclick="uploadArtwork()">作品を投稿</button>
                 <p style="margin-top: 8px; font-size: 0.8rem; color: #999; text-align: center; line-height: 1.4;">多くの人が投稿できるよう、作品の投稿は 1日1回まで となっています</p>
+                <hr class="control-divider">
+                <button class="secondary-btn full-width" style="margin-top: 12px;" onclick="window.history.back()">前に戻る</button>
             </div>
         </div>
     </div>
