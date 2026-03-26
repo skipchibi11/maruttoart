@@ -6,60 +6,6 @@ require_once '../config.php';
 
 $pdo = getDB();
 
-// URLパラメータから素材ID（detail/index.phpから）または作品ID（everyone-work.phpから）を取得
-$customizeMaterialId = isset($_GET['material_id']) ? intval($_GET['material_id']) : null;
-$customizeArtworkId = isset($_GET['artwork_id']) ? intval($_GET['artwork_id']) : null;
-$customizeMaterial = null;
-$customizeArtwork = null;
-
-// 素材IDが指定された場合（detail/index.phpから）
-if ($customizeMaterialId) {
-    $customizeStmt = $pdo->prepare("
-        SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, 
-               c.title as category_name, c.slug as category_slug
-        FROM materials m
-        LEFT JOIN categories c ON m.category_id = c.id
-        WHERE m.id = ? AND m.svg_path IS NOT NULL AND m.svg_path != ''
-    ");
-    $customizeStmt->execute([$customizeMaterialId]);
-    $customizeMaterial = $customizeStmt->fetch();
-}
-
-// 作品IDが指定された場合（everyone-work.phpから）
-if ($customizeArtworkId) {
-    $artworkStmt = $pdo->prepare("
-        SELECT id, title, svg_data, used_material_ids
-        FROM community_artworks 
-        WHERE id = ? AND status = 'approved' AND svg_data IS NOT NULL
-    ");
-    $artworkStmt->execute([$customizeArtworkId]);
-    $customizeArtwork = $artworkStmt->fetch();
-    
-    // used_material_idsから素材情報を取得
-    if ($customizeArtwork && !empty($customizeArtwork['used_material_ids'])) {
-        $materialIds = explode(',', $customizeArtwork['used_material_ids']);
-        $materialIds = array_map('intval', $materialIds);
-        $materialIds = array_filter($materialIds);
-        
-        if (!empty($materialIds)) {
-            $placeholders = str_repeat('?,', count($materialIds) - 1) . '?';
-            $materialsStmt = $pdo->prepare("
-                SELECT id, title, svg_path, webp_small_path, structured_bg_color
-                FROM materials
-                WHERE id IN ($placeholders)
-            ");
-            $materialsStmt->execute($materialIds);
-            $customizeArtworkMaterials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            // IDをキーとした配列に変換
-            $customizeArtwork['materials_info'] = [];
-            foreach ($customizeArtworkMaterials as $mat) {
-                $customizeArtwork['materials_info'][$mat['id']] = $mat;
-            }
-        }
-    }
-}
-
 // おすすめ素材のID（手動で管理）
 $recommendedMaterialIds = [828,661,1002,994,968,778,1018,1016,1015,1011];
 
@@ -336,6 +282,60 @@ foreach ($allMaterials as $material) {
             border: none;
             border-top: 1px solid rgba(90, 74, 66, 0.2);
             margin: 14px 0;
+        }
+
+        .suggested-item-section {
+            background: #fffbf5;
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .suggested-item-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0 0 12px 0;
+            text-align: center;
+        }
+
+        .suggested-item-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .suggested-item {
+            cursor: pointer;
+            border-radius: 12px;
+            padding: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: white;
+            border: 2px solid #ddd;
+            max-width: 150px;
+        }
+
+        .suggested-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+
+        .suggested-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .suggested-item-label {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            text-align: center;
+            font-weight: 500;
         }
 
         @media (max-width: 768px) {
@@ -918,6 +918,14 @@ foreach ($allMaterials as $material) {
     
     <!-- メインコンテンツ -->
     <div class="main-wrapper">
+        <!-- 推奨アイテムセクション -->
+        <div id="suggestedItemSection" class="suggested-item-section" style="display: none;">
+            <div class="suggested-item-content">
+                <h3 class="suggested-item-title">この素材/作品から始める</h3>
+                <div id="suggestedItemContainer" class="suggested-item-container"></div>
+            </div>
+        </div>
+
         <!-- 素材選択セクション -->
         <div class="material-selection">
             <div class="material-header">
@@ -1147,9 +1155,7 @@ foreach ($allMaterials as $material) {
                     objects: objects,
                     canvasSize: document.getElementById('canvasSize').value,
                     customWidth: originalCanvasWidth,
-                    customHeight: originalCanvasHeight,
-                    // カスタマイズモードのartwork_idを保存
-                    artwork_id: <?php echo $customizeArtworkId ?? 'null'; ?>
+                    customHeight: originalCanvasHeight
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(canvasData));
             } catch (error) {
@@ -1458,16 +1464,8 @@ foreach ($allMaterials as $material) {
 
             updateLayerList();
             
-            // カスタマイズモードの場合、URLパラメータから素材を読み込む
-            <?php if ($customizeMaterial): ?>
-            loadCustomizeMaterial();
-            <?php elseif ($customizeArtwork): ?>
-            // 作品カスタマイズモードの場合、作品データを読み込む
-            loadCustomizeArtwork();
-            <?php else: ?>
-            // 通常モードの場合のみ保存データを復元
+            // 通常モードの場合は保存データを復元
             loadFromLocalStorage();
-            <?php endif; ?>
             
             // 表示エリアに収まるように調整
             fitCanvasToContainer();
@@ -1487,321 +1485,80 @@ foreach ($allMaterials as $material) {
             element.querySelector('span').textContent = isVisible ? '▼' : '▲';
         }
 
-        // カスタマイズモード：URLパラメータから素材を読み込む
-        function loadCustomizeMaterial() {
-            const material = <?php echo json_encode($customizeMaterial); ?>;
-            
-            if (!material) {
+        // 推奨アイテム（素材または作品）を表示
+        function displaySuggestedItem() {
+            // URLパラメーターから取得
+            const urlParams = new URLSearchParams(window.location.search);
+            const suggestedMaterialId = parseInt(urlParams.get('material_id')) || 0;
+            const suggestedArtworkId = parseInt(urlParams.get('artwork_id')) || 0;
+
+            if (!suggestedMaterialId && !suggestedArtworkId) {
                 return;
             }
-            
-            // LocalStorageをクリア（新規作成）
-            localStorage.removeItem(STORAGE_KEY);
-            canvas.clear();
-            canvas.backgroundColor = 'transparent';
-            
-            // 素材を追加
-            addMaterial(material);
-            
-            // URLからクエリストリングを削除
-            const url = new URL(window.location);
-            url.search = '';
-            window.history.replaceState({}, '', url);
+
+            const section = document.getElementById('suggestedItemSection');
+            const container = document.getElementById('suggestedItemContainer');
+
+            if (suggestedMaterialId) {
+                // 素材を探す
+                const material = allMaterialsArray.find(m => m.id === suggestedMaterialId);
+                if (material) {
+                    const thumbPath = material.webp_small_path;
+                    const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
+                    const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
+
+                    container.innerHTML = `
+                        <div class="suggested-item" onclick="addSuggestedMaterial(${material.id})">
+                            <div style="background-color: ${material.structured_bg_color || '#f0f0f0'}; padding: 12px; border-radius: 8px;">
+                                <img src="${finalThumbUrl}" alt="${material.title || ''}">
+                            </div>
+                            <div class="suggested-item-label">${material.title || '素材'}</div>
+                        </div>
+                    `;
+                    section.style.display = 'block';
+                }
+            } else if (suggestedArtworkId) {
+                // 作品を探す
+                const artwork = recentArtworksArray.find(a => a.id === suggestedArtworkId);
+                if (artwork) {
+                    const thumbPath = artwork.webp_path;
+                    const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
+                    const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
+
+                    container.innerHTML = `
+                        <div class="suggested-item" onclick="addSuggestedArtwork(${artwork.id})">
+                            <img src="${finalThumbUrl}" alt="${artwork.title || '作品'}">
+                            <div class="suggested-item-label">${artwork.title || '作品'}</div>
+                        </div>
+                    `;
+                    section.style.display = 'block';
+                }
+            }
         }
 
-        // 作品カスタマイズモード：作品データを読み込む
-        function loadCustomizeArtwork() {
-            const artwork = <?php echo json_encode($customizeArtwork); ?>;
-            
-            if (!artwork || !artwork.svg_data) {
-                return;
+        // 推奨素材をキャンバスに追加
+        function addSuggestedMaterial(materialId) {
+            const material = allMaterialsArray.find(m => m.id === materialId);
+            if (material) {
+                addMaterial(material);
+                // セクションを非表示にしてURLパラメーターを削除
+                document.getElementById('suggestedItemSection').style.display = 'none';
+                const url = new URL(window.location);
+                url.search = '';
+                window.history.replaceState({}, '', url);
             }
-            
-            // LocalStorageに保存されたデータがあれば優先的に使用
-            const savedData = localStorage.getItem(STORAGE_KEY);
-            if (savedData) {
-                try {
-                    const parsed = JSON.parse(savedData);
-                    // artwork_idが一致する場合はLocalStorageのデータを使用
-                    if (parsed.artwork_id == <?php echo $customizeArtworkId ?? 'null'; ?>) {
-                        loadFromLocalStorage();
-                        return;
-                    }
-                } catch (e) {
-                    console.log('LocalStorage読み込みエラー:', e);
-                }
-            }
-            
-            // LocalStorageにデータがない、または別の作品の場合はクリアして新規読み込み
-            localStorage.removeItem(STORAGE_KEY);
-            canvas.clear();
-            
-            try {
-                const svgData = JSON.parse(artwork.svg_data);
-                const materialsInfo = artwork.materials_info || {};
-                
-                // キャンバスサイズを設定（svg_dataから取得）
-                if (svgData.canvasWidth && svgData.canvasHeight) {
-                    originalCanvasWidth = parseInt(svgData.canvasWidth);
-                    originalCanvasHeight = parseInt(svgData.canvasHeight);
-                    canvas.setDimensions({ 
-                        width: originalCanvasWidth, 
-                        height: originalCanvasHeight 
-                    });
-                    
-                    // カスタムサイズとして設定
-                    document.getElementById('canvasSize').value = 'custom';
-                    document.getElementById('customSizeInputs').classList.add('active');
-                    document.getElementById('customWidth').value = originalCanvasWidth;
-                    document.getElementById('customHeight').value = originalCanvasHeight;
-                }
-                
-                // 背景色を設定
-                if (svgData.backgroundColor) {
-                    if (svgData.backgroundColor === 'transparent') {
-                        isTransparentBg = true;
-                        document.querySelector('input[name="bgType"][value="transparent"]').checked = true;
-                        canvas.backgroundColor = 'transparent';
-                    } else {
-                        isTransparentBg = false;
-                        document.querySelector('input[name="bgType"][value="color"]').checked = true;
-                        document.getElementById('bgColorPicker').value = svgData.backgroundColor;
-                        document.getElementById('bgColorPicker').disabled = false;
-                        canvas.backgroundColor = svgData.backgroundColor;
-                    }
-                }
-                
-                // 素材を読み込む（objects, materials, layersキーに対応）
-                const materialsData = svgData.objects || svgData.materials || svgData.layers || [];
-                if (materialsData && Array.isArray(materialsData) && materialsData.length > 0) {
-                    let loadedCount = 0;
-                    const totalCount = materialsData.length;
-                    
-                    materialsData.forEach((materialData, index) => {
-                        // 素材パスを取得（複数の形式に対応）
-                        let svgPath = null;
-                        if (materialData.materialData && materialData.materialData.svg_path) {
-                            svgPath = materialData.materialData.svg_path;
-                        } else if (materialData.svgPath) {
-                            svgPath = materialData.svgPath; // キャメルケース（compose/index.phpから）
-                        } else if (materialData.svg_path) {
-                            svgPath = materialData.svg_path; // スネークケース
-                        }
-                        
-                        if (!svgPath) {
-                            loadedCount++;
-                            return;
-                        }
-                        
-                        // SVGパスをR2 URL対応
-                        let svgUrl = svgPath;
-                        if (svgUrl && !svgUrl.startsWith('http://') && !svgUrl.startsWith('https://')) {
-                            svgUrl = '/' + svgUrl;
-                        }
-                        
-                        // SVGファイルを読み込み
-                        fetch(svgUrl)
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-                                return response.text();
-                            })
-                            .then(svgText => {
-                                // 色情報がある場合は、SVGテキストを直接編集してから読み込む
-                                let modifiedSvgText = svgText;
-                                if (materialData.colors && materialData.colors.length > 0) {
-                                    console.log('DB読み込み - 色を置換:', materialData.colors);
-                                    
-                                    // DOMParserでSVGを解析
-                                    const parser = new DOMParser();
-                                    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
-                                    const svgElement = svgDoc.querySelector('svg');
-                                    
-                                    if (svgElement) {
-                                        // 描画要素を取得
-                                        const drawingElements = svgElement.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon');
-                                        console.log('描画要素数:', drawingElements.length);
-                                        
-                                        // 色を適用
-                                        materialData.colors.forEach(colorData => {
-                                            const element = drawingElements[colorData.index];
-                                            if (element) {
-                                                if (colorData.fill) {
-                                                    // style属性を完全に削除してfill属性のみにする
-                                                    const style = element.getAttribute('style');
-                                                    if (style) {
-                                                        // fillとstroke以外のスタイルを保持
-                                                        let newStyleParts = [];
-                                                        style.split(';').forEach(part => {
-                                                            const trimmed = part.trim();
-                                                            if (trimmed && 
-                                                                !trimmed.match(/^fill\s*:/i) && 
-                                                                !trimmed.match(/^stroke\s*:/i)) {
-                                                                newStyleParts.push(trimmed);
-                                                            }
-                                                        });
-                                                        
-                                                        if (newStyleParts.length > 0) {
-                                                            element.setAttribute('style', newStyleParts.join(';') + ';');
-                                                        } else {
-                                                            element.removeAttribute('style');
-                                                        }
-                                                    }
-                                                    
-                                                    // fill属性を設定
-                                                    element.setAttribute('fill', colorData.fill);
-                                                }
-                                                if (colorData.stroke !== undefined) {
-                                                    if (colorData.stroke === null || colorData.stroke === 'none') {
-                                                        element.removeAttribute('stroke');
-                                                    } else {
-                                                        element.setAttribute('stroke', colorData.stroke);
-                                                    }
-                                                }
-                                                console.log(`要素[${colorData.index}]に色を適用: fill=${colorData.fill}`);
-                                            }
-                                        });
-                                        
-                                        // 修正したSVGをシリアライズ
-                                        const serializer = new XMLSerializer();
-                                        modifiedSvgText = serializer.serializeToString(svgDoc);
-                                    }
-                                }
-                                
-                                fabric.loadSVGFromString(modifiedSvgText, function(objects, options) {
-                                    const obj = fabric.util.groupSVGElements(objects, options);
-                                    
-                                    // 素材IDを取得（materialIdまたはid）
-                                    const materialId = parseInt(materialData.materialId) || parseInt(materialData.id);
-                                    
-                                    // materialsInfoから素材詳細を取得
-                                    const dbMaterialInfo = materialsInfo[materialId] || {};
-                                    
-                                    // materialDataを構築（DBから取得した情報を優先）
-                                    const fullMaterialData = {
-                                        id: materialId,
-                                        title: dbMaterialInfo.title || materialData.title || '',
-                                        svg_path: dbMaterialInfo.svg_path || svgPath,
-                                        webp_small_path: dbMaterialInfo.webp_small_path || '',
-                                        structured_bg_color: dbMaterialInfo.structured_bg_color || '#f0f0f0'
-                                    };
-                                    
-                                    // 座標とトランスフォームを取得（transform優先）
-                                    const transform = materialData.transform || {};
-                                    const posX = transform.x !== undefined ? transform.x : (materialData.x || materialData.left || (originalCanvasWidth / 2));
-                                    const posY = transform.y !== undefined ? transform.y : (materialData.y || materialData.top || (originalCanvasHeight / 2));
-                    
-                    // scaleXとscaleYを個別に取得（transform内のscaleX/scaleYを優先）
-                    const scaleXValue = transform.scaleX !== undefined ? Math.abs(transform.scaleX) : 
-                                        (transform.scale !== undefined ? Math.abs(transform.scale) : Math.abs(materialData.scale || materialData.scaleX || 1));
-                    const scaleYValue = transform.scaleY !== undefined ? Math.abs(transform.scaleY) : 
-                                        (transform.scale !== undefined ? Math.abs(transform.scale) : Math.abs(materialData.scale || materialData.scaleY || 1));
-                    const rotation = transform.rotation !== undefined ? transform.rotation : (materialData.rotation || materialData.angle || 0);
-                    
-                    // 反転の取得（transform内のflipHorizontal/flipVerticalを優先）
-                    let flipX = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (materialData.flipX || materialData.scaleX < 0 || false);
-                    let flipY = transform.flipVertical !== undefined ? transform.flipVertical : (materialData.flipY || materialData.scaleY < 0 || false);
-                    
-                    // originalCenterを使ってFabric.jsの中心座標に変換
-                    // compose/index.phpではtranslate(x,y)で左上を配置しているため、
-                    // Fabric.jsのcenter originで同じ結果を得るには、
-                    // x + (centerX * scale), y + (centerY * scale)が必要
-                    const originalCenter = materialData.originalCenter || { x: obj.width / 2, y: obj.height / 2 };
-                    const centerOffsetX = originalCenter.x * scaleXValue;
-                    const centerOffsetY = originalCenter.y * scaleYValue;
-                    
-                    // 位置とスケールを復元
-                    obj.set({
-                        left: posX + centerOffsetX,
-                        top: posY + centerOffsetY,
-                        scaleX: flipX ? -scaleXValue : scaleXValue,
-                        scaleY: flipY ? -scaleYValue : scaleYValue,
-                        angle: rotation,
-                        originX: 'center',
-                        originY: 'center',
-                        materialData: {
-                            ...fullMaterialData,
-                            zIndex: index
-                        }
-                    });
-                                    
-                                    canvas.add(obj);
-                                    
-                                    // 色情報を復元
-                                    if (materialData.colors && materialData.colors.length > 0 && obj._objects) {
-                                        materialData.colors.forEach(colorData => {
-                                            const child = obj._objects[colorData.index];
-                                            if (child) {
-                                                child.fill = colorData.fill;
-                                                child.stroke = colorData.stroke;
-                                                child.dirty = true;
-                                            }
-                                        });
-                                        obj.dirty = true;
-                                    }
-                                    
-                                    canvas.renderAll();
-                                    
-                                    loadedCount++;
-                                    
-                                    if (loadedCount === totalCount) {
-                                        setTimeout(() => {
-                                            // zIndexでソートして順序を保証
-                                            const allObjects = canvas.getObjects();
-                                            allObjects.sort((a, b) => {
-                                                const zIndexA = a.materialData?.zIndex ?? 999;
-                                                const zIndexB = b.materialData?.zIndex ?? 999;
-                                                return zIndexA - zIndexB;
-                                            });
-                                            canvas.remove(...canvas.getObjects());
-                                            allObjects.forEach(obj => canvas.add(obj));
-                                            
-                                            fitCanvasToContainer();
-                                            saveToLocalStorage();
-                                            
-                                            // URLからクエリストリングを削除
-                                            const url = new URL(window.location);
-                                            url.search = '';
-                                            window.history.replaceState({}, '', url);
-                                        }, 100);
-                                    }
-                                });
-                            })
-                            .catch(error => {
-                                console.error('素材読み込みエラー:', svgPath, error);
-                                loadedCount++;
-                                
-                                if (loadedCount === totalCount) {
-                                    setTimeout(() => {
-                                        // zIndexでソートして順序を保証
-                                        const allObjects = canvas.getObjects();
-                                        const sortedObjects = allObjects.slice().sort((a, b) => {
-                                            const zIndexA = a.materialData?.zIndex ?? 999;
-                                            const zIndexB = b.materialData?.zIndex ?? 999;
-                                            return zIndexA - zIndexB;
-                                        });
-                                        canvas.remove(...allObjects);
-                                        sortedObjects.forEach(obj => canvas.add(obj));
-                                        
-                                        fitCanvasToContainer();
-                                        saveToLocalStorage();
-                                        
-                                        // URLからクエリストリングを削除
-                                        const url = new URL(window.location);
-                                        url.search = '';
-                                        window.history.replaceState({}, '', url);
-                                    }, 100);
-                                }
-                            });
-                    });
-                } else {
-                    console.warn('素材データが見つかりません');
-                }
-                
-            } catch (error) {
-                console.error('作品データの読み込みエラー:', error);
-                showMessage('作品データの読み込みに失敗しました');
+        }
+
+        // 推奨作品をキャンバスに展開
+        function addSuggestedArtwork(artworkId) {
+            const artwork = recentArtworksArray.find(a => a.id === artworkId);
+            if (artwork) {
+                loadArtworkToCanvas(artwork);
+                // セクションを非表示にしてURLパラメーターを削除
+                document.getElementById('suggestedItemSection').style.display = 'none';
+                const url = new URL(window.location);
+                url.search = '';
+                window.history.replaceState({}, '', url);
             }
         }
 
@@ -3295,6 +3052,7 @@ foreach ($allMaterials as $material) {
             loadMaterialsData();
             renderMaterials();
             initCanvas();
+            displaySuggestedItem(); // 推奨アイテムを表示
         });
     </script>
 
