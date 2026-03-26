@@ -288,6 +288,34 @@ $pdo = getDB();
             flex: 1;
         }
         
+        .format-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .format-buttons button {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .btn-mp4 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        
+        .btn-mp4:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        }
+        
+        .btn-mp4:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
         .alert {
             padding: 16px 20px;
             border-radius: 12px;
@@ -705,8 +733,22 @@ $pdo = getDB();
                         <div id="layers-container"></div>
                     </div>
                     
-                    <div class="action-buttons">
-                        <button type="button" class="btn btn-success" onclick="generateGif()" id="generate-btn">GIF生成</button>
+                    <div class="quality-mode" style="margin-bottom: 16px;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="transparent-bg">
+                                <span>背景を透明にする（GIFのみ）</span>
+                            </label>
+                        </div>
+                        <div class="color-picker-wrapper" style="display: flex; align-items: center; gap: 8px;">
+                            <label for="bg-color" style="font-size: 14px; color: #666;">背景色:</label>
+                            <input type="color" id="bg-color" class="color-picker" value="#ffffff" oninput="changeBackgroundColorPreview()" onchange="changeBackgroundColorPreview()">
+                        </div>
+                    </div>
+                    
+                    <div class="format-buttons">
+                        <button type="button" class="btn btn-success" onclick="generateGif()" id="generate-gif-btn">GIF生成<br><small style="font-size:11px;opacity:0.8">320px, ~800KB</small></button>
+                        <button type="button" class="btn btn-mp4" onclick="generateMp4()" id="generate-mp4-btn">MP4生成<br><small style="font-size:11px;opacity:0.8">640px, ~200KB</small></button>
                     </div>
 
                 </form>
@@ -715,9 +757,9 @@ $pdo = getDB();
             
             <!-- 生成結果エリア -->
             <div class="result-area" id="result-area">
-                <h3 class="section-title" style="margin-bottom: 20px;">生成されたGIF</h3>
-                <div class="result-image-container">
-                    <img id="result-gif" class="result-image" alt="Generated GIF">
+                <h3 class="section-title" style="margin-bottom: 20px;" id="result-title">生成結果</h3>
+                <div class="result-image-container" id="result-container">
+                    <!-- GIF or MP4がここに表示される -->
                 </div>
                 <div class="action-buttons">
                     <a id="download-link" class="btn btn-success" download>ダウンロード</a>
@@ -872,6 +914,22 @@ $pdo = getDB();
                 
                 // レイヤーをレンダリング
                 renderLayers();
+                
+                // 背景色入力を初期化
+                const bgColorInput = document.getElementById('bg-color');
+                if (bgColorInput) {
+                    bgColorInput.value = backgroundColor;
+                }
+                
+                // 透明背景チェックボックスのイベント
+                const transparentBgCheckbox = document.getElementById('transparent-bg');
+                if (transparentBgCheckbox && bgColorInput) {
+                    transparentBgCheckbox.addEventListener('change', function() {
+                        bgColorInput.disabled = this.checked;
+                        bgColorInput.style.opacity = this.checked ? '0.5' : '1';
+                        bgColorInput.style.cursor = this.checked ? 'not-allowed' : 'pointer';
+                    });
+                }
                 
                 // レイヤーレンダリング後にUIに反映（少し遅延させる）
                 setTimeout(() => {
@@ -1030,6 +1088,15 @@ $pdo = getDB();
                     }
                 } catch (error) {
                     console.error('ローカルストレージからの読み込みに失敗:', error);
+                }
+            }
+            
+            // 背景色変更プレビュー（リアルタイム反映）
+            function changeBackgroundColorPreview() {
+                const bgColorInput = document.getElementById('bg-color');
+                if (bgColorInput) {
+                    backgroundColor = bgColorInput.value;
+                    renderPreview();
                 }
             }
             
@@ -1532,8 +1599,8 @@ $pdo = getDB();
             }
             
             // アニメーションフレームを生成（Fabric.jsを使用）
-            async function generateAnimatedFrame(progress, width, height) {
-                const bgColor = backgroundColor;
+            async function generateAnimatedFrame(progress, width, height, transparentBg = false) {
+                const bgColor = transparentBg ? null : backgroundColor;
                 const animationDuration = ANIMATION_DURATION;
                 
                 // 一時的なFabric.jsキャンバスを作成
@@ -1688,14 +1755,17 @@ $pdo = getDB();
             
             // GIF生成（gifshotを使用）
             async function generateGif() {
-                const generateBtn = document.getElementById('generate-btn');
+                const generateBtn = document.getElementById('generate-gif-btn');
+                const mp4Btn = document.getElementById('generate-mp4-btn');
                 const previewArea = document.getElementById('preview-area');
                 const resultArea = document.getElementById('result-area');
+                const transparentBg = document.getElementById('transparent-bg').checked;
                 
                 try {
                     // ボタンを無効化
                     generateBtn.disabled = true;
-                    generateBtn.textContent = '生成中...';
+                    mp4Btn.disabled = true;
+                    generateBtn.innerHTML = '生成中...';
                     
                     // ローディング表示
                     previewArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>フレームを生成中...</p></div>';
@@ -1705,7 +1775,7 @@ $pdo = getDB();
                     const width = Math.round(canvasWidth * scale);
                     const height = Math.round(canvasHeight * scale);
                     const fps = 10;
-                    console.log('低画質モード:', { width, height, fps });
+                    console.log('低画質モード:', { width, height, fps, transparentBg });
                     
                     const duration = ANIMATION_DURATION;
                     
@@ -1742,7 +1812,7 @@ $pdo = getDB();
                         const progress = frame / Math.max(totalFrames - 1, 1);
                         
                         // アニメーションフレームのData URLを生成（Fabric.jsで直接生成）
-                        const dataUrl = await generateAnimatedFrame(progress, width, height);
+                        const dataUrl = await generateAnimatedFrame(progress, width, height, transparentBg);
                         images.push(dataUrl);
                         
                         // 進行状況を表示
@@ -1770,7 +1840,8 @@ $pdo = getDB();
                             const url = obj.image;
                             
                             // 結果を表示
-                            document.getElementById('result-gif').src = url;
+                            document.getElementById('result-title').textContent = '生成されたGIF';
+                            document.getElementById('result-container').innerHTML = `<img src="${url}" class="result-image" alt="Generated GIF">`;
                             document.getElementById('download-link').href = url;
                             document.getElementById('download-link').download = `animation_${artworkData.id}_${Date.now()}.gif`;
                             
@@ -1783,7 +1854,8 @@ $pdo = getDB();
                             
                             // ボタンを有効化
                             generateBtn.disabled = false;
-                            generateBtn.textContent = 'GIF生成';
+                            mp4Btn.disabled = false;
+                            generateBtn.innerHTML = 'GIF生成<br><small style="font-size:11px;opacity:0.8">320px, ~800KB</small>';
                         } else {
                             throw new Error(obj.error);
                         }
@@ -1797,7 +1869,290 @@ $pdo = getDB();
                     previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
                     renderPreview();
                     generateBtn.disabled = false;
-                    generateBtn.textContent = 'GIF生成';
+                    mp4Btn.disabled = false;
+                    generateBtn.innerHTML = 'GIF生成<br><small style="font-size:11px;opacity:0.8">320px, ~800KB</small>';
+                }
+            }
+            
+            // MP4生成（MediaRecorder APIを使用）
+            async function generateMp4() {
+                const mp4Btn = document.getElementById('generate-mp4-btn');
+                const gifBtn = document.getElementById('generate-gif-btn');
+                const previewArea = document.getElementById('preview-area');
+                const resultArea = document.getElementById('result-area');
+                
+                try {
+                    // ボタンを無効化
+                    mp4Btn.disabled = true;
+                    gifBtn.disabled = true;
+                    mp4Btn.innerHTML = '生成中...';
+                    
+                    // ローディング表示
+                    previewArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>MP4を生成中...</p></div>';
+                    
+                    // 640pxで生成（推奨サイズ）
+                    const scale = 640 / Math.max(canvasWidth, canvasHeight);
+                    const width = Math.round(canvasWidth * scale);
+                    const height = Math.round(canvasHeight * scale);
+                    const fps = 30;
+                    
+                    console.log('MP4生成開始:', { width, height, fps });
+                    
+                    const duration = ANIMATION_DURATION;
+                    
+                    // 最も長いレイヤーの総時間を計算
+                    let maxTotalDuration = duration;
+                    layers.forEach((layer, index) => {
+                        const layerId = `layer_${index}`;
+                        const animation = animations[layerId];
+                        if (animation) {
+                            let delaySeconds = 0;
+                            if (animation.delay1s) delaySeconds = 1;
+                            else if (animation.delay2s) delaySeconds = 2;
+                            
+                            const layerTotalDuration = duration + (delaySeconds * 1000);
+                            if (layerTotalDuration > maxTotalDuration) {
+                                maxTotalDuration = layerTotalDuration;
+                            }
+                        }
+                    });
+                    
+                    console.log('最大総時間:', maxTotalDuration, 'ms');
+                    
+                    // フレーム数を計算
+                    const totalFrames = Math.ceil((maxTotalDuration / 1000) * fps);
+                    
+                    // 一時的なcanvasを作成
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+                    const ctx = tempCanvas.getContext('2d');
+                    
+                    // MediaRecorderの設定
+                    const stream = tempCanvas.captureStream(fps);
+                    // MP4を優先（Chrome/Edge/Safariで対応、より汎用性が高い）
+                    // Chrome/EdgeではH.264コーデック指定が必要
+                    let mimeType;
+                    if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) {
+                        mimeType = 'video/mp4;codecs=h264';
+                    } else if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) {
+                        mimeType = 'video/mp4;codecs=avc1';
+                    } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+                        mimeType = 'video/webm;codecs=vp9';
+                    } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+                        mimeType = 'video/webm;codecs=vp8';
+                    } else {
+                        mimeType = 'video/webm'; // フォールバック
+                    }
+                    
+                    console.log('使用するMIMEタイプ:', mimeType);
+                    
+                    const recorder = new MediaRecorder(stream, {
+                        mimeType: mimeType,
+                        videoBitsPerSecond: 2500000 // 2.5Mbps
+                    });
+                    
+                    const chunks = [];
+                    recorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) {
+                            chunks.push(e.data);
+                        }
+                    };
+                    
+                    recorder.onstop = () => {
+                        console.log('録画完了、Blob作成中...');
+                        const blob = new Blob(chunks, { type: mimeType });
+                        const url = URL.createObjectURL(blob);
+                        
+                        console.log('MP4生成完了: サイズ', width, 'x', height, 'ファイルサイズ:', Math.round(blob.size / 1024), 'KB');
+                        
+                        // 結果を表示
+                        document.getElementById('result-title').textContent = '生成されたMP4';
+                        const videoHtml = `
+                            <video class="result-image" controls autoplay loop muted style="max-width: 100%; max-height: 500px;">
+                                <source src="${url}" type="${mimeType}">
+                                お使いのブラウザはこの動画形式に対応していません。
+                            </video>
+                        `;
+                        document.getElementById('result-container').innerHTML = videoHtml;
+                        document.getElementById('download-link').href = url;
+                        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+                        document.getElementById('download-link').download = `animation_${artworkData.id}_${Date.now()}.${extension}`;
+                        
+                        resultArea.classList.add('active');
+                        
+                        // プレビューをリセットして再描画
+                        fabricCanvas = null;
+                        previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
+                        renderPreview();
+                        
+                        // ボタンを有効化
+                        mp4Btn.disabled = false;
+                        gifBtn.disabled = false;
+                        mp4Btn.innerHTML = 'MP4生成<br><small style="font-size:11px;opacity:0.8">640px, ~200KB</small>';
+                    };
+                    
+                    // 録画開始
+                    recorder.start();
+                    console.log('録画開始');
+                    
+                    // フレームごとに描画
+                    const frameInterval = 1000 / fps;
+                    let currentFrame = 0;
+                    
+                    const drawFrame = async () => {
+                        if (currentFrame >= totalFrames) {
+                            // 録画終了
+                            recorder.stop();
+                            console.log('全フレーム描画完了');
+                            return;
+                        }
+                        
+                        const progress = currentFrame / Math.max(totalFrames - 1, 1);
+                        
+                        // Fabric.jsで一時的なキャンバスを作成してフレームを生成
+                        const fabricTemp = new fabric.Canvas(document.createElement('canvas'), {
+                            width: width,
+                            height: height,
+                            backgroundColor: backgroundColor,
+                            selection: false,
+                            renderOnAddRemove: false
+                        });
+                        
+                        // レイヤーを描画
+                        for (let index = 0; index < layers.length; index++) {
+                            const layer = layers[index];
+                            const layerId = `layer_${index}`;
+                            const animation = animations[layerId] || {};
+                            
+                            // delay計算
+                            let delaySeconds = 0;
+                            if (animation.delay1s) delaySeconds = 1;
+                            else if (animation.delay2s) delaySeconds = 2;
+                            
+                            // duration計算
+                            let durationMs = ANIMATION_DURATION;
+                            if (animation.duration1s) durationMs = 1000;
+                            else if (animation.duration2s) durationMs = 2000;
+                            
+                            const totalDuration = maxTotalDuration;
+                            const currentTime = progress * totalDuration;
+                            
+                            let layerProgress = 0;
+                            if (currentTime < delaySeconds * 1000) {
+                                layerProgress = 0;
+                            } else if (currentTime < delaySeconds * 1000 + durationMs) {
+                                layerProgress = (currentTime - delaySeconds * 1000) / durationMs;
+                            } else {
+                                layerProgress = 1;
+                            }
+                            
+                            if (layer.materialId) {
+                                const svgData = await fetchMaterialSvg(layer.materialId, layer.colors);
+                                
+                                if (svgData && svgData.content) {
+                                    const svgString = `<svg viewBox="${svgData.viewBox.x || 0} ${svgData.viewBox.y || 0} ${svgData.viewBox.width} ${svgData.viewBox.height}" xmlns="http://www.w3.org/2000/svg">${svgData.content}</svg>`;
+                                    
+                                    await new Promise((resolve) => {
+                                        fabric.loadSVGFromString(svgString, (objects, options) => {
+                                            if (!objects || objects.length === 0) {
+                                                resolve();
+                                                return;
+                                            }
+                                            
+                                            const svgGroup = fabric.util.groupSVGElements(objects, options);
+                                            const transform = layer.transform || {};
+                                            
+                                            const scaleRatio = width / canvasWidth;
+                                            const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : 1) * scaleRatio;
+                                            const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : 1) * scaleRatio;
+                                            const rotation = transform.rotation !== undefined ? transform.rotation : 0;
+                                            const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : false;
+                                            const flipV = transform.flipVertical !== undefined ? transform.flipVertical : false;
+                                            
+                                            let x = (transform.x !== undefined ? transform.x : 0) * scaleRatio;
+                                            let y = (transform.y !== undefined ? transform.y : 0) * scaleRatio;
+                                            
+                                            const originalCenter = layer.originalCenter || { 
+                                                x: svgData.viewBox.width / 2, 
+                                                y: svgData.viewBox.height / 2 
+                                            };
+                                            
+                                            const centerX = x + originalCenter.x * scaleX;
+                                            const centerY = y + originalCenter.y * scaleY;
+                                            
+                                            // アニメーション適用
+                                            let animRotation = rotation;
+                                            let opacity = 1;
+                                            
+                                            // イージング関数
+                                            const easeInCubic = (t) => t * t * t;
+                                            const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+                                            
+                                            let t = layerProgress;
+                                            if (animation.easeIn) t = easeInCubic(t);
+                                            else if (animation.easeOut) t = easeOutCubic(t);
+                                            
+                                            if (animation.fadeIn) {
+                                                opacity = t;
+                                            }
+                                            if (animation.fadeOut) {
+                                                opacity = 1 - t;
+                                            }
+                                            if (animation.rotate) {
+                                                animRotation = rotation + (360 * t);
+                                            }
+                                            
+                                            svgGroup.set({
+                                                left: centerX,
+                                                top: centerY,
+                                                originX: 'center',
+                                                originY: 'center',
+                                                scaleX: scaleX * (flipH ? -1 : 1),
+                                                scaleY: scaleY * (flipV ? -1 : 1),
+                                                angle: animRotation,
+                                                opacity: opacity,
+                                                selectable: false,
+                                                evented: false
+                                            });
+                                            
+                                            fabricTemp.add(svgGroup);
+                                            resolve();
+                                        });
+                                    });
+                                }
+                            }
+                        }
+                        
+                        fabricTemp.renderAll();
+                        
+                        // fabricのcanvasをtempCanvasに描画
+                        ctx.clearRect(0, 0, width, height);
+                        ctx.drawImage(fabricTemp.getElement(), 0, 0);
+                        
+                        // 進行状況を表示
+                        const percent = Math.round((currentFrame / totalFrames) * 100);
+                        previewArea.innerHTML = `<div class="loading"><div class="spinner"></div><p>MP4を生成中... ${currentFrame + 1}/${totalFrames} (${percent}%)</p></div>`;
+                        
+                        currentFrame++;
+                        
+                        // 次のフレームをスケジュール
+                        setTimeout(drawFrame, frameInterval);
+                    };
+                    
+                    // 最初のフレームを描画
+                    drawFrame();
+                    
+                } catch (error) {
+                    console.error('MP4生成エラー:', error);
+                    alert('MP4生成に失敗しました: ' + error.message);
+                    
+                    // エラー時の処理
+                    previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
+                    renderPreview();
+                    mp4Btn.disabled = false;
+                    gifBtn.disabled = false;
+                    mp4Btn.innerHTML = 'MP4生成<br><small style="font-size:11px;opacity:0.8">640px, ~200KB</small>';
                 }
             }
             

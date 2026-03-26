@@ -194,6 +194,58 @@ html, body {
     width: 100%;
 }
 
+/* 特徴的なメニュー項目（MixとWorks）*/
+.nav-link-featured {
+    font-weight: 600;
+    font-size: 1rem;
+    color: white !important;
+    background: linear-gradient(135deg, #FFD4A3 0%, #FFABC5 100%);
+    padding: 0.5rem 1.2rem !important;
+    border-radius: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.nav-link-featured::after {
+    display: none !important;
+}
+
+.nav-link-featured:hover {
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 171, 197, 0.4);
+    background: linear-gradient(135deg, #FFE0B8 0%, #FFC0D8 100%);
+}
+
+.nav-link-featured.active {
+    font-weight: 700;
+    color: white !important;
+    box-shadow: 0 6px 20px rgba(255, 171, 197, 0.4);
+}
+
+/* navbar-home用の詳細度を高める */
+.navbar-home .nav-link-featured,
+.navbar .nav-link-featured {
+    color: white !important;
+    background: linear-gradient(135deg, #FFD4A3 0%, #FFABC5 100%);
+    padding: 0.5rem 1.2rem !important;
+    border-radius: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.navbar-home .nav-link-featured:hover,
+.navbar .nav-link-featured:hover {
+    color: white !important;
+    background: linear-gradient(135deg, #FFE0B8 0%, #FFC0D8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 171, 197, 0.4);
+}
+
+.navbar-home .nav-link-featured::after,
+.navbar .nav-link-featured::after {
+    display: none !important;
+}
+
 /* ホームページ用ナビゲーション（統一済み） */
 .navbar-home .main-navigation {
     display: flex;
@@ -443,6 +495,25 @@ html, body {
     text-decoration: none;
 }
 
+/* モバイルメニューの特徴的な項目（MixとWorks）*/
+.mobile-nav-item-featured {
+    background: linear-gradient(135deg, #FFD4A3 0%, #FFABC5 100%);
+    border-radius: 25px;
+    margin: 0 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.mobile-nav-item-featured .mobile-nav-label {
+    color: white;
+    font-weight: 600;
+}
+
+.mobile-nav-item-featured:hover .mobile-nav-label,
+.mobile-nav-item-featured.active .mobile-nav-label {
+    color: white;
+}
+
 .mobile-nav-label {
     font-size: 0.95rem;
     font-weight: 500;
@@ -497,10 +568,10 @@ html, body {
         <a class="navbar-brand" href="/">marutto.art</a>
         
         <div class="main-navigation">
-            <a href="/compose/" class="nav-link">Mix</a>
-            <a href="/calendar/" class="nav-link">Calendar</a>
-            <a href="/everyone-works.php" class="nav-link">Works</a>
+            <a href="/compose/" class="nav-link nav-link-featured">Mix</a>
+            <a href="/everyone-works.php" class="nav-link nav-link-featured">Works</a>
             <a href="/list.php" class="nav-link">Items</a>
+            <a href="/calendar/" class="nav-link">Calendar</a>
         </div>
     </div>
 </nav>
@@ -510,10 +581,10 @@ html, body {
         <a class="navbar-brand" href="/">marutto.art</a>
         
         <div class="main-navigation">
-            <a href="/compose/" class="nav-link<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">Mix</a>
-            <a href="/calendar/" class="nav-link<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">Calendar</a>
-            <a href="/everyone-works.php" class="nav-link<?= isset($currentPage) && $currentPage === 'everyone-works' ? ' active' : '' ?>">Works</a>
+            <a href="/compose/" class="nav-link nav-link-featured<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">Mix</a>
+            <a href="/everyone-works.php" class="nav-link nav-link-featured<?= isset($currentPage) && $currentPage === 'everyone-works' ? ' active' : '' ?>">Works</a>
             <a href="/list.php" class="nav-link<?= isset($currentPage) && $currentPage === 'list' ? ' active' : '' ?>">Items</a>
+            <a href="/calendar/" class="nav-link<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">Calendar</a>
         </div>
     </div>
 </nav>
@@ -561,16 +632,16 @@ document.addEventListener('click', function(event) {
     <a href="/" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'home' ? ' active' : '' ?>">
         <div class="mobile-nav-label">Marutto</div>
     </a>
-    <a href="/compose/" class="mobile-nav-item<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">
+    <a href="/compose/" class="mobile-nav-item mobile-nav-item-featured<?= isset($currentPage) && ($currentPage === 'compose' || $currentPage === 'index') ? ' active' : '' ?>">
         <div class="mobile-nav-label">Mix</div>
     </a>
-    <a href="/calendar/" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">
-        <div class="mobile-nav-label">Calendar</div>
-    </a>
-    <a href="/everyone-works.php" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'everyone-works' ? ' active' : '' ?>">
+    <a href="/everyone-works.php" class="mobile-nav-item mobile-nav-item-featured<?= isset($currentPage) && $currentPage === 'everyone-works' ? ' active' : '' ?>">
         <div class="mobile-nav-label">Works</div>
     </a>
     <a href="/list.php" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'list' ? ' active' : '' ?>">
         <div class="mobile-nav-label">Items</div>
+    </a>
+    <a href="/calendar/" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">
+        <div class="mobile-nav-label">Calendar</div>
     </a>
 </nav>
