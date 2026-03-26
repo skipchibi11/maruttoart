@@ -1902,7 +1902,11 @@ $pdo = getDB();
                     const height = Math.round(canvasHeight * scale);
                     const fps = 30;
                     
-                    console.log('MP4生成開始:', { width, height, fps });
+                    console.log('=== MP4生成設定 ===');
+                    console.log('元のサイズ:', canvasWidth, 'x', canvasHeight);
+                    console.log('スケール:', scale);
+                    console.log('出力サイズ:', width, 'x', height);
+                    console.log('FPS:', fps);
                     
                     const duration = ANIMATION_DURATION;
                     
@@ -2074,6 +2078,24 @@ $pdo = getDB();
                             renderOnAddRemove: false
                         });
                         
+                        // 明示的にcanvas要素のサイズを設定（重要！）
+                        const fabricCanvas = fabricTemp.getElement();
+                        fabricCanvas.width = width;
+                        fabricCanvas.height = height;
+                        
+                        // fabricTempの内部サイズも確実に設定
+                        fabricTemp.setDimensions({ width: width, height: height });
+                        
+                        // デバッグ: canvasサイズを確認（最初のフレームのみ）
+                        if (currentFrame === 0) {
+                            console.log('=== fabricTemp canvas 情報 ===');
+                            console.log('設定値 width:', width, 'height:', height);
+                            console.log('fabricTemp.width:', fabricTemp.width);
+                            console.log('fabricTemp.height:', fabricTemp.height);
+                            console.log('fabricCanvas.width:', fabricCanvas.width);
+                            console.log('fabricCanvas.height:', fabricCanvas.height);
+                        }
+                        
                         // レイヤーを描画
                         for (let index = 0; index < layers.length; index++) {
                             const layer = layers[index];
@@ -2136,6 +2158,19 @@ $pdo = getDB();
                                             const centerX = x + originalCenter.x * scaleX;
                                             const centerY = y + originalCenter.y * scaleY;
                                             
+                                            // デバッグ: 座標計算を確認（最初のフレーム、最初のレイヤーのみ）
+                                            if (currentFrame === 0 && index === 0) {
+                                                console.log('=== レイヤー座標計算 (layer 0, frame 0) ===');
+                                                console.log('scaleRatio:', scaleRatio);
+                                                console.log('transform.x:', transform.x, '-> x:', x);
+                                                console.log('transform.y:', transform.y, '-> y:', y);
+                                                console.log('transform.scaleX:', transform.scaleX, '-> scaleX:', scaleX);
+                                                console.log('transform.scaleY:', transform.scaleY, '-> scaleY:', scaleY);
+                                                console.log('viewBox:', svgData.viewBox);
+                                                console.log('originalCenter:', originalCenter);
+                                                console.log('計算結果 - centerX:', centerX, 'centerY:', centerY);
+                                            }
+                                            
                                             // アニメーション適用
                                             let animRotation = rotation;
                                             let opacity = 1;
@@ -2181,9 +2216,19 @@ $pdo = getDB();
                         
                         fabricTemp.renderAll();
                         
-                        // fabricのcanvasをtempCanvasに描画
+                        // fabricのcanvasをtempCanvasに描画（サイズを明示的に指定）
                         ctx.clearRect(0, 0, width, height);
-                        ctx.drawImage(fabricTemp.getElement(), 0, 0);
+                        const fabricCanvas2 = fabricTemp.getElement();
+                        ctx.drawImage(fabricCanvas2, 0, 0, width, height);
+                        
+                        // デバッグ: tempCanvasの内容を確認（最初のフレームのみ）
+                        if (currentFrame === 0) {
+                            console.log('=== tempCanvas 描画確認 ===');
+                            console.log('tempCanvas.width:', tempCanvas.width);
+                            console.log('tempCanvas.height:', tempCanvas.height);
+                            console.log('描画元 fabricCanvas.width:', fabricCanvas2.width);
+                            console.log('描画元 fabricCanvas.height:', fabricCanvas2.height);
+                        }
                         
                         // 進行状況を表示
                         const percent = Math.round((currentFrame / totalFrames) * 100);
