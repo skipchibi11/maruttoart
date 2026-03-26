@@ -209,7 +209,8 @@ $artworks = $stmt->fetchAll();
 
         .masonry-item {
             width: 100%;
-            position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .material-card {
@@ -267,36 +268,67 @@ $artworks = $stmt->fetchAll();
             color: #A0675C;
         }
 
+        /* ボタンコンテナ */
+        .button-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 0 16px;
+        }
+
         /* reMixボタン */
         .remix-button {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            padding: 6px 14px;
-            background: rgba(255, 255, 255, 0.75);
+            flex: 1;
+            padding: 8px 14px;
+            background: rgba(232, 168, 124, 0.1);
             color: #8B7355;
             text-decoration: none;
-            border-radius: 24px;
-            font-size: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 500;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(232, 168, 124, 0.3);
             transition: all 0.2s ease;
-            z-index: 10;
-            backdrop-filter: blur(4px);
+            text-align: center;
         }
 
         .remix-button:hover {
             background: rgba(232, 168, 124, 0.9);
             color: white;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            border-color: rgba(232, 168, 124, 0.9);
+        }
+
+        /* Animateボタン */
+        .animate-button {
+            flex: 1;
+            padding: 8px 14px;
+            background: rgba(155, 89, 182, 0.1);
+            color: #8B7355;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .animate-button:hover {
+            background: rgba(155, 89, 182, 0.9);
+            color: white;
+            border-color: rgba(155, 89, 182, 0.9);
         }
 
         @media (max-width: 576px) {
-            .remix-button {
-                top: 12px;
-                right: 12px;
-                padding: 5px 12px;
-                font-size: 0.7rem;
+            .button-container {
+                gap: 6px;
+                margin-top: 10px;
+                padding: 0 12px;
+            }
+            
+            .remix-button,
+            .animate-button {
+                padding: 6px 10px;
+                font-size: 0.75rem;
             }
         }
 
@@ -392,11 +424,16 @@ $artworks = $stmt->fetchAll();
                         <h3 class="artwork-title"><?= h($artwork['title']) ?></h3>
                     </a>
                     <?php if (!empty($artwork['svg_data'])): ?>
-                    <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
-                       class="remix-button" 
-                       onclick="event.stopPropagation();">
-                        reMix
-                    </a>
+                    <div class="button-container">
+                        <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
+                           class="remix-button">
+                            reMix
+                        </a>
+                        <a href="/compose/animation.php?artwork_id=<?= $artwork['id'] ?>" 
+                           class="animate-button">
+                            Animate
+                        </a>
+                    </div>
                     <?php endif; ?>
                 </div>
                 <?php endforeach; ?>

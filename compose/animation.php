@@ -411,6 +411,151 @@ $pdo = getDB();
             }
         }
 
+        /* 低画質モード */
+        .quality-mode {
+            padding: 12px;
+            background: rgba(232, 168, 124, 0.1);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .quality-mode label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .quality-mode input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* アニメーション設定ボタン */
+        .animation-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .animation-btn {
+            padding: 6px 12px;
+            border: 2px solid;
+            background: white;
+            color: var(--text-dark);
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        /* 青色: フェードイン・フェードアウト */
+        .animation-btn[data-category="effect"] {
+            border-color: rgba(52, 152, 219, 0.4);
+        }
+
+        .animation-btn[data-category="effect"]:hover {
+            background: rgba(52, 152, 219, 0.1);
+            border-color: rgba(52, 152, 219, 0.6);
+        }
+
+        .animation-btn[data-category="effect"].active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 緑色: イーズイン・イーズアウト */
+        .animation-btn[data-category="easing"] {
+            border-color: rgba(39, 174, 96, 0.4);
+        }
+
+        .animation-btn[data-category="easing"]:hover {
+            background: rgba(39, 174, 96, 0.1);
+            border-color: rgba(39, 174, 96, 0.6);
+        }
+
+        .animation-btn[data-category="easing"].active {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+        }
+
+        /* 赤色: 1秒後・2秒後 */
+        .animation-btn[data-category="delay"] {
+            border-color: rgba(231, 76, 60, 0.4);
+        }
+
+        .animation-btn[data-category="delay"]:hover {
+            background: rgba(231, 76, 60, 0.1);
+            border-color: rgba(231, 76, 60, 0.6);
+        }
+
+        .animation-btn[data-category="delay"].active {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+        }
+
+        /* オレンジ色: 1秒維持・2秒維持 */
+        .animation-btn[data-category="duration"] {
+            border-color: rgba(243, 156, 18, 0.4);
+        }
+
+        .animation-btn[data-category="duration"]:hover {
+            background: rgba(243, 156, 18, 0.1);
+            border-color: rgba(243, 156, 18, 0.6);
+        }
+
+        .animation-btn[data-category="duration"].active {
+            background: #f39c12;
+            color: white;
+            border-color: #f39c12;
+            box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+        }
+
+        /* 紫色: 回転 */
+        .animation-btn[data-category="rotation"] {
+            border-color: rgba(155, 89, 182, 0.4);
+        }
+
+        .animation-btn[data-category="rotation"]:hover {
+            background: rgba(155, 89, 182, 0.1);
+            border-color: rgba(155, 89, 182, 0.6);
+        }
+
+        .animation-btn[data-category="rotation"].active {
+            background: #9b59b6;
+            color: white;
+            border-color: #9b59b6;
+            box-shadow: 0 2px 8px rgba(155, 89, 182, 0.3);
+        }
+
+        .animation-btn:active {
+            transform: scale(0.95);
+        }
+
+        .layer-animation-buttons {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(232, 168, 124, 0.2);
+        }
+
+        .layer-animation-buttons .animation-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 0;
+        }
+
         /* 作業エリア */
         .workspace {
             display: grid;
@@ -536,18 +681,17 @@ $pdo = getDB();
 
     <div class="container">
         <div class="main-content" style="padding: 40px 0 80px;">
-            <h1 class="page-title" style="text-align: center; font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 600; margin-bottom: 10px; color: #A0675C;">
-                Animate Works
+            <h1 class="page-title" style="text-align: center; font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 600; margin-bottom: 20px; color: #A0675C;">
+                Animate
             </h1>
-            <p class="page-subtitle" style="text-align: center; font-size: clamp(0.9rem, 2vw, 1.1rem); color: #8B7355; margin-bottom: 40px; font-weight: 500;">
-                みんなの作品にアニメーション効果を追加してGIFを生成
-            </p>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <a href="/everyone-works.php" class="btn btn-secondary" style="display: inline-block;">← 前に戻る</a>
+            </div>
         
         <div id="main-content">
             <div class="workspace">
             <!-- キャンバスエリア -->
             <div class="canvas-area">
-                <h2 class="section-title">プレビュー</h2>
                 <div class="canvas-wrapper" id="preview-area">
                     <canvas id="preview-canvas"></canvas>
                 </div>
@@ -558,13 +702,6 @@ $pdo = getDB();
                 <form id="animation-form" onsubmit="return false;">
                     
                     <div class="section">
-                        <h2 class="section-title">作品情報</h2>
-                        <p id="artwork-info-title"><strong>読み込み中...</strong></p>
-                        <p id="artwork-info-id" style="font-size: 12px; color: #666;"></p>
-                    </div>
-                    
-                    <div class="section">
-                        <h2 class="section-title">レイヤーアニメーション</h2>
                         <div id="layers-container"></div>
                     </div>
                     
@@ -599,7 +736,7 @@ $pdo = getDB();
             let svgData, layers, canvasWidth, canvasHeight, backgroundColor;
             
             // アニメーション設定（軽量版・固定）
-            const ANIMATION_DURATION = 1200; // 1.5秒 → 1.2秒に短縮
+            const ANIMATION_DURATION = 1800; // 1.8秒（ゆっくりとした動き）
             const ANIMATION_FPS = 10; // 15fps → 10fpsに削減
             
             // ローカルストレージのキー（アニメーション設定用、作品読み込み後に設定）
@@ -705,10 +842,6 @@ $pdo = getDB();
                     showError('作品データが読み込めませんでした。');
                     return;
                 }
-                
-                // 作品情報を表示
-                document.getElementById('artwork-info-title').innerHTML = `<strong>${artworkData.title || '無題'}</strong>`;
-                document.getElementById('artwork-info-id').textContent = `作品ID: ${artworkData.id}`;
             
                 // SVGデータを解析
                 svgData = JSON.parse(artworkData.svg_data || '{}');
@@ -734,11 +867,11 @@ $pdo = getDB();
                 // ローカルストレージのキーを設定
                 STORAGE_KEY = 'marutto_animation_' + artworkData.id;
                 
-                // レイヤーをレンダリング
-                renderLayers();
-                
                 // ローカルストレージから設定を復元
                 loadFromLocalStorage();
+                
+                // レイヤーをレンダリング
+                renderLayers();
                 
                 // レイヤーレンダリング後にUIに反映（少し遅延させる）
                 setTimeout(() => {
@@ -770,103 +903,116 @@ $pdo = getDB();
                     
                     const layerDiv = document.createElement('div');
                     layerDiv.className = 'layer-item';
+                    
                     layerDiv.innerHTML = `
                         <div class="layer-header">
                             <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                                ${thumbnailUrl ? `<img src="${thumbnailUrl}" alt="${materialTitle}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #f5f5f5; padding: 4px;">` : ''}
-                                <div style="flex: 1;">
-                                    <span class="layer-name">レイヤー ${index + 1}</span>
-                                    ${materialTitle ? `<div style="font-size: 11px; color: #666; margin-top: 2px;">${materialTitle}</div>` : ''}
-                                </div>
+                                ${thumbnailUrl ? `<img src="${thumbnailUrl}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #f5f5f5; padding: 4px;">` : ''}
                             </div>
-                            <button type="button" class="btn btn-secondary btn-small" onclick="toggleAnimation('${layerId}')">
-                                アニメーション設定
-                            </button>
                         </div>
-                        <div class="animation-settings" id="settings-${layerId}">
-                            <div class="form-group">
-                                <label>アニメーションタイプ</label>
-                                <select id="type-${layerId}" onchange="updateAnimation('${layerId}', 'type', this.value)">
-                                    <option value="">なし</option>
-                                    <option value="fadeIn">フェードイン</option>
-                                    <option value="fadeOut">フェードアウト</option>
-                                    <option value="slideFromBottom">下から上にスライド</option>
-                                    <option value="slideFromTop">上から下にスライド</option>
-                                    <option value="slideFromLeft">左からスライド</option>
-                                    <option value="slideFromRight">右からスライド</option>
-                                    <option value="scale">スケール</option>
-                                    <option value="rotate">回転</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>イージング</label>
-                                <select id="easing-${layerId}" onchange="updateAnimation('${layerId}', 'easing', this.value)">
-                                    <option value="linear">リニア</option>
-                                    <option value="easeIn">イーズイン</option>
-                                    <option value="easeOut">イーズアウト</option>
-                                    <option value="easeInOut">イーズインアウト</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>開始タイミング</label>
-                                <select id="delay-${layerId}" onchange="updateAnimation('${layerId}', 'delay', parseFloat(this.value) || 0)">
-                                    <option value="0">すぐに開始</option>
-                                    <option value="0.5">0.5秒後</option>
-                                    <option value="1">1秒後</option>
-                                    <option value="1.5">1.5秒後</option>
-                                    <option value="2">2秒後</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>維持時間</label>
-                                <select id="hold-${layerId}" onchange="updateAnimation('${layerId}', 'hold', parseFloat(this.value) || 0)">
-                                    <option value="0">なし（すぐループ）</option>
-                                    <option value="0.5">0.5秒維持</option>
-                                    <option value="1">1秒維持</option>
-                                    <option value="1.5">1.5秒維持</option>
-                                    <option value="2">2秒維持</option>
-                                </select>
+                        <div class="layer-animation-buttons">
+                            <div class="animation-button-group">
+                                <button type="button" class="animation-btn" data-type="fadeIn" data-category="effect" data-layer-index="${index}">Fade In</button>
+                                <button type="button" class="animation-btn" data-type="fadeOut" data-category="effect" data-layer-index="${index}">Fade Out</button>
+                                <button type="button" class="animation-btn" data-type="easeIn" data-category="easing" data-layer-index="${index}">Ease In</button>
+                                <button type="button" class="animation-btn" data-type="easeOut" data-category="easing" data-layer-index="${index}">Ease Out</button>
+                                <button type="button" class="animation-btn" data-type="rotate" data-category="rotation" data-layer-index="${index}">Rotate</button>
+                                <button type="button" class="animation-btn" data-type="delay1s" data-category="delay" data-layer-index="${index}">+1s</button>
+                                <button type="button" class="animation-btn" data-type="delay2s" data-category="delay" data-layer-index="${index}">+2s</button>
+                                <button type="button" class="animation-btn" data-type="duration1s" data-category="duration" data-layer-index="${index}">1s</button>
+                                <button type="button" class="animation-btn" data-type="duration2s" data-category="duration" data-layer-index="${index}">2s</button>
                             </div>
                         </div>
                     `;
+                    
                     container.appendChild(layerDiv);
+                });
+                
+                // ボタンのイベントリスナーを再設定
+                initializeAnimationButtons();
+                
+                // ボタンの状態を更新
+                updateAllButtonStates();
+            }
+            
+            // 全ボタンの状態を更新
+            function updateAllButtonStates() {
+                layers.forEach((layer, index) => {
+                    const layerId = `layer_${index}`;
+                    const animation = animations[layerId];
+                    
+                    // このレイヤーのボタンを取得
+                    const buttons = document.querySelectorAll(`[data-layer-index="${index}"]`);
+                    
+                    buttons.forEach(button => {
+                        const type = button.getAttribute('data-type');
+                        if (animation && animation[type]) {
+                            button.classList.add('active');
+                        } else {
+                            button.classList.remove('active');
+                        }
+                    });
+                });
+            }
+            
+            // アニメーションボタンの初期化
+            function initializeAnimationButtons() {
+                const buttons = document.querySelectorAll('.animation-btn');
+                buttons.forEach(button => {
+                    // 既存のイベントリスナーを削除するため、新しいボタンとして扱う
+                    button.replaceWith(button.cloneNode(true));
+                });
+                
+                // 再度ボタンを取得してイベントリスナーを追加
+                const newButtons = document.querySelectorAll('.animation-btn');
+                newButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        
+                        const layerIndex = parseInt(this.getAttribute('data-layer-index'));
+                        const layerId = `layer_${layerIndex}`;
+                        const type = this.getAttribute('data-type');
+                        const category = this.getAttribute('data-category');
+                        
+                        // アニメーション設定を初期化（存在しない場合）
+                        if (!animations[layerId]) {
+                            animations[layerId] = {};
+                        }
+                        
+                        // 同じカテゴリの他のボタンを無効化（排他制御）
+                        if (category) {
+                            const categoryButtons = document.querySelectorAll(`[data-layer-index="${layerIndex}"][data-category="${category}"]`);
+                            categoryButtons.forEach(btn => {
+                                const btnType = btn.getAttribute('data-type');
+                                if (btnType !== type) {
+                                    animations[layerId][btnType] = false;
+                                    btn.classList.remove('active');
+                                }
+                            });
+                        }
+                        
+                        // トグル処理
+                        animations[layerId][type] = !animations[layerId][type];
+                        
+                        // ボタンのアクティブ状態を更新
+                        this.classList.toggle('active', animations[layerId][type]);
+                        
+                        // ローカルストレージに保存
+                        saveToLocalStorage();
+                        
+                        // プレビューを更新
+                        renderPreview();
+                    });
                 });
             }
             
             // アニメーション設定の表示/非表示
-            function toggleAnimation(layerId) {
-                const settings = document.getElementById(`settings-${layerId}`);
-                settings.classList.toggle('active');
-            }
-            
-            // アニメーション設定を更新
-            function updateAnimation(layerId, property, value) {
-                if (!animations[layerId]) {
-                    animations[layerId] = { layerId: layerId };
-                }
-                animations[layerId][property] = value;
-                
-                console.log('アニメーション設定更新:', layerId, property, value);
-                
-                // ローカルストレージに保存
-                saveToLocalStorage();
-                
-                // プレビューを更新（デバウンス処理）
-                if (window.previewUpdateTimer) {
-                    clearTimeout(window.previewUpdateTimer);
-                }
-                window.previewUpdateTimer = setTimeout(() => {
-                    console.log('プレビュー更新を実行');
-                    renderPreview().catch(error => {
-                        console.error('プレビュー更新エラー:', error);
-                    });
-                }, 100); // 100ms後に更新
-            }
-            
             // ローカルストレージに保存
             function saveToLocalStorage() {
                 try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(animations));
+                    if (STORAGE_KEY) {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(animations));
+                    }
                 } catch (error) {
                     console.error('ローカルストレージへの保存に失敗:', error);
                 }
@@ -875,55 +1021,16 @@ $pdo = getDB();
             // ローカルストレージから復元
             function loadFromLocalStorage() {
                 try {
+                    if (!STORAGE_KEY) return;
+                    
                     const saved = localStorage.getItem(STORAGE_KEY);
                     if (saved) {
                         animations = JSON.parse(saved);
                         console.log('アニメーション設定を復元しました:', animations);
-                    } else {
-                        console.log('保存されたアニメーション設定はありません');
                     }
                 } catch (error) {
                     console.error('ローカルストレージからの読み込みに失敗:', error);
                 }
-            }
-            
-            // 保存されたアニメーション設定をUIに反映
-            function applyAnimationsToUI() {
-                console.log('アニメーション設定をUIに反映開始', animations);
-                
-                Object.keys(animations).forEach(layerId => {
-                    const animation = animations[layerId];
-                    
-                    // ID属性で直接要素を取得
-                    const typeSelect = document.getElementById(`type-${layerId}`);
-                    const easingSelect = document.getElementById(`easing-${layerId}`);
-                    const delayInput = document.getElementById(`delay-${layerId}`);
-                    const holdInput = document.getElementById(`hold-${layerId}`);
-                    
-                    console.log(`レイヤー ${layerId}:`, animation);
-                    
-                    if (typeSelect && animation.type !== undefined) {
-                        typeSelect.value = animation.type;
-                        console.log(`  → タイプを "${animation.type}" に設定しました`);
-                    }
-                    
-                    if (easingSelect && animation.easing !== undefined) {
-                        easingSelect.value = animation.easing;
-                        console.log(`  → イージングを "${animation.easing}" に設定しました`);
-                    }
-                    
-                    if (delayInput && animation.delay !== undefined) {
-                        delayInput.value = animation.delay;
-                        console.log(`  → 開始タイミングを "${animation.delay}" に設定しました`);
-                    }
-                    
-                    if (holdInput && animation.hold !== undefined) {
-                        holdInput.value = animation.hold;
-                        console.log(`  → 維持時間を "${animation.hold}" に設定しました`);
-                    }
-                });
-                
-                console.log('アニメーション設定をUIに反映完了');
             }
             
             // 素材のSVGコンテンツを取得（色情報を適用）
@@ -1263,7 +1370,7 @@ $pdo = getDB();
                 for (let index = 0; index < layers.length; index++) {
                     const layer = layers[index];
                     const layerId = `layer_${index}`;
-                    const animation = animations[layerId];
+                    const animation = animations[layerId] || {};
                     
                     // 素材IDからSVGコンテンツを取得
                     if (layer.materialId) {
@@ -1296,43 +1403,20 @@ $pdo = getDB();
                                     let x = transform.x !== undefined ? transform.x : 0;
                                     let y = transform.y !== undefined ? transform.y : 0;
                                     
-                                    // アニメーション設定を適用（progress = 0の状態）
-                                    const finalX = x;
-                                    const finalY = y;
-                                    
-                                    if (animation && animation.type && animation.type !== 'none') {
-                                        const type = animation.type;
-                                        
-                                        // progress=0の状態での初期位置を計算
-                                        if (type === 'slideFromLeft') {
-                                            x -= width;
-                                        } else if (type === 'slideFromRight') {
-                                            x += width;
-                                        } else if (type === 'slideFromTop') {
-                                            y -= height;
-                                        } else if (type === 'slideFromBottom') {
-                                            y += height;
-                                        }
-                                    }
-                                    
                                     // originalCenterを取得
                                     const originalCenter = layer.originalCenter || { 
                                         x: svgData.viewBox.width / 2, 
                                         y: svgData.viewBox.height / 2 
                                     };
                                     
-                                    // Fabric.jsの中心座標を計算（アニメーション初期位置）
+                                    // Fabric.jsの中心座標を計算
                                     const centerX = x + originalCenter.x * scaleX;
                                     const centerY = y + originalCenter.y * scaleY;
                                     
-                                    // 最終位置も計算
-                                    const finalCenterX = finalX + originalCenter.x * scaleX;
-                                    const finalCenterY = finalY + originalCenter.y * scaleY;
-                                    
-                                    // 初期不透明度の設定
+                                    // アニメーション初期状態の不透明度
                                     let initialOpacity = 1;
-                                    if (animation && animation.type === 'fadeIn') {
-                                        initialOpacity = 0;
+                                    if (animation.fadeIn) {
+                                        initialOpacity = 0.3; // 完全に消すのではなく薄く表示
                                     }
                                     
                                     // オブジェクトを設定
@@ -1349,17 +1433,6 @@ $pdo = getDB();
                                         evented: false
                                     });
                                     
-                                    // アニメーション情報を保存
-                                    svgGroup.animationInfo = {
-                                        layerId: layerId,
-                                        animation: animation,
-                                        finalLeft: finalCenterX,
-                                        finalTop: finalCenterY,
-                                        initialLeft: centerX,
-                                        initialTop: centerY,
-                                        initialOpacity: initialOpacity
-                                    };
-                                    
                                     fabricCanvas.add(svgGroup);
                                     resolve();
                                 });
@@ -1370,135 +1443,96 @@ $pdo = getDB();
                 
                 fabricCanvas.renderAll();
                 
-                // アニメーションを自動再生
-                setTimeout(() => {
-                    playPreviewAnimation();
-                }, 100);
+                // プレビューでアニメーションを再生
+                playPreviewAnimation();
             }
             
-            // プレビューキャンバスでアニメーションを再生
-            let animationLoopTimer = null;
+            // プレビューでアニメーションを再生
+            let animationTimeouts = [];
             
             function playPreviewAnimation() {
+                // 既存のタイムアウトをクリア
+                animationTimeouts.forEach(timeout => clearTimeout(timeout));
+                animationTimeouts = [];
+                
                 if (!fabricCanvas) return;
                 
-                // 既存のループタイマーをクリア
-                if (animationLoopTimer) {
-                    clearTimeout(animationLoopTimer);
-                    animationLoopTimer = null;
-                }
-                
                 const objects = fabricCanvas.getObjects();
-                const animationDuration = ANIMATION_DURATION;
                 
-                // アニメーションを持つオブジェクトの数をカウント
-                let totalAnimations = 0;
-                objects.forEach(obj => {
-                    if (obj.animationInfo && obj.animationInfo.animation && 
-                        obj.animationInfo.animation.type && obj.animationInfo.animation.type !== 'none') {
-                        totalAnimations++;
-                    }
-                });
-                
-                if (totalAnimations === 0) return;
-                
-                // まず全オブジェクトを初期位置に配置
-                objects.forEach(obj => {
-                    if (obj.animationInfo) {
-                        const info = obj.animationInfo;
-                        obj.set({
-                            left: info.initialLeft,
-                            top: info.initialTop,
-                            opacity: info.initialOpacity
-                        });
-                    }
-                });
-                fabricCanvas.renderAll();
-                
-                // 最長の完了時間を計算（ループタイミング用）
-                let maxCompletionTime = 0;
-                
-                objects.forEach(obj => {
-                    if (!obj.animationInfo) return;
+                // 各レイヤーにアニメーションを適用
+                layers.forEach((layer, index) => {
+                    const layerId = `layer_${index}`;
+                    const animation = animations[layerId];
+                    const obj = objects[index];
                     
-                    const info = obj.animationInfo;
-                    const animation = info.animation;
+                    if (!obj || !animation) return;
                     
-                    if (!animation || !animation.type || animation.type === 'none') return;
+                    // delay（開始タイミング）を計算
+                    let delaySeconds = 0;
+                    if (animation.delay1s) delaySeconds = 1;
+                    else if (animation.delay2s) delaySeconds = 2;
                     
-                    const delay = animation.delay ? parseFloat(animation.delay) * 1000 : 0;
-                    const hold = animation.hold ? parseFloat(animation.hold) * 1000 : 0;
-                    const easing = animation.easing || 'linear';
+                    // duration（継続時間）を計算
+                    let durationMs = ANIMATION_DURATION;
+                    if (animation.duration1s) durationMs = 1000;
+                    else if (animation.duration2s) durationMs = 2000;
                     
-                    const completionTime = delay + animationDuration + hold;
-                    if (completionTime > maxCompletionTime) {
-                        maxCompletionTime = completionTime;
-                    }
+                    // イージングを決定（よりゆっくりとした動き）
+                    let fabricEasing = fabric.util.ease.linear;
+                    if (animation.easeIn) fabricEasing = fabric.util.ease.easeInCubic;
+                    else if (animation.easeOut) fabricEasing = fabric.util.ease.easeOutCubic;
                     
-                    // Fabric.jsのイージング関数に変換
-                    let fabricEasing = fabric.util.ease['linear'];
-                    if (easing === 'easeIn') fabricEasing = fabric.util.ease['easeInQuad'];
-                    else if (easing === 'easeOut') fabricEasing = fabric.util.ease['easeOutQuad'];
-                    else if (easing === 'easeInOut') fabricEasing = fabric.util.ease['easeInOutQuad'];
+                    // 初期状態を保存
+                    const initialOpacity = obj.opacity;
                     
-                    setTimeout(() => {
+                    // delayミリ秒後にアニメーション開始
+                    const timeout = setTimeout(() => {
                         const animateProps = {};
                         
-                        if (animation.type === 'fadeIn') {
+                        // 初期角度を保存
+                        const initialAngle = obj.angle || 0;
+                        
+                        // フェードイン
+                        if (animation.fadeIn) {
+                            obj.set({ opacity: 0.3 });
                             animateProps.opacity = 1;
-                        } else if (animation.type === 'fadeOut') {
-                            animateProps.opacity = 0;
-                        } else if (animation.type === 'slideFromLeft' || animation.type === 'slideFromRight') {
-                            animateProps.left = info.finalLeft;
-                        } else if (animation.type === 'slideFromTop' || animation.type === 'slideFromBottom') {
-                            animateProps.top = info.finalTop;
-                        } else if (animation.type === 'scale') {
-                            const startScale = animation.startScale || 0;
-                            const endScale = animation.endScale || 1;
-                            const currentScaleX = obj.scaleX;
-                            const currentScaleY = obj.scaleY;
-                            const flipX = currentScaleX < 0 ? -1 : 1;
-                            const flipY = currentScaleY < 0 ? -1 : 1;
-                            
-                            // 初期スケールを設定（アニメーション開始前）
-                            obj.set({
-                                scaleX: Math.abs(currentScaleX) * startScale * flipX,
-                                scaleY: Math.abs(currentScaleY) * startScale * flipY
-                            });
-                            
-                            animateProps.scaleX = Math.abs(currentScaleX) * endScale * flipX;
-                            animateProps.scaleY = Math.abs(currentScaleY) * endScale * flipY;
-                        } else if (animation.type === 'rotate') {
-                            const startRotate = animation.startRotate || 0;
-                            const endRotate = animation.endRotate || 360;
-                            const currentAngle = obj.angle || 0;
-                            
-                            // 初期角度を設定（アニメーション開始前）
-                            obj.set({
-                                angle: currentAngle + startRotate
-                            });
-                            
-                            animateProps.angle = currentAngle + endRotate;
                         }
                         
-                        obj.animate(animateProps, {
-                            duration: animationDuration,
-                            easing: fabricEasing,
-                            onChange: fabricCanvas.renderAll.bind(fabricCanvas)
-                        });
-                    }, delay);
+                        // フェードアウト
+                        if (animation.fadeOut) {
+                            obj.set({ opacity: 1 });
+                            animateProps.opacity = 0;
+                        }
+                        
+                        // 回転
+                        if (animation.rotate) {
+                            obj.set({ angle: initialAngle });
+                            animateProps.angle = initialAngle + 360;
+                        }
+                        
+                        // アニメーションが設定されている場合のみ実行
+                        if (Object.keys(animateProps).length > 0) {
+                            obj.animate(animateProps, {
+                                duration: durationMs,
+                                easing: fabricEasing,
+                                onChange: fabricCanvas.renderAll.bind(fabricCanvas),
+                                onComplete: () => {
+                                    // アニメーション完了後、少し待ってループ
+                                    const loopTimeout = setTimeout(() => {
+                                        playPreviewAnimation();
+                                    }, 500);
+                                    animationTimeouts.push(loopTimeout);
+                                }
+                            });
+                        }
+                    }, delaySeconds * 1000);
+                    
+                    animationTimeouts.push(timeout);
                 });
-                
-                // 全アニメーション完了後にループ
-                animationLoopTimer = setTimeout(() => {
-                    playPreviewAnimation();
-                }, maxCompletionTime + 100); // 100ms余裕を持たせる
             }
             
             // アニメーションフレームを生成（Fabric.jsを使用）
-            async function generateAnimatedFrame(progress) {
-                const width = canvasWidth;
-                const height = canvasHeight;
+            async function generateAnimatedFrame(progress, width, height) {
                 const bgColor = backgroundColor;
                 const animationDuration = ANIMATION_DURATION;
                 
@@ -1515,19 +1549,26 @@ $pdo = getDB();
                 for (let index = 0; index < layers.length; index++) {
                     const layer = layers[index];
                     const layerId = `layer_${index}`;
-                    const animation = animations[layerId];
+                    const animation = animations[layerId] || {};
                     
-                    // delay（開始タイミング）とhold（維持時間）を考慮した進捗を計算
-                    const delay = animation && animation.delay ? parseFloat(animation.delay) : 0;
-                    const hold = animation && animation.hold ? parseFloat(animation.hold) : 0;
-                    const totalDuration = animationDuration + delay * 1000 + hold * 1000;
+                    // delay（開始タイミング）を計算
+                    let delaySeconds = 0;
+                    if (animation.delay1s) delaySeconds = 1;
+                    else if (animation.delay2s) delaySeconds = 2;
+                    
+                    // duration（継続時間）を計算
+                    let durationMs = animationDuration;
+                    if (animation.duration1s) durationMs = 1000;
+                    else if (animation.duration2s) durationMs = 2000;
+                    
+                    const totalDuration = animationDuration + delaySeconds * 1000;
                     const currentTime = progress * totalDuration;
                     
                     let layerProgress = 0;
-                    if (currentTime < delay * 1000) {
+                    if (currentTime < delaySeconds * 1000) {
                         layerProgress = 0;
-                    } else if (currentTime < delay * 1000 + animationDuration) {
-                        layerProgress = (currentTime - delay * 1000) / animationDuration;
+                    } else if (currentTime < delaySeconds * 1000 + durationMs) {
+                        layerProgress = (currentTime - delaySeconds * 1000) / durationMs;
                     } else {
                         layerProgress = 1;
                     }
@@ -1550,14 +1591,17 @@ $pdo = getDB();
                                     const svgGroup = fabric.util.groupSVGElements(objects, options);
                                     
                                     const transform = layer.transform || {};
-                                    const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : 1);
-                                    const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : 1);
+                                    
+                                    // スケール調整（低画質モード対応）
+                                    const scaleRatio = width / canvasWidth;
+                                    const scaleX = Math.abs(transform.scaleX !== undefined ? transform.scaleX : 1) * scaleRatio;
+                                    const scaleY = Math.abs(transform.scaleY !== undefined ? transform.scaleY : 1) * scaleRatio;
                                     const rotation = transform.rotation !== undefined ? transform.rotation : 0;
                                     const flipH = transform.flipHorizontal !== undefined ? transform.flipHorizontal : false;
                                     const flipV = transform.flipVertical !== undefined ? transform.flipVertical : false;
                                     
-                                    let x = transform.x !== undefined ? transform.x : 0;
-                                    let y = transform.y !== undefined ? transform.y : 0;
+                                    let x = (transform.x !== undefined ? transform.x : 0) * scaleRatio;
+                                    let y = (transform.y !== undefined ? transform.y : 0) * scaleRatio;
                                     
                                     // アニメーション適用
                                     let animX = x;
@@ -1567,47 +1611,24 @@ $pdo = getDB();
                                     let animRotation = rotation;
                                     let opacity = 1;
                                     
-                                    if (animation && animation.type) {
-                                        const easing = animation.easing || 'linear';
-                                        const easedProgress = applyEasing(layerProgress, easing);
-                                        
-                                        switch (animation.type) {
-                                            case 'fadeIn':
-                                                opacity = easedProgress;
-                                                break;
-                                            case 'fadeOut':
-                                                opacity = 1 - easedProgress;
-                                                break;
-                                            case 'slideFromBottom':
-                                                const startYBottom = height;
-                                                animY = startYBottom + (y - startYBottom) * easedProgress;
-                                                break;
-                                            case 'slideFromTop':
-                                                const startYTop = -svgData.viewBox.height;
-                                                animY = startYTop + (y - startYTop) * easedProgress;
-                                                break;
-                                            case 'slideFromLeft':
-                                                const startXLeft = -svgData.viewBox.width;
-                                                animX = startXLeft + (x - startXLeft) * easedProgress;
-                                                break;
-                                            case 'slideFromRight':
-                                                const startXRight = width;
-                                                animX = startXRight + (x - startXRight) * easedProgress;
-                                                break;
-                                            case 'scale':
-                                                const startScale = animation.startScale || 0;
-                                                const endScale = animation.endScale || 1;
-                                                const scale = startScale + (endScale - startScale) * easedProgress;
-                                                animScaleX = scaleX * scale;
-                                                animScaleY = scaleY * scale;
-                                                break;
-                                            case 'rotate':
-                                                const startRotate = animation.startRotate || 0;
-                                                const endRotate = animation.endRotate || 360;
-                                                const rotateAmount = startRotate + (endRotate - startRotate) * easedProgress;
-                                                animRotation = rotation + rotateAmount;
-                                                break;
-                                        }
+// イージングを決定（よりゆっくりとした動き）
+                                    let easing = 'linear';
+                                    if (animation.easeIn) easing = 'easeIn';
+                                    else if (animation.easeOut) easing = 'easeOut';
+                                    
+                                    const easedProgress = applyEasing(layerProgress, easing);
+                                    
+                                    // フェードイン
+                                    if (animation.fadeIn) {
+                                        opacity = easedProgress;
+                                    }
+                                    // フェードアウト
+                                    if (animation.fadeOut) {
+                                        opacity = 1 - easedProgress;
+                                    }
+                                    // 回転
+                                    if (animation.rotate) {
+                                        animRotation = rotation + (360 * easedProgress);
                                     }
                                     
                                     // originalCenterを取得
@@ -1648,15 +1669,17 @@ $pdo = getDB();
                 return tempCanvas.toDataURL({ format: 'png' });
             }
             
-            // イージング関数
+            // イージング関数（よりゆっくりとした動き）
             function applyEasing(t, easing) {
                 switch (easing) {
                     case 'easeInOut':
-                        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
                     case 'easeIn':
-                        return t * t;
+                        // Cubic easing in (t^3)
+                        return t * t * t;
                     case 'easeOut':
-                        return 1 - (1 - t) * (1 - t);
+                        // Cubic easing out (よりゆっくり)
+                        return 1 - Math.pow(1 - t, 3);
                     case 'linear':
                     default:
                         return t;
@@ -1677,22 +1700,28 @@ $pdo = getDB();
                     // ローディング表示
                     previewArea.innerHTML = '<div class="loading"><div class="spinner"></div><p>フレームを生成中...</p></div>';
                     
-                    const width = canvasWidth;
-                    const height = canvasHeight;
+                    // 常に低画質モード（長辺320px、10fps）
+                    const scale = 320 / Math.max(canvasWidth, canvasHeight);
+                    const width = Math.round(canvasWidth * scale);
+                    const height = Math.round(canvasHeight * scale);
+                    const fps = 10;
+                    console.log('低画質モード:', { width, height, fps });
+                    
                     const duration = ANIMATION_DURATION;
-                    const fps = ANIMATION_FPS;
                     
                     console.log('GIF生成開始:', { width, height, duration, fps });
                     
-                    // 最も長いレイヤーの総時間を計算（delay + animation + hold）
+                    // 最も長いレイヤーの総時間を計算（delay + animation）
                     let maxTotalDuration = duration;
                     layers.forEach((layer, index) => {
                         const layerId = `layer_${index}`;
                         const animation = animations[layerId];
                         if (animation) {
-                            const delay = animation.delay ? parseFloat(animation.delay) : 0;
-                            const hold = animation.hold ? parseFloat(animation.hold) : 0;
-                            const layerTotalDuration = duration + (delay * 1000) + (hold * 1000);
+                            let delaySeconds = 0;
+                            if (animation.delay1s) delaySeconds = 1;
+                            else if (animation.delay2s) delaySeconds = 2;
+                            
+                            const layerTotalDuration = duration + (delaySeconds * 1000);
                             if (layerTotalDuration > maxTotalDuration) {
                                 maxTotalDuration = layerTotalDuration;
                             }
@@ -1713,7 +1742,7 @@ $pdo = getDB();
                         const progress = frame / Math.max(totalFrames - 1, 1);
                         
                         // アニメーションフレームのData URLを生成（Fabric.jsで直接生成）
-                        const dataUrl = await generateAnimatedFrame(progress);
+                        const dataUrl = await generateAnimatedFrame(progress, width, height);
                         images.push(dataUrl);
                         
                         // 進行状況を表示
@@ -1765,7 +1794,7 @@ $pdo = getDB();
                     alert('GIF生成に失敗しました: ' + error.message);
                     
                     // エラー時の処理
-                    previewArea.innerHTML = '<div id="preview-svg"></div>';
+                    previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
                     renderPreview();
                     generateBtn.disabled = false;
                     generateBtn.textContent = 'GIF生成';
