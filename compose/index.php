@@ -80,6 +80,18 @@ if (!empty($recommendedMaterialIds)) {
     $recommendedMaterials = $stmt->fetchAll();
 }
 
+// 最新の作品（ベクターデータあり）を5件取得
+$recentArtworksSql = "
+    SELECT id, title, webp_path, svg_data, used_material_ids, created_at
+    FROM community_artworks
+    WHERE status = 'approved' AND svg_data IS NOT NULL AND svg_data != ''
+    ORDER BY created_at DESC
+    LIMIT 5
+";
+$stmt = $pdo->prepare($recentArtworksSql);
+$stmt->execute();
+$recentArtworks = $stmt->fetchAll();
+
 // ベクター素材をカテゴリ別に取得（全件）
 $materialsSql = "
     SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, m.search_keywords, 
@@ -258,6 +270,22 @@ foreach ($allMaterials as $material) {
         .category-tab.active {
             background: var(--primary-color);
             color: white;
+        }
+
+        .artwork-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 8px 8px 12px 8px;
+            font-size: 0.85rem;
+            color: #856404;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .artwork-notice.show {
+            display: block;
         }
 
         .material-grid {
@@ -907,6 +935,11 @@ foreach ($allMaterials as $material) {
                     <?= h($categoryName) ?>
                 </button>
                 <?php endforeach; ?>
+                <button class="category-tab" onclick="filterByCategory('作品')">作品</button>
+            </div>
+            
+            <div class="artwork-notice" id="artworkNotice">
+                ⚠️ 作品を読み込むと、現在の編集内容が消去されます。
             </div>
             
             <div class="material-grid" id="materialGrid">
@@ -928,6 +961,9 @@ foreach ($allMaterials as $material) {
             </script>
             <script id="materialsByCategoryData" type="application/json">
                 <?= json_encode($materialsByCategory, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+            </script>
+            <script id="recentArtworksData" type="application/json">
+                <?= json_encode($recentArtworks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
             </script>
         </div>
 
@@ -1883,13 +1919,13 @@ foreach ($allMaterials as $material) {
         let resizeTimeout;
         let lastWrapperHeight = null;
 
-        function fitCanvasToContainer() {
+        function fitCanvasToContainer(force = false) {
             const wrapper = document.querySelector('.canvas-wrapper');
             const maxWidth = wrapper.clientWidth - 40; // padding考慮
             
-            // スマホの場合、高さの微小な変更（アドレスバー）を無視
+            // スマホの場合、高さの微小な変更（アドレスバー）を無視（ただしforceがtrueの場合は実行）
             const currentHeight = wrapper.clientHeight;
-            if (window.innerWidth <= 768) {
+            if (!force && window.innerWidth <= 768) {
                 if (lastWrapperHeight !== null && Math.abs(currentHeight - lastWrapperHeight) < 50) {
                     // 高さの変化が50px未満の場合は再計算しない
                     return;
@@ -2796,6 +2832,7 @@ foreach ($allMaterials as $material) {
         let allMaterialsArray = [];
         let recommendedMaterialsArray = [];
         let materialsByCategoryObj = {};
+        let recentArtworksArray = [];
         let filteredMaterials = [];
 
         // データの読み込み
@@ -2803,10 +2840,17 @@ foreach ($allMaterials as $material) {
             recommendedMaterialsArray = JSON.parse(document.getElementById('recommendedMaterialsData').textContent);
             allMaterialsArray = JSON.parse(document.getElementById('allMaterialsData').textContent);
             materialsByCategoryObj = JSON.parse(document.getElementById('materialsByCategoryData').textContent);
+            recentArtworksArray = JSON.parse(document.getElementById('recentArtworksData').textContent);
         }
 
         // 素材を表示
         function renderMaterials() {
+            // 作品カテゴリの場合は専用処理
+            if (currentCategory === '作品') {
+                renderArtworks();
+                return;
+            }
+
             // フィルタリングされた素材を取得
             if (currentSearchTerm) {
                 // 検索が有効な場合
@@ -2853,6 +2897,310 @@ foreach ($allMaterials as $material) {
 
             // ページネーション情報を更新
             updatePagination(totalPages);
+        }
+
+        // 作品専用のレンダリング関数
+        function renderArtworks() {
+            const grid = document.getElementById('materialGrid');
+            const fragment = document.createDocumentFragment();
+
+            recentArtworksArray.forEach(artwork => {
+                const thumbPath = artwork.webp_path;
+                const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
+                const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
+
+                const div = document.createElement('div');
+                div.className = 'material-item artwork-item';
+                div.onclick = () => loadArtworkToCanvas(artwork);
+
+                const img = document.createElement('img');
+                img.src = finalThumbUrl;
+                img.alt = artwork.title || '作品';
+                img.loading = 'lazy';
+
+                div.appendChild(img);
+                fragment.appendChild(div);
+            });
+
+            grid.innerHTML = '';
+            grid.appendChild(fragment);
+
+            // 作品は固定5件なのでページネーションは非表示
+            updatePagination(1);
+        }
+
+        // 作品をキャンバスに展開する関数
+        function loadArtworkToCanvas(artwork) {
+            if (!artwork || !artwork.svg_data) {
+                console.error('作品データまたはSVGデータがありません');
+                return;
+            }
+
+            // LocalStorageをクリアして新規作成モードに
+            localStorage.removeItem(STORAGE_KEY);
+            canvas.clear();
+
+            try {
+                const svgData = JSON.parse(artwork.svg_data);
+
+                // キャンバスサイズを設定
+                if (svgData.canvasWidth && svgData.canvasHeight) {
+                    originalCanvasWidth = parseInt(svgData.canvasWidth);
+                    originalCanvasHeight = parseInt(svgData.canvasHeight);
+                    canvas.setDimensions({ 
+                        width: originalCanvasWidth, 
+                        height: originalCanvasHeight 
+                    });
+                    
+                    // カスタムサイズとして設定
+                    document.getElementById('canvasSize').value = 'custom';
+                    document.getElementById('customSizeInputs').classList.add('active');
+                    document.getElementById('customWidth').value = originalCanvasWidth;
+                    document.getElementById('customHeight').value = originalCanvasHeight;
+                }
+
+                // 背景色を設定
+                if (svgData.backgroundColor) {
+                    if (svgData.backgroundColor === 'transparent') {
+                        isTransparentBg = true;
+                        document.querySelector('input[name="bgType"][value="transparent"]').checked = true;
+                        canvas.backgroundColor = 'transparent';
+                    } else {
+                        isTransparentBg = false;
+                        document.querySelector('input[name="bgType"][value="color"]').checked = true;
+                        document.getElementById('bgColorPicker').value = svgData.backgroundColor;
+                        document.getElementById('bgColorPicker').disabled = false;
+                        canvas.backgroundColor = svgData.backgroundColor;
+                    }
+                }
+                
+                canvas.renderAll();
+                
+                // 初期表示を整える（強制実行）
+                fitCanvasToContainer(true);
+
+                // used_material_idsから素材情報マップを構築
+                let materialInfoMap = {};
+                if (artwork.used_material_ids) {
+                    try {
+                        // 既に配列の場合はそのまま、文字列の場合はパースまたは分割
+                        let usedMaterialIds;
+                        if (Array.isArray(artwork.used_material_ids)) {
+                            usedMaterialIds = artwork.used_material_ids;
+                        } else if (typeof artwork.used_material_ids === 'string') {
+                            // JSON配列形式（"[41,43]"）かカンマ区切り（"41,43"）かを判定
+                            const trimmed = artwork.used_material_ids.trim();
+                            if (trimmed.startsWith('[')) {
+                                // JSON形式
+                                usedMaterialIds = JSON.parse(trimmed);
+                            } else {
+                                // カンマ区切り形式
+                                usedMaterialIds = trimmed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+                            }
+                        } else {
+                            usedMaterialIds = [];
+                        }
+                        
+                        if (Array.isArray(usedMaterialIds)) {
+                            usedMaterialIds.forEach(id => {
+                                const material = allMaterialsArray.find(m => m.id === parseInt(id));
+                                if (material) {
+                                    materialInfoMap[parseInt(id)] = material;
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error('used_material_ids の処理エラー:', e, 'データ:', artwork.used_material_ids);
+                    }
+                }
+
+                // 素材を読み込む
+                const materialsData = svgData.objects || svgData.materials || svgData.layers || [];
+                if (materialsData && Array.isArray(materialsData) && materialsData.length > 0) {
+                    let loadedCount = 0;
+                    const totalCount = materialsData.length;
+                    
+                    materialsData.forEach((materialData, index) => {
+                        // 素材パスを取得
+                        let svgPath = null;
+                        if (materialData.materialData && materialData.materialData.svg_path) {
+                            svgPath = materialData.materialData.svg_path;
+                        } else if (materialData.svgPath) {
+                            svgPath = materialData.svgPath;
+                        } else if (materialData.svg_path) {
+                            svgPath = materialData.svg_path;
+                        }
+                        
+                        if (!svgPath) {
+                            loadedCount++;
+                            return;
+                        }
+                        
+                        // SVGパスをURL対応
+                        let svgUrl = svgPath;
+                        if (svgUrl && !svgUrl.startsWith('http://') && !svgUrl.startsWith('https://')) {
+                            svgUrl = '/' + svgUrl;
+                        }
+                        
+                        // SVGファイルを読み込み
+                        fetch(svgUrl)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.text();
+                            })
+                            .then(svgText => {
+                                // 色情報がある場合はSVGテキストを編集
+                                let modifiedSvgText = svgText;
+                                if (materialData.colors && materialData.colors.length > 0) {
+                                    const parser = new DOMParser();
+                                    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+                                    const svgElement = svgDoc.querySelector('svg');
+                                    
+                                    if (svgElement) {
+                                        const drawingElements = svgElement.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon');
+                                        
+                                        materialData.colors.forEach(colorData => {
+                                            const element = drawingElements[colorData.index];
+                                            if (element) {
+                                                if (colorData.fill) {
+                                                    element.setAttribute('fill', colorData.fill);
+                                                }
+                                                if (colorData.stroke !== undefined) {
+                                                    if (colorData.stroke === null || colorData.stroke === 'none') {
+                                                        element.removeAttribute('stroke');
+                                                    } else {
+                                                        element.setAttribute('stroke', colorData.stroke);
+                                                    }
+                                                }
+                                            }
+                                        });
+                                        
+                                        const serializer = new XMLSerializer();
+                                        modifiedSvgText = serializer.serializeToString(svgDoc);
+                                    }
+                                }
+                                
+                                fabric.loadSVGFromString(modifiedSvgText, function(objects, options) {
+                                    const obj = fabric.util.groupSVGElements(objects, options);
+                                    
+                                    // 素材IDを取得
+                                    const materialId = parseInt(materialData.materialId) || parseInt(materialData.id);
+                                    
+                                    // 素材情報を取得（materialInfoMapから、見つからない場合はallMaterialsArrayから検索）
+                                    let dbMaterialInfo = materialInfoMap[materialId];
+                                    if (!dbMaterialInfo && materialId) {
+                                        dbMaterialInfo = allMaterialsArray.find(m => m.id === materialId);
+                                    }
+                                    if (!dbMaterialInfo) {
+                                        // svg_pathから検索を試みる
+                                        dbMaterialInfo = allMaterialsArray.find(m => m.svg_path === svgPath);
+                                    }
+                                    dbMaterialInfo = dbMaterialInfo || {};
+                                    
+                                    const fullMaterialData = {
+                                        id: materialId || dbMaterialInfo.id,
+                                        title: dbMaterialInfo.title || materialData.title || '',
+                                        svg_path: dbMaterialInfo.svg_path || svgPath,
+                                        webp_small_path: dbMaterialInfo.webp_small_path || '',
+                                        structured_bg_color: dbMaterialInfo.structured_bg_color || '#f0f0f0'
+                                    };
+                                    
+                                    // 座標とトランスフォームを復元
+                                    const transform = materialData.transform || {};
+                                    const posX = transform.x !== undefined ? transform.x : (materialData.x || materialData.left || (originalCanvasWidth / 2));
+                                    const posY = transform.y !== undefined ? transform.y : (materialData.y || materialData.top || (originalCanvasHeight / 2));
+                    
+                                    const scaleXValue = transform.scaleX !== undefined ? Math.abs(transform.scaleX) : 
+                                                        (transform.scale !== undefined ? Math.abs(transform.scale) : Math.abs(materialData.scale || materialData.scaleX || 1));
+                                    const scaleYValue = transform.scaleY !== undefined ? Math.abs(transform.scaleY) : 
+                                                        (transform.scale !== undefined ? Math.abs(transform.scale) : Math.abs(materialData.scale || materialData.scaleY || 1));
+                                    const rotation = transform.rotation !== undefined ? transform.rotation : (materialData.rotation || materialData.angle || 0);
+                                    
+                                    let flipX = transform.flipHorizontal !== undefined ? transform.flipHorizontal : (materialData.flipX || materialData.scaleX < 0 || false);
+                                    let flipY = transform.flipVertical !== undefined ? transform.flipVertical : (materialData.flipY || materialData.scaleY < 0 || false);
+                                    
+                                    const originalCenter = materialData.originalCenter || { x: obj.width / 2, y: obj.height / 2 };
+                                    const centerOffsetX = originalCenter.x * scaleXValue;
+                                    const centerOffsetY = originalCenter.y * scaleYValue;
+                                    
+                                    obj.set({
+                                        left: posX + centerOffsetX,
+                                        top: posY + centerOffsetY,
+                                        scaleX: flipX ? -scaleXValue : scaleXValue,
+                                        scaleY: flipY ? -scaleYValue : scaleYValue,
+                                        angle: rotation,
+                                        originX: 'center',
+                                        originY: 'center',
+                                        materialData: {
+                                            ...fullMaterialData,
+                                            zIndex: index
+                                        }
+                                    });
+                                    
+                                    canvas.add(obj);
+                                    
+                                    // 色情報を復元
+                                    if (materialData.colors && materialData.colors.length > 0 && obj._objects) {
+                                        materialData.colors.forEach(colorData => {
+                                            const child = obj._objects[colorData.index];
+                                            if (child) {
+                                                child.fill = colorData.fill;
+                                                child.stroke = colorData.stroke;
+                                                child.dirty = true;
+                                            }
+                                        });
+                                        obj.dirty = true;
+                                    }
+                                    
+                                    canvas.renderAll();
+                                    
+                                    loadedCount++;
+                                    
+                                    if (loadedCount === totalCount) {
+                                        setTimeout(() => {
+                                            // zIndexでソート
+                                            const allObjects = canvas.getObjects();
+                                            allObjects.sort((a, b) => {
+                                                const zIndexA = a.materialData?.zIndex ?? 999;
+                                                const zIndexB = b.materialData?.zIndex ?? 999;
+                                                return zIndexA - zIndexB;
+                                            });
+                                            canvas.remove(...canvas.getObjects());
+                                            allObjects.forEach(obj => canvas.add(obj));
+                                            
+                                            canvas.renderAll();
+                                            fitCanvasToContainer(true);
+                                            saveToLocalStorage();
+                                        }, 200);
+                                    }
+                                });
+                            })
+                            .catch(error => {
+                                console.error('SVG読み込みエラー:', error);
+                                loadedCount++;
+                                if (loadedCount === totalCount) {
+                                    setTimeout(() => {
+                                        canvas.renderAll();
+                                        fitCanvasToContainer(true);
+                                        saveToLocalStorage();
+                                    }, 200);
+                                }
+                            });
+                    });
+                } else {
+                    // 素材が0個の場合
+                    setTimeout(() => {
+                        canvas.renderAll();
+                        fitCanvasToContainer(true);
+                        saveToLocalStorage();
+                    }, 100);
+                }
+
+            } catch (error) {
+                console.error('作品展開エラー:', error);
+            }
         }
 
         // ページネーション更新
@@ -2906,6 +3254,14 @@ foreach ($allMaterials as $material) {
             const tabs = document.querySelectorAll('.category-tab');
             tabs.forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
+            
+            // 作品タブの場合は注意書きを表示、それ以外は非表示
+            const artworkNotice = document.getElementById('artworkNotice');
+            if (categoryName === '作品') {
+                artworkNotice.classList.add('show');
+            } else {
+                artworkNotice.classList.remove('show');
+            }
             
             renderMaterials();
         }
