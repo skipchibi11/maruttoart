@@ -1,52 +1,10 @@
 <?php
 require_once '../config.php';
 
-// ログインチェック（管理者のみアクセス可能）
-// 必要に応じてコメントアウトを解除
-// if (!isset($_SESSION['admin_id'])) {
-//     header('Location: /admin/login.php');
-//     exit;
-// }
+// 公開ページなのでキャッシュを有効化
+setPublicCache(3600, 7200);
 
 $pdo = getDB();
-
-// URLパラメータまたはローカルストレージから作品IDを取得
-$artworkId = isset($_GET['artwork_id']) ? intval($_GET['artwork_id']) : null;
-$artwork = null;
-$artworkMaterials = [];
-$fromLocalStorage = false;
-
-// 作品IDが指定された場合、作品データを取得
-if ($artworkId) {
-    $artworkStmt = $pdo->prepare("
-        SELECT id, title, svg_data, used_material_ids, file_path, webp_path
-        FROM community_artworks 
-        WHERE id = ? AND status = 'approved' AND svg_data IS NOT NULL
-    ");
-    $artworkStmt->execute([$artworkId]);
-    $artwork = $artworkStmt->fetch();
-    
-    // 使用素材の情報を取得
-    if ($artwork && !empty($artwork['used_material_ids'])) {
-        $materialIds = explode(',', $artwork['used_material_ids']);
-        $materialIds = array_map('intval', $materialIds);
-        $materialIds = array_filter($materialIds);
-        
-        if (!empty($materialIds)) {
-            $placeholders = str_repeat('?,', count($materialIds) - 1) . '?';
-            $materialsStmt = $pdo->prepare("
-                SELECT id, title, svg_path, webp_small_path
-                FROM materials
-                WHERE id IN ($placeholders)
-            ");
-            $materialsStmt->execute($materialIds);
-            $artworkMaterials = $materialsStmt->fetchAll(PDO::FETCH_ASSOC);
-        }
-    }
-} else {
-    // URLに作品IDがない場合は、ローカルストレージから読み込む指示
-    $fromLocalStorage = true;
-}
 
 // GIF生成はクライアント側で実行
 
@@ -432,58 +390,138 @@ if ($artworkId) {
         }
         
         .result-area {
-            margin-top: 20px;
+            margin-top: 30px;
             display: none;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 30px;
         }
         
         .result-area.active {
             display: block;
         }
 
-        .animation-grid {
+        @media (max-width: 768px) {
+            .result-area {
+                margin-top: 20px;
+                padding: 20px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.95);
+            }
+        }
+
+        /* 作業エリア */
+        .workspace {
             display: grid;
-            gap: 24px;
-            grid-template-columns: 1fr 420px;
-        }
-
-        .preview-panel {
-            min-width: 0; /* グリッドのオーバーフロー防止 */
-        }
-
-        .preview-area {
-            width: 100%;
-            overflow: hidden; /* はみ出し防止 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #preview-svg {
-            max-width: 100%;
-            max-height: 500px;
-            width: auto;
-            height: auto;
-            display: block;
-        }
-        
-        #preview-svg > svg {
-            max-width: 100%;
-            max-height: 500px;
-            width: auto !important;
-            height: auto !important;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            margin-top: 30px;
         }
 
         @media (max-width: 1024px) {
-            .animation-grid {
-                grid-template-columns: 1fr !important;
+            .workspace {
+                grid-template-columns: 1fr;
             }
-            
-            #preview-svg {
-                max-height: 600px;
+        }
+
+        @media (max-width: 768px) {
+            .workspace {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
             }
-            
-            #preview-svg > svg {
-                max-height: 600px;
+        }
+
+        /* キャンバスエリア */
+        .canvas-area {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 0;
+        }
+
+        @media (min-width: 1025px) {
+            .canvas-area {
+                position: sticky;
+                top: 20px;
+                align-self: flex-start;
+                max-height: calc(100vh - 40px);
+                z-index: 10;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .canvas-area {
+                position: sticky;
+                top: 20px;
+                z-index: 10;
+                max-height: calc(100vh - 40px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .canvas-area {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                border-radius: 12px;
+                padding: 12px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            max-height: 70vh;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .canvas-wrapper {
+                min-height: 200px;
+                max-height: 300px;
+                padding: 10px;
+                border-radius: 8px;
+            }
+        }
+
+        #preview-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* コントロールパネル */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .control-panel {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                border-radius: 12px;
+                padding: 16px;
+                background: rgba(255, 255, 255, 0.95);
             }
         }
     </style>
@@ -505,52 +543,25 @@ if ($artworkId) {
                 みんなの作品にアニメーション効果を追加してGIFを生成
             </p>
         
-        <?php if (isset($error)): ?>
-        <div class="alert alert-error"><?= h($error) ?></div>
-        <?php endif; ?>
-        
-        <?php if (!$artwork && !$fromLocalStorage): ?>
-        <div class="alert alert-error">
-            作品が見つかりません。<a href="/everyone-works.php">みんなの作品一覧</a>から作品を選択してください。
-        </div>
-        <?php else: ?>
-        
-        <div id="main-content" <?= $fromLocalStorage ? 'style="display:none;"' : '' ?>>
-            <div class="animation-grid">
-            <div class="preview-panel">
+        <div id="main-content">
+            <div class="workspace">
+            <!-- キャンバスエリア -->
+            <div class="canvas-area">
                 <h2 class="section-title">プレビュー</h2>
-                <div class="preview-area" id="preview-area">
+                <div class="canvas-wrapper" id="preview-area">
                     <canvas id="preview-canvas"></canvas>
-                </div>
-                
-                <div class="result-area" id="result-area">
-                    <h3 class="section-title">生成されたGIF</h3>
-                    <div class="result-image-container">
-                        <img id="result-gif" class="result-image" alt="Generated GIF">
-                    </div>
-                    <div class="action-buttons">
-                        <a id="download-link" class="btn btn-success" download>ダウンロード</a>
-                        <button class="btn btn-secondary" onclick="resetResult()">新しく作成</button>
-                    </div>
                 </div>
             </div>
             
+            <!-- コントロールパネル -->
             <div class="control-panel">
                 <form id="animation-form" onsubmit="return false;">
                     
-                    <?php if ($artwork): ?>
-                    <div class="section">
-                        <h2 class="section-title">作品情報</h2>
-                        <p><strong><?= h($artwork['title']) ?></strong></p>
-                        <p style="font-size: 12px; color: #666;">作品ID: <?= $artwork['id'] ?></p>
-                    </div>
-                    <?php else: ?>
                     <div class="section">
                         <h2 class="section-title">作品情報</h2>
                         <p id="artwork-info-title"><strong>読み込み中...</strong></p>
                         <p id="artwork-info-id" style="font-size: 12px; color: #666;"></p>
                     </div>
-                    <?php endif; ?>
                     
                     <div class="section">
                         <h2 class="section-title">レイヤーアニメーション</h2>
@@ -564,6 +575,18 @@ if ($artworkId) {
                 </form>
             </div>
             </div>
+            
+            <!-- 生成結果エリア -->
+            <div class="result-area" id="result-area">
+                <h3 class="section-title" style="margin-bottom: 20px;">生成されたGIF</h3>
+                <div class="result-image-container">
+                    <img id="result-gif" class="result-image" alt="Generated GIF">
+                </div>
+                <div class="action-buttons">
+                    <a id="download-link" class="btn btn-success" download>ダウンロード</a>
+                    <button class="btn btn-secondary" onclick="resetResult()">新しく作成</button>
+                </div>
+            </div>
         </div>
         
         <script>
@@ -571,85 +594,157 @@ if ($artworkId) {
             const ARTWORK_STORAGE_KEY = 'marutto_animation_artwork';
             
             // 作品データの初期化
-            let artworkData = <?= $fromLocalStorage ? 'null' : json_encode($artwork) ?>;
-            let materials = <?= $fromLocalStorage ? '[]' : json_encode($artworkMaterials) ?>;
+            let artworkData = null;
+            let materials = [];
             let svgData, layers, canvasWidth, canvasHeight, backgroundColor;
-            
-            // ローカルストレージから作品データを復元
-            if (!artworkData) {
-                const savedArtwork = localStorage.getItem(ARTWORK_STORAGE_KEY);
-                if (savedArtwork) {
-                    const parsed = JSON.parse(savedArtwork);
-                    artworkData = parsed.artwork;
-                    materials = parsed.materials;
-                    console.log('作品データをローカルストレージから復元しました');
-                    document.getElementById('main-content').style.display = '';
-                } else {
-                    // 作品データがない場合はエラー表示
-                    document.body.innerHTML = `
-                        <div class="container">
-                            <header>
-                                <h1>🎬 アニメーションGIF生成</h1>
-                            </header>
-                            <div class="alert alert-error">
-                                作品が見つかりません。<a href="/everyone-works.php">みんなの作品一覧</a>から作品を選択してください。
-                            </div>
-                        </div>
-                    `;
-                    throw new Error('作品データがありません');
-                }
-            } else {
-                // 新規読み込み時は作品データをローカルストレージに保存
-                localStorage.setItem(ARTWORK_STORAGE_KEY, JSON.stringify({
-                    artwork: artworkData,
-                    materials: materials
-                }));
-            }
-            
-            // SVGデータを解析
-            svgData = JSON.parse(artworkData.svg_data || '{}');
-            layers = svgData.layers || [];
-            
-            console.log('読み込まれたレイヤーデータ:', layers);
-            console.log('各レイヤーの色情報:');
-            layers.forEach((layer, idx) => {
-                console.log(`  レイヤー${idx} (materialId: ${layer.materialId}):`, {
-                    hasColors: !!layer.colors,
-                    colorsLength: layer.colors ? layer.colors.length : 0,
-                    colors: layer.colors
-                });
-            });
-            
-            // 作品の元のサイズと背景色を取得
-            canvasWidth = svgData.canvasWidth || svgData.width || 800;
-            canvasHeight = svgData.canvasHeight || svgData.height || 800;
-            backgroundColor = svgData.backgroundColor || '#ffffff';
-            
-            // 作品情報をUIに表示（ローカルストレージから復元した場合）
-            if (!<?= $artwork ? 'true' : 'false' ?>) {
-                document.getElementById('artwork-info-title').innerHTML = '<strong>' + (artworkData.title || '無題') + '</strong>';
-                document.getElementById('artwork-info-id').textContent = '作品ID: ' + artworkData.id;
-            }
-            
-            // 作品の元のサイズと背景色を取得
-            canvasWidth = svgData.canvasWidth || svgData.width || 800;
-            canvasHeight = svgData.canvasHeight || svgData.height || 800;
-            backgroundColor = svgData.backgroundColor || '#ffffff';
-            
-            console.log('作品サイズ:', { width: canvasWidth, height: canvasHeight, aspectRatio: (canvasWidth / canvasHeight).toFixed(2) });
             
             // アニメーション設定（軽量版・固定）
             const ANIMATION_DURATION = 1200; // 1.5秒 → 1.2秒に短縮
             const ANIMATION_FPS = 10; // 15fps → 10fpsに削減
             
-            // ローカルストレージのキー
-            const STORAGE_KEY = 'marutto_animation_' + artworkData.id;
+            // ローカルストレージのキー（アニメーション設定用、作品読み込み後に設定）
+            let STORAGE_KEY = null;
             
             // アニメーション設定を保持
             let animations = {};
             
             // 素材のSVGコンテンツをキャッシュ
             const materialSvgCache = {};
+            
+            // URLパラメータから作品IDを取得
+            const urlParams = new URLSearchParams(window.location.search);
+            const artworkId = urlParams.get('artwork_id');
+            
+            // 作品データを読み込む関数
+            async function loadArtworkData() {
+                try {
+                    // ローカルストレージをチェック（キャッシュとして利用）
+                    const savedArtwork = localStorage.getItem(ARTWORK_STORAGE_KEY);
+                    const cached = savedArtwork ? JSON.parse(savedArtwork) : null;
+                    
+                    // キャッシュがあり、同じ作品IDの場合は使用
+                    if (cached && cached.artwork && cached.artwork.id == artworkId) {
+                        console.log('作品データをローカルストレージから復元しました');
+                        artworkData = cached.artwork;
+                        materials = cached.materials || [];
+                        initializeArtwork();
+                        return;
+                    }
+                    
+                    // artwork_idがない場合はエラー
+                    if (!artworkId) {
+                        showError('作品IDが指定されていません。<a href="/everyone-works.php">みんなの作品一覧</a>から作品を選択してください。');
+                        return;
+                    }
+                    
+                    // APIから作品データを取得
+                    const response = await fetch(`/api/get-artworks.php?artwork_id=${artworkId}`);
+                    if (!response.ok) {
+                        throw new Error('作品が見つかりません');
+                    }
+                    
+                    artworkData = await response.json();
+                    console.log('作品データをAPIから取得しました:', artworkData);
+                    
+                    // 使用素材の情報を取得
+                    if (artworkData.used_material_ids) {
+                        let usedMaterialIds;
+                        if (Array.isArray(artworkData.used_material_ids)) {
+                            usedMaterialIds = artworkData.used_material_ids;
+                        } else if (typeof artworkData.used_material_ids === 'string') {
+                            const trimmed = artworkData.used_material_ids.trim();
+                            if (trimmed.startsWith('[')) {
+                                usedMaterialIds = JSON.parse(trimmed);
+                            } else {
+                                usedMaterialIds = trimmed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+                            }
+                        } else {
+                            usedMaterialIds = [];
+                        }
+                        
+                        if (Array.isArray(usedMaterialIds) && usedMaterialIds.length > 0) {
+                            const materialsResponse = await fetch('/api/get-materials.php?ids=' + usedMaterialIds.join(','));
+                            materials = await materialsResponse.json();
+                            console.log('素材データをAPIから取得しました:', materials.length + '件');
+                        }
+                    }
+                    
+                    // ローカルストレージに保存（キャッシュ）
+                    localStorage.setItem(ARTWORK_STORAGE_KEY, JSON.stringify({
+                        artwork: artworkData,
+                        materials: materials
+                    }));
+                    
+                    initializeArtwork();
+                    
+                } catch (error) {
+                    console.error('作品データの読み込みエラー:', error);
+                    showError('作品の読み込みに失敗しました。<a href="/everyone-works.php">みんなの作品一覧</a>から作品を選択してください。');
+                }
+            }
+            
+            // エラー表示関数
+            function showError(message) {
+                document.body.innerHTML = `
+                    <div class="container">
+                        <div class="main-content" style="padding: 40px 0;">
+                            <h1 class="page-title" style="text-align: center; font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 600; margin-bottom: 40px; color: #A0675C;">
+                                Animate Works
+                            </h1>
+                            <div class="alert alert-error" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 16px; border-radius: 8px; margin: 0 auto; max-width: 600px;">
+                                ${message}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 作品データを初期化する関数
+            function initializeArtwork() {
+                if (!artworkData) {
+                    showError('作品データが読み込めませんでした。');
+                    return;
+                }
+                
+                // 作品情報を表示
+                document.getElementById('artwork-info-title').innerHTML = `<strong>${artworkData.title || '無題'}</strong>`;
+                document.getElementById('artwork-info-id').textContent = `作品ID: ${artworkData.id}`;
+            
+                // SVGデータを解析
+                svgData = JSON.parse(artworkData.svg_data || '{}');
+                layers = svgData.layers || [];
+                
+                console.log('読み込まれたレイヤーデータ:', layers);
+                console.log('各レイヤーの色情報:');
+                layers.forEach((layer, idx) => {
+                    console.log(`  レイヤー${idx} (materialId: ${layer.materialId}):`, {
+                        hasColors: !!layer.colors,
+                        colorsLength: layer.colors ? layer.colors.length : 0,
+                        colors: layer.colors
+                    });
+                });
+                
+                // 作品の元のサイズと背景色を取得
+                canvasWidth = svgData.canvasWidth || svgData.width || 800;
+                canvasHeight = svgData.canvasHeight || svgData.height || 800;
+                backgroundColor = svgData.backgroundColor || '#ffffff';
+                
+                console.log('作品サイズ:', { width: canvasWidth, height: canvasHeight, aspectRatio: (canvasWidth / canvasHeight).toFixed(2) });
+                
+                // ローカルストレージのキーを設定
+                STORAGE_KEY = 'marutto_animation_' + artworkData.id;
+                
+                // レイヤーをレンダリング
+                renderLayers();
+                
+                // ローカルストレージから設定を復元
+                loadFromLocalStorage();
+                
+                // レイヤーレンダリング後にUIに反映（少し遅延させる）
+                setTimeout(() => {
+                    renderPreview();
+                }, 100);
+            }
             
             // レイヤー一覧を表示
             function renderLayers() {
@@ -1682,28 +1777,9 @@ if ($artworkId) {
                 document.getElementById('result-area').classList.remove('active');
             }
             
-            // 初期化
-            renderLayers();
-            
-            // ローカルストレージから設定を復元
-            loadFromLocalStorage();
-            
-            // レイヤーレンダリング後にUIに反映（少し遅延させる）
-            setTimeout(() => {
-                applyAnimationsToUI();
-            }, 100);
-            
-            // 初期プレビューを表示
-            renderPreview();
-            
-            // URLからクエリストリングを削除（履歴は保持）
-            if (window.location.search) {
-                const url = window.location.protocol + '//' + window.location.host + window.location.pathname;
-                history.replaceState({}, document.title, url);
-            }
+            // ページ読み込み時に作品データを取得
+            loadArtworkData();
         </script>
-        
-        <?php endif; ?>
     </div>
 
     <?php include __DIR__ . '/../includes/footer.php'; ?>
