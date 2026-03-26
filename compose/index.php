@@ -6,60 +6,17 @@ require_once '../config.php';
 
 $pdo = getDB();
 
-// おすすめ素材のID（手動で管理）
-$recommendedMaterialIds = [828,661,1002,994,968,778,1018,1016,1015,1011];
-
-// おすすめ素材を取得
-$recommendedMaterials = [];
-if (!empty($recommendedMaterialIds)) {
-    $placeholders = str_repeat('?,', count($recommendedMaterialIds) - 1) . '?';
-    $recommendedSql = "
-        SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, m.search_keywords, 
-               c.title as category_name, c.slug as category_slug
-        FROM materials m
-        LEFT JOIN categories c ON m.category_id = c.id
-        WHERE m.id IN ($placeholders) AND m.svg_path IS NOT NULL AND m.svg_path != ''
-        ORDER BY FIELD(m.id, $placeholders)
-    ";
-    $stmt = $pdo->prepare($recommendedSql);
-    $stmt->execute(array_merge($recommendedMaterialIds, $recommendedMaterialIds));
-    $recommendedMaterials = $stmt->fetchAll();
-}
-
-// 最新の作品（ベクターデータあり）を5件取得
-$recentArtworksSql = "
-    SELECT id, title, webp_path, svg_data, used_material_ids, created_at
-    FROM community_artworks
-    WHERE status = 'approved' AND svg_data IS NOT NULL AND svg_data != ''
-    ORDER BY created_at DESC
-    LIMIT 5
-";
-$stmt = $pdo->prepare($recentArtworksSql);
-$stmt->execute();
-$recentArtworks = $stmt->fetchAll();
-
-// ベクター素材をカテゴリ別に取得（全件）
-$materialsSql = "
-    SELECT m.id, m.title, m.slug, m.svg_path, m.webp_small_path, m.structured_bg_color, m.search_keywords, 
-           c.title as category_name, c.slug as category_slug
-    FROM materials m
-    LEFT JOIN categories c ON m.category_id = c.id
+// カテゴリ一覧のみ取得
+$categoriesSql = "
+    SELECT DISTINCT c.id, c.title, c.slug
+    FROM categories c
+    INNER JOIN materials m ON m.category_id = c.id
     WHERE m.svg_path IS NOT NULL AND m.svg_path != ''
-    ORDER BY c.title, m.title
+    ORDER BY c.title
 ";
-$stmt = $pdo->prepare($materialsSql);
+$stmt = $pdo->prepare($categoriesSql);
 $stmt->execute();
-$allMaterials = $stmt->fetchAll();
-
-// カテゴリごとにグループ化
-$materialsByCategory = [];
-foreach ($allMaterials as $material) {
-    $categoryName = $material['category_name'] ?? '未分類';
-    if (!isset($materialsByCategory[$categoryName])) {
-        $materialsByCategory[$categoryName] = [];
-    }
-    $materialsByCategory[$categoryName][] = $material;
-}
+$categories = $stmt->fetchAll();
 
 ?>
 <!DOCTYPE html>
@@ -938,9 +895,9 @@ foreach ($allMaterials as $material) {
             <div class="category-tabs" id="categoryTabs">
                 <button class="category-tab active" onclick="filterByCategory('おすすめ')">おすすめ</button>
                 <button class="category-tab" onclick="filterByCategory('all')">すべて</button>
-                <?php foreach ($materialsByCategory as $categoryName => $materials): ?>
-                <button class="category-tab" onclick="filterByCategory('<?= h($categoryName) ?>')">
-                    <?= h($categoryName) ?>
+                <?php foreach ($categories as $category): ?>
+                <button class="category-tab" onclick="filterByCategory('<?= h($category['title']) ?>')">
+                    <?= h($category['title']) ?>
                 </button>
                 <?php endforeach; ?>
                 <button class="category-tab" onclick="filterByCategory('作品')">作品</button>
@@ -960,18 +917,9 @@ foreach ($allMaterials as $material) {
                 <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">次へ</button>
             </div>
             
-            <!-- 非表示のデータ保持用 -->
-            <script id="recommendedMaterialsData" type="application/json">
-                <?= json_encode($recommendedMaterials, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
-            </script>
-            <script id="allMaterialsData" type="application/json">
-                <?= json_encode($allMaterials, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
-            </script>
-            <script id="materialsByCategoryData" type="application/json">
-                <?= json_encode($materialsByCategory, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
-            </script>
-            <script id="recentArtworksData" type="application/json">
-                <?= json_encode($recentArtworks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+            <!-- おすすめ素材のIDのみ -->
+            <script>
+                const RECOMMENDED_MATERIAL_IDS = [828,661,1002,994,968,778,1018,1016,1015,1011];
             </script>
         </div>
 
@@ -1485,8 +1433,8 @@ foreach ($allMaterials as $material) {
             element.querySelector('span').textContent = isVisible ? '▼' : '▲';
         }
 
-        // 推奨アイテム（素材または作品）を表示
-        function displaySuggestedItem() {
+        // 推奨アイテム（素材または作品）を表示（非同期対応）
+        async function displaySuggestedItem() {
             // URLパラメーターから取得
             const urlParams = new URLSearchParams(window.location.search);
             const suggestedMaterialId = parseInt(urlParams.get('material_id')) || 0;
@@ -1500,15 +1448,28 @@ foreach ($allMaterials as $material) {
             const container = document.getElementById('suggestedItemContainer');
 
             if (suggestedMaterialId) {
-                // 素材を探す
-                const material = allMaterialsArray.find(m => m.id === suggestedMaterialId);
+                // おすすめ素材から探す（なければAPI取得）
+                let material = recommendedMaterialsArray.find(m => m.id === suggestedMaterialId);
+                
+                if (!material) {
+                    // APIから単体取得
+                    try {
+                        const response = await fetch('/api/get-materials.php?ids=' + suggestedMaterialId);
+                        const materials = await response.json();
+                        material = materials[0];
+                    } catch (error) {
+                        console.error('素材取得エラー:', error);
+                        return;
+                    }
+                }
+                
                 if (material) {
                     const thumbPath = material.webp_small_path;
                     const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
                     const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
 
                     container.innerHTML = `
-                        <div class="suggested-item" onclick="addSuggestedMaterial(${material.id})">
+                        <div class="suggested-item" onclick="addSuggestedMaterialById(${material.id})">
                             <div style="background-color: ${material.structured_bg_color || '#f0f0f0'}; padding: 12px; border-radius: 8px;">
                                 <img src="${finalThumbUrl}" alt="${material.title || ''}">
                             </div>
@@ -1518,15 +1479,24 @@ foreach ($allMaterials as $material) {
                     section.style.display = 'block';
                 }
             } else if (suggestedArtworkId) {
-                // 作品を探す
-                const artwork = recentArtworksArray.find(a => a.id === suggestedArtworkId);
+                // 作品をAPI取得
+                let artwork = null;
+                try {
+                    const response = await fetch('/api/get-artworks.php?limit=20');
+                    const artworks = await response.json();
+                    artwork = artworks.find(a => a.id === suggestedArtworkId);
+                } catch (error) {
+                    console.error('作品取得エラー:', error);
+                    return;
+                }
+                
                 if (artwork) {
                     const thumbPath = artwork.webp_path;
                     const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
                     const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
 
                     container.innerHTML = `
-                        <div class="suggested-item" onclick="addSuggestedArtwork(${artwork.id})">
+                        <div class="suggested-item" onclick="addSuggestedArtworkById(${artwork.id})">
                             <img src="${finalThumbUrl}" alt="${artwork.title || '作品'}">
                             <div class="suggested-item-label">${artwork.title || '作品'}</div>
                         </div>
@@ -1536,9 +1506,22 @@ foreach ($allMaterials as $material) {
             }
         }
 
-        // 推奨素材をキャンバスに追加
-        function addSuggestedMaterial(materialId) {
-            const material = allMaterialsArray.find(m => m.id === materialId);
+        // 推奨素材をキャンバスに追加（ID指定）
+        async function addSuggestedMaterialById(materialId) {
+            let material = recommendedMaterialsArray.find(m => m.id === materialId);
+            
+            if (!material) {
+                // APIから取得
+                try {
+                    const response = await fetch('/api/get-materials.php?ids=' + materialId);
+                    const materials = await response.json();
+                    material = materials[0];
+                } catch (error) {
+                    console.error('素材取得エラー:', error);
+                    return;
+                }
+            }
+            
             if (material) {
                 addMaterial(material);
                 // セクションを非表示にしてURLパラメーターを削除
@@ -1549,11 +1532,20 @@ foreach ($allMaterials as $material) {
             }
         }
 
-        // 推奨作品をキャンバスに展開
-        function addSuggestedArtwork(artworkId) {
-            const artwork = recentArtworksArray.find(a => a.id === artworkId);
+        // 推奨作品をキャンバスに展開（ID指定）
+        async function addSuggestedArtworkById(artworkId) {
+            let artwork = null;
+            try {
+                const response = await fetch('/api/get-artworks.php?limit=20');
+                const artworks = await response.json();
+                artwork = artworks.find(a => a.id === artworkId);
+            } catch (error) {
+                console.error('作品取得エラー:', error);
+                return;
+            }
+            
             if (artwork) {
-                loadArtworkToCanvas(artwork);
+                await loadArtworkToCanvas(artwork);
                 // セクションを非表示にしてURLパラメーターを削除
                 document.getElementById('suggestedItemSection').style.display = 'none';
                 const url = new URL(window.location);
@@ -2588,36 +2580,90 @@ foreach ($allMaterials as $material) {
         let currentSearchTerm = '';
         let allMaterialsArray = [];
         let recommendedMaterialsArray = [];
-        let materialsByCategoryObj = {};
         let recentArtworksArray = [];
         let filteredMaterials = [];
 
         // データの読み込み
-        function loadMaterialsData() {
-            recommendedMaterialsArray = JSON.parse(document.getElementById('recommendedMaterialsData').textContent);
-            allMaterialsArray = JSON.parse(document.getElementById('allMaterialsData').textContent);
-            materialsByCategoryObj = JSON.parse(document.getElementById('materialsByCategoryData').textContent);
-            recentArtworksArray = JSON.parse(document.getElementById('recentArtworksData').textContent);
+        // 素材データをAPIから読み込み
+        let materialsCache = {}; // カテゴリごとにキャッシュ
+        let artworksCache = null;
+
+        async function loadMaterialsData() {
+            // 初回はおすすめ素材のみ読み込み
+            try {
+                const response = await fetch('/api/get-materials.php?ids=' + RECOMMENDED_MATERIAL_IDS.join(','));
+                recommendedMaterialsArray = await response.json();
+                materialsCache['おすすめ'] = recommendedMaterialsArray;
+            } catch (error) {
+                console.error('おすすめ素材の読み込みエラー:', error);
+                recommendedMaterialsArray = [];
+            }
         }
 
-        // 素材を表示
-        function renderMaterials() {
+        // カテゴリ別に素材をAPI取得
+        async function loadMaterialsByCategory(category) {
+            // キャッシュがあればそれを返す
+            if (materialsCache[category]) {
+                return materialsCache[category];
+            }
+
+            try {
+                const response = await fetch('/api/get-materials.php?category=' + encodeURIComponent(category));
+                const materials = await response.json();
+                materialsCache[category] = materials;
+                return materials;
+            } catch (error) {
+                console.error(`カテゴリ "${category}" の素材読み込みエラー:`, error);
+                return [];
+            }
+        }
+
+        // 作品をAPI取得
+        async function loadArtworks() {
+            if (artworksCache) {
+                return artworksCache;
+            }
+
+            try {
+                const response = await fetch('/api/get-artworks.php?limit=5');
+                artworksCache = await response.json();
+                recentArtworksArray = artworksCache;
+                return artworksCache;
+            } catch (error) {
+                console.error('作品の読み込みエラー:', error);
+                return [];
+            }
+        }
+
+        // 素材を表示（非同期対応）
+        async function renderMaterials() {
             // 作品カテゴリの場合は専用処理
             if (currentCategory === '作品') {
-                renderArtworks();
+                await renderArtworks();
                 return;
             }
 
-            // フィルタリングされた素材を取得
+            // ローディング表示
+            const grid = document.getElementById('materialGrid');
+            grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">読み込み中...</div>';
+
+            // カテゴリに応じてデータ取得
             if (currentSearchTerm) {
-                // 検索が有効な場合
+                // 検索の場合は全素材から検索
+                if (!allMaterialsArray || allMaterialsArray.length === 0) {
+                    // 全素材を取得
+                    allMaterialsArray = await loadMaterialsByCategory('all');
+                }
                 filteredMaterials = filterMaterialsBySearch(currentSearchTerm);
             } else if (currentCategory === 'おすすめ') {
                 filteredMaterials = recommendedMaterialsArray;
             } else if (currentCategory === 'all') {
-                filteredMaterials = allMaterialsArray;
+                // 全素材を取得
+                filteredMaterials = await loadMaterialsByCategory('all');
+                allMaterialsArray = filteredMaterials; // キャッシュ
             } else {
-                filteredMaterials = materialsByCategoryObj[currentCategory] || [];
+                // カテゴリ別に取得
+                filteredMaterials = await loadMaterialsByCategory(currentCategory);
             }
 
             const totalPages = Math.ceil(filteredMaterials.length / itemsPerPage);
@@ -2626,7 +2672,6 @@ foreach ($allMaterials as $material) {
             const materialsToShow = filteredMaterials.slice(startIndex, endIndex);
 
             // グリッドに表示（DocumentFragment使用で高速化）
-            const grid = document.getElementById('materialGrid');
             const fragment = document.createDocumentFragment();
 
             materialsToShow.forEach(material => {
@@ -2656,19 +2701,24 @@ foreach ($allMaterials as $material) {
             updatePagination(totalPages);
         }
 
-        // 作品専用のレンダリング関数
-        function renderArtworks() {
+        // 作品専用のレンダリング関数（非同期対応）
+        async function renderArtworks() {
             const grid = document.getElementById('materialGrid');
+            grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">読み込み中...</div>';
+
+            // 作品データを取得
+            const artworks = await loadArtworks();
+
             const fragment = document.createDocumentFragment();
 
-            recentArtworksArray.forEach(artwork => {
+            artworks.forEach(artwork => {
                 const thumbPath = artwork.webp_path;
                 const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
                 const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
 
                 const div = document.createElement('div');
                 div.className = 'material-item artwork-item';
-                div.onclick = () => loadArtworkToCanvas(artwork);
+                div.onclick = async () => await loadArtworkToCanvas(artwork);
 
                 const img = document.createElement('img');
                 img.src = finalThumbUrl;
@@ -2687,7 +2737,8 @@ foreach ($allMaterials as $material) {
         }
 
         // 作品をキャンバスに展開する関数
-        function loadArtworkToCanvas(artwork) {
+        // 作品をキャンバスに展開する関数（非同期対応）
+        async function loadArtworkToCanvas(artwork) {
             if (!artwork || !artwork.svg_data) {
                 console.error('作品データまたはSVGデータがありません');
                 return;
@@ -2699,6 +2750,45 @@ foreach ($allMaterials as $material) {
 
             try {
                 const svgData = JSON.parse(artwork.svg_data);
+
+                // used_material_idsから素材情報を事前に取得
+                let materialInfoMap = {};
+                if (artwork.used_material_ids) {
+                    try {
+                        // 既に配列の場合はそのまま、文字列の場合はパースまたは分割
+                        let usedMaterialIds;
+                        if (Array.isArray(artwork.used_material_ids)) {
+                            usedMaterialIds = artwork.used_material_ids;
+                        } else if (typeof artwork.used_material_ids === 'string') {
+                            // JSON配列形式（"[41,43]"）かカンマ区切り（"41,43"）かを判定
+                            const trimmed = artwork.used_material_ids.trim();
+                            if (trimmed.startsWith('[')) {
+                                // JSON形式
+                                usedMaterialIds = JSON.parse(trimmed);
+                            } else {
+                                // カンマ区切り形式
+                                usedMaterialIds = trimmed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+                            }
+                        } else {
+                            usedMaterialIds = [];
+                        }
+                        
+                        // APIから素材情報を取得
+                        if (Array.isArray(usedMaterialIds) && usedMaterialIds.length > 0) {
+                            try {
+                                const response = await fetch('/api/get-materials.php?ids=' + usedMaterialIds.join(','));
+                                const materials = await response.json();
+                                materials.forEach(material => {
+                                    materialInfoMap[material.id] = material;
+                                });
+                            } catch (error) {
+                                console.error('素材情報の取得エラー:', error);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('used_material_ids の処理エラー:', e, 'データ:', artwork.used_material_ids);
+                    }
+                }
 
                 // キャンバスサイズを設定
                 if (svgData.canvasWidth && svgData.canvasHeight) {
@@ -2735,41 +2825,6 @@ foreach ($allMaterials as $material) {
                 
                 // 初期表示を整える（強制実行）
                 fitCanvasToContainer(true);
-
-                // used_material_idsから素材情報マップを構築
-                let materialInfoMap = {};
-                if (artwork.used_material_ids) {
-                    try {
-                        // 既に配列の場合はそのまま、文字列の場合はパースまたは分割
-                        let usedMaterialIds;
-                        if (Array.isArray(artwork.used_material_ids)) {
-                            usedMaterialIds = artwork.used_material_ids;
-                        } else if (typeof artwork.used_material_ids === 'string') {
-                            // JSON配列形式（"[41,43]"）かカンマ区切り（"41,43"）かを判定
-                            const trimmed = artwork.used_material_ids.trim();
-                            if (trimmed.startsWith('[')) {
-                                // JSON形式
-                                usedMaterialIds = JSON.parse(trimmed);
-                            } else {
-                                // カンマ区切り形式
-                                usedMaterialIds = trimmed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-                            }
-                        } else {
-                            usedMaterialIds = [];
-                        }
-                        
-                        if (Array.isArray(usedMaterialIds)) {
-                            usedMaterialIds.forEach(id => {
-                                const material = allMaterialsArray.find(m => m.id === parseInt(id));
-                                if (material) {
-                                    materialInfoMap[parseInt(id)] = material;
-                                }
-                            });
-                        }
-                    } catch (e) {
-                        console.error('used_material_ids の処理エラー:', e, 'データ:', artwork.used_material_ids);
-                    }
-                }
 
                 // 素材を読み込む
                 const materialsData = svgData.objects || svgData.materials || svgData.layers || [];
@@ -2845,16 +2900,8 @@ foreach ($allMaterials as $material) {
                                     // 素材IDを取得
                                     const materialId = parseInt(materialData.materialId) || parseInt(materialData.id);
                                     
-                                    // 素材情報を取得（materialInfoMapから、見つからない場合はallMaterialsArrayから検索）
-                                    let dbMaterialInfo = materialInfoMap[materialId];
-                                    if (!dbMaterialInfo && materialId) {
-                                        dbMaterialInfo = allMaterialsArray.find(m => m.id === materialId);
-                                    }
-                                    if (!dbMaterialInfo) {
-                                        // svg_pathから検索を試みる
-                                        dbMaterialInfo = allMaterialsArray.find(m => m.svg_path === svgPath);
-                                    }
-                                    dbMaterialInfo = dbMaterialInfo || {};
+                                    // 素材情報を取得（materialInfoMapから）
+                                    const dbMaterialInfo = materialInfoMap[materialId] || {};
                                     
                                     const fullMaterialData = {
                                         id: materialId || dbMaterialInfo.id,
@@ -2967,14 +3014,14 @@ foreach ($allMaterials as $material) {
             document.getElementById('nextBtn').disabled = currentPage >= totalPages || totalPages === 0;
         }
 
-        // ページ変更
-        function changePage(delta) {
+        // ページ変更（非同期対応）
+        async function changePage(delta) {
             const totalPages = Math.ceil(filteredMaterials.length / itemsPerPage);
             const newPage = currentPage + delta;
             
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
-                renderMaterials();
+                await renderMaterials();
             }
         }
 
@@ -2989,12 +3036,12 @@ foreach ($allMaterials as $material) {
             if (searchTerms.length === 0) {
                 return currentCategory === 'おすすめ' ? recommendedMaterialsArray :
                        currentCategory === 'all' ? allMaterialsArray :
-                       materialsByCategoryObj[currentCategory] || [];
+                       materialsCache[currentCategory] || [];
             }
 
             const baseMaterials = currentCategory === 'おすすめ' ? recommendedMaterialsArray :
                                   currentCategory === 'all' ? allMaterialsArray :
-                                  materialsByCategoryObj[currentCategory] || [];
+                                  materialsCache[currentCategory] || [];
 
             return baseMaterials.filter(material => {
                 const title = (material.title || '').toLowerCase();
@@ -3004,7 +3051,7 @@ foreach ($allMaterials as $material) {
         }
 
         // カテゴリフィルター
-        function filterByCategory(categoryName) {
+        async function filterByCategory(categoryName) {
             currentCategory = categoryName;
             currentPage = 1;
             
@@ -3020,7 +3067,7 @@ foreach ($allMaterials as $material) {
                 artworkNotice.classList.remove('show');
             }
             
-            renderMaterials();
+            await renderMaterials();
         }
 
         // デバウンス関数
@@ -3036,11 +3083,11 @@ foreach ($allMaterials as $material) {
             };
         }
 
-        // 素材検索（デバウンス付き）
-        const performSearch = debounce(function(value) {
+        // 素材検索（デバウンス付き、非同期対応）
+        const performSearch = debounce(async function(value) {
             currentSearchTerm = value;
             currentPage = 1;
-            renderMaterials();
+            await renderMaterials();
         }, 300);
 
         document.getElementById('materialSearch').addEventListener('input', function(e) {
@@ -3048,11 +3095,11 @@ foreach ($allMaterials as $material) {
         });
 
         // ページ読み込み時に初期化
-        window.addEventListener('load', function() {
-            loadMaterialsData();
-            renderMaterials();
+        window.addEventListener('load', async function() {
+            await loadMaterialsData(); // おすすめ素材のみ読み込み
+            await renderMaterials(); // おすすめ素材を表示
             initCanvas();
-            displaySuggestedItem(); // 推奨アイテムを表示
+            await displaySuggestedItem(); // 推奨アイテムを表示
         });
     </script>
 
