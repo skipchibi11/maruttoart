@@ -531,6 +531,11 @@ html, body {
         padding: 12px 0;
     }
     
+    /* スマホではCalendarを非表示 */
+    .mobile-nav-item-calendar {
+        display: none;
+    }
+    
     .mobile-nav-label {
         font-size: 0.85rem;
     }
@@ -641,7 +646,7 @@ document.addEventListener('click', function(event) {
     <a href="/list.php" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'list' ? ' active' : '' ?>">
         <div class="mobile-nav-label">Items</div>
     </a>
-    <a href="/calendar/" class="mobile-nav-item<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">
+    <a href="/calendar/" class="mobile-nav-item mobile-nav-item-calendar<?= isset($currentPage) && $currentPage === 'calendar' ? ' active' : '' ?>">
         <div class="mobile-nav-label">Calendar</div>
     </a>
 </nav>
