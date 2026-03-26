@@ -1882,6 +1882,12 @@ $pdo = getDB();
                 const resultArea = document.getElementById('result-area');
                 
                 try {
+                    // MediaRecorder APIのサポート確認
+                    if (!window.MediaRecorder) {
+                        alert('お使いのブラウザはMP4生成に対応していません。GIF生成をお試しください。');
+                        return;
+                    }
+                    
                     // ボタンを無効化
                     mp4Btn.disabled = true;
                     gifBtn.disabled = true;
@@ -1956,28 +1962,63 @@ $pdo = getDB();
                     recorder.ondataavailable = (e) => {
                         if (e.data.size > 0) {
                             chunks.push(e.data);
+                            console.log('データ受信:', e.data.size, 'bytes');
                         }
+                    };
+                    
+                    recorder.onerror = (e) => {
+                        console.error('MediaRecorder エラー:', e);
+                        alert('動画の録画中にエラーが発生しました: ' + (e.error ? e.error.message : 'Unknown error'));
+                        
+                        // エラー時の処理
+                        previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
+                        renderPreview();
+                        mp4Btn.disabled = false;
+                        gifBtn.disabled = false;
+                        mp4Btn.innerHTML = 'MP4生成<br><small style="font-size:11px;opacity:0.8">640px, ~200KB</small>';
                     };
                     
                     recorder.onstop = () => {
                         console.log('録画完了、Blob作成中...');
+                        console.log('受信したチャンク数:', chunks.length);
+                        
+                        if (chunks.length === 0) {
+                            console.error('録画データがありません');
+                            alert('動画の録画に失敗しました。お使いのデバイスではMP4生成に対応していない可能性があります。GIF生成をお試しください。');
+                            
+                            // エラー時の処理
+                            previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
+                            renderPreview();
+                            mp4Btn.disabled = false;
+                            gifBtn.disabled = false;
+                            mp4Btn.innerHTML = 'MP4生成<br><small style="font-size:11px;opacity:0.8">640px, ~200KB</small>';
+                            return;
+                        }
+                        
                         const blob = new Blob(chunks, { type: mimeType });
                         const url = URL.createObjectURL(blob);
                         
                         console.log('MP4生成完了: サイズ', width, 'x', height, 'ファイルサイズ:', Math.round(blob.size / 1024), 'KB');
+                        console.log('Blob URL:', url);
+                        console.log('MIMEタイプ:', mimeType);
                         
                         // 結果を表示
-                        document.getElementById('result-title').textContent = '生成されたMP4';
+                        document.getElementById('result-title').textContent = 'MP4生成完了';
                         const videoHtml = `
-                            <video class="result-image" controls autoplay loop muted style="max-width: 100%; max-height: 500px;">
+                            <video class="result-image" controls autoplay loop muted playsinline style="max-width: 100%; max-height: 500px;">
                                 <source src="${url}" type="${mimeType}">
                                 お使いのブラウザはこの動画形式に対応していません。
                             </video>
                         `;
                         document.getElementById('result-container').innerHTML = videoHtml;
-                        document.getElementById('download-link').href = url;
+                        
+                        // ダウンロードリンクを設定
+                        const downloadLink = document.getElementById('download-link');
+                        downloadLink.href = url;
                         const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-                        document.getElementById('download-link').download = `animation_${artworkData.id}_${Date.now()}.${extension}`;
+                        downloadLink.download = `animation_${artworkData.id}_${Date.now()}.${extension}`;
+                        
+                        console.log('ダウンロードリンク設定完了:', downloadLink.download);
                         
                         resultArea.classList.add('active');
                         
@@ -1992,23 +2033,37 @@ $pdo = getDB();
                         mp4Btn.innerHTML = 'MP4生成<br><small style="font-size:11px;opacity:0.8">640px, ~200KB</small>';
                     };
                     
-                    // 録画開始
-                    recorder.start();
-                    console.log('録画開始');
+                    // 録画開始（100msごとにデータを送信）
+                    try {
+                        recorder.start(100); // タイムスライスを指定
+                        console.log('録画開始 - state:', recorder.state);
+                    } catch (error) {
+                        console.error('録画開始エラー:', error);
+                        alert('動画の録画を開始できませんでした: ' + error.message);
+                        
+                        // エラー時の処理
+                        previewArea.innerHTML = '<canvas id="preview-canvas"></canvas>';
+                        renderPreview();
+                        mp4Btn.disabled = false;
+                        gifBtn.disabled = false;
+                        mp4Btn.innerHTML = 'MP4生成<br><small style="font-size:11px;opacity:0.8">640px, ~200KB</small>';
+                        return;
+                    }
                     
                     // フレームごとに描画
                     const frameInterval = 1000 / fps;
                     let currentFrame = 0;
                     
                     const drawFrame = async () => {
-                        if (currentFrame >= totalFrames) {
-                            // 録画終了
-                            recorder.stop();
-                            console.log('全フレーム描画完了');
-                            return;
-                        }
-                        
-                        const progress = currentFrame / Math.max(totalFrames - 1, 1);
+                        try {
+                            if (currentFrame >= totalFrames) {
+                                // 録画終了
+                                console.log('全フレーム描画完了 - 録画停止');
+                                recorder.stop();
+                                return;
+                            }
+                            
+                            const progress = currentFrame / Math.max(totalFrames - 1, 1);
                         
                         // Fabric.jsで一時的なキャンバスを作成してフレームを生成
                         const fabricTemp = new fabric.Canvas(document.createElement('canvas'), {
@@ -2138,6 +2193,18 @@ $pdo = getDB();
                         
                         // 次のフレームをスケジュール
                         setTimeout(drawFrame, frameInterval);
+                        
+                        } catch (error) {
+                            console.error('フレーム描画エラー:', error);
+                            // エラーが発生しても続行を試みる
+                            currentFrame++;
+                            if (currentFrame < totalFrames) {
+                                setTimeout(drawFrame, frameInterval);
+                            } else {
+                                // 最終フレームでエラーの場合は録画を停止
+                                recorder.stop();
+                            }
+                        }
                     };
                     
                     // 最初のフレームを描画
