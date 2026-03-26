@@ -2070,30 +2070,26 @@ $pdo = getDB();
                             const progress = currentFrame / Math.max(totalFrames - 1, 1);
                         
                         // Fabric.jsで一時的なキャンバスを作成してフレームを生成
+                        // devicePixelRatioを1に固定してサイズを制御
                         const fabricTemp = new fabric.Canvas(document.createElement('canvas'), {
                             width: width,
                             height: height,
                             backgroundColor: backgroundColor,
                             selection: false,
-                            renderOnAddRemove: false
+                            renderOnAddRemove: false,
+                            enableRetinaScaling: false // Retinaスケーリングを無効化
                         });
-                        
-                        // 明示的にcanvas要素のサイズを設定（重要！）
-                        const fabricCanvas = fabricTemp.getElement();
-                        fabricCanvas.width = width;
-                        fabricCanvas.height = height;
-                        
-                        // fabricTempの内部サイズも確実に設定
-                        fabricTemp.setDimensions({ width: width, height: height });
                         
                         // デバッグ: canvasサイズを確認（最初のフレームのみ）
                         if (currentFrame === 0) {
+                            const fabricCanvas = fabricTemp.getElement();
                             console.log('=== fabricTemp canvas 情報 ===');
                             console.log('設定値 width:', width, 'height:', height);
                             console.log('fabricTemp.width:', fabricTemp.width);
                             console.log('fabricTemp.height:', fabricTemp.height);
                             console.log('fabricCanvas.width:', fabricCanvas.width);
                             console.log('fabricCanvas.height:', fabricCanvas.height);
+                            console.log('devicePixelRatio:', window.devicePixelRatio);
                         }
                         
                         // レイヤーを描画
@@ -2216,18 +2212,18 @@ $pdo = getDB();
                         
                         fabricTemp.renderAll();
                         
-                        // fabricのcanvasをtempCanvasに描画（サイズを明示的に指定）
-                        ctx.clearRect(0, 0, width, height);
+                        // fabricのcanvasをtempCanvasに描画
                         const fabricCanvas2 = fabricTemp.getElement();
-                        ctx.drawImage(fabricCanvas2, 0, 0, width, height);
+                        ctx.clearRect(0, 0, width, height);
+                        // ソースと出力先のサイズを明示的に指定
+                        ctx.drawImage(fabricCanvas2, 0, 0, fabricCanvas2.width, fabricCanvas2.height, 0, 0, width, height);
                         
                         // デバッグ: tempCanvasの内容を確認（最初のフレームのみ）
                         if (currentFrame === 0) {
                             console.log('=== tempCanvas 描画確認 ===');
-                            console.log('tempCanvas.width:', tempCanvas.width);
-                            console.log('tempCanvas.height:', tempCanvas.height);
-                            console.log('描画元 fabricCanvas.width:', fabricCanvas2.width);
-                            console.log('描画元 fabricCanvas.height:', fabricCanvas2.height);
+                            console.log('tempCanvas.width:', tempCanvas.width, 'tempCanvas.height:', tempCanvas.height);
+                            console.log('描画元 fabricCanvas.width:', fabricCanvas2.width, 'fabricCanvas.height:', fabricCanvas2.height);
+                            console.log('drawImage: src(0,0,', fabricCanvas2.width, ',', fabricCanvas2.height, ') -> dest(0,0,', width, ',', height, ')');
                         }
                         
                         // 進行状況を表示
