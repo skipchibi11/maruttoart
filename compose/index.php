@@ -3039,9 +3039,8 @@ $categories = $stmt->fetchAll();
                        materialsCache[currentCategory] || [];
             }
 
-            const baseMaterials = currentCategory === 'おすすめ' ? recommendedMaterialsArray :
-                                  currentCategory === 'all' ? allMaterialsArray :
-                                  materialsCache[currentCategory] || [];
+            // 検索時は常に全素材から検索
+            const baseMaterials = allMaterialsArray || [];
 
             return baseMaterials.filter(material => {
                 const title = (material.title || '').toLowerCase();
