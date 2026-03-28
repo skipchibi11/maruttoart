@@ -1479,18 +1479,19 @@ $categories = $stmt->fetchAll();
                     section.style.display = 'block';
                 }
             } else if (suggestedArtworkId) {
-                // 作品をAPI取得
+                // 作品をAPI取得（ID指定で直接取得）
                 let artwork = null;
                 try {
-                    const response = await fetch('/api/get-artworks.php?limit=20');
-                    const artworks = await response.json();
-                    artwork = artworks.find(a => a.id === suggestedArtworkId);
+                    const response = await fetch('/api/get-artworks.php?artwork_id=' + suggestedArtworkId);
+                    if (response.ok) {
+                        artwork = await response.json();
+                    }
                 } catch (error) {
                     console.error('作品取得エラー:', error);
                     return;
                 }
                 
-                if (artwork) {
+                if (artwork && artwork.webp_path) {
                     const thumbPath = artwork.webp_path;
                     const isRemoteThumb = thumbPath.startsWith('http://') || thumbPath.startsWith('https://');
                     const finalThumbUrl = isRemoteThumb ? thumbPath : '/' + thumbPath;
@@ -1536,9 +1537,10 @@ $categories = $stmt->fetchAll();
         async function addSuggestedArtworkById(artworkId) {
             let artwork = null;
             try {
-                const response = await fetch('/api/get-artworks.php?limit=20');
-                const artworks = await response.json();
-                artwork = artworks.find(a => a.id === artworkId);
+                const response = await fetch('/api/get-artworks.php?artwork_id=' + artworkId);
+                if (response.ok) {
+                    artwork = await response.json();
+                }
             } catch (error) {
                 console.error('作品取得エラー:', error);
                 return;
