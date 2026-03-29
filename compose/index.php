@@ -1022,7 +1022,6 @@ $categories = $stmt->fetchAll();
     <div id="successModal" class="modal">
         <div class="modal-content" style="max-width: 450px; text-align: center; position: relative;">
             <button onclick="hideSuccessModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#333'" onmouseout="this.style.color='#999'" aria-label="閉じる">×</button>
-            <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
             <h2 class="modal-title">作品を投稿しました！</h2>
             <p style="margin-bottom: 12px; color: #666; line-height: 1.6;">ありがとうございます</p>
             <p style="margin-bottom: 24px; color: #999; font-size: 0.9rem; line-height: 1.5;">トップページと作品一覧への反映には、最大2日程度かかる場合があります。</p>
@@ -1041,7 +1040,6 @@ $categories = $stmt->fetchAll();
     <!-- エラーメッセージポップアップ -->
     <div id="errorModal" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 16px;">⚠️</div>
             <h2 class="modal-title" id="errorModalTitle">エラー</h2>
             <p id="errorModalMessage" style="margin-bottom: 24px; color: #666; line-height: 1.6;"></p>
             <button type="button" class="modal-btn primary" onclick="hideErrorModal()" style="width: 100%;">OK</button>
