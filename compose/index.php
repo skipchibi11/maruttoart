@@ -1025,7 +1025,7 @@ $categories = $stmt->fetchAll();
             <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
             <h2 class="modal-title">作品を投稿しました！</h2>
             <p style="margin-bottom: 12px; color: #666; line-height: 1.6;">ありがとうございます</p>
-            <p style="margin-bottom: 24px; color: #999; font-size: 0.9rem; line-height: 1.5;">サイトへの反映には、最大2日程度かかる場合があります。</p>
+            <p style="margin-bottom: 24px; color: #999; font-size: 0.9rem; line-height: 1.5;">トップページと作品一覧への反映には、最大2日程度かかる場合があります。</p>
             <div style="display: flex; gap: 12px;">
                 <a id="artworkDetailLink" href="#" class="modal-btn primary" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; line-height: normal;">詳細を見る</a>
                 <button type="button" id="tweetButton" class="modal-btn secondary" onclick="tweetArtwork()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
@@ -1051,8 +1051,7 @@ $categories = $stmt->fetchAll();
     <!-- ローディング中ポップアップ -->
     <div id="loadingModal" class="modal">
         <div class="modal-content" style="max-width: 300px; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 16px;">📤</div>
-            <h2 class="modal-title">投稿中...</h2>
+            <h2 class="modal-title">投稿中</h2>
             <p style="color: #999; font-size: 0.9rem;">しばらくお待ちください</p>
         </div>
     </div>
