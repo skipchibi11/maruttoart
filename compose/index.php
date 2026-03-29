@@ -1018,6 +1018,45 @@ $categories = $stmt->fetchAll();
         </div>
     </div>
 
+    <!-- 投稿成功ポップアップ -->
+    <div id="successModal" class="modal">
+        <div class="modal-content" style="max-width: 450px; text-align: center; position: relative;">
+            <button onclick="hideSuccessModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#333'" onmouseout="this.style.color='#999'" aria-label="閉じる">×</button>
+            <div style="font-size: 3rem; margin-bottom: 16px;">✨</div>
+            <h2 class="modal-title">作品を投稿しました！</h2>
+            <p style="margin-bottom: 12px; color: #666; line-height: 1.6;">ありがとうございます</p>
+            <p style="margin-bottom: 24px; color: #999; font-size: 0.9rem; line-height: 1.5;">サイトへの反映には、最大2日程度かかる場合があります。</p>
+            <div style="display: flex; gap: 12px;">
+                <a id="artworkDetailLink" href="#" class="modal-btn primary" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; line-height: normal;">詳細を見る</a>
+                <button type="button" id="tweetButton" class="modal-btn secondary" onclick="tweetArtwork()" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    ツイート
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- エラーメッセージポップアップ -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 16px;">⚠️</div>
+            <h2 class="modal-title" id="errorModalTitle">エラー</h2>
+            <p id="errorModalMessage" style="margin-bottom: 24px; color: #666; line-height: 1.6;"></p>
+            <button type="button" class="modal-btn primary" onclick="hideErrorModal()" style="width: 100%;">OK</button>
+        </div>
+    </div>
+
+    <!-- ローディング中ポップアップ -->
+    <div id="loadingModal" class="modal">
+        <div class="modal-content" style="max-width: 300px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 16px;">📤</div>
+            <h2 class="modal-title">投稿中...</h2>
+            <p style="color: #999; font-size: 0.9rem;">しばらくお待ちください</p>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <script>
         let canvas;
@@ -2279,7 +2318,7 @@ $categories = $stmt->fetchAll();
                         
                         URL.revokeObjectURL(url);
                     } else {
-                        showMessage('PNG変換に失敗しました');
+                        showErrorModal('PNG変換に失敗しました');
                     }
                 }, 'image/png');
             });
@@ -2318,7 +2357,7 @@ $categories = $stmt->fetchAll();
                         // 少し後にURLを解放
                         setTimeout(() => URL.revokeObjectURL(url), 60000);
                     } else {
-                        showMessage('PNG変換に失敗しました');
+                        showErrorModal('PNG変換に失敗しました');
                     }
                 }, 'image/png');
             });
@@ -2327,7 +2366,7 @@ $categories = $stmt->fetchAll();
         // 作品投稿
         function uploadArtwork() {
             if (canvas.getObjects().length === 0) {
-                showMessage('素材を追加してから投稿してください。');
+                showErrorModal('素材を追加してから投稿してください。');
                 return;
             }
             document.getElementById('confirmModal').classList.add('show');
@@ -2337,14 +2376,62 @@ $categories = $stmt->fetchAll();
             document.getElementById('confirmModal').classList.remove('show');
         }
 
+        let currentArtworkId = null; // ツイート用に作品IDを保持
+
+        function showSuccessModal(artworkId) {
+            currentArtworkId = artworkId; // 作品IDを保存
+            if (artworkId) {
+                // 詳細ページへのリンクを設定
+                const link = document.getElementById('artworkDetailLink');
+                link.href = '/everyone-work.php?id=' + artworkId;
+            }
+            document.getElementById('successModal').classList.add('show');
+        }
+
+        function hideSuccessModal() {
+            document.getElementById('successModal').classList.remove('show');
+        }
+
+        function tweetArtwork() {
+            let tweetText = 'I made this with marutto.art✨\n\n';
+            
+            // 現在のURLから言語コードを抽出（/en/, /fr/, /es/, /nl/）
+            const currentPath = window.location.pathname;
+            const langMatch = currentPath.match(/^\/(en|fr|es|nl)\//);
+            const langPrefix = langMatch ? `/${langMatch[1]}` : '';
+            
+            let url = `https://marutto.art${langPrefix}/`;
+            
+            if (currentArtworkId) {
+                url = `https://marutto.art${langPrefix}/everyone-work.php?id=${currentArtworkId}`;
+            }
+            
+            const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(url)}`;
+            window.open(tweetUrl, '_blank', 'width=550,height=420');
+        }
+
+        function showErrorModal(message) {
+            document.getElementById('errorModalMessage').textContent = message;
+            document.getElementById('errorModal').classList.add('show');
+        }
+
+        function hideErrorModal() {
+            document.getElementById('errorModal').classList.remove('show');
+        }
+
+        function showLoadingModal() {
+            document.getElementById('loadingModal').classList.add('show');
+        }
+
+        function hideLoadingModal() {
+            document.getElementById('loadingModal').classList.remove('show');
+        }
+
         function confirmUpload() {
             hideConfirmModal();
 
             // ローディング表示
-            const loadingDiv = document.createElement('div');
-            loadingDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; text-align: center; min-width: 200px;';
-            loadingDiv.innerHTML = '<div style="font-size: 2rem; margin-bottom: 10px;">📤</div><div style="font-size: 1.2rem;">投稿中...</div>';
-            document.body.appendChild(loadingDiv);
+            showLoadingModal();
 
             // 選択を解除
             canvas.discardActiveObject();
@@ -2376,8 +2463,8 @@ $categories = $stmt->fetchAll();
                         canvas.renderAll();
                         
                         if (!blob) {
-                            document.body.removeChild(loadingDiv);
-                            showMessage('画像の生成に失敗しました');
+                            hideLoadingModal();
+                            showErrorModal('画像の生成に失敗しました');
                             return;
                         }
                     
@@ -2458,8 +2545,8 @@ $categories = $stmt->fetchAll();
                     
                     tempCanvas.toBlob(function(webpBlob) {
                         if (!webpBlob) {
-                            document.body.removeChild(loadingDiv);
-                            showMessage('WebP画像の生成に失敗しました');
+                            hideLoadingModal();
+                            showErrorModal('WebP画像の生成に失敗しました');
                             return;
                         }
                         
@@ -2541,39 +2628,33 @@ $categories = $stmt->fetchAll();
                             return response.json();
                         })
                         .then(data => {
-                            document.body.removeChild(loadingDiv);
+                            hideLoadingModal();
                             
                             if (data.success) {
-                                showMessage('作品を投稿しました！\nありがとうございます✨');
+                                showSuccessModal(data.data?.artworkId);
                             } else {
-                                showMessage('投稿に失敗しました: ' + (data.error || '不明なエラー'));
+                                showErrorModal('投稿に失敗しました: ' + (data.error || '不明なエラー'));
                             }
                         })
                         .catch(error => {
-                            document.body.removeChild(loadingDiv);
+                            hideLoadingModal();
                             console.error('Upload error:', error);
-                            showMessage('投稿中にエラーが発生しました: ' + error.message);
+                            showErrorModal('投稿中にエラーが発生しました: ' + error.message);
                         });
                     }, 'image/webp', 0.85); // WebP品質85%
                 })
                 .catch(error => {
-                    document.body.removeChild(loadingDiv);
+                    hideLoadingModal();
                     canvas.setDimensions({ width: currentWidth, height: currentHeight });
                     canvas.setZoom(currentZoom);
                     canvas.renderAll();
                     console.error('Blob conversion error:', error);
-                    showMessage('画像の生成に失敗しました');
+                    showErrorModal('画像の生成に失敗しました');
                 });
             }, 100);
         }
 
-        // メッセージ表示
-        function showMessage(message) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10000; text-align: center; min-width: 200px; max-width: 400px;';
-            messageDiv.innerHTML = `<div style="white-space: pre-line; margin-bottom: 20px; line-height: 1.6;">${message}</div><button onclick="this.parentElement.remove()" style="padding: 10px 24px; background: var(--primary-color); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: 600;">OK</button>`;
-            document.body.appendChild(messageDiv);
-        }
+
 
         // ページング関連の変数
         let currentPage = 1;
