@@ -2394,16 +2394,10 @@ $categories = $stmt->fetchAll();
 
         function tweetArtwork() {
             let tweetText = 'I made this with marutto.art✨\n\n';
-            
-            // 現在のURLから言語コードを抽出（/en/, /fr/, /es/, /nl/）
-            const currentPath = window.location.pathname;
-            const langMatch = currentPath.match(/^\/(en|fr|es|nl)\//);
-            const langPrefix = langMatch ? `/${langMatch[1]}` : '';
-            
-            let url = `https://marutto.art${langPrefix}/`;
+            let url = 'https://marutto.art/';
             
             if (currentArtworkId) {
-                url = `https://marutto.art${langPrefix}/everyone-work.php?id=${currentArtworkId}`;
+                url = `https://marutto.art/everyone-work.php?id=${currentArtworkId}`;
             }
             
             const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(url)}`;
