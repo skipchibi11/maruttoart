@@ -108,7 +108,7 @@ $categories = $stmt->fetchAll();
             padding: 10px 16px;
             border-radius: 50px;
             border: 2px solid var(--primary-color);
-            font-size: 0.9rem;
+            font-size: 16px;
             background: white;
         }
 
