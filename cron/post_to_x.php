@@ -74,8 +74,7 @@ try {
     
     logMessage("画像アップロード成功: メディアID = $mediaId", $logFile);
     
-    // ツイート本文を作成
-    $tweetText =（タイトル + ハッシュタグ）
+    // ツイート本文を作成（タイトル + ハッシュタグ）
     $hashtags = "\n\n#イラスト #illustration #maruttoart";
     $tweetText = $artwork['title'] . $hashtags;
     
