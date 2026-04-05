@@ -13,11 +13,11 @@ function logMessage($message, $logFile) {
 }
 
 // X API設定（環境変数から読み込み）
-$xApiKey = $_ENV['X_API_KEY'] ?? '';
-$xApiSecret = $_ENV['X_API_SECRET'] ?? '';
-$xAccessToken = $_ENV['X_ACCESS_TOKEN'] ?? '';
-$xAccessTokenSecret = $_ENV['X_ACCESS_TOKEN_SECRET'] ?? '';
-$xBearerToken = $_ENV['X_BEARER_TOKEN'] ?? '';
+$xApiKey = trim($_ENV['X_API_KEY'] ?? '');
+$xApiSecret = trim($_ENV['X_API_SECRET'] ?? '');
+$xAccessToken = trim($_ENV['X_ACCESS_TOKEN'] ?? '');
+$xAccessTokenSecret = trim($_ENV['X_ACCESS_TOKEN_SECRET'] ?? '');
+$xBearerToken = trim($_ENV['X_BEARER_TOKEN'] ?? '');
 
 if (empty($xApiKey) || empty($xApiSecret) || empty($xAccessToken) || empty($xAccessTokenSecret)) {
     logMessage("エラー: X APIの認証情報が設定されていません。", $logFile);
@@ -25,6 +25,13 @@ if (empty($xApiKey) || empty($xApiSecret) || empty($xAccessToken) || empty($xAcc
     logMessage("X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET, X_BEARER_TOKEN", $logFile);
     exit(1);
 }
+
+// デバッグ: APIキーの存在確認（実際の値は表示しない）
+logMessage("API Key設定確認: " . (strlen($xApiKey) > 0 ? "OK (" . strlen($xApiKey) . "文字)" : "NG"), $logFile);
+logMessage("API Secret設定確認: " . (strlen($xApiSecret) > 0 ? "OK (" . strlen($xApiSecret) . "文字)" : "NG"), $logFile);
+logMessage("Access Token設定確認: " . (strlen($xAccessToken) > 0 ? "OK (" . strlen($xAccessToken) . "文字)" : "NG"), $logFile);
+logMessage("Access Token Secret設定確認: " . (strlen($xAccessTokenSecret) > 0 ? "OK (" . strlen($xAccessTokenSecret) . "文字)" : "NG"), $logFile);
+
 
 $pdo = getDB();
 
@@ -53,12 +60,13 @@ try {
     
     // 画像ファイルのパスを決定（WebPがあればWebP、なければPNG）
     $imagePath = '';
-    if (!empty($artwork['webp_path']) && file_exists(__DIR__ . '/../' . $artwork['webp_path'])) {
-        $imagePath = __DIR__ . '/../' . $artwork['webp_path'];
-        logMessage("画像: WebP形式を使用", $logFile);
-    } elseif (!empty($artwork['file_path']) && file_exists(__DIR__ . '/../' . $artwork['file_path'])) {
+    // まずPNG形式を優先的に使用（WebPの互換性問題を避けるため）
+    if (!empty($artwork['file_path']) && file_exists(__DIR__ . '/../' . $artwork['file_path'])) {
         $imagePath = __DIR__ . '/../' . $artwork['file_path'];
         logMessage("画像: PNG形式を使用", $logFile);
+    } elseif (!empty($artwork['webp_path']) && file_exists(__DIR__ . '/../' . $artwork['webp_path'])) {
+        $imagePath = __DIR__ . '/../' . $artwork['webp_path'];
+        logMessage("画像: WebP形式を使用", $logFile);
     } else {
         logMessage("エラー: 画像ファイルが見つかりません。", $logFile);
         exit(1);
@@ -137,13 +145,19 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     $oauthSignature = base64_encode(hash_hmac('sha1', $baseInfo, $compositeKey, true));
     $oauth['oauth_signature'] = $oauthSignature;
     
+    // デバッグ: 署名情報をログに出力
+    logMessage("署名ベース文字列: " . substr($baseInfo, 0, 200) . "...", $logFile);
+    
     // Authorizationヘッダーを構築
     $authHeader = 'OAuth ';
     $headerParts = [];
     foreach ($oauth as $key => $value) {
-        $headerParts[] = rawurlencode($key) . '="' . rawurlencode($value) . '"';
+        $headerParts[] = $key . '="' . rawurlencode($value) . '"';
     }
     $authHeader .= implode(', ', $headerParts);
+    
+    // デバッグ: Authorizationヘッダーをログに出力（署名部分は省略）
+    logMessage("Authorization: " . substr($authHeader, 0, 100) . "...", $logFile);
     
     // cURLでアップロード
     $ch = curl_init();
@@ -213,7 +227,7 @@ function postTweetToX($text, $mediaId, $apiKey, $apiSecret, $accessToken, $acces
     $authHeader = 'OAuth ';
     $headerParts = [];
     foreach ($oauth as $key => $value) {
-        $headerParts[] = rawurlencode($key) . '="' . rawurlencode($value) . '"';
+        $headerParts[] = $key . '="' . rawurlencode($value) . '"';
     }
     $authHeader .= implode(', ', $headerParts);
     
