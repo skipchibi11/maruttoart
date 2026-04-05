@@ -121,7 +121,10 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     
     logMessage("画像サイズ: " . strlen($imageData) . " bytes", $logFile);
     
-    // OAuth 1.0aの署名を生成（パラメータなし）
+    // 画像をbase64エンコード
+    $mediaData = base64_encode($imageData);
+    
+    // OAuth 1.0aの署名を生成（パラメータなし - media_dataは署名に含めない）
     $oauth = [
         'oauth_consumer_key' => $apiKey,
         'oauth_nonce' => md5(microtime() . mt_rand()),
@@ -131,7 +134,7 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
         'oauth_version' => '1.0'
     ];
     
-    // 署名ベース文字列を作成（media_dataは含めない）
+    // 署名ベース文字列を作成
     $baseInfo = buildBaseString($uploadUrl, 'POST', $oauth);
     $compositeKey = rawurlencode($apiSecret) . '&' . rawurlencode($accessTokenSecret);
     $oauthSignature = base64_encode(hash_hmac('sha1', $baseInfo, $compositeKey, true));
@@ -145,23 +148,18 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     }
     $authHeader .= implode(', ', $headerParts);
     
-    // multipart/form-data形式でアップロード
-    $boundary = '----WebKitFormBoundary' . uniqid();
-    $postData = "--{$boundary}\r\n";
-    $postData .= "Content-Disposition: form-data; name=\"media\"; filename=\"" . basename($imagePath) . "\"\r\n";
-    $postData .= "Content-Type: " . mime_content_type($imagePath) . "\r\n\r\n";
-    $postData .= $imageData . "\r\n";
-    $postData .= "--{$boundary}--\r\n";
+    // POSTデータ（application/x-www-form-urlencoded形式）
+    $postFields = 'media_data=' . urlencode($mediaData);
     
     // cURLでアップロード
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $uploadUrl);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Authorization: ' . $authHeader,
-        'Content-Type: multipart/form-data; boundary=' . $boundary,
-        'Content-Length: ' . strlen($postData)
+        'Content-Type: application/x-www-form-urlencoded',
+        'Content-Length: ' . strlen($postFields)
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
