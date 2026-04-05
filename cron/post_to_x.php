@@ -111,10 +111,20 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
         return false;
     }
     
+    // 画像をbase64エンコード
+    $mediaData = base64_encode($imageData);
+    
+    logMessage("画像サイズ: " . strlen($imageData) . " bytes", $logFile);
+    
+    // POSTパラメータ
+    $postParams = [
+        'media_data' => $mediaData
+    ];
+    
     // OAuth 1.0aの署名を生成
     $oauth = [
         'oauth_consumer_key' => $apiKey,
-        'oauth_nonce' => time(),
+        'oauth_nonce' => md5(microtime() . mt_rand()),
         'oauth_signature_method' => 'HMAC-SHA1',
         'oauth_timestamp' => time(),
         'oauth_token' => $accessToken,
@@ -128,22 +138,35 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     $oauth['oauth_signature'] = $oauthSignature;
     
     // Authorizationヘッダーを構築
-    $authHeader = 'OAuth ' . http_build_query($oauth, '', ', ', PHP_QUERY_RFC3986);
+    $authHeader = 'OAuth ';
+    $headerParts = [];
+    foreach ($oauth as $key => $value) {
+        $headerParts[] = rawurlencode($key) . '="' . rawurlencode($value) . '"';
+    }
+    $authHeader .= implode(', ', $headerParts);
     
     // cURLでアップロード
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $uploadUrl);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, [
-        'media' => new CURLFile($imagePath)
-    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postParams));
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: ' . $authHeader
+        'Authorization: ' . $authHeader,
+        'Content-Type: application/x-www-form-urlencoded'
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if ($response === false) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        logMessage("画像アップロードcURLエラー: $error", $logFile);
+        return false;
+    }
+    
     curl_close($ch);
     
     if ($httpCode == 200) {
@@ -173,7 +196,7 @@ function postTweetToX($text, $mediaId, $apiKey, $apiSecret, $accessToken, $acces
     // OAuth 1.0aの署名を生成
     $oauth = [
         'oauth_consumer_key' => $apiKey,
-        'oauth_nonce' => time(),
+        'oauth_nonce' => md5(microtime() . mt_rand()),
         'oauth_signature_method' => 'HMAC-SHA1',
         'oauth_timestamp' => time(),
         'oauth_token' => $accessToken,
@@ -187,7 +210,12 @@ function postTweetToX($text, $mediaId, $apiKey, $apiSecret, $accessToken, $acces
     $oauth['oauth_signature'] = $oauthSignature;
     
     // Authorizationヘッダーを構築
-    $authHeader = 'OAuth ' . http_build_query($oauth, '', ', ', PHP_QUERY_RFC3986);
+    $authHeader = 'OAuth ';
+    $headerParts = [];
+    foreach ($oauth as $key => $value) {
+        $headerParts[] = rawurlencode($key) . '="' . rawurlencode($value) . '"';
+    }
+    $authHeader .= implode(', ', $headerParts);
     
     // cURLでツイート投稿
     $ch = curl_init();
@@ -202,6 +230,14 @@ function postTweetToX($text, $mediaId, $apiKey, $apiSecret, $accessToken, $acces
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if ($response === false) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        logMessage("ツイート投稿cURLエラー: $error", $logFile);
+        return false;
+    }
+    
     curl_close($ch);
     
     if ($httpCode >= 200 && $httpCode < 300) {
