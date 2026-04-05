@@ -114,17 +114,15 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     $uploadUrl = 'https://upload.twitter.com/1.1/media/upload.json';
     
     // 画像を読み込む
-    $imageData = file_get_contents($imagePath);
-    if ($imageData === false) {
+    if (!file_exists($imagePath)) {
+        logMessage("画像ファイルが存在しません: $imagePath", $logFile);
         return false;
     }
     
-    logMessage("画像サイズ: " . strlen($imageData) . " bytes", $logFile);
+    $imageSize = filesize($imagePath);
+    logMessage("画像サイズ: $imageSize bytes", $logFile);
     
-    // 画像をbase64エンコード
-    $mediaData = base64_encode($imageData);
-    
-    // OAuth 1.0aの署名を生成（パラメータなし - media_dataは署名に含めない）
+    // OAuth 1.0aの署名を生成（マルチパートアップロード時はパラメータなし）
     $oauth = [
         'oauth_consumer_key' => $apiKey,
         'oauth_nonce' => md5(microtime() . mt_rand()),
@@ -148,8 +146,10 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     }
     $authHeader .= implode(', ', $headerParts);
     
-    // POSTデータ（application/x-www-form-urlencoded形式）
-    $postFields = 'media_data=' . urlencode($mediaData);
+    // CURLFileを使ってマルチパート形式でアップロード
+    $postFields = [
+        'media' => new CURLFile($imagePath, mime_content_type($imagePath), basename($imagePath))
+    ];
     
     // cURLでアップロード
     $ch = curl_init();
@@ -157,9 +157,7 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: ' . $authHeader,
-        'Content-Type: application/x-www-form-urlencoded',
-        'Content-Length: ' . strlen($postFields)
+        'Authorization: ' . $authHeader
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
@@ -178,6 +176,7 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     
     if ($httpCode == 200) {
         $result = json_decode($response, true);
+        logMessage("メディアアップロード成功", $logFile);
         return $result['media_id_string'] ?? false;
     }
     
