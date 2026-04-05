@@ -72,6 +72,13 @@
 - 未生成の素材を1件ずつ処理（API制限対応）
 - 詳細ページでの表示によりコンテンツ充実化
 
+### X (Twitter) 自動投稿
+- 承認済みコミュニティ作品をランダムに選択して投稿
+- 画像付きツイート（WebP優先、PNGフォールバック）
+- 作品タイトルとハッシュタグを含む
+- X API v2を使用（OAuth 1.0a認証）
+- シンプルで軽量な設計
+
 ## ファイル構成
 ```
 cron/
@@ -90,6 +97,8 @@ cron/
 ├── calculate_cross_similarities.sh                # クロス類似度計算用シェルスクリプト
 ├── generate_mini_stories.php                      # ミニストーリー生成スクリプト
 ├── generate_mini_stories.sh                       # ミニストーリー生成用シェルスクリプト
+├── post_to_x.php                                  # X投稿スクリプト
+├── post_to_x.sh                                   # X投稿用シェルスクリプト
 ├── cleanup_material_files.php                    # 素材ファイル整理スクリプト
 ├── cleanup_material_files.sh                     # 素材ファイル整理用シェルスクリプト
 └── README.md                                      # このファイル
@@ -184,7 +193,21 @@ ADD COLUMN mini_story_model VARCHAR(100) DEFAULT NULL;
 `.env`ファイルに以下が設定されていることを確認：
 ```
 OPENAI_API_KEY=your_openai_api_key_here
+
+# X (Twitter) API設定
+X_API_KEY=your_api_key_here
+X_API_SECRET=your_api_secret_here
+X_ACCESS_TOKEN=your_access_token_here
+X_ACCESS_TOKEN_SECRET=your_access_token_secret_here
+X_BEARER_TOKEN=your_bearer_token_here
 ```
+
+**X API認証情報の取得:**
+1. [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard) にアクセス
+2. アプリを作成または既存のアプリを選択
+3. "Keys and tokens" タブからAPIキーとトークンを取得
+4. "User authentication settings" で OAuth 1.0a を有効化
+5. Read and Write の権限を付与
 
 ## 使用方法
 
@@ -333,6 +356,9 @@ tail -f logs/structured_images.log
 # ミニストーリー生成（毎分実行、未処理を1件ずつ）
 * * * * * /path/to/maruttoart/cron/generate_mini_stories.sh
 
+# X (Twitter) への投稿（1日3回: 9時、15時、21時）
+0 9,15,21 * * * /path/to/maruttoart/cron/post_to_x.sh
+
 # 素材ファイル整理（毎日深夜2時30分に実行）
 30 2 * * * /path/to/maruttoart/cron/cleanup_material_files.sh
 ```
@@ -398,6 +424,32 @@ tail -f logs/kids_story_generation.log
 - このスクリプトが定期的に実行され、NULLの作品を検出して生成
 - 子供には「おはなしをつくっています」というメッセージが表示される
 - 5分ごとに実行することで、ほぼリアルタイムでストーリーが生成される
+
+### 6. X (Twitter) への投稿
+
+#### 手動実行
+```bash
+cd /path/to/maruttoart/cron
+./post_to_x.sh
+```
+
+#### cron設定（1日3回: 9時、15時、21時）
+```bash
+0 9,15,21 * * * /path/to/maruttoart/cron/post_to_x.sh
+```
+
+#### ログ確認
+```bash
+tail -f logs/x_post.log
+```
+
+#### 特徴
+- 承認済みコミュニティ作品からランダムに選択
+- 作品タイトル、制作者名、画像を含むツイート
+- 固定ハッシュタグ: #イラスト #illustration #maruttoart
+- WebP画像を優先的に使用（ファイルサイズ削減）
+- 投稿履歴をデータベースに記録
+- 280文字制限を考慮した自動省略
 
 ### 7. みんなのアトリエ作品の説明生成
 **スクリプト**: `generate_community_artwork_descriptions.php`, `generate_community_artwork_descriptions.sh`
