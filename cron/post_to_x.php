@@ -32,6 +32,17 @@ logMessage("API Secret設定確認: " . (strlen($xApiSecret) > 0 ? "OK (" . strl
 logMessage("Access Token設定確認: " . (strlen($xAccessToken) > 0 ? "OK (" . strlen($xAccessToken) . "文字)" : "NG"), $logFile);
 logMessage("Access Token Secret設定確認: " . (strlen($xAccessTokenSecret) > 0 ? "OK (" . strlen($xAccessTokenSecret) . "文字)" : "NG"), $logFile);
 
+// 投稿時間のチェック（9時、15時、21時のみ実行）
+$currentHour = (int)date('G'); // 0-23の時間（先頭のゼロなし）
+$allowedHours = [9, 15, 21];
+
+if (!in_array($currentHour, $allowedHours)) {
+    logMessage("現在の時刻: {$currentHour}時 - 投稿時間外のためスキップします（投稿時間: 9時、15時、21時）", $logFile);
+    exit(0);
+}
+
+logMessage("投稿時間確認: {$currentHour}時 - 投稿を開始します", $logFile);
+
 
 $pdo = getDB();
 
