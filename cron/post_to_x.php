@@ -119,17 +119,9 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
         return false;
     }
     
-    // 画像をbase64エンコード
-    $mediaData = base64_encode($imageData);
-    
     logMessage("画像サイズ: " . strlen($imageData) . " bytes", $logFile);
     
-    // POSTパラメータ
-    $postParams = [
-        'media_data' => $mediaData
-    ];
-    
-    // OAuth 1.0aの署名を生成
+    // OAuth 1.0aの署名を生成（パラメータなし）
     $oauth = [
         'oauth_consumer_key' => $apiKey,
         'oauth_nonce' => md5(microtime() . mt_rand()),
@@ -139,18 +131,11 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
         'oauth_version' => '1.0'
     ];
     
-    // 署名ベース文字列を作成
+    // 署名ベース文字列を作成（media_dataは含めない）
     $baseInfo = buildBaseString($uploadUrl, 'POST', $oauth);
     $compositeKey = rawurlencode($apiSecret) . '&' . rawurlencode($accessTokenSecret);
     $oauthSignature = base64_encode(hash_hmac('sha1', $baseInfo, $compositeKey, true));
     $oauth['oauth_signature'] = $oauthSignature;
-    
-    // デバッグ: 署名情報をログに出力
-    logMessage("Consumer Key (先頭5文字): " . substr($apiKey, 0, 5) . "...", $logFile);
-    logMessage("Access Token (先頭5文字): " . substr($accessToken, 0, 5) . "...", $logFile);
-    logMessage("Timestamp: " . $oauth['oauth_timestamp'], $logFile);
-    logMessage("Nonce: " . $oauth['oauth_nonce'], $logFile);
-    logMessage("Signature: " . substr($oauthSignature, 0, 10) . "...", $logFile);
     
     // Authorizationヘッダーを構築
     $authHeader = 'OAuth ';
@@ -160,17 +145,23 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     }
     $authHeader .= implode(', ', $headerParts);
     
-    // デバッグ: Authorizationヘッダーをログに出力（署名部分は省略）
-    logMessage("Authorization: " . substr($authHeader, 0, 100) . "...", $logFile);
+    // multipart/form-data形式でアップロード
+    $boundary = '----WebKitFormBoundary' . uniqid();
+    $postData = "--{$boundary}\r\n";
+    $postData .= "Content-Disposition: form-data; name=\"media\"; filename=\"" . basename($imagePath) . "\"\r\n";
+    $postData .= "Content-Type: " . mime_content_type($imagePath) . "\r\n\r\n";
+    $postData .= $imageData . "\r\n";
+    $postData .= "--{$boundary}--\r\n";
     
     // cURLでアップロード
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $uploadUrl);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postParams));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Authorization: ' . $authHeader,
-        'Content-Type: application/x-www-form-urlencoded'
+        'Content-Type: multipart/form-data; boundary=' . $boundary,
+        'Content-Length: ' . strlen($postData)
     ]);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
