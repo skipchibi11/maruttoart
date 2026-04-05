@@ -146,7 +146,11 @@ function uploadMediaToX($imagePath, $apiKey, $apiSecret, $accessToken, $accessTo
     $oauth['oauth_signature'] = $oauthSignature;
     
     // デバッグ: 署名情報をログに出力
-    logMessage("署名ベース文字列: " . substr($baseInfo, 0, 200) . "...", $logFile);
+    logMessage("Consumer Key (先頭5文字): " . substr($apiKey, 0, 5) . "...", $logFile);
+    logMessage("Access Token (先頭5文字): " . substr($accessToken, 0, 5) . "...", $logFile);
+    logMessage("Timestamp: " . $oauth['oauth_timestamp'], $logFile);
+    logMessage("Nonce: " . $oauth['oauth_nonce'], $logFile);
+    logMessage("Signature: " . substr($oauthSignature, 0, 10) . "...", $logFile);
     
     // Authorizationヘッダーを構築
     $authHeader = 'OAuth ';
