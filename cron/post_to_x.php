@@ -88,7 +88,8 @@ try {
     $tweetId = postTweetToX($tweetText, $mediaId, $xApiKey, $xApiSecret, $xAccessToken, $xAccessTokenSecret, $logFile);
     
     if ($tweetId) {
-        logMessage("ツイート投稿成功: https://x.com/i/status/$tweetId
+        logMessage("ツイート投稿成功: https://x.com/i/status/$tweetId", $logFile);
+    } else {
         logMessage("エラー: ツイートの投稿に失敗しました。", $logFile);
         exit(1);
     }
