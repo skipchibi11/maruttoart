@@ -46,6 +46,9 @@ logMessage("投稿時間確認: {$currentHour}時 - 投稿を開始します", $
 
 $pdo = getDB();
 
+// 一時ファイルのパスを保持（クリーンアップ用）
+$tmpFile = null;
+
 try {
     // 承認済みの作品からランダムに1件取得
     $stmt = $pdo->query("
@@ -69,18 +72,45 @@ try {
     
     logMessage("投稿する作品: {$artwork['title']}", $logFile);
     
-    // 画像ファイルのパスを決定（WebPがあればWebP、なければPNG）
-    $imagePath = '';
-    // まずPNG形式を優先的に使用（WebPの互換性問題を避けるため）
-    if (!empty($artwork['file_path']) && file_exists(__DIR__ . '/../' . $artwork['file_path'])) {
-        $imagePath = __DIR__ . '/../' . $artwork['file_path'];
-        logMessage("画像: PNG形式を使用", $logFile);
-    } elseif (!empty($artwork['webp_path']) && file_exists(__DIR__ . '/../' . $artwork['webp_path'])) {
-        $imagePath = __DIR__ . '/../' . $artwork['webp_path'];
-        logMessage("画像: WebP形式を使用", $logFile);
-    } else {
-        logMessage("エラー: 画像ファイルが見つかりません。", $logFile);
+    // 画像ファイルのパスを決定（PNG優先、WebPフォールバック）
+    $rawImagePath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork['webp_path'];
+    
+    if (empty($rawImagePath)) {
+        logMessage("エラー: 画像パスが設定されていません。", $logFile);
         exit(1);
+    }
+    
+    logMessage("画像パス: $rawImagePath", $logFile);
+    
+    // 画像パスがURLか相対パスかを判定
+    $isUrl = (strpos($rawImagePath, 'http://') === 0 || strpos($rawImagePath, 'https://') === 0);
+    
+    if ($isUrl) {
+        // CloudflareのR2などのURL - 一時ファイルにダウンロード
+        logMessage("画像: URL形式（R2など）からダウンロード", $logFile);
+        
+        $tmpFile = tempnam(sys_get_temp_dir(), 'x_post_');
+        $imageData = file_get_contents($rawImagePath);
+        
+        if ($imageData === false) {
+            logMessage("エラー: URLから画像をダウンロードできませんでした: $rawImagePath", $logFile);
+            exit(1);
+        }
+        
+        file_put_contents($tmpFile, $imageData);
+        $imagePath = $tmpFile;
+        logMessage("一時ファイルに保存: $tmpFile", $logFile);
+    } else {
+        // ローカルファイルパス
+        $localPath = __DIR__ . '/../' . $rawImagePath;
+        
+        if (file_exists($localPath)) {
+            $imagePath = $localPath;
+            logMessage("画像: ローカルファイルを使用", $logFile);
+        } else {
+            logMessage("エラー: 画像ファイルが見つかりません: $localPath", $logFile);
+            exit(1);
+        }
     }
     
     // 画像をアップロード
@@ -110,12 +140,32 @@ try {
         logMessage("ツイート投稿成功: https://x.com/i/status/$tweetId", $logFile);
     } else {
         logMessage("エラー: ツイートの投稿に失敗しました。", $logFile);
+        
+        // 一時ファイルをクリーンアップ
+        if ($tmpFile && file_exists($tmpFile)) {
+            unlink($tmpFile);
+            logMessage("一時ファイルを削除: $tmpFile", $logFile);
+        }
+        
         exit(1);
     }
     
 } catch (Exception $e) {
     logMessage("エラー: " . $e->getMessage(), $logFile);
+    
+    // 一時ファイルをクリーンアップ
+    if ($tmpFile && file_exists($tmpFile)) {
+        unlink($tmpFile);
+        logMessage("一時ファイルを削除: $tmpFile", $logFile);
+    }
+    
     exit(1);
+} finally {
+    // 一時ファイルをクリーンアップ（成功時）
+    if ($tmpFile && file_exists($tmpFile)) {
+        unlink($tmpFile);
+        logMessage("一時ファイルを削除: $tmpFile", $logFile);
+    }
 }
 
 /**
