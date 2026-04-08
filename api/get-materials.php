@@ -10,8 +10,42 @@ header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT');
 $pdo = getDB();
 
 try {
+    // ランダム取得（AI自動作成用）
+    if (isset($_GET['random'])) {
+        $limit = min(20, max(1, intval($_GET['random']))); // 1-20の範囲
+        $categoryId = isset($_GET['category_id']) ? intval($_GET['category_id']) : 0;
+        $hasSvg = isset($_GET['has_svg']) && $_GET['has_svg'] == '1';
+        
+        $sql = "
+            SELECT m.id, m.title, m.slug, m.description, m.svg_path, m.webp_small_path, 
+                   m.structured_bg_color, m.search_keywords,
+                   c.title as category_name, c.slug as category_slug
+            FROM materials m
+            LEFT JOIN categories c ON m.category_id = c.id
+            WHERE 1=1
+        ";
+        
+        $params = [];
+        
+        if ($hasSvg) {
+            $sql .= " AND m.svg_path IS NOT NULL AND m.svg_path != ''";
+        }
+        
+        if ($categoryId > 0) {
+            $sql .= " AND m.category_id = ?";
+            $params[] = $categoryId;
+        }
+        
+        // LIMITは整数なので直接埋め込み（$limitは既にintvalでバリデーション済み）
+        $sql .= " ORDER BY RAND() LIMIT " . $limit;
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $materials = $stmt->fetchAll();
+        echo json_encode($materials, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
     // カテゴリ名での取得
-    if (isset($_GET['category'])) {
+    elseif (isset($_GET['category'])) {
         $category = $_GET['category'];
         
         if ($category === 'all') {

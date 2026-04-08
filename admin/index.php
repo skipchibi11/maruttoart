@@ -113,6 +113,11 @@ function buildPagingUrl($page, $per_page, $search_query, $search_category) {
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/ai-compose.php">
+                                <i class="bi bi-stars"></i> AI自動作成
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/admin/categories.php">
                                 <i class="bi bi-folder"></i> カテゴリ管理
                             </a>
