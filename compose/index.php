@@ -1012,10 +1012,14 @@ $categories = $stmt->fetchAll();
                     <label style="display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-dark);">テキスト</label>
                     <textarea id="thumbnailText" class="text-input" rows="3" placeholder="サムネイルのテキストを入力&#10;（改行も反映されます）" style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: inherit; resize: vertical;"></textarea>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                     <button class="secondary-btn" onclick="generateThumbnail('youtube')" style="padding: 10px; font-size: 0.9rem;">
                         <div style="font-weight: 600;">YouTube</div>
                         <div style="font-size: 0.75rem; opacity: 0.8;">1280×720</div>
+                    </button>
+                    <button class="secondary-btn" onclick="generateThumbnail('x')" style="padding: 10px; font-size: 0.9rem;">
+                        <div style="font-weight: 600;">X</div>
+                        <div style="font-size: 0.75rem; opacity: 0.8;">1200×675</div>
                     </button>
                     <button class="secondary-btn" onclick="generateThumbnail('note')" style="padding: 10px; font-size: 0.9rem;">
                         <div style="font-weight: 600;">note</div>
@@ -3365,8 +3369,20 @@ $categories = $stmt->fetchAll();
             }
 
             // サムネイルサイズを決定
-            const thumbWidth = 1280;
-            const thumbHeight = type === 'youtube' ? 720 : 670;
+            let thumbWidth, thumbHeight;
+            if (type === 'youtube') {
+                thumbWidth = 1280;
+                thumbHeight = 720;
+            } else if (type === 'x') {
+                thumbWidth = 1200;
+                thumbHeight = 675;
+            } else if (type === 'note') {
+                thumbWidth = 1280;
+                thumbHeight = 670;
+            } else {
+                thumbWidth = 1280;
+                thumbHeight = 720;
+            }
 
             // 現在の背景色を取得
             const bgColor = canvas.backgroundColor || '#ffffff';
