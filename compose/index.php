@@ -1001,6 +1001,29 @@ $categories = $stmt->fetchAll();
                 <hr class="control-divider">
                 <button class="secondary-btn full-width" style="margin-top: 12px;" onclick="window.history.back()">前に戻る</button>
             </div>
+
+            <!-- サムネイル自動生成 -->
+            <div class="control-section">
+                <div class="control-label" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span style="font-size: 1.1rem;">🎬</span>
+                    <span style="font-weight: 600; color: var(--primary-color);">サムネイル生成</span>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-dark);">テキスト</label>
+                    <textarea id="thumbnailText" class="text-input" rows="3" placeholder="サムネイルのテキストを入力&#10;（改行も反映されます）" style="width: 100%; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 0.9rem; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button class="secondary-btn" onclick="generateThumbnail('youtube')" style="padding: 10px; font-size: 0.9rem;">
+                        <div style="font-weight: 600;">YouTube</div>
+                        <div style="font-size: 0.75rem; opacity: 0.8;">1280×720</div>
+                    </button>
+                    <button class="secondary-btn" onclick="generateThumbnail('note')" style="padding: 10px; font-size: 0.9rem;">
+                        <div style="font-weight: 600;">note</div>
+                        <div style="font-size: 0.75rem; opacity: 0.8;">1280×670</div>
+                    </button>
+                </div>
+                <p style="margin-top: 8px; font-size: 0.75rem; color: #999; line-height: 1.4;">※作品の縦横比に応じて自動配置・トリミングされます</p>
+            </div>
         </div>
     </div>
     </div>
@@ -1413,6 +1436,7 @@ $categories = $stmt->fetchAll();
             originalCanvasWidth = 800;
             originalCanvasHeight = 800;
 
+            // すべてのイベントハンドラをシンプルに
             canvas.on('selection:created', function(e) {
                 selectedObject = e.selected[0];
                 updateLayerList();
@@ -3174,6 +3198,201 @@ $categories = $stmt->fetchAll();
             initCanvas();
             await displaySuggestedItem(); // 推奨アイテムを表示
         });
+
+        // サムネイル自動生成
+        async function generateThumbnail(type) {
+            const text = document.getElementById('thumbnailText').value.trim();
+            if (!text) {
+                alert('テキストを入力してください');
+                return;
+            }
+
+            if (canvas.getObjects().length === 0) {
+                alert('作品を作成してからサムネイルを生成してください');
+                return;
+            }
+
+            // サムネイルサイズを決定
+            const thumbWidth = 1280;
+            const thumbHeight = type === 'youtube' ? 720 : 670;
+
+            // 現在の背景色を取得
+            const bgColor = canvas.backgroundColor || '#ffffff';
+
+            // 一時的なキャンバスを作成
+            const thumbCanvas = new fabric.Canvas(document.createElement('canvas'), {
+                width: thumbWidth,
+                height: thumbHeight,
+                backgroundColor: bgColor
+            });
+
+            showLoadingModal();
+
+            // 少し待機してから処理（UIの更新待ち）
+            setTimeout(async () => {
+                try {
+                    const artworkObjects = canvas.getObjects();
+
+                    // 作品の境界を計算
+                    if (artworkObjects.length === 0) {
+                        hideLoadingModal();
+                        return;
+                    }
+
+                    // 元のキャンバスの原寸サイズを使用（グローバル変数）
+                    const canvasWidth = originalCanvasWidth;
+                    const canvasHeight = originalCanvasHeight;
+
+                    // キャンバス全体をサムネイルに収めるスケールを計算
+                    const canvasScale = Math.min(thumbWidth / canvasWidth, thumbHeight / canvasHeight);
+
+                    // サムネイルでのキャンバスの実際のサイズ
+                    const scaledCanvasWidth = canvasWidth * canvasScale;
+                    const scaledCanvasHeight = canvasHeight * canvasScale;
+
+                    // サムネイル内でキャンバスを中央配置するためのオフセット
+                    const offsetX = (thumbWidth - scaledCanvasWidth) / 2;
+                    const offsetY = (thumbHeight - scaledCanvasHeight) / 2;
+
+                    // 各オブジェクトをコピーして、スケールと位置を調整
+                    for (const obj of artworkObjects) {
+                        const cloned = await new Promise((resolve) => {
+                            obj.clone((clonedObj) => {
+                                resolve(clonedObj);
+                            }, ['materialData']);
+                        });
+
+                        // 元のオブジェクトの中心座標を取得
+                        const centerPoint = obj.getCenterPoint();
+                        
+                        // 元のキャンバスに対する中心座標の相対位置を計算
+                        const relativeCenterX = centerPoint.x / canvasWidth;
+                        const relativeCenterY = centerPoint.y / canvasHeight;
+
+                        // サムネイルでの新しいスケールを設定
+                        cloned.set({
+                            scaleX: obj.scaleX * canvasScale,
+                            scaleY: obj.scaleY * canvasScale,
+                            originX: 'center',
+                            originY: 'center'
+                        });
+
+                        // サムネイルでの中心座標を計算して設定
+                        const newCenterX = offsetX + (relativeCenterX * scaledCanvasWidth);
+                        const newCenterY = offsetY + (relativeCenterY * scaledCanvasHeight);
+                        
+                        cloned.setPositionByOrigin(
+                            new fabric.Point(newCenterX, newCenterY),
+                            'center',
+                            'center'
+                        );
+
+                        thumbCanvas.add(cloned);
+                    }
+
+            // テキストを配置（画像の上に重ねる、改行対応）
+            const textPadding = 40;
+            const lines = text.split('\n');
+            let fontSize = 80;
+            let textbox;
+            const maxTextWidth = thumbWidth - textPadding * 4;
+
+            // フォントサイズを調整して横幅と高さに収める
+            for (let size = fontSize; size >= 20; size -= 2) {
+                textbox = new fabric.Textbox(text, {
+                    left: thumbWidth / 2,
+                    top: thumbHeight - textPadding * 2,
+                    width: maxTextWidth,
+                    fontSize: size,
+                    fill: '#333333',
+                    fontFamily: 'Noto Sans JP, Arial, sans-serif',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    originX: 'center',
+                    originY: 'bottom',
+                    splitByGrapheme: true,
+                    lineHeight: 1.2
+                });
+
+                // 描画して実際のサイズを取得
+                thumbCanvas.add(textbox);
+                thumbCanvas.renderAll();
+                
+                const bounds = textbox.getBoundingRect();
+                thumbCanvas.remove(textbox);
+
+                // 横幅と高さに収まるかチェック
+                if (bounds.width <= maxTextWidth && bounds.height <= thumbHeight * 0.4) {
+                    fontSize = size;
+                    break;
+                }
+            }
+
+            // 最終的なテキストを配置
+            textbox = new fabric.Textbox(text, {
+                left: thumbWidth / 2,
+                top: thumbHeight - textPadding * 2,
+                width: maxTextWidth,
+                fontSize: fontSize,
+                fill: '#333333',
+                fontFamily: 'Noto Sans JP, Arial, sans-serif',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                originX: 'center',
+                originY: 'bottom',
+                splitByGrapheme: true,
+                lineHeight: 1.2
+            });
+
+            // テキストの背景（白い半透明の矩形）を追加
+            thumbCanvas.add(textbox);
+            thumbCanvas.renderAll();
+            const textBounds = textbox.getBoundingRect();
+            thumbCanvas.remove(textbox);
+            
+            // テキストと背景を中央基準で配置し直す
+            const textCenterY = thumbHeight - textPadding * 2 - textBounds.height / 2;
+            
+            textbox.set({
+                top: textCenterY,
+                originY: 'center'
+            });
+            
+            const bgRect = new fabric.Rect({
+                left: thumbWidth / 2,
+                top: textCenterY,
+                width: textBounds.width + textPadding * 2,
+                height: textBounds.height + textPadding * 2,
+                fill: 'rgba(255, 255, 255, 0.85)',
+                originX: 'center',
+                originY: 'center',
+                rx: 10,
+                ry: 10
+            });
+
+            thumbCanvas.add(bgRect);
+            thumbCanvas.add(textbox);
+            thumbCanvas.renderAll();
+
+            // ダウンロード
+            const dataURL = thumbCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = `thumbnail-${type}-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // 一時キャンバスを破棄
+            thumbCanvas.dispose();
+            hideLoadingModal();
+                } catch (error) {
+                    console.error('サムネイル生成エラー:', error);
+                    alert('サムネイルの生成に失敗しました');
+                    hideLoadingModal();
+                }
+            }, 100);
+        }
     </script>
 
     <?php include __DIR__ . '/../includes/footer.php'; ?>
