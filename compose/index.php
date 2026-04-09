@@ -1089,7 +1089,19 @@ $categories = $stmt->fetchAll();
         // LocalStorageに保存（compose/index.php互換形式）
         function saveToLocalStorage() {
             try {
+                console.log('=== LocalStorageに保存 ===');
+                
                 const objects = canvas.getObjects().map((obj, zIndex) => {
+                    const centerPoint = obj.getCenterPoint();
+                    
+                    console.log(`保存: ${obj.materialData?.title}`, {
+                        left: obj.left,
+                        top: obj.top,
+                        centerPoint: {x: centerPoint.x, y: centerPoint.y},
+                        originX: obj.originX,
+                        originY: obj.originY
+                    });
+                    
                     // Fabric.jsのcenter originから左上基準に変換
                     const centerX = obj.width ? (obj.width / 2) : 0;
                     const centerY = obj.height ? (obj.height / 2) : 0;
@@ -1439,18 +1451,110 @@ $categories = $stmt->fetchAll();
             // すべてのイベントハンドラをシンプルに
             canvas.on('selection:created', function(e) {
                 selectedObject = e.selected[0];
+                
+                // 複数選択の場合の詳細ログ
+                if (e.selected && e.selected.length > 1) {
+                    console.log('=== 複数選択が作成されました ===');
+                    console.log('選択数:', e.selected.length);
+                    
+                    e.selected.forEach((obj, idx) => {
+                        const centerPoint = obj.getCenterPoint();
+                        console.log(`オブジェクト${idx + 1} (${obj.materialData?.title}):`, {
+                            left: obj.left,
+                            top: obj.top,
+                            originX: obj.originX,
+                            originY: obj.originY,
+                            centerPoint: {x: centerPoint.x, y: centerPoint.y}
+                        });
+                    });
+                    
+                    // ActiveSelection自体の情報
+                    if (e.target && e.target.type === 'activeSelection') {
+                        const activeSelection = e.target;
+                        console.log('ActiveSelection:', {
+                            left: activeSelection.left,
+                            top: activeSelection.top,
+                            width: activeSelection.width,
+                            height: activeSelection.height,
+                            originX: activeSelection.originX,
+                            originY: activeSelection.originY
+                        });
+                    }
+                }
+                
                 updateLayerList();
                 updateColorPickers();
             });
 
             canvas.on('selection:updated', function(e) {
                 selectedObject = e.selected[0];
+                
+                // 複数選択の場合の詳細ログ
+                if (e.selected && e.selected.length > 1) {
+                    console.log('=== 選択が更新されました ===');
+                    console.log('選択数:', e.selected.length);
+                    
+                    e.selected.forEach((obj, idx) => {
+                        const centerPoint = obj.getCenterPoint();
+                        console.log(`オブジェクト${idx + 1} (${obj.materialData?.title}):`, {
+                            left: obj.left,
+                            top: obj.top,
+                            originX: obj.originX,
+                            originY: obj.originY,
+                            centerPoint: {x: centerPoint.x, y: centerPoint.y}
+                        });
+                    });
+                }
+                
                 updateLayerList();
                 updateColorPickers();
             });
 
             canvas.on('selection:cleared', function() {
                 selectedObject = null;
+                
+                console.log('=== 選択が解除されました ===');
+                
+                // 座標が相対化されているオブジェクトを絶対座標に正規化
+                let normalized = false;
+                canvas.getObjects().forEach((obj, idx) => {
+                    const centerPoint = obj.getCenterPoint();
+                    
+                    console.log(`オブジェクト${idx + 1} (${obj.materialData?.title}):`, {
+                        left: obj.left,
+                        top: obj.top,
+                        originX: obj.originX,
+                        originY: obj.originY,
+                        centerPoint: {x: centerPoint.x, y: centerPoint.y}
+                    });
+                    
+                    // left/topとcenterPointが大きくずれている場合、centerPointを使って正規化
+                    // （ActiveSelectionから解放された直後は座標が相対化されている）
+                    if (Math.abs(obj.left - centerPoint.x) > 0.01 || 
+                        Math.abs(obj.top - centerPoint.y) > 0.01) {
+                        
+                        console.log('  → 座標を正規化:', {
+                            修正前: {left: obj.left, top: obj.top},
+                            修正後: {left: centerPoint.x, top: centerPoint.y}
+                        });
+                        
+                        obj.set({
+                            left: centerPoint.x,
+                            top: centerPoint.y,
+                            originX: 'center',
+                            originY: 'center'
+                        });
+                        obj.setCoords();
+                        normalized = true;
+                    }
+                });
+                
+                if (normalized) {
+                    canvas.renderAll();
+                    saveToLocalStorage();
+                    console.log('✓ 座標の正規化が完了しました');
+                }
+                
                 updateLayerList();
                 updateColorPickers();
             });
@@ -1465,7 +1569,55 @@ $categories = $stmt->fetchAll();
                 saveToLocalStorage();
             });
             
-            canvas.on('object:modified', function() {
+            canvas.on('object:modified', function(e) {
+                console.log('=== オブジェクトが変更されました ===');
+                
+                if (e.target) {
+                    if (e.target.type === 'activeSelection') {
+                        console.log('ActiveSelectionの変更 - 選択を解除して座標を正規化します');
+                        
+                        // ActiveSelection内のオブジェクトを取得
+                        const objects = e.target.getObjects();
+                        
+                        // 選択を解除（これにより各オブジェクトが独立し、絶対座標が取得可能になる）
+                        canvas.discardActiveObject();
+                        
+                        // 各オブジェクトの座標を正規化
+                        objects.forEach((obj, idx) => {
+                            const centerPoint = obj.getCenterPoint();
+                            
+                            console.log(`  オブジェクト${idx + 1} (${obj.materialData?.title}):`, {
+                                変更前left: obj.left,
+                                変更前top: obj.top,
+                                centerPoint: {x: centerPoint.x, y: centerPoint.y}
+                            });
+                            
+                            // centerPointを使って絶対座標に正規化
+                            obj.set({
+                                left: centerPoint.x,
+                                top: centerPoint.y,
+                                originX: 'center',
+                                originY: 'center'
+                            });
+                            obj.setCoords();
+                            
+                            console.log(`  → 正規化完了:`, {
+                                left: obj.left,
+                                top: obj.top
+                            });
+                        });
+                        
+                        canvas.renderAll();
+                    } else {
+                        const centerPoint = e.target.getCenterPoint();
+                        console.log('単一オブジェクトの変更:', e.target.materialData?.title, {
+                            left: e.target.left,
+                            top: e.target.top,
+                            centerPoint: {x: centerPoint.x, y: centerPoint.y}
+                        });
+                    }
+                }
+                
                 updateLayerList();
                 saveToLocalStorage();
             });
