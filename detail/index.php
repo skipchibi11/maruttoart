@@ -40,6 +40,44 @@ if (!$material) {
 // 素材に関連付けられたタグを取得
 $materialTags = getMaterialTags($material['id'], $pdo);
 
+// SEO最適化されたページタイトルを生成（30〜40文字）
+function generateSeoTitle($material) {
+    // 「{タイトル}のかわいい無料イラスト素材 | 商用利用可 | marutto.art」の形式
+    return $material['title'] . 'のかわいい無料イラスト素材 | 商用利用可 | marutto.art';
+}
+
+// SEO最適化されたmeta descriptionを生成（70〜120文字）
+function generateSeoDescription($material) {
+    // 「かわいい{タイトル}の無料イラスト素材です。商用利用OKで、ブログ・SNS・YouTubeサムネイルにも使えます。PNG透過対応。」の形式
+    return 'かわいい' . $material['title'] . 'の無料イラスト素材です。商用利用OKで、ブログ・SNS・YouTubeサムネイルにも使えます。PNG透過対応。';
+}
+
+// OGP用のタイトルを生成（より詳細に）
+function generateOgpTitle($material, $category = null) {
+    $title = $material['title'];
+    
+    // カテゴリ情報があれば含める
+    if ($category && !empty($category['name'])) {
+        $title .= ' (' . $category['name'] . ')';
+    }
+    
+    return $title . ' - 無料イラスト素材';
+}
+
+// OGP用のdescriptionを生成
+function generateOgpDescription($material) {
+    $text = $material['title'] . 'のフリーイラスト素材。商用利用可、クレジット表記不要で無料ダウンロード。';
+    
+    // 検索キーワードがあれば含める
+    if (!empty($material['search_keywords_jp'])) {
+        $keywords = explode(',', $material['search_keywords_jp']);
+        $keywords = array_slice($keywords, 0, 3); // 最初の3つまで
+        $text .= 'タグ: ' . implode('、', $keywords) . '。';
+    }
+    
+    return mb_substr($text, 0, 200); // OGPは最大200文字
+}
+
 // ツイート用テキストを生成
 function createTweetText($title) {
     $tweetText = $title . 'のイラスト' . "\n";
@@ -64,6 +102,12 @@ function getStructuredDataImageUrl($material) {
 
 $tweetText = createTweetText($material['title']);
 $structuredImageUrl = getStructuredDataImageUrl($material);
+
+// SEO最適化されたメタタグ用の変数を生成
+$seoTitle = generateSeoTitle($material);
+$seoDescription = generateSeoDescription($material);
+$ogpTitle = generateOgpTitle($material, $category);
+$ogpDescription = generateOgpDescription($material);
 
 // 関連画像（類似度）を取得
 $relatedMaterials = [];
@@ -164,8 +208,8 @@ $showRelatedItemsSection = !empty($allRelatedItems);
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）｜marutto.art</title>
-    <meta name="description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。ブログや資料に使いやすい、主張しすぎないやさしいデザインです。">
+    <title><?= h($seoTitle) ?></title>
+    <meta name="description" content="<?= h($seoDescription) ?>">
     <link rel="icon" href="/favicon.ico">
     
     <!-- Canonical tag -->
@@ -181,17 +225,18 @@ $showRelatedItemsSection = !empty($allRelatedItems);
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="og:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
-    <meta property="og:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。ブログや資料に使いやすい、主張しすぎないやさしいデザインです。">
+    <meta property="og:url" content="https://marutto.art/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
+    <meta property="og:title" content="<?= h($ogpTitle) ?>">
+    <meta property="og:description" content="<?= h($ogpDescription) ?>">
     <meta property="og:image" content="<?= h($structuredImageUrl) ?>">
+    <meta property="og:site_name" content="marutto.art">
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="<?= h($_SERVER['REQUEST_SCHEME'] ?? 'http') ?>://<?= h($_SERVER['HTTP_HOST']) ?>/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
-    <meta property="twitter:title" content="<?= h($material['title']) ?> - ミニマルなフリーイラスト素材（商用利用OK）">
-    <meta property="twitter:description" content="<?= h($material['title']) ?>のミニマルなフリーイラスト素材（商用利用OK）。ブログや資料に使いやすい、主張しすぎないやさしいデザインです。">
-    <meta property="twitter:image" content="<?= h($structuredImageUrl) ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://marutto.art/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/">
+    <meta name="twitter:title" content="<?= h($ogpTitle) ?>">
+    <meta name="twitter:description" content="<?= h($ogpDescription) ?>">
+    <meta name="twitter:image" content="<?= h($structuredImageUrl) ?>">
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>
     
