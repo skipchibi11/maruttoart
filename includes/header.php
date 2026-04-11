@@ -614,6 +614,8 @@ html, body {
         <a href="/es/" class="nturl notranslate">🇪🇸 Español</a>
         <a href="/fr/" class="nturl notranslate">🇫🇷 Français</a>
         <a href="/nl/" class="nturl notranslate">🇳🇱 Nederlands</a>
+        <a href="/zh-CN/" class="nturl notranslate">🇨🇳 简体中文</a>
+        <a href="/ko/" class="nturl notranslate">🇰🇷 한국어</a>
     </div>
 </div>
 
