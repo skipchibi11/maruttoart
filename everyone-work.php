@@ -150,6 +150,55 @@ shuffle($allRelatedItems);
 
 $showRelatedItemsSection = !empty($allRelatedItems);
 
+// SEO最適化されたタイトルを生成（使用素材2点まで）
+function generateArtworkSeoTitle($artwork, $usedMaterials) {
+    $materialNames = [];
+    // 最大2点まで素材名を取得
+    foreach (array_slice($usedMaterials, 0, 2) as $material) {
+        $materialNames[] = $material['title'];
+    }
+    
+    if (!empty($materialNames)) {
+        $materialsText = implode('・', $materialNames);
+        return $artwork['title'] . ' | ' . $materialsText . 'の無料イラスト作品 | marutto.art';
+    } else {
+        // 素材情報がない場合
+        return $artwork['title'] . ' | 無料イラスト作品 | marutto.art';
+    }
+}
+
+// SEO最適化されたdescriptionを生成
+function generateArtworkSeoDescription($artwork) {
+    return $artwork['title'] . 'の無料イラスト作品。商用利用OKでSNS・ブログ・サムネイルにも使えます。素材を自由にアレンジして、自分だけのオリジナル作品を作れます。';
+}
+
+// OGP用のタイトルを生成
+function generateArtworkOgpTitle($artwork, $usedMaterials) {
+    $materialNames = [];
+    // 最大2点まで素材名を取得
+    foreach (array_slice($usedMaterials, 0, 2) as $material) {
+        $materialNames[] = $material['title'];
+    }
+    
+    if (!empty($materialNames)) {
+        $materialsText = implode('・', $materialNames);
+        return $artwork['title'] . ' | ' . $materialsText . 'の無料イラスト作品 | marutto.art';
+    } else {
+        return $artwork['title'] . ' | 無料イラスト作品 | marutto.art';
+    }
+}
+
+// OGP用のdescriptionを生成
+function generateArtworkOgpDescription($artwork) {
+    return $artwork['title'] . 'の無料イラスト作品。商用利用OKでSNS・ブログ・サムネイルにも使えます。素材を自由にアレンジして、自分だけのオリジナル作品を作れます。';
+}
+
+// SEO用変数を生成
+$seoTitle = generateArtworkSeoTitle($artwork, $usedMaterials);
+$seoDescription = generateArtworkSeoDescription($artwork);
+$ogpTitle = generateArtworkOgpTitle($artwork, $usedMaterials);
+$ogpDescription = generateArtworkOgpDescription($artwork);
+
 // 作品画像のURL（PNG優先）
 $imagePath = !empty($artwork['file_path']) ? $artwork['file_path'] : $artwork['webp_path'];
 // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
@@ -169,8 +218,8 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="c5fko6zCuEianJGT3hyZsHgvNx5QAuuHKZ4TWgvV6J0">
-    <title><?= h($artwork['title']) ?>｜無料イラスト素材（作成可）｜marutto.art</title>
-    <meta name="description" content="<?= h($artwork['title']) ?>は、無料で組み合わせて作られています。ブログ・資料・SNSに使えるシンプルなイラスト素材です。">
+    <title><?= h($seoTitle) ?></title>
+    <meta name="description" content="<?= h($seoDescription) ?>">
     
     <!-- Site Icons -->
     <link rel="icon" href="/favicon.ico">
@@ -188,16 +237,17 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="<?= h($scheme) ?>://<?= h($host) ?>/everyone-work.php?id=<?= $artwork['id'] ?>">
-    <meta property="og:title" content="<?= h($artwork['title']) ?>｜無料イラスト素材（作成可）｜marutto.art">
-    <meta property="og:description" content="<?= h($artwork['title']) ?>は、無料で組み合わせて作られています。ブログ・資料・SNSに使えるシンプルなイラスト素材です。">
+    <meta property="og:url" content="https://marutto.art/everyone-work.php?id=<?= $artwork['id'] ?>">
+    <meta property="og:title" content="<?= h($ogpTitle) ?>">
+    <meta property="og:description" content="<?= h($ogpDescription) ?>">
     <meta property="og:image" content="<?= h($fullImageUrl) ?>">
+    <meta property="og:site_name" content="marutto.art">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="<?= h($scheme) ?>://<?= h($host) ?>/everyone-work.php?id=<?= $artwork['id'] ?>">
-    <meta property="twitter:title" content="<?= h($artwork['title']) ?>｜無料イラスト素材（作成可）｜marutto.art">
-    <meta property="twitter:description" content="<?= h($artwork['title']) ?>は、無料で組み合わせて作られています。ブログ・資料・SNSに使えるシンプルなイラスト素材です。">
+    <meta property="twitter:url" content="https://marutto.art/everyone-work.php?id=<?= $artwork['id'] ?>">
+    <meta property="twitter:title" content="<?= h($ogpTitle) ?>">
+    <meta property="twitter:description" content="<?= h($ogpDescription) ?>">
     <meta property="twitter:image" content="<?= h($fullImageUrl) ?>">
 
     <!-- JSON-LD構造化データ -->
