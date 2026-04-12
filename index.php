@@ -494,6 +494,34 @@ for ($i = 0; $i < 7; $i++) {
             object-fit: contain;
         }
 
+        /* ボタンコンテナ */
+        .button-container {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        /* reMixボタン */
+        .remix-button {
+            flex: 1;
+            padding: 6px 10px;
+            background: rgba(232, 168, 124, 0.1);
+            color: #8B7355;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            border: 1px solid rgba(232, 168, 124, 0.3);
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .remix-button:hover {
+            background: rgba(232, 168, 124, 0.9);
+            color: white;
+            border-color: rgba(232, 168, 124, 0.9);
+        }
+
         /* 好きな素材をみつけようセクション */
         .materials-grid {
             display: grid;
@@ -876,6 +904,16 @@ for ($i = 0; $i < 7; $i++) {
                 gap: 16px;
             }
 
+            .button-container {
+                gap: 4px;
+                margin-top: 6px;
+            }
+
+            .remix-button {
+                padding: 5px 8px;
+                font-size: 0.65rem;
+            }
+
             .materials-grid {
                 grid-template-columns: repeat(5, 1fr);
                 gap: 6px;
@@ -1063,19 +1101,29 @@ for ($i = 0; $i < 7; $i++) {
             
             <div class="artworks-grid">
                 <?php foreach ($artworks as $artwork): ?>
-                <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>" class="artwork-card">
-                    <?php
-                    $imageUrl = !empty($artwork['webp_path']) ? $artwork['webp_path'] : $artwork['file_path'];
-                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
-                    $finalImageUrl = (strpos($imageUrl, 'http://') === 0 || strpos($imageUrl, 'https://') === 0) ? $imageUrl : '/' . $imageUrl;
-                    ?>
-                    <div class="artwork-image-wrapper">
-                        <img src="<?= h($finalImageUrl) ?>" 
-                             alt="<?= h($artwork['title']) ?>" 
-                             class="artwork-image" 
-                             loading="lazy">
+                <div class="artwork-card">
+                    <a href="/everyone-work.php?id=<?= h($artwork['id']) ?>">
+                        <?php
+                        $imageUrl = !empty($artwork['webp_path']) ? $artwork['webp_path'] : $artwork['file_path'];
+                        // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                        $finalImageUrl = (strpos($imageUrl, 'http://') === 0 || strpos($imageUrl, 'https://') === 0) ? $imageUrl : '/' . $imageUrl;
+                        ?>
+                        <div class="artwork-image-wrapper">
+                            <img src="<?= h($finalImageUrl) ?>" 
+                                 alt="<?= h($artwork['title']) ?>" 
+                                 class="artwork-image" 
+                                 loading="lazy">
+                        </div>
+                    </a>
+                    <?php if (!empty($artwork['svg_data'])): ?>
+                    <div class="button-container">
+                        <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
+                           class="remix-button">
+                            reMix
+                        </a>
                     </div>
-                </a>
+                    <?php endif; ?>
+                </div>
             <?php endforeach; ?>
             </div>
 
