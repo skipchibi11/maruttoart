@@ -115,7 +115,7 @@ try {
         LIMIT 12
     ");
     $stmt->execute([$artwork['id']]);
-    $relatedMaterials = $relatedStmt->fetchAll();
+    $relatedMaterials = $stmt->fetchAll();
     
     $showRelatedMaterialsSection = !empty($relatedMaterials);
 } catch (Exception $e) {
@@ -124,31 +124,30 @@ try {
     $showRelatedMaterialsSection = false;
 }
 
-// 全ての関連アイテムをマージしてシャッフル
-$allRelatedItems = [];
+// 素材セクション用のデータを準備（使用した素材 + 関連素材）
+$allMaterials = [];
 
-// 使用した素材を追加（type: 'material'）
+// 使用した素材を追加
 foreach ($usedMaterials as $material) {
-    $material['item_type'] = 'material';
-    $allRelatedItems[] = $material;
+    $allMaterials[] = $material;
 }
 
-// 関連作品を追加（type: 'artwork'）
-foreach ($relatedArtworks as $artwork_item) {
-    $artwork_item['item_type'] = 'artwork';
-    $allRelatedItems[] = $artwork_item;
-}
-
-// 関連素材を追加（type: 'material'）
+// 関連素材を追加（重複を避ける）
 foreach ($relatedMaterials as $material) {
-    $material['item_type'] = 'material';
-    $allRelatedItems[] = $material;
+    $materialExists = false;
+    foreach ($allMaterials as $existingMaterial) {
+        if ($existingMaterial['id'] === $material['id']) {
+            $materialExists = true;
+            break;
+        }
+    }
+    if (!$materialExists) {
+        $allMaterials[] = $material;
+    }
 }
 
-// シャッフル
-shuffle($allRelatedItems);
-
-$showRelatedItemsSection = !empty($allRelatedItems);
+$showMaterialsSection = !empty($allMaterials);
+$showArtworksSection = !empty($relatedArtworks);
 
 // SEO最適化されたタイトルを生成（使用素材2点まで）
 function generateArtworkSeoTitle($artwork, $usedMaterials) {
@@ -465,6 +464,13 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
             text-align: center;
         }
 
+        .item-count {
+            font-size: 0.8em;
+            font-weight: 400;
+            color: #8B7355;
+            opacity: 0.7;
+        }
+
         /* 関連素材・作品セクション */
         .related-items-section {
             margin: 3rem 0;
@@ -686,61 +692,70 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
                 </div>
             </div>
 
-            <!-- 関連素材・作品 -->
-            <?php if ($showRelatedItemsSection): ?>
+            <!-- 単体素材セクション -->
+            <?php if ($showMaterialsSection): ?>
             <div class="related-items-section">
-                <h2 class="section-title">関連素材・作品</h2>
+                <h2 class="section-title">単体素材 <span class="item-count">(<?= count($allMaterials) ?>)</span></h2>
                 
                 <div class="related-items-grid">
-                    <?php foreach ($allRelatedItems as $item): ?>
+                    <?php foreach ($allMaterials as $material): ?>
                     <div class="related-item">
-                        <?php if ($item['item_type'] === 'material'): ?>
-                            <!-- 素材 -->
-                            <a href="/<?= h($item['category_slug']) ?>/<?= h($item['slug']) ?>/" 
-                               class="related-item-link">
-                                <div class="related-item-thumbnail" style="background-color: <?= h($item['structured_bg_color'] ?? '#ffffff') ?>;">
-                                    <?php
-                                    $relatedItemPath = $item['webp_small_path'] ?? $item['image_path'];
-                                    $isRemoteRelated = strpos($relatedItemPath, 'http://') === 0 || strpos($relatedItemPath, 'https://') === 0;
-                                    $relatedItemUrl = $isRemoteRelated ? $relatedItemPath : '/' . $relatedItemPath;
-                                    ?>
-                                    <img src="<?= h($relatedItemUrl) ?>" 
-                                         alt="<?= h($item['title']) ?>" 
-                                         class="related-item-image"
-                                         loading="lazy">
-                                </div>
-                                <div class="related-item-info">
-                                    <div class="related-item-title"><?= h($item['title']) ?></div>
-                                </div>
-                            </a>
-                        <?php else: ?>
-                            <!-- 作品 -->
-                            <a href="/everyone-work.php?id=<?= h($item['id']) ?>" class="related-item-link">
-                                <div class="related-item-thumbnail">
-                                    <?php 
-                                    $thumbnail = '';
-                                    if (!empty($item['webp_path'])) {
-                                        $thumbnail = $item['webp_path'];
-                                    } elseif (!empty($item['file_path'])) {
-                                        $thumbnail = $item['file_path'];
-                                    }
-                                    ?>
-                                    <?php if (!empty($thumbnail)): ?>
-                                    <?php 
-                                    // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
-                                    $thumbnailUrl = (strpos($thumbnail, 'http://') === 0 || strpos($thumbnail, 'https://') === 0) ? $thumbnail : '/' . $thumbnail;
-                                    ?>
-                                    <img src="<?= h($thumbnailUrl) ?>" 
-                                         alt="<?= h($item['title']) ?>" 
-                                         class="related-item-image"
-                                         loading="lazy">
-                                    <?php endif; ?>
-                                </div>
-                                <div class="related-item-info">
-                                    <div class="related-item-title"><?= h($item['title']) ?></div>
-                                </div>
-                            </a>
-                        <?php endif; ?>
+                        <a href="/<?= h($material['category_slug']) ?>/<?= h($material['slug']) ?>/" 
+                           class="related-item-link">
+                            <div class="related-item-thumbnail" style="background-color: <?= h($material['structured_bg_color'] ?? '#ffffff') ?>;">
+                                <?php
+                                $materialPath = $material['webp_small_path'] ?? $material['image_path'];
+                                $isRemoteMaterial = strpos($materialPath, 'http://') === 0 || strpos($materialPath, 'https://') === 0;
+                                $materialUrl = $isRemoteMaterial ? $materialPath : '/' . $materialPath;
+                                ?>
+                                <img src="<?= h($materialUrl) ?>" 
+                                     alt="<?= h($material['title']) ?>" 
+                                     class="related-item-image"
+                                     loading="lazy">
+                            </div>
+                            <div class="related-item-info">
+                                <div class="related-item-title"><?= h($material['title']) ?></div>
+                            </div>
+                        </a>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- 関連作品セクション -->
+            <?php if ($showArtworksSection): ?>
+            <div class="related-items-section">
+                <h2 class="section-title">関連作品 <span class="item-count">(<?= count($relatedArtworks) ?>)</span></h2>
+                
+                <div class="related-items-grid">
+                    <?php foreach ($relatedArtworks as $relatedArtwork): ?>
+                    <div class="related-item">
+                        <a href="/everyone-work.php?id=<?= h($relatedArtwork['id']) ?>" class="related-item-link">
+                            <div class="related-item-thumbnail">
+                                <?php 
+                                $thumbnail = '';
+                                if (!empty($relatedArtwork['webp_path'])) {
+                                    $thumbnail = $relatedArtwork['webp_path'];
+                                } elseif (!empty($relatedArtwork['file_path'])) {
+                                    $thumbnail = $relatedArtwork['file_path'];
+                                }
+                                ?>
+                                <?php if (!empty($thumbnail)): ?>
+                                <?php 
+                                // フルURL（R2など）の場合はそのまま、相対パスの場合は先頭に / を追加
+                                $thumbnailUrl = (strpos($thumbnail, 'http://') === 0 || strpos($thumbnail, 'https://') === 0) ? $thumbnail : '/' . $thumbnail;
+                                ?>
+                                <img src="<?= h($thumbnailUrl) ?>" 
+                                     alt="<?= h($relatedArtwork['title']) ?>" 
+                                     class="related-item-image"
+                                     loading="lazy">
+                                <?php endif; ?>
+                            </div>
+                            <div class="related-item-info">
+                                <div class="related-item-title"><?= h($relatedArtwork['title']) ?></div>
+                            </div>
+                        </a>
                     </div>
                     <?php endforeach; ?>
                 </div>
