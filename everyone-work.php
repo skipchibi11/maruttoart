@@ -393,6 +393,12 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
             .button-group {
                 flex-direction: column;
             }
+
+            .btn {
+                padding: 16px 28px;
+                font-size: 1.05rem;
+                width: 100%;
+            }
         }
 
         .btn {
@@ -657,20 +663,25 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
 
                 <!-- ボタン -->
                 <div class="button-group">
+                    <!-- Primary: reMix -->
+                    <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
+                       class="btn btn-primary">
+                        reMix
+                    </a>
+                    
+                    <!-- Secondary: Download -->
                     <button type="button"
-                            class="btn btn-primary"
+                            class="btn btn-secondary"
                             data-artwork-id="<?= $artwork['id'] ?>"
                             data-download-filename="works<?= $artwork['id'] ?>.png"
                             onclick="downloadArtwork(this)">
                         Download
                     </button>
-                    <a href="/compose/?artwork_id=<?= $artwork['id'] ?>" 
-                       class="btn btn-secondary">
-                        Compose
-                    </a>
+                    
+                    <!-- Secondary: Animate -->
                     <?php if (!empty($artwork['svg_data'])): ?>
                     <a href="/compose/animation.php?artwork_id=<?= $artwork['id'] ?>" 
-                       class="btn btn-animation">
+                       class="btn btn-secondary">
                         Animate
                     </a>
                     <?php endif; ?>
