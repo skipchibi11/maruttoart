@@ -54,6 +54,8 @@ if ($isRemoteImageUrl) {
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/calendar-detail/?year=<?= h($item['year']) ?>&month=<?= h($item['month']) ?>&day=<?= h($item['day']) ?>" />
     
     <!-- OGP -->

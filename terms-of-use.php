@@ -28,6 +28,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/terms-of-use.php" />
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/terms-of-use.php" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/terms-of-use.php" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/terms-of-use.php" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/terms-of-use.php" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/terms-of-use.php" />
     
     <!-- Open Graph / Facebook -->

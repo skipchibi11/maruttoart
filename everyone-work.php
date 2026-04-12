@@ -233,6 +233,8 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/everyone-work.php?id=<?= $artwork['id'] ?>" />
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/everyone-work.php?id=<?= $artwork['id'] ?>" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/everyone-work.php?id=<?= $artwork['id'] ?>" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/everyone-work.php?id=<?= $artwork['id'] ?>" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/everyone-work.php?id=<?= $artwork['id'] ?>" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/everyone-work.php?id=<?= $artwork['id'] ?>" />
     
     <!-- Open Graph / Facebook -->

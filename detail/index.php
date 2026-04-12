@@ -221,6 +221,8 @@ $showRelatedItemsSection = !empty($allRelatedItems);
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/<?= h($category['slug']) ?>/<?= h($material['slug']) ?>/" />
     
     <!-- Open Graph / Facebook -->

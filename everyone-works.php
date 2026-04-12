@@ -44,6 +44,8 @@ $artworks = $stmt->fetchAll();
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/everyone-works.php" />
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/everyone-works.php" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/everyone-works.php" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/everyone-works.php" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/everyone-works.php" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/everyone-works.php" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>

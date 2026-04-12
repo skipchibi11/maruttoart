@@ -94,6 +94,8 @@ $pageDescription = 'marutto.artの' . $year . '年' . $month . '月のカレン�
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/calendar/?year=<?= h($year) ?>&month=<?= h($month) ?>" />
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>

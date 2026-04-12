@@ -65,6 +65,8 @@ $materials = $stmt->fetchAll();
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/list.php" />
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/list.php" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/list.php" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/list.php" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/list.php" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/list.php" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>

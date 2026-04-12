@@ -25,6 +25,8 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/privacy-policy.php" />
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/privacy-policy.php" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/privacy-policy.php" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/privacy-policy.php" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/privacy-policy.php" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/privacy-policy.php" />
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">

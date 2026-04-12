@@ -37,6 +37,8 @@ $categories = $stmt->fetchAll();
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/compose/" />
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/compose/" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/compose/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/compose/" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/compose/" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/compose/" />
     
     <?php include __DIR__ . '/../includes/gtm-head.php'; ?>

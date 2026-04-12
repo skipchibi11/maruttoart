@@ -77,6 +77,8 @@ $materials = $materialsStmt->fetchAll();
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/<?= h($slug) ?>/" />
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/<?= h($slug) ?>/" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/<?= h($slug) ?>/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/<?= h($slug) ?>/" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/<?= h($slug) ?>/" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/<?= h($slug) ?>/" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>

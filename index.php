@@ -82,6 +82,8 @@ for ($i = 0; $i < 7; $i++) {
     <link rel="alternate" hreflang="fr" href="https://marutto.art/fr/" />
     <link rel="alternate" hreflang="es" href="https://marutto.art/es/" />
     <link rel="alternate" hreflang="nl" href="https://marutto.art/nl/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://marutto.art/zh-CN/" />
+    <link rel="alternate" hreflang="ko" href="https://marutto.art/ko/" />
     <link rel="alternate" hreflang="x-default" href="https://marutto.art/" />
     
     <?php include __DIR__ . '/includes/gtm-head.php'; ?>
