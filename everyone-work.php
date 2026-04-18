@@ -84,8 +84,10 @@ try {
             cats.similar_artwork_pen_name as pen_name,
             cats.similar_artwork_file_path as file_path,
             cats.similar_artwork_webp_path as webp_path,
-            cats.similarity_score
+            cats.similarity_score,
+            ca.svg_data
         FROM community_artwork_top_similarities cats
+        LEFT JOIN community_artworks ca ON cats.similar_artwork_id = ca.id
         WHERE cats.artwork_id = ?
         ORDER BY cats.similarity_score DESC
         LIMIT 8
@@ -572,6 +574,50 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
             color: #A0675C;
         }
 
+        /* 関連作品カード */
+        .related-item-card {
+            position: relative;
+        }
+
+        /* reMixボタンコンテナ */
+        .button-container {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        /* reMixボタン */
+        .remix-button {
+            flex: 1;
+            padding: 6px 10px;
+            background: rgba(232, 168, 124, 0.1);
+            color: #8B7355;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            border: 1px solid rgba(232, 168, 124, 0.3);
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .remix-button:hover {
+            background: rgba(232, 168, 124, 0.9);
+            color: white;
+            border-color: rgba(232, 168, 124, 0.9);
+        }
+
+        @media (max-width: 768px) {
+            .related-item-remix-btn {
+                opacity: 1;
+                transform: translateY(0);
+                bottom: 65px;
+                right: 16px;
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+        }
+
         @media (max-width: 768px) {
             .related-items-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -728,6 +774,13 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
                                 <div class="related-item-title"><?= h($material['title']) ?></div>
                             </div>
                         </a>
+                        <?php if (!empty($material['svg_path'])): ?>
+                        <div class="button-container">
+                            <a href="/compose/?material_id=<?= h($material['id']) ?>" class="remix-button">
+                                reMix
+                            </a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -767,6 +820,13 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
                                 <div class="related-item-title"><?= h($relatedArtwork['title']) ?></div>
                             </div>
                         </a>
+                        <?php if (!empty($relatedArtwork['svg_data'])): ?>
+                        <div class="button-container">
+                            <a href="/compose/?artwork_id=<?= h($relatedArtwork['id']) ?>" class="remix-button">
+                                reMix
+                            </a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <?php endforeach; ?>
                 </div>
