@@ -13,8 +13,8 @@ jobs:
         with:
           host: ${{ secrets.LOLIPOP_HOST }}
           username: ${{ secrets.LOLIPOP_USER }}
-          key: ${{ secrets.LOLIPOP_SSH_KEY }}
+          password: ${{ secrets.LOLIPOP_PASSWORD }}
           port: 2222
           script: |
-            cd web/marutto.art/
+            cd /home/users/1/chu.jp-marutto/web/marutto.art
             git pull origin main
