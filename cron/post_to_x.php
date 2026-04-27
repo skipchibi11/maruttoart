@@ -125,12 +125,18 @@ try {
     
     // ツイート本文を作成（タイトル + ハッシュタグ）
     $hashtags = "\n\n#イラスト #illustration #maruttoart";
-    $tweetText = $artwork['title'] . $hashtags;
-    
+
+    // リミックスURLを追加
+    $remixUrl = rtrim(SITE_URL, '/') . '/compose/?artwork_id=' . $artwork['id'];
+    $remixSuffix = "\n\nあなたもこの作品をリミックス！\n" . $remixUrl;
+
+    $tweetText = $artwork['title'] . $hashtags . $remixSuffix;
+
     // 280文字制限を考慮
     if (mb_strlen($tweetText) > 280) {
-        $maxTitleLength = 280 - mb_strlen($hashtags);
-        $tweetText = mb_substr($artwork['title'], 0, $maxTitleLength - 3) . "..." . $hashtags;
+        $suffix = $hashtags . $remixSuffix;
+        $maxTitleLength = 280 - mb_strlen($suffix);
+        $tweetText = mb_substr($artwork['title'], 0, $maxTitleLength - 3) . "..." . $suffix;
     }
     
     // ツイートを投稿
