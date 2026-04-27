@@ -59,6 +59,7 @@ try {
             webp_path
         FROM community_artworks
         WHERE status = 'approved'
+        AND id >= 100
         ORDER BY RAND()
         LIMIT 1
     ");
