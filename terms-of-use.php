@@ -267,8 +267,173 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
             border-radius: 0.2rem;
         }
         
+        /* 5秒でわかるライセンス */
+        .license-summary {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .license-summary-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #166534;
+            margin-bottom: 1rem;
+        }
+
+        .license-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .license-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .license-badge-ok {
+            background: rgba(232, 168, 124, 0.15);
+            color: #C38E70;
+        }
+
+        .license-badge-ng {
+            background: rgba(239, 68, 68, 0.1);
+            color: #b91c1c;
+        }
+
+        .license-badge-icon {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        /* OK/NGケース */
+        .use-cases {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .use-case-col {
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+
+        .use-case-ok {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .use-case-ng {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .use-case-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .use-case-ok .use-case-header {
+            color: #166534;
+        }
+
+        .use-case-ng .use-case-header {
+            color: #991b1b;
+        }
+
+        .use-case-ok .use-case-icon {
+            background: #22c55e;
+            color: #fff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .use-case-ng .use-case-icon {
+            background: #ef4444;
+            color: #fff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .use-case-list {
+            padding-left: 1.25rem;
+            margin: 0;
+        }
+
+        .use-case-ok .use-case-list li {
+            color: #15803d;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .use-case-ng .use-case-list li {
+            color: #b91c1c;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        /* FAQ */
+        .faq-section {
+            margin: 1.5rem 0;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.4rem;
+            font-size: 0.95rem;
+        }
+
+        .faq-answer {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            padding-left: 1rem;
+        }
+
         /* レスポンシブ調整 */
         @media (max-width: 768px) {
+            .use-cases {
+                grid-template-columns: 1fr;
+            }
             .container {
                 padding-left: 15px;
                 padding-right: 15px;
@@ -327,19 +492,117 @@ setPublicCache(86400, 172800); // 24時間 / CDN 48時間
         <div class="card">
             <div class="card-body">
                 <h1>利用規約</h1>
-                
+
+                <!-- 5秒でわかるライセンス -->
+                <div class="license-summary">
+                    <p class="license-summary-title">5秒でわかるライセンス</p>
+                    <div class="license-badges">
+                        <div class="license-badge license-badge-ok">
+                            <span class="license-badge-icon">✓</span>
+                            <span class="license-badge-label">商用利用OK</span>
+                        </div>
+                        <div class="license-badge license-badge-ok">
+                            <span class="license-badge-icon">✓</span>
+                            <span class="license-badge-label">加工・編集OK</span>
+                        </div>
+                        <div class="license-badge license-badge-ok">
+                            <span class="license-badge-icon">✓</span>
+                            <span class="license-badge-label">クレジット不要</span>
+                        </div>
+                        <div class="license-badge license-badge-ok">
+                            <span class="license-badge-icon">✓</span>
+                            <span class="license-badge-label">無料</span>
+                        </div>
+                        <div class="license-badge license-badge-ng">
+                            <span class="license-badge-icon">✗</span>
+                            <span class="license-badge-label">素材の再販NG</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 利用OK / NGの具体例 -->
+                <div class="use-cases">
+                    <div class="use-case-col use-case-ok">
+                        <div class="use-case-header">
+                            <span class="use-case-icon">✓</span>
+                            <span>こんな使い方はOK</span>
+                        </div>
+                        <ul class="use-case-list">
+                            <li>ブログやSNSのアイキャッチ画像</li>
+                            <li>会社のホームページ・広告に使う</li>
+                            <li>チラシ・パンフレット・名刺に印刷する</li>
+                            <li>YouTubeのサムネイルや動画内で使う</li>
+                            <li>アプリやゲームに組み込む</li>
+                            <li>色を変えたり他の素材と組み合わせる</li>
+                            <li>クライアントの案件で使う</li>
+                            <li>学校や教育機関の資料に使う</li>
+                        </ul>
+                    </div>
+                    <div class="use-case-col use-case-ng">
+                        <div class="use-case-header">
+                            <span class="use-case-icon">✗</span>
+                            <span>こんな使い方はNG</span>
+                        </div>
+                        <ul class="use-case-list">
+                            <li>素材をそのまま素材集として販売する</li>
+                            <li>他の素材サイトへ転載・配布する</li>
+                            <li>素材の著作権が自分のものと主張する</li>
+                            <li>差別・ヘイトスピーチ目的での使用</li>
+                            <li>公序良俗に反するコンテンツへの使用</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="faq-section">
+                    <h2 style="border-left-color: #28a745;">よくある質問</h2>
+
+                    <div class="faq-item">
+                        <div class="faq-question">Q. クレジット表記は必要ですか？</div>
+                        <div class="faq-answer">A. 不要です。ただし「イラスト：marutto.art」と書いていただけると作者の励みになります。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Q. 商品に印刷して販売できますか？</div>
+                        <div class="faq-answer">A. はい、できます。Tシャツ・グッズ・パッケージへの印刷販売は問題ありません。ただし素材データそのものを素材集として販売することはNGです。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Q. 色や形を変えて使っていいですか？</div>
+                        <div class="faq-answer">A. はい、自由に加工・編集できます。reMix機能を使うと色の変更や他の素材との組み合わせも簡単にできます。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Q. 複数の素材を組み合わせた作品を販売できますか？</div>
+                        <div class="faq-answer">A. はい、できます。複数の素材を組み合わせてオリジナルの作品を制作し販売することは問題ありません。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Q. 点数の制限はありますか？</div>
+                        <div class="faq-answer">A. ありません。何点でも自由にお使いいただけます。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Q. 会員登録やログインは必要ですか？</div>
+                        <div class="faq-answer">A. 不要です。ダウンロードは無料で、登録なしでご利用いただけます。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Q. 「みんなのアトリエ」の作品も商用利用できますか？</div>
+                        <div class="faq-answer">A. はい、できます。reMixで作られたコミュニティ作品も、素材と同様に商用利用OK・クレジット表記不要・無料でご利用いただけます。</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Q. カレンダー素材も商用利用できますか？</div>
+                        <div class="faq-answer">A. はい、できます。カレンダー素材も商用利用OK・クレジット表記不要・無料でご利用いただけます。</div>
+                    </div>
+                </div>
+
                 <div class="text-important">
                     <p><strong>最終更新日：2025年8月29日</strong></p>
                     <p>本利用規約は、maruttoart（以下「当サイト」）が提供するやさしいイラスト素材の利用に関する条件を定めたものです。素材をダウンロード・利用される前に必ずお読みください。</p>
                 </div>
 
                 <h2>1. 基本的な利用条件</h2>
-                
+
                 <h3>1.1 無料利用</h3>
-                <p>当サイトで提供するすべてのやさしいイラスト素材は、個人・法人問わず無料でご利用いただけます。</p>
+                <p>当サイトで提供するすべてのやさしいイラスト素材、「みんなのアトリエ」に掲載されたコミュニティ作品、およびカレンダー素材は、個人・法人問わず無料でご利用いただけます。</p>
 
                 <h3>1.2 商用利用</h3>
-                <p>商用利用が可能です。以下のような用途でご利用いただけます：</p>
+                <p>商用利用が可能です。素材だけでなく、ユーザーがreMixで作成した「みんなのアトリエ」の作品、およびカレンダー素材も同様に商用利用OKです。以下のような用途でご利用いただけます：</p>
                 <ul>
                     <li>ウェブサイト、ブログ、SNSでの使用</li>
                     <li>印刷物（チラシ、パンフレット、名刺など）</li>

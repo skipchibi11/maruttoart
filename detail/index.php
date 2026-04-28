@@ -391,6 +391,39 @@ $showRelatedItemsSection = !empty($allRelatedItems);
             color: #8B7355;
         }
 
+        .license-badges-row {
+            margin: 0 0 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .license-badge-link {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .license-badge-link:hover .detail-license-badge {
+            opacity: 0.85;
+        }
+
+        .detail-license-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .detail-license-badge-ok {
+            background: rgba(232, 168, 124, 0.15);
+            color: #C38E70;
+        }
+
         /* タグ */
         .tags-container {
             display: flex;
@@ -717,10 +750,15 @@ $showRelatedItemsSection = !empty($allRelatedItems);
                                 <?= h($category['title']) ?>
                             </a>
                         </div>
-                        <div class="meta-item">
-                            <span class="meta-label">ライセンス:</span>
-                            <span>商用利用OK・クレジット表記不要</span>
-                        </div>
+                    </div>
+
+                    <div class="license-badges-row">
+                        <a href="/terms-of-use.php" class="license-badge-link" title="利用規約を確認する">
+                            <span class="detail-license-badge detail-license-badge-ok">✓ 商用利用OK</span>
+                            <span class="detail-license-badge detail-license-badge-ok">✓ 加工OK</span>
+                            <span class="detail-license-badge detail-license-badge-ok">✓ クレジット不要</span>
+                            <span class="detail-license-badge detail-license-badge-ok">✓ 無料</span>
+                        </a>
                     </div>
 
                     <?php if (!empty($materialTags)): ?>

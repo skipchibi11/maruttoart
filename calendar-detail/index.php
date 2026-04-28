@@ -196,6 +196,39 @@ if ($isRemoteImageUrl) {
             margin: 0 auto;
         }
         
+        .license-badges-row {
+            margin: 12px 0 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .license-badge-link {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .license-badge-link:hover .detail-license-badge {
+            opacity: 0.85;
+        }
+
+        .detail-license-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .detail-license-badge-ok {
+            background: rgba(232, 168, 124, 0.15);
+            color: #C38E70;
+        }
+
         .download-button {
             display: inline-block;
             padding: 10px 24px;
@@ -265,6 +298,14 @@ if ($isRemoteImageUrl) {
                 <?= h($item['year']) ?>.<?= sprintf('%02d', $item['month']) ?>.<?= sprintf('%02d', $item['day']) ?>
             </div>
             <h1 class="article-title"><?= h($item['title']) ?></h1>
+            <div class="license-badges-row">
+                <a href="/terms-of-use.php" class="license-badge-link" title="利用規約を確認する">
+                    <span class="detail-license-badge detail-license-badge-ok">✓ 商用利用OK</span>
+                    <span class="detail-license-badge detail-license-badge-ok">✓ 加工OK</span>
+                    <span class="detail-license-badge detail-license-badge-ok">✓ クレジット不要</span>
+                    <span class="detail-license-badge detail-license-badge-ok">✓ 無料</span>
+                </a>
+            </div>
         </div>
         
         <div class="article-content">

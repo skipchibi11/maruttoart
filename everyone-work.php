@@ -458,6 +458,39 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
             box-shadow: 0 6px 20px rgba(232, 168, 124, 0.4);
         }
 
+        .license-badges-row {
+            margin: 12px 0 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .license-badge-link {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .license-badge-link:hover .detail-license-badge {
+            opacity: 0.85;
+        }
+
+        .detail-license-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .detail-license-badge-ok {
+            background: rgba(232, 168, 124, 0.15);
+            color: #C38E70;
+        }
+
         .back-link-container {
             margin-top: 20px;
             text-align: center;
@@ -736,7 +769,16 @@ $downloadPath = (strpos($rawDownloadPath, 'http://') === 0 || strpos($rawDownloa
                 <!-- 作品情報 -->
                 <div class="artwork-info">
                     <h1 class="artwork-title"><?= h($artwork['title']) ?></h1>
-                    
+
+                    <div class="license-badges-row">
+                        <a href="/terms-of-use.php" class="license-badge-link" title="利用規約を確認する">
+                            <span class="detail-license-badge detail-license-badge-ok">✓ 商用利用OK</span>
+                            <span class="detail-license-badge detail-license-badge-ok">✓ 加工OK</span>
+                            <span class="detail-license-badge detail-license-badge-ok">✓ クレジット不要</span>
+                            <span class="detail-license-badge detail-license-badge-ok">✓ 無料</span>
+                        </a>
+                    </div>
+
                     <?php if (!empty($artwork['description'])): ?>
                     <div class="artwork-description"><?= h($artwork['description']) ?></div>
                     <?php endif; ?>
