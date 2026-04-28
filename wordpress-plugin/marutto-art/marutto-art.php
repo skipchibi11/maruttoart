@@ -3,7 +3,7 @@
  * Plugin Name:       Marutto Art
  * Plugin URI:        https://marutto.art/api/docs/
  * Description:       marutto.art の無料イラスト素材（商用利用可）を、投稿エディタから直接検索・挿入できます。
- * Version:           1.2.0
+ * Version:           1.3.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            marutto.art
@@ -15,14 +15,13 @@
 
 defined('ABSPATH') || exit;
 
-define('MARUTTO_VERSION',  '1.2.0');
+define('MARUTTO_VERSION',  '1.3.0');
 define('MARUTTO_API_BASE', 'https://marutto.art/api/v1');
 define('MARUTTO_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // ---- アセット登録 ----
 
 add_action('admin_enqueue_scripts', function (string $hook): void {
-    // 投稿編集画面のみ読み込む
     if (!in_array($hook, ['post.php', 'post-new.php'], true)) {
         return;
     }
@@ -34,19 +33,11 @@ add_action('admin_enqueue_scripts', function (string $hook): void {
         MARUTTO_VERSION
     );
 
-    // Classic Editor 用（jQuery UI Dialog を使うため jquery-ui-dialog も依存）
-    wp_enqueue_script(
-        'marutto-art-classic',
-        MARUTTO_PLUGIN_URL . 'assets/classic.js',
-        ['jquery', 'jquery-ui-dialog'],
-        MARUTTO_VERSION,
-        true
-    );
-    wp_localize_script('marutto-art-classic', 'MaruttoArt', [
-        'apiBase'   => MARUTTO_API_BASE,
-        'restUrl'   => esc_url_raw(rest_url('wp/v2/media')),
-        'restNonce' => wp_create_nonce('wp_rest'),
-        'i18n'      => [
+    $shared = [
+        'apiBase'     => MARUTTO_API_BASE,
+        'ajaxUrl'     => admin_url('admin-ajax.php'),
+        'uploadNonce' => wp_create_nonce('marutto-upload'),
+        'i18n'        => [
             'insert'      => __('挿入', 'marutto-art'),
             'inserting'   => __('アップロード中...', 'marutto-art'),
             'search'      => __('検索', 'marutto-art'),
@@ -58,9 +49,19 @@ add_action('admin_enqueue_scripts', function (string $hook): void {
             'tabCommunity'=> __('みんなの作品', 'marutto-art'),
             'tabCalendar' => __('カレンダー', 'marutto-art'),
         ],
-    ]);
+    ];
 
-    // Gutenberg 用（wp.plugins, wp.element 等に依存）
+    // Classic Editor 用
+    wp_enqueue_script(
+        'marutto-art-classic',
+        MARUTTO_PLUGIN_URL . 'assets/classic.js',
+        ['jquery', 'jquery-ui-dialog'],
+        MARUTTO_VERSION,
+        true
+    );
+    wp_localize_script('marutto-art-classic', 'MaruttoArt', $shared);
+
+    // Gutenberg 用
     if (get_current_screen()->is_block_editor()) {
         wp_enqueue_script(
             'marutto-art-gutenberg',
@@ -69,9 +70,7 @@ add_action('admin_enqueue_scripts', function (string $hook): void {
             MARUTTO_VERSION,
             true
         );
-        wp_localize_script('marutto-art-gutenberg', 'MaruttoArt', [
-            'apiBase' => MARUTTO_API_BASE,
-        ]);
+        wp_localize_script('marutto-art-gutenberg', 'MaruttoArt', $shared);
     }
 });
 
@@ -85,4 +84,59 @@ add_action('media_buttons', function (): void {
         . '<span class="dashicons dashicons-format-image" style="margin-top:3px"></span> '
         . esc_html__('marutto.art から挿入', 'marutto-art')
         . '</button>';
+});
+
+// ---- AJAX: 画像をサーバーサイドでメディアライブラリに取り込む ----
+
+add_action('wp_ajax_marutto_upload_image', function (): void {
+    check_ajax_referer('marutto-upload', 'nonce');
+
+    if (!current_user_can('upload_files')) {
+        wp_send_json_error('Permission denied', 403);
+    }
+
+    $url = isset($_POST['url']) ? esc_url_raw(wp_unslash($_POST['url'])) : '';
+    if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+        wp_send_json_error('Invalid URL', 400);
+    }
+
+    // marutto.art および Cloudflare R2 ドメインのみ許可（SSRF対策）
+    $host = (string) wp_parse_url($url, PHP_URL_HOST);
+    $allowed_hosts    = ['marutto.art', 'www.marutto.art'];
+    $allowed_suffixes = ['.r2.dev', '.cloudflarestorage.com'];
+
+    $ok = in_array($host, $allowed_hosts, true);
+    if (!$ok) {
+        foreach ($allowed_suffixes as $suffix) {
+            if (str_ends_with($host, $suffix)) {
+                $ok = true;
+                break;
+            }
+        }
+    }
+    if (!$ok) {
+        wp_send_json_error('URL not allowed', 403);
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    $title   = isset($_POST['title'])   ? sanitize_text_field(wp_unslash($_POST['title']))  : '';
+    $post_id = isset($_POST['post_id']) ? (int) $_POST['post_id'] : 0;
+
+    $attachment_id = media_sideload_image($url, $post_id, $title, 'id');
+
+    if (is_wp_error($attachment_id)) {
+        wp_send_json_error($attachment_id->get_error_message(), 500);
+    }
+
+    if ($title) {
+        update_post_meta($attachment_id, '_wp_attachment_image_alt', $title);
+    }
+
+    wp_send_json_success([
+        'id'         => $attachment_id,
+        'source_url' => wp_get_attachment_url($attachment_id),
+    ]);
 });

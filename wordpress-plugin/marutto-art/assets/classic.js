@@ -2,10 +2,10 @@
 (function ($) {
   'use strict';
 
-  var api      = MaruttoArt.apiBase;
-  var i18n     = MaruttoArt.i18n;
-  var restUrl  = MaruttoArt.restUrl;
-  var restNonce = MaruttoArt.restNonce;
+  var api     = MaruttoArt.apiBase;
+  var i18n    = MaruttoArt.i18n;
+  var ajaxUrl = MaruttoArt.ajaxUrl;
+  var uploadNonce = MaruttoArt.uploadNonce;
 
   var selected  = null;
   var uploading = false;
@@ -69,14 +69,13 @@
     ]
   });
 
-  // ---- 挿入処理（メディアライブラリへアップロード） ----
+  // ---- 挿入処理（サーバーサイドでメディアライブラリに取り込む） ----
   function doInsert() {
     if (!selected || uploading) return;
 
-    var item     = selected;
-    var src      = (item.images && (item.images.original || item.images.webp_small)) || '';
-    var alt      = item.title;
-    var filename = src.split('/').pop().split('?')[0] || 'image.png';
+    var item = selected;
+    var src  = (item.images && (item.images.original || item.images.webp_small)) || '';
+    var alt  = item.title;
 
     if (!src) {
       $dialog.dialog('close');
@@ -84,46 +83,30 @@
       return;
     }
 
-    // ---- アップロード開始 ----
     uploading = true;
     $status.text(i18n.inserting);
     $('#marutto-insert-btn').prop('disabled', true).text(i18n.inserting);
 
-    fetch(src)
-      .then(function (r) {
-        if (!r.ok) throw new Error('fetch');
-        return r.blob();
-      })
-      .then(function (blob) {
-        return fetch(restUrl, {
-          method:      'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type':        blob.type || 'image/png',
-            'Content-Disposition': 'attachment; filename="' + filename + '"',
-            'X-WP-Nonce':          restNonce,
-          },
-          body: blob,
-        }).then(function (r) {
-          if (!r.ok) throw new Error('upload ' + r.status);
-          return r.json();
-        });
-      })
-      .then(function (media) {
-        var url = media.source_url || src;
+    $.post(ajaxUrl, {
+      action:  'marutto_upload_image',
+      nonce:   uploadNonce,
+      url:     src,
+      title:   alt,
+      post_id: 0,
+    })
+      .done(function (res) {
+        var url = (res.success && res.data && res.data.source_url) ? res.data.source_url : src;
         send_to_editor('<img src="' + escAttr(url) + '" alt="' + escAttr(alt) + '">');
-        $dialog.dialog('close');
       })
-      .catch(function () {
-        // フォールバック: URL参照で挿入
+      .fail(function () {
         send_to_editor('<img src="' + escAttr(src) + '" alt="' + escAttr(alt) + '">');
-        $dialog.dialog('close');
       })
-      .finally(function () {
+      .always(function () {
         uploading = false;
         selected  = null;
         $status.text('');
         $('#marutto-insert-btn').prop('disabled', false).text(i18n.insert);
+        $dialog.dialog('close');
       });
   }
 
