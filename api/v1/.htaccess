@@ -15,3 +15,9 @@ RewriteRule ^categories/?$ categories.php [L,QSA]
 
 # /api/v1/search → search.php
 RewriteRule ^search/?$ search.php [L,QSA]
+
+# /api/v1/community-artworks → community-artworks.php
+RewriteRule ^community-artworks/?$ community-artworks.php [L,QSA]
+
+# /api/v1/everyone-calendars → everyone-calendars.php
+RewriteRule ^everyone-calendars/?$ everyone-calendars.php [L,QSA]
