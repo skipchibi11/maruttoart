@@ -1,5 +1,6 @@
 # アップロードファイル
 uploads/
+!uploads/.htaccess
 !uploads/.gitkeep
 
 # ログファイル
