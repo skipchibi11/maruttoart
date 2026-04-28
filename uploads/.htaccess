@@ -1,0 +1,29 @@
+# uploads ディレクトリの保護
+# PHP ファイルの実行を禁止
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+
+# 実行可能ファイルの実行を禁止
+<FilesMatch "\.(sh|exe|bat|cmd|com|scr|vbs|js)$">
+    Require all denied
+</FilesMatch>
+
+# 画像ファイルのみ許可（CORSヘッダー付き）
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|svg)$">
+    Require all granted
+    <IfModule mod_headers.c>
+        Header set Access-Control-Allow-Origin "*"
+    </IfModule>
+</FilesMatch>
+
+# その他のファイルは拒否
+<FilesMatch ".*">
+    Require all denied
+</FilesMatch>
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|svg)$">
+    Require all granted
+    <IfModule mod_headers.c>
+        Header set Access-Control-Allow-Origin "*"
+    </IfModule>
+</FilesMatch>
