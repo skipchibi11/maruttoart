@@ -1,0 +1,39 @@
+# WordPressプラグイン（配布用、サーバーには不要）
+wordpress-plugin/
+
+# 開発・ドキュメント
+.claude/
+.git/
+.gitignore
+docs/
+*.md
+!R2_IMPLEMENTATION.md
+
+# 環境設定
+.env
+.env.local
+.env.production
+
+# Docker自身
+Dockerfile
+docker-compose.yml
+docker/
+
+# OS・エディタ
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# ログ・一時ファイル
+logs/
+tmp/
+temp/
+cache/
+*.log
+
+# データベース
+mysql_data/
+database/

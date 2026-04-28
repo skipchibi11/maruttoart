@@ -1,0 +1,92 @@
+/* ===== 共通: 画像グリッド ===== */
+.marutto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.marutto-item {
+  position: relative;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #f0f0f0;
+  transition: border-color .15s;
+}
+.marutto-item:hover,
+.marutto-item.is-selected {
+  border-color: #0070f3;
+}
+.marutto-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.marutto-item-title {
+  position: absolute;
+  inset: auto 0 0;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  font-size: 10px;
+  padding: 3px 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.marutto-item:hover .marutto-item-title { opacity: 1; }
+
+.marutto-search-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.marutto-search-bar input { flex: 1; }
+
+.marutto-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.marutto-status {
+  text-align: center;
+  padding: 20px 0;
+  color: #757575;
+  font-size: 13px;
+}
+
+/* ===== Classic Editor: jQuery UI Dialog 上書き ===== */
+#marutto-dialog {
+  padding: 0 !important;
+}
+#marutto-dialog .marutto-inner {
+  padding: 12px 16px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+#marutto-dialog .marutto-grid {
+  flex: 1;
+  overflow-y: auto;
+}
+#marutto-dialog .ui-dialog-buttonpane { border-top: 1px solid #ddd; }
+
+/* ===== Gutenberg: サイドバーパネル ===== */
+.marutto-sidebar {
+  padding: 8px;
+}
+.marutto-sidebar .marutto-grid {
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+}
+.marutto-sidebar .components-button.is-primary {
+  width: 100%;
+  justify-content: center;
+  margin-top: 10px;
+}

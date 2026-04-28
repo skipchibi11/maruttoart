@@ -58,6 +58,7 @@ RedirectMatch 404 /(?:\.git|\.svn|\.hg)(?:/|$)
 # ドキュメントディレクトリやデータベースディレクトリへのアクセスを禁止
 RedirectMatch 404 ^/docs/
 RedirectMatch 404 ^/database/
+RedirectMatch 404 ^/wordpress-plugin/
 RedirectMatch 404 ^/cron/(?!.*\.php$)
 # === security hardening end ===
 

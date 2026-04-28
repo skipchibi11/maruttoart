@@ -1,0 +1,17 @@
+RewriteEngine On
+
+# OPTIONS プリフライトリクエストへの対応
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^ - [R=204,L]
+
+# /api/v1/materials/{slug} → materials.php?slug={slug}
+RewriteRule ^materials/([a-z0-9\-]+)/?$ materials.php?slug=$1 [L,QSA]
+
+# /api/v1/materials → materials.php
+RewriteRule ^materials/?$ materials.php [L,QSA]
+
+# /api/v1/categories → categories.php
+RewriteRule ^categories/?$ categories.php [L,QSA]
+
+# /api/v1/search → search.php
+RewriteRule ^search/?$ search.php [L,QSA]
