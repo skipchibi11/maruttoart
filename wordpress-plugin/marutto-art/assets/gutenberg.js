@@ -1,4 +1,4 @@
-/* global MaruttoArt, wp */
+/* global MaruttoArt, wp, wpApiSettings */
 (function () {
   'use strict';
 
@@ -33,7 +33,7 @@
     })
   );
 
-  // ---- 画像グリッドコンポーネント ----
+  // ---- 画像グリッド ----
   function Grid(props) {
     var items    = props.items;
     var selected = props.selected;
@@ -66,8 +66,7 @@
       pg.prev_page_url
         ? el(Button, { variant: 'secondary', isSmall: true, onClick: function () { props.onPage(pg.current_page - 1); } }, '« 前へ')
         : null,
-      el('span', { style: { fontSize: '12px', lineHeight: '28px' } },
-        pg.current_page + ' / ' + pg.last_page),
+      el('span', { style: { fontSize: '12px', lineHeight: '28px' } }, pg.current_page + ' / ' + pg.last_page),
       pg.next_page_url
         ? el(Button, { variant: 'secondary', isSmall: true, onClick: function () { props.onPage(pg.current_page + 1); } }, '次へ »')
         : null
@@ -76,42 +75,36 @@
 
   // ---- メインパネル ----
   function MaruttoPanel() {
-    var _tab     = useState('materials');
-    var tab      = _tab[0]; var setTab     = _tab[1];
-    var _query   = useState('');
-    var query    = _query[0]; var setQuery   = _query[1];
-    var _input   = useState('');
-    var inputVal = _input[0]; var setInputVal = _input[1];
-    var _month   = useState(String(new Date().getMonth() + 1));
-    var month    = _month[0]; var setMonth   = _month[1];
-    var _items   = useState([]);
-    var items    = _items[0]; var setItems   = _items[1];
-    var _pg      = useState(null);
-    var pagination = _pg[0]; var setPg      = _pg[1];
-    var _page    = useState(1);
-    var page     = _page[0]; var setPage    = _page[1];
-    var _loading = useState(false);
-    var loading  = _loading[0]; var setLoading = _loading[1];
-    var _error   = useState('');
-    var error    = _error[0]; var setError   = _error[1];
-    var _sel     = useState(null);
-    var selected = _sel[0]; var setSelected = _sel[1];
+    var _tab       = useState('materials');
+    var tab        = _tab[0]; var setTab      = _tab[1];
+    var _query     = useState('');
+    var query      = _query[0]; var setQuery    = _query[1];
+    var _input     = useState('');
+    var inputVal   = _input[0]; var setInputVal = _input[1];
+    var _month     = useState(String(new Date().getMonth() + 1));
+    var month      = _month[0]; var setMonth    = _month[1];
+    var _items     = useState([]);
+    var items      = _items[0]; var setItems    = _items[1];
+    var _pg        = useState(null);
+    var pagination = _pg[0]; var setPg        = _pg[1];
+    var _page      = useState(1);
+    var page       = _page[0]; var setPage     = _page[1];
+    var _loading   = useState(false);
+    var loading    = _loading[0]; var setLoading  = _loading[1];
+    var _error     = useState('');
+    var error      = _error[0]; var setError    = _error[1];
+    var _sel       = useState(null);
+    var selected   = _sel[0]; var setSelected  = _sel[1];
+    var _uploading = useState(false);
+    var uploading  = _uploading[0]; var setUploading = _uploading[1];
 
     var mounted = useRef(true);
-    useEffect(function () {
-      return function () { mounted.current = false; };
-    }, []);
+    useEffect(function () { return function () { mounted.current = false; }; }, []);
 
-    useEffect(function () {
-      loadData(tab, query, page, month);
-    }, [tab, query, page, month]);
+    useEffect(function () { loadData(tab, query, page, month); }, [tab, query, page, month]);
 
     function loadData(t, q, p, mo) {
-      setLoading(true);
-      setError('');
-      setItems([]);
-      setPg(null);
-
+      setLoading(true); setError(''); setItems([]); setPg(null);
       var url;
       if (t === 'community') {
         url = API + '/community-artworks?page=' + p + '&per_page=24';
@@ -124,50 +117,76 @@
           ? API + '/search?q=' + encodeURIComponent(q) + '&page=' + p + '&per_page=24'
           : API + '/materials?page=' + p + '&per_page=24';
       }
-
       fetch(url)
         .then(function (r) { return r.json(); })
         .then(function (json) {
           if (!mounted.current) return;
-          setItems(json.data || []);
-          setPg(json.pagination || null);
+          setItems(json.data || []); setPg(json.pagination || null);
         })
-        .catch(function () {
-          if (!mounted.current) return;
-          setError('読み込みに失敗しました。');
-        })
-        .finally(function () {
-          if (!mounted.current) return;
-          setLoading(false);
-        });
+        .catch(function () { if (mounted.current) setError('読み込みに失敗しました。'); })
+        .finally(function () { if (mounted.current) setLoading(false); });
     }
 
     function onTabChange(key) {
-      setTab(key);
-      setQuery('');
-      setInputVal('');
-      setPage(1);
-      setSelected(null);
+      setTab(key); setQuery(''); setInputVal(''); setPage(1); setSelected(null);
     }
+    function onSearch() { setQuery(inputVal.trim()); setPage(1); }
+    function onPage(p)  { setPage(p); setSelected(null); }
 
-    function onSearch() {
-      setQuery(inputVal.trim());
-      setPage(1);
-    }
-
-    function onPage(p) {
-      setPage(p);
-      setSelected(null);
-    }
-
+    // ---- メディアライブラリへアップロードして挿入 ----
     function onInsert() {
-      if (!selected) return;
-      var src = (selected.images && (selected.images.original || selected.images.webp_small)) || '';
-      insertBlocks(createBlock('core/image', { url: src, alt: selected.title }));
+      if (!selected || uploading) return;
+
+      var item     = selected;
+      var src      = (item.images && (item.images.original || item.images.webp_small)) || '';
+      var title    = item.title;
+      var filename = decodeURIComponent(src.split('/').pop().split('?')[0]) || 'image.png';
+
+      if (!src) return;
+
+      setUploading(true);
       setSelected(null);
+
+      var restRoot  = (window.wpApiSettings && window.wpApiSettings.root)  || '/wp-json/';
+      var restNonce = (window.wpApiSettings && window.wpApiSettings.nonce) || '';
+
+      fetch(src)
+        .then(function (r) {
+          if (!r.ok) throw new Error('fetch ' + r.status);
+          return r.blob();
+        })
+        .then(function (blob) {
+          return fetch(restRoot.replace(/\/?$/, '/') + 'wp/v2/media', {
+            method:      'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type':        blob.type || 'image/png',
+              'Content-Disposition': 'attachment; filename="' + filename + '"',
+              'X-WP-Nonce':          restNonce,
+            },
+            body: blob,
+          }).then(function (r) {
+            if (!r.ok) throw new Error('upload ' + r.status);
+            return r.json();
+          });
+        })
+        .then(function (media) {
+          if (!mounted.current) return;
+          insertBlocks(createBlock('core/image', {
+            id:  media.id,
+            url: media.source_url,
+            alt: title,
+          }));
+        })
+        .catch(function () {
+          // フォールバック: URL参照で挿入
+          if (mounted.current) {
+            insertBlocks(createBlock('core/image', { url: src, alt: title }));
+          }
+        })
+        .finally(function () { if (mounted.current) setUploading(false); });
     }
 
-    // タブボタン行
     var tabBar = el('div', { className: 'marutto-tabs' },
       TABS.map(function (t) {
         return el('button', {
@@ -179,52 +198,46 @@
       })
     );
 
-    // 検索バー（公式素材・みんなの作品）
     var searchBar = tab !== 'calendar'
       ? el('div', { className: 'marutto-search-bar' },
           el(TextControl, {
-            value:               inputVal,
-            onChange:            setInputVal,
-            placeholder:         'キーワードで検索...',
-            onKeyDown:           function (e) { if (e.key === 'Enter') onSearch(); },
-            hideLabelFromVision: true,
-            label:               '検索',
+            value: inputVal, onChange: setInputVal,
+            placeholder: 'キーワードで検索...',
+            onKeyDown: function (e) { if (e.key === 'Enter') onSearch(); },
+            hideLabelFromVision: true, label: '検索',
           }),
           el(Button, { variant: 'secondary', isSmall: true, onClick: onSearch }, '検索')
         )
       : null;
 
-    // 月セレクター（カレンダー）
     var monthSelect = tab === 'calendar'
       ? el('div', { className: 'marutto-month-select' },
           el('span', {}, '月を選択:'),
           el(SelectControl, {
-            value:               month,
-            options:             MONTH_OPTIONS,
-            onChange:            function (val) { setMonth(val); setPage(1); setSelected(null); },
-            hideLabelFromVision: true,
-            label:               '月',
+            value: month, options: MONTH_OPTIONS,
+            onChange: function (val) { setMonth(val); setPage(1); setSelected(null); },
+            hideLabelFromVision: true, label: '月',
           })
         )
       : null;
 
-    var insertLabel = selected
-      ? '「' + selected.title + '」を挿入'
-      : '素材を選択してください';
+    var insertLabel = uploading
+      ? el(Spinner)
+      : (selected ? '「' + selected.title + '」を挿入' : '素材を選択してください');
 
     return el('div', { className: 'marutto-sidebar' },
       tabBar,
       searchBar,
       monthSelect,
-      loading && el('div', { className: 'marutto-status' }, el(Spinner)),
-      error && el(Notice, { status: 'error', isDismissible: false }, error),
+      loading  && el('div', { className: 'marutto-status' }, el(Spinner)),
+      error    && el(Notice, { status: 'error', isDismissible: false }, error),
       !loading && !error && items.length === 0
         ? el('div', { className: 'marutto-status' }, '素材が見つかりません。')
         : el(Grid, { items: items, selected: selected, onSelect: setSelected }),
       el(Pager, { pagination: pagination, onPage: onPage }),
       el(Button, {
         variant:  'primary',
-        disabled: !selected,
+        disabled: (!selected && !uploading) || uploading,
         onClick:  onInsert,
         style:    { marginTop: '10px', width: '100%', justifyContent: 'center' },
       }, insertLabel)
@@ -236,9 +249,7 @@
     render: function () {
       return el(Fragment, {},
         el(PluginSidebar, {
-          name:  'marutto-art-sidebar',
-          title: 'marutto.art 素材挿入',
-          icon:  'format-image',
+          name: 'marutto-art-sidebar', title: 'marutto.art 素材挿入', icon: 'format-image',
         }, el(MaruttoPanel))
       );
     },

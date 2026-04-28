@@ -2,11 +2,14 @@
 (function ($) {
   'use strict';
 
-  var api  = MaruttoArt.apiBase;
-  var i18n = MaruttoArt.i18n;
+  var api      = MaruttoArt.apiBase;
+  var i18n     = MaruttoArt.i18n;
+  var restUrl  = MaruttoArt.restUrl;
+  var restNonce = MaruttoArt.restNonce;
 
-  var selected = null;
-  var state = { tab: 'materials', page: 1, query: '', month: new Date().getMonth() + 1, loading: false };
+  var selected  = null;
+  var uploading = false;
+  var state     = { tab: 'materials', page: 1, query: '', month: new Date().getMonth() + 1, loading: false };
 
   // ---- ダイアログ HTML ----
   var $dialog = $('<div id="marutto-dialog"></div>').appendTo('body');
@@ -15,16 +18,16 @@
   // タブ
   var $tabs = $('<div class="marutto-tabs"></div>').appendTo($inner);
   var TABS  = [
-    { key: 'materials', label: i18n.tabMaterials  },
-    { key: 'community', label: i18n.tabCommunity  },
-    { key: 'calendar',  label: i18n.tabCalendar   },
+    { key: 'materials', label: i18n.tabMaterials },
+    { key: 'community', label: i18n.tabCommunity },
+    { key: 'calendar',  label: i18n.tabCalendar  },
   ];
   $.each(TABS, function (_, t) {
     $('<button type="button" class="marutto-tab-btn' + (t.key === state.tab ? ' is-active' : '') + '" data-tab="' + t.key + '">' + escHtml(t.label) + '</button>')
       .appendTo($tabs);
   });
 
-  // 検索バー（素材・みんなの作品用）
+  // 検索バー
   var $searchBar = $(
     '<div class="marutto-search-bar">' +
       '<input type="text" class="regular-text" placeholder="キーワードで検索..." id="marutto-q">' +
@@ -58,17 +61,71 @@
     resizable: false,
     buttons: [
       {
+        id:    'marutto-insert-btn',
         text:  i18n.insert,
         class: 'button button-primary',
-        click: function () {
-          if (!selected) return;
-          send_to_editor(buildInsertHtml(selected));
-          $dialog.dialog('close');
-          selected = null;
-        }
+        click: doInsert,
       }
     ]
   });
+
+  // ---- 挿入処理（メディアライブラリへアップロード） ----
+  function doInsert() {
+    if (!selected || uploading) return;
+
+    var item     = selected;
+    var src      = (item.images && (item.images.original || item.images.webp_small)) || '';
+    var alt      = item.title;
+    var filename = src.split('/').pop().split('?')[0] || 'image.png';
+
+    if (!src) {
+      $dialog.dialog('close');
+      selected = null;
+      return;
+    }
+
+    // ---- アップロード開始 ----
+    uploading = true;
+    $status.text(i18n.inserting);
+    $('#marutto-insert-btn').prop('disabled', true).text(i18n.inserting);
+
+    fetch(src)
+      .then(function (r) {
+        if (!r.ok) throw new Error('fetch');
+        return r.blob();
+      })
+      .then(function (blob) {
+        return fetch(restUrl, {
+          method:      'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type':        blob.type || 'image/png',
+            'Content-Disposition': 'attachment; filename="' + filename + '"',
+            'X-WP-Nonce':          restNonce,
+          },
+          body: blob,
+        }).then(function (r) {
+          if (!r.ok) throw new Error('upload ' + r.status);
+          return r.json();
+        });
+      })
+      .then(function (media) {
+        var url = media.source_url || src;
+        send_to_editor('<img src="' + escAttr(url) + '" alt="' + escAttr(alt) + '">');
+        $dialog.dialog('close');
+      })
+      .catch(function () {
+        // フォールバック: URL参照で挿入
+        send_to_editor('<img src="' + escAttr(src) + '" alt="' + escAttr(alt) + '">');
+        $dialog.dialog('close');
+      })
+      .finally(function () {
+        uploading = false;
+        selected  = null;
+        $status.text('');
+        $('#marutto-insert-btn').prop('disabled', false).text(i18n.insert);
+      });
+  }
 
   // ---- タブ切り替え ----
   $(document).on('click', '.marutto-tab-btn', function () {
@@ -81,15 +138,9 @@
     $('#marutto-q').val('');
     $('.marutto-tab-btn').removeClass('is-active');
     $(this).addClass('is-active');
-
-    if (tab === 'calendar') {
-      $searchBar.hide();
-      $monthSelect.show();
-    } else {
-      $searchBar.show();
-      $monthSelect.hide();
-    }
-    fetch();
+    if (tab === 'calendar') { $searchBar.hide(); $monthSelect.show(); }
+    else                    { $searchBar.show(); $monthSelect.hide(); }
+    fetchItems();
   });
 
   // ---- 開くボタン ----
@@ -103,14 +154,14 @@
     $searchBar.show();
     $monthSelect.hide();
     $dialog.dialog('open');
-    fetch();
+    fetchItems();
   });
 
   // ---- 検索 ----
   $(document).on('click', '#marutto-search-btn', function () {
     state.query = $.trim($('#marutto-q').val());
     state.page  = 1;
-    fetch();
+    fetchItems();
   });
   $(document).on('keydown', '#marutto-q', function (e) {
     if (e.key === 'Enter') { $('#marutto-search-btn').trigger('click'); }
@@ -120,31 +171,28 @@
   $(document).on('change', '#marutto-month', function () {
     state.month = parseInt($(this).val(), 10);
     state.page  = 1;
-    fetch();
+    fetchItems();
   });
 
   // ---- API 呼び出し ----
   function buildUrl() {
-    var base, sep;
     if (state.tab === 'community') {
-      base = api + '/community-artworks?page=' + state.page + '&per_page=30';
-      if (state.query) base += '&q=' + encodeURIComponent(state.query);
-    } else if (state.tab === 'calendar') {
-      base = api + '/everyone-calendars?month=' + state.month + '&page=' + state.page + '&per_page=30';
-    } else {
-      // materials（デフォルト）
-      base = state.query
-        ? api + '/search?q=' + encodeURIComponent(state.query) + '&page=' + state.page + '&per_page=30'
-        : api + '/materials?page=' + state.page + '&per_page=30';
+      var u = api + '/community-artworks?page=' + state.page + '&per_page=30';
+      if (state.query) u += '&q=' + encodeURIComponent(state.query);
+      return u;
     }
-    return base;
+    if (state.tab === 'calendar') {
+      return api + '/everyone-calendars?month=' + state.month + '&page=' + state.page + '&per_page=30';
+    }
+    return state.query
+      ? api + '/search?q=' + encodeURIComponent(state.query) + '&page=' + state.page + '&per_page=30'
+      : api + '/materials?page=' + state.page + '&per_page=30';
   }
 
-  function fetch() {
+  function fetchItems() {
     if (state.loading) return;
     state.loading = true;
     selected = null;
-
     $grid.empty();
     $pager.empty();
     $status.text(i18n.loading);
@@ -153,14 +201,10 @@
       .done(function (json) {
         var items = json.data || [];
         $status.text('');
-
-        if (!items.length) {
-          $status.text(i18n.noResults);
-          return;
-        }
+        if (!items.length) { $status.text(i18n.noResults); return; }
 
         $.each(items, function (_, item) {
-          var imgSrc = itemThumb(item);
+          var imgSrc = (item.images && (item.images.webp_small || item.images.original)) || '';
           if (!imgSrc) return;
 
           var $item = $(
@@ -180,42 +224,19 @@
           $grid.append($item);
         });
 
-        // ページネーション
         var pg = json.pagination;
         if (pg && pg.last_page > 1) {
           if (pg.prev_page_url) {
-            $('<button class="button">« 前へ</button>').on('click', function () {
-              state.page--;
-              fetch();
-            }).appendTo($pager);
+            $('<button class="button">« 前へ</button>').on('click', function () { state.page--; fetchItems(); }).appendTo($pager);
           }
           $('<span style="line-height:28px;font-size:12px">' + pg.current_page + ' / ' + pg.last_page + '</span>').appendTo($pager);
           if (pg.next_page_url) {
-            $('<button class="button">次へ »</button>').on('click', function () {
-              state.page++;
-              fetch();
-            }).appendTo($pager);
+            $('<button class="button">次へ »</button>').on('click', function () { state.page++; fetchItems(); }).appendTo($pager);
           }
         }
       })
-      .fail(function () {
-        $status.text(i18n.error);
-      })
-      .always(function () {
-        state.loading = false;
-      });
-  }
-
-  function itemThumb(item) {
-    if (item.images) {
-      return item.images.webp_small || item.images.original || '';
-    }
-    return '';
-  }
-
-  function buildInsertHtml(item) {
-    var src = (item.images && (item.images.original || item.images.webp_small)) || '';
-    return '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title) + '">';
+      .fail(function () { $status.text(i18n.error); })
+      .always(function () { state.loading = false; });
   }
 
   function escAttr(str) {

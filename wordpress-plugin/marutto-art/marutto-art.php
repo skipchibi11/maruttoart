@@ -3,7 +3,7 @@
  * Plugin Name:       Marutto Art
  * Plugin URI:        https://marutto.art/api/docs/
  * Description:       marutto.art の無料イラスト素材（商用利用可）を、投稿エディタから直接検索・挿入できます。
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            marutto.art
@@ -15,7 +15,7 @@
 
 defined('ABSPATH') || exit;
 
-define('MARUTTO_VERSION',  '1.1.0');
+define('MARUTTO_VERSION',  '1.2.0');
 define('MARUTTO_API_BASE', 'https://marutto.art/api/v1');
 define('MARUTTO_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -43,9 +43,12 @@ add_action('admin_enqueue_scripts', function (string $hook): void {
         true
     );
     wp_localize_script('marutto-art-classic', 'MaruttoArt', [
-        'apiBase' => MARUTTO_API_BASE,
-        'i18n'    => [
+        'apiBase'   => MARUTTO_API_BASE,
+        'restUrl'   => esc_url_raw(rest_url('wp/v2/media')),
+        'restNonce' => wp_create_nonce('wp_rest'),
+        'i18n'      => [
             'insert'      => __('挿入', 'marutto-art'),
+            'inserting'   => __('アップロード中...', 'marutto-art'),
             'search'      => __('検索', 'marutto-art'),
             'loading'     => __('読み込み中...', 'marutto-art'),
             'noResults'   => __('素材が見つかりません。', 'marutto-art'),
