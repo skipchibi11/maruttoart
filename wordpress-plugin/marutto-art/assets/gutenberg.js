@@ -95,8 +95,10 @@
     var error      = _error[0]; var setError    = _error[1];
     var _sel       = useState(null);
     var selected   = _sel[0]; var setSelected  = _sel[1];
-    var _uploading = useState(false);
-    var uploading  = _uploading[0]; var setUploading = _uploading[1];
+    var _uploading    = useState(false);
+    var uploading     = _uploading[0]; var setUploading    = _uploading[1];
+    var _uploadError  = useState('');
+    var uploadError   = _uploadError[0]; var setUploadError = _uploadError[1];
 
     var mounted = useRef(true);
     useEffect(function () { return function () { mounted.current = false; }; }, []);
@@ -145,6 +147,7 @@
       if (!src) return;
 
       setUploading(true);
+      setUploadError('');
       setSelected(null);
 
       var body = new FormData();
@@ -165,11 +168,11 @@
               alt: title,
             }));
           } else {
-            insertBlocks(createBlock('core/image', { url: src, alt: title }));
+            setUploadError('アップロードに失敗しました。再度お試しください。');
           }
         })
         .catch(function () {
-          if (mounted.current) insertBlocks(createBlock('core/image', { url: src, alt: title }));
+          if (mounted.current) setUploadError('アップロードに失敗しました。再度お試しください。');
         })
         .finally(function () { if (mounted.current) setUploading(false); });
     }
@@ -218,6 +221,7 @@
       monthSelect,
       loading  && el('div', { className: 'marutto-status' }, el(Spinner)),
       error    && el(Notice, { status: 'error', isDismissible: false }, error),
+      uploadError && el(Notice, { status: 'error', isDismissible: true, onRemove: function () { setUploadError(''); } }, uploadError),
       !loading && !error && items.length === 0
         ? el('div', { className: 'marutto-status' }, '素材が見つかりません。')
         : el(Grid, { items: items, selected: selected, onSelect: setSelected }),

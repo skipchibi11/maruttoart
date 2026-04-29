@@ -95,18 +95,23 @@
       post_id: 0,
     })
       .done(function (res) {
-        var url = (res.success && res.data && res.data.source_url) ? res.data.source_url : src;
-        send_to_editor('<img src="' + escAttr(url) + '" alt="' + escAttr(alt) + '">');
+        if (res.success && res.data && res.data.source_url) {
+          send_to_editor('<img src="' + escAttr(res.data.source_url) + '" alt="' + escAttr(alt) + '">');
+          uploading = false;
+          selected  = null;
+          $status.text('');
+          $('#marutto-insert-btn').prop('disabled', false).text(i18n.insert);
+          $dialog.dialog('close');
+        } else {
+          uploading = false;
+          $status.text('アップロードに失敗しました。再度お試しください。');
+          $('#marutto-insert-btn').prop('disabled', false).text(i18n.insert);
+        }
       })
       .fail(function () {
-        send_to_editor('<img src="' + escAttr(src) + '" alt="' + escAttr(alt) + '">');
-      })
-      .always(function () {
         uploading = false;
-        selected  = null;
-        $status.text('');
+        $status.text('アップロードに失敗しました。再度お試しください。');
         $('#marutto-insert-btn').prop('disabled', false).text(i18n.insert);
-        $dialog.dialog('close');
       });
   }
 

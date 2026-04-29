@@ -100,12 +100,11 @@ add_action('wp_ajax_marutto_upload_image', function (): void {
         wp_send_json_error('Invalid URL', 400);
     }
 
-    // marutto.art および Cloudflare R2 ドメインのみ許可（SSRF対策）
+    // marutto.art（サブドメイン含む）および Cloudflare R2 ドメインのみ許可（SSRF対策）
     $host = (string) wp_parse_url($url, PHP_URL_HOST);
-    $allowed_hosts    = ['marutto.art', 'www.marutto.art'];
-    $allowed_suffixes = ['.r2.dev', '.cloudflarestorage.com'];
+    $allowed_suffixes = ['.marutto.art', '.r2.dev', '.cloudflarestorage.com'];
 
-    $ok = in_array($host, $allowed_hosts, true);
+    $ok = ($host === 'marutto.art');
     if (!$ok) {
         foreach ($allowed_suffixes as $suffix) {
             if (str_ends_with($host, $suffix)) {
