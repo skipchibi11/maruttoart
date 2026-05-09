@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(gh label *)",
+      "Bash(gh issue create --repo skipchibi11/maruttoart --title 【改善提案】クリエイター投稿・報酬システムの導入 --label 'enhancement,priority: high,competitive-analysis' --body ' *)",
+      "Bash(gh issue create --repo skipchibi11/maruttoart --title 【改善提案】ユーザーアカウント機能とお気に入り保存 --label 'enhancement,priority: high,competitive-analysis' --body ' *)",
+      "Bash(gh issue create --repo skipchibi11/maruttoart --title 【改善提案】PWA化によるモバイル対応強化 --label 'enhancement,priority: high,competitive-analysis' --body ' *)",
+      "Bash(gh issue create --repo skipchibi11/maruttoart --title 【改善提案】コンポーズ機能の強化（テキスト・レイヤー・書き出し形式対応） --label 'enhancement,priority: high,competitive-analysis' --body ' *)",
+      "Bash(gh issue create --repo skipchibi11/maruttoart --title 【改善提案】SNS自動投稿のInstagram・TikTok対応 --label 'enhancement,priority: high,competitive-analysis' --body ' *)"
+    ]
+  }
+}

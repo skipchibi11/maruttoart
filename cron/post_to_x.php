@@ -34,7 +34,7 @@ logMessage("Access Token Secret設定確認: " . (strlen($xAccessTokenSecret) > 
 
 // 投稿時間のチェック（9時、15時、21時のみ実行）
 $currentHour = (int)date('G'); // 0-23の時間（先頭のゼロなし）
-$allowedHours = [9, 15, 21];
+$allowedHours = [9, 21];
 
 if (!in_array($currentHour, $allowedHours)) {
     logMessage("現在の時刻: {$currentHour}時 - 投稿時間外のためスキップします（投稿時間: 9時、15時、21時）", $logFile);
